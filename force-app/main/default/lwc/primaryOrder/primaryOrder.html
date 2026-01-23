@@ -1,0 +1,86 @@
+<template>
+  <div class="container">
+    <!-- Category Filter and Product Cards -->
+    <template if:true={ShowAll}>
+      <div class="header">
+        <h3>New Primary Order</h3>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="category-filter">
+        <label>Select Category:</label>
+        <select onchange={handleCategoryChange}>
+          <option value="All">All</option>
+          <template for:each={categories} for:item="cat">
+            <option key={cat} value={cat}>{cat}</option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Product Cards -->
+       <div class="main">
+      <div class="product-cards">
+        <template for:each={filteredProducts} for:item="product">
+          <div key={product.id} class="card">
+            <h4>{product.name}</h4>
+            <img src={product.image} alt={product.name} />
+            <p><strong>Price:</strong> ₹{product.priceFormatted}</p>
+            <p><strong>Scheme:</strong> BUY 3 GET 1 FREE</p>
+            <div class="quantity-wrapper">
+              <label>Qty:</label>
+              <input type="number" min="0" data-id={product.id} onchange={handleQuantityChange} />
+            </div>
+          </div>
+        </template>
+      </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="btn-row" if:false={showSummary}>
+        <button class="btn" onclick={handleNext}>Next</button>
+      </div>
+    </template>
+
+    <!-- Order Summary -->
+    <template if:true={showSummary}>
+      <h3 class="summary-heading">Order Summary</h3>
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Rate (₹)</th>
+            <th>Tax %</th>
+            <th>Tax Amount (₹)</th>
+            <th>Total (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template for:each={summaryItems} for:item="item">
+            <tr key={item.id}>
+              <td>{item.name}</td>
+              <td>{item.quantity}</td>
+              <td>₹{item.priceFormatted}</td>
+              <td>{item.taxPercent}</td>
+              <td>₹{item.taxAmountFormatted}</td>
+              <td>₹{item.totalFormatted}</td>
+            </tr>
+          </template>
+         
+        </tbody>
+         <tr class="grand-total-row">
+            <td colspan="5">Grand Total</td>
+            <td>₹{grandTotalFormatted}</td>
+          </tr>
+      </table>
+
+      <div class="btn-row">
+        <button class="btn-back-save" onclick={handleBack}>Back</button>
+        <button class="btn-back-save" onclick={handleSave}>Save Order</button>
+      </div>
+    </template>
+  </div>
+
+  <!-- Custom Toast Component -->
+  <c-custom-toast auto-close-time="8000"></c-custom-toast> <!-- Added custom toast with auto-close time of 8 seconds -->
+</template>

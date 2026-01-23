@@ -1,0 +1,362 @@
+<template>
+    <!-- When page sub part is loading -->
+    <template lwc:if={isSubPartLoad}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+    <!-- When page sub part loaded -->
+    <template lwc:else>
+
+        <!-- Header -->
+        <div class="slds-tabs_card">
+            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <div onclick={goBack} class="back-button slds-m-right_small" style="cursor:pointer;">
+                    <lightning-icon icon-name="utility:back" size="small" class="slds-m-right_x-small"></lightning-icon>
+                </div>
+                <div class="slds-page-header slds-has-flexi-truncate">
+                    <!-- your existing header markup -->
+                    <div class="slds-page-header__row">
+                        <div class="slds-page-header__col-title">
+                            <div class="slds-media">
+                                <div class="slds-media__figure">
+                                    <span class="slds-icon_container slds-icon-standard-opportunity">
+                                        <lightning-icon icon-name="standard:customer_360" alternative-text="Event"
+                                            title="Event"></lightning-icon>
+                                    </span>
+                                </div>
+                                <div class="slds-media__body">
+                                    <div class="slds-page-header__name">
+                                        <div class="slds-page-header__name-title">
+                                            <h1>
+                                                <span class="slds-page-header__title slds-truncate"
+                                                    title={headerName}>{headerName}</span>
+                                            </h1>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="slds-tabs_card">
+
+            <div class="slds-p-around_x_small slds-grid slds-wrap slds-gutters">
+                <div class="slds-col slds-size_1-of-1  slds-medium-size_1-of-3">
+                    <template lwc:if={isNewBeatCreate}>
+                        <lightning-input type="text" label="Beat Name" value={newBeatName}
+                            onchange={handleBeatNameChange} required>
+                        </lightning-input>
+                    </template>
+
+                    <template lwc:else>
+                        <!--    <lightning-combobox label="Select Beat" name="beat" options={data.beatOptions}
+                        value={filterData.beatVal} onchange={handleBeatChange} class="filterClass" disabled={isButton}>
+                    </lightning-combobox> -->
+
+                        <div class="slds-form-element">
+
+                            <div class="slds-form-element__control">
+                                <div class="lookupContainer">
+                                    <lightning-input type="search" name="beat" label="Select Beat"
+                                        value={filterBeatData.beatSearchKeyword} onchange={handleSearchChange}
+                                        disabled={isBeatButton} placeholder="Search Beat..." is-loading={isLoading}
+                                        required></lightning-input>
+
+                                    <template if:true={showDropdown}>
+                                        <ul
+                                            class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid">
+                                            <template for:each={filteredBeatOptions} for:item="beat">
+                                                <li key={beat.beatId} class="slds-listbox__item"
+                                                    onclick={handleOptionSelect} data-id={beat.beatId}>
+                                                    <div
+                                                        class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small">
+                                                        <span class="slds-media__body">
+                                                            <span class="slds-truncate">{beat.beatName}</span>
+                                                        </span>
+                                                    </div>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </template>
+                </div>
+                <template lwc:if={isCloneBeat}>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+
+                        <lightning-input type="text" label="Beat Name" value={newBeatName}
+                            onchange={handleBeatNameChange} required>
+                        </lightning-input>
+                    </div>
+                </template>
+
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                    <lightning-combobox name="beatType" label="Beat Type" value={newBeatType} options={BeatTypeOptions}
+                        onchange={handleBeatTypeChange} required disabled={fieldDisable}>
+                    </lightning-combobox>
+                </div>
+
+                <template lwc:if={showCustomerSel}>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                        <div class="slds-form-element">
+
+                            <div class="slds-form-element__control">
+                                <div class="lookupContainer">
+                                    <lightning-input type="search" name="primCutomer" label="Primary Customer"
+                                        value={primaryCustomer} onchange={handleCustomerChange} disabled={fieldDisable}
+                                        placeholder="Select Primary Customer..." is-loading={isLoading} required>
+                                    </lightning-input>
+
+                                    <template if:true={showDropdown}>
+                                        <ul
+                                            class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid">
+                                            <template for:each={filteredCustOptions} for:item="cust">
+                                                <li key={cust.Id} class="slds-listbox__item"
+                                                    onclick={handleCustomerSelect} data-id={cust.Id}
+                                                    data-name={cust.Name}>
+                                                    <div
+                                                        class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small">
+                                                        <span class="slds-media__body">
+                                                            <span class="slds-truncate">{cust.Name}</span>
+                                                            <span class="slds-truncate"
+                                                                style="margin-left: 10px; color: gray;">({cust.SAP_Customer_Code__c})</span>
+                                                        </span>
+                                                    </div>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <template if:true={showSubStock}>
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                            <div class="slds-form-element">
+
+                                <div class="slds-form-element__control">
+                                    <div class="lookupContainer">
+                                        <lightning-input type="search" name="secCutomer" label="Sub Stockist"
+                                            value={secCustomer} onchange={handleSecCustomerChange}
+                                            disabled={fieldDisable} placeholder="Select Secondary Customer..."
+                                            is-loading={isLoading}>
+                                        </lightning-input>
+
+                                        <template if:true={showDropdown2}>
+                                            <ul
+                                                class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid">
+                                                <template for:each={filteredSecCustOptions} for:item="cust">
+                                                    <li key={cust.Id} class="slds-listbox__item"
+                                                        onclick={handleSecCustomerSelect} data-id={cust.Id}
+                                                        data-name={cust.Name}>
+                                                        <div
+                                                            class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small">
+                                                            <span class="slds-media__body">
+                                                                <span class="slds-truncate">{cust.Name}</span>
+                                                            </span>
+                                                        </div>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </template>
+                </template>
+            </div>
+            <div class="slds-align_absolute-center">
+                <lightning-button label="Save" variant="brand" onclick={handleNewBeat} disabled={isButton}>
+                </lightning-button>&nbsp;
+                <lightning-button variant="destructive" label="Cancel" onclick={goBack}>
+                </lightning-button>&nbsp;
+                <lightning-button variant="neutral" label="Clear" onclick={clearSelection}>
+                </lightning-button>
+            </div>
+        </div>
+        <template if:true={showCustomers}>
+            <lightning-card>
+
+                <div class="filters">
+
+
+
+                    <!-- <lightning-input 
+                    type="date" 
+                    label="Select Date" 
+                    value={filterData.dateVal} 
+                    onchange={handleDateChange}
+                    disabled={isDateDisabled}
+                    class="filterClass">
+                </lightning-input> -->
+                    <lightning-input type="text" label="Search by name" value={filterData.Name} onchange={onSearchName}
+                        class="filterClass" disabled={isButton}>
+                    </lightning-input>
+                    <!-- <lightning-combobox
+                    label="Search by Area"
+                    name="area"
+                    options={data.areaPick}
+                    value={filterData.areaPick}
+                    onchange={handleFilterChange}
+                    class="filterClass"
+                    disabled={isButton}>
+                </lightning-combobox>
+
+                <lightning-combobox
+                    label="Search by City"
+                    name="city"
+                    options={data.citiesPick}
+                    value={filterData.citiesPick}
+                    onchange={handleFilterChange}
+                    class="filterClass"
+                    disabled={isButton}>
+                </lightning-combobox>-->
+
+                    <!-- <lightning-combobox label="Search by Region" name="reg" options={data.regionPick}
+                        value={filterData.regionPick} onchange={handleFilterChange} class="filterClass"
+                        disabled={isButton}>
+                    </lightning-combobox> -->
+                    <template if:true={showCustomerSel}>
+                        <lightning-combobox label="Search by Customer Type" name="div" options={data.typePick}
+                            value={filterData.typePick} onchange={handleFilterChange} class="filterClass"
+                            disabled={isButton}>
+                        </lightning-combobox>
+                    </template>
+                    <template if:false={showCustomerSel}>
+                        <lightning-combobox label="Search by Customer Type" name="div2" options={data.primTypePick}
+                            value={filterData.primTypePick} onchange={handleFilterChange} class="filterClass"
+                            disabled={isButton}>
+                        </lightning-combobox>
+
+                    </template>
+
+
+                    <!--  <lightning-combobox label="Search by Category" name="cate" options={data.category}
+                    value={filterData.category} onchange={handleFilterChange} class="filterClass" disabled={isButton}>
+                </lightning-combobox> -->
+
+
+
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <template lwc:if={isDesktop}>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th onclick={sortByName}>Name &#x25B2;</th>
+                                    <th>Phone</th>
+                                    <!--  <th>Region</th> -->
+                                    <th>Customer Type</th>
+                                    <th>Business Type</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={data.acc} for:item="store" for:index="i">
+                                    <tr key={store.Id}>
+                                        <td>{store.Name} ({store.Customer_Code__c})
+                                            <template if:false={showCustomerSel}>&nbsp;
+                                                (SAP Code:{store.SAP_Customer_Code__c })</template>
+                                        </td>
+                                        <td>{store.Primary_Phone_Number__c}</td>
+                                        <!-- <td>{store.Region__c}</td> -->
+                                        <template if:true={showCustomerSel}>
+                                            <td>{store.Secondary_Customer_Type__c}</td>
+                                            <td>{store.Secondary_Customer_Business_Type__c}</td>
+                                        </template>
+                                        <template if:false={showCustomerSel}>
+                                            <td>{store.Primary_Customer_Type__c}</td>
+                                            <td>{store.Primary_Customer_Business_Type__c}</td>
+                                        </template>
+                                        <td>
+                                            <template lwc:if={store.isAddButtonShow}>
+                                                <div onclick={addData} data-index={i}>
+                                                    <lightning-button-icon icon-name="utility:add"
+                                                        alternative-text="Add" class="green">
+                                                    </lightning-button-icon>
+                                                </div>
+
+                                            </template>
+                                            <template lwc:else>
+                                                <template if:false={isDSM}>
+                                                    <div onclick={removeData} data-index={i}>
+                                                        <lightning-button-icon icon-name="utility:delete"
+                                                            alternative-text="Remove" class="red">
+                                                        </lightning-button-icon>
+                                                    </div>
+                                                </template>
+
+                                            </template>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template lwc:else>
+                        <template for:each={data.acc} for:item="store" for:index="i">
+                            <div class="store-card" key={store.Id}>
+                                <div class="store-header">
+                                    <span class="store-name">{store.Name} ({store.Customer_Code__c})
+                                        <template if:false={showCustomerSel}>&nbsp;
+                                            (SAP Code:{store.SAP_Customer_Code__c })</template>
+                                    </span>
+                                    <span class="store-phone">{store.Primary_Phone_Number__c}</span>
+                                </div>
+                                <div class="store-details">
+                                    <!-- <p><strong>Region:</strong> {store.Region__c}</p> -->
+                                    <template if:true={showCustomerSel}>
+                                        <p><strong>Customer Type:</strong> {store.Secondary_Customer_Type__c}</p>
+                                        <p><strong>Business Type:</strong> {store.Secondary_Customer_Business_Type__c}
+                                        </p>
+                                    </template>
+                                    <template if:false={showCustomerSel}>
+                                        <p><strong>Customer Type:</strong> {store.Primary_Customer_Type__c}</p>
+                                        <p><strong>Business Type:</strong> {store.Primary_Customer_Business_Type__c}</p>
+                                    </template>
+                                </div>
+                                <div class="store-action">
+                                    <template lwc:if={store.isAddButtonShow}>
+                                        <div onclick={addData} data-index={i}>
+                                            <lightning-button-icon icon-name="utility:add" alternative-text="Add"
+                                                class="green">
+                                            </lightning-button-icon>
+                                        </div>
+                                    </template>
+                                    <template lwc:else>
+                                        <template if:false={isDSM}>
+                                            <div onclick={removeData} data-index={i}>
+                                                <lightning-button-icon icon-name="utility:delete"
+                                                    alternative-text="Delete" class="red">
+                                                </lightning-button-icon>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+
+            </lightning-card>
+        </template>
+
+        <c-custom-confirmation-modal onconfirm={handleModalResponse}></c-custom-confirmation-modal>
+    </template>
+</template>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>M1</label>
+    <protected>false</protected>
+    <values>
+        <field>Daily_KM_Limit__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>District_In_charge_Daily_KM_Limit__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>HQ_DA__c</field>
+        <value xsi:type="xsd:double">375.0</value>
+    </values>
+    <values>
+        <field>HQ_Travel_Mode__c</field>
+        <value xsi:type="xsd:string">Bike;BUS;TRAIN</value>
+    </values>
+    <values>
+        <field>Local_Conveyance__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Lodging_Expense__c</field>
+        <value xsi:type="xsd:double">2250.0</value>
+    </values>
+    <values>
+        <field>Up__c</field>
+        <value xsi:type="xsd:string">BUS;TRAIN</value>
+    </values>
+    <values>
+        <field>Upcountry_DA__c</field>
+        <value xsi:type="xsd:double">350.0</value>
+    </values>
+</CustomMetadata>

@@ -1,0 +1,8 @@
+<aura:component  implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:actionOverride"  access="global" >
+    <div class="slds-modal__content slds-p-around_medium">
+        <center><p>You Are Not Allowed To create the Records From here.
+            </p>
+        </center>
+        <br/>
+    </div>
+</aura:component>

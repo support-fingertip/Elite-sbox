@@ -1,0 +1,61 @@
+.custom-container{
+	color : black;
+}
+.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+    cursor: pointer;
+}
+.red{
+  --slds-g-color-neutral-base-50: red;
+}
+.green{
+  --slds-g-color-neutral-base-50: green  !important; /* Icon color */
+}
+/* Modal container styles */
+.slds-modal__container {
+    max-width: 80rem !important;
+    width: 90% !important;
+}
+
+
+
+/* Modal content adjustments */
+.slds-modal__content {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 50% !important;
+}
+@media (min-width: 48em) {
+    .slds-modal__container {
+        margin: 0 auto !important;
+        width: 90% !important;
+        max-width: 80rem !important;
+        min-width: 20rem !important;
+    }
+}

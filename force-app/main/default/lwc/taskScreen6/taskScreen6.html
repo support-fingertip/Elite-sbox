@@ -1,0 +1,191 @@
+<template>
+    <div class="screen-1-body">
+        <!-- When page is loading -->
+        <template lwc:if={isLoading}>
+            <c-on-loading-screen></c-on-loading-screen>
+        </template>
+        <template lwc:else>
+            <!-- Task Summary Section -->
+            <div class="task-summary">
+                <div class="summary-item">
+                    <span class="summary-title">Not Started :</span>
+                    <span class="summary-count">{notStartedCount}</span>
+                </div>
+               <!--<div class="summary-item">
+                    <span class="summary-title">In Progress :</span>
+                    <span class="summary-count">{inProgressCount}</span>
+                </div>-->
+                <div class="summary-item">
+                    <span class="summary-title">Completed :</span>
+                    <span class="summary-count">{completedCount}</span>
+                </div>
+            </div>
+      
+            <!-- Task Section -->
+            <div class="tasks">
+                <div class="task-head">All Tasks</div>
+                <template for:each={tasks} for:item="task" for:index="index">
+                    <div key={task.id} class="task">
+                        <div class="task-left ">
+                        <span >{task.name}</span>
+                        </div>
+                       
+                        <!-- Checkbox for Task Completion -->
+                        <div class="outlet-icon floatright" tabindex="0" >
+                            <lightning-input type="toggle" 
+                            class={task.classtoggle}
+                            label="Toggle Button" 
+                            name="input" message-toggle-active ="" 
+                            message-toggle-inactive=""
+                            data-index={index} 
+                            data-id={task.id}
+                            checked={task.checked}
+                            variant="label-hidden"
+                            onchange={toggleChangeHandler}>
+                            </lightning-input>
+                        </div>
+                         <!-- Task Status with Colored Icons -->
+                         <!--<div class="task-price taskWdith-right">
+                            <lightning-icon 
+                                icon-name={task.icon} 
+                                size="small" 
+                                alternative-text={task.status} 
+                                class={task.class}>
+                            </lightning-icon>
+                        </div>-->
+
+                        <!-- Show three dots icon for more options -->
+                        <!--<div class="outlet-icon taskWdith-right" onclick={openMenu} tabindex="0"  data-id={task.id} data-index={index}>
+                            <svg class="outlet-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 5.92C12.2546 5.92 12.4988 5.81886 12.6789 5.63882C12.8589 5.45879 12.96 5.21461 12.96 4.96C12.96 4.70539 12.8589 4.46121 12.6789 4.28118C12.4988 4.10114 12.2546 4 12 4C11.7454 4 11.5013 4.10114 11.3212 4.28118C11.1412 4.46121 11.04 4.70539 11.04 4.96C11.04 5.21461 11.1412 5.45879 11.3212 5.63882C11.5013 5.81886 11.7454 5.92 12 5.92ZM12 12.96C12.2546 12.96 12.4988 12.8589 12.6789 12.6788C12.8589 12.4988 12.96 12.2546 12.96 12C12.96 11.7454 12.8589 11.5012 12.6789 11.3212C12.4988 11.1411 12.2546 11.04 12 11.04C11.7454 11.04 11.5013 11.1411 11.3212 11.3212C11.1412 11.5012 11.04 11.7454 11.04 12C11.04 12.2546 11.1412 12.4988 11.3212 12.6788C11.5013 12.8589 11.7454 12.96 12 12.96ZM12 20C12.2546 20 12.4988 19.8989 12.6789 19.7188C12.8589 19.5388 12.96 19.2946 12.96 19.04C12.96 18.7854 12.8589 18.5412 12.6789 18.3612C12.4988 18.1811 12.2546 18.08 12 18.08C11.7454 18.08 11.5013 18.1811 11.3212 18.3612C11.1412 18.5412 11.04 18.7854 11.04 19.04C11.04 19.2946 11.1412 19.5388 11.3212 19.7188C11.5013 19.8989 11.7454 20 12 20Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          
+                            <template lwc:if={task.openPopup}>
+                                <div class="popup">
+                                    <ul>
+                                        <li onclick={handleOnclickMenu} data-action="Add" data-id={task.id}>
+                                            <lightning-icon 
+                                                icon-name="utility:add" 
+                                                size="x-small" 
+                                                alternative-text="Add"
+                                                class="invert-image">
+                                            </lightning-icon>
+                                            Add
+                                        </li>
+                                        <li onclick={handleOnclickMenu} data-action="Edit" data-id={task.id}>
+                                            <lightning-icon 
+                                                icon-name="utility:edit" 
+                                                size="x-small" 
+                                                alternative-text="Edit"
+                                                class="invert-image">
+                                            </lightning-icon>
+                                            Edit
+                                        </li>
+                                        <li onclick={handleOnclickMenu} data-action="Delete" data-id={task.id}>
+                                            <lightning-icon 
+                                                icon-name="utility:delete" 
+                                                size="x-small" 
+                                                alternative-text="Delete"
+                                                class="invert-image">
+                                            </lightning-icon>
+                                            Delete
+                                        </li>
+                                    </ul>
+                                </div>
+                            </template>
+                            
+                        </div>-->
+                    </div>
+
+                    
+                </template>
+                
+            </div>
+
+            
+            <!-- Edit/Add Task Popup -->
+            <template if:true={isModalOpen}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <!-- Modal/Popup Header -->
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={closeModal}>
+                                <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                            <h2 class="slds-text-heading_medium">{modalTitle}</h2>
+                        </header>
+
+                        <!-- Modal Body -->
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning-input label="Subject" value={taskName} onchange={handleInputChange} data-id="taskName" required="true"></lightning-input>
+                            <lightning-input label="Due Date" type="date" value={taskDate} onchange={handleInputChange} data-id="taskDate" required="true"></lightning-input>
+                            <lightning-combobox label="Status" value={taskStatus} options={statusOptions} onchange={handleInputChange} data-id="taskStatus"></lightning-combobox>
+                            <lightning-textarea label="Description" value={description} onchange={handleInputChange} data-id="description"></lightning-textarea>
+                            </div>
+
+                        <!-- Modal Footer -->
+                        <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_neutral" onclick={closeModal}>Cancel</button>
+                            <button class="slds-button slds-button_brand" onclick={saveTask}>Save</button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+            <!-- status Update Popup-->
+            <template if:true={isDescriptionPopup}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class={containerClass}>
+                        <template lwc:if={isDesktop}>
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={closeModal}>
+                                <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                        </template>
+                        <!-- Modal/Popup Header -->
+                        <header class="slds-modal__header">
+                            <div class="slds-grid slds-gutters">
+                                <template if:false={isDesktop}>
+                                    <div class="slds-col  slds-clearfix">
+                                        <div class="slds-float_left">
+                                            <lightning-button variant="base" label="Save"   onclick={updateTask} class="slds-m-left_x-small"></lightning-button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div class="slds-col slds-align_absolute-center">
+                                    <h1 id="modal-heading-02" class="slds-modal__title slds-hyphenate small-modal-title" tabindex="-1">Status Update</h1>
+                                </div>
+                                
+                                <template if:false={isDesktop}>
+                                    <div class="slds-col  slds-clearfix">
+                                        <div class="slds-float_right">
+                                            <lightning-button variant="base" label="Cancel"  onclick={closeModal} class="slds-m-left_x-small"></lightning-button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </header>
+
+                        <!-- Modal Body -->
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning-input label="Subject" value={taskName} onchange={handleInputChange} data-id="taskName" disabled="true"></lightning-input>
+                            <lightning-textarea label="Description" value={description} onchange={handleInputChange} data-id="description" required="true"></lightning-textarea>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <template lwc:if={isDesktop}>
+                            <footer class="slds-modal__footer">
+                                <button class="slds-button slds-button_neutral" onclick={closeModal}>Cancel</button>
+                                <button class="slds-button slds-button_brand" onclick={updateTask}>Save</button>
+                            </footer>
+                        </template>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+       
+        </template>
+    </div>
+</template>

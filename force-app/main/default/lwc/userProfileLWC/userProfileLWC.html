@@ -1,0 +1,1647 @@
+<template>
+    <div class={customClass}>
+        <div class={customScrren}>
+
+            <!-- When page is loading -->
+            <template lwc:if={isPageLoaded}>
+                <div style="margin:10px">
+                    <c-on-loading-screen></c-on-loading-screen>
+                </div>
+            </template>
+
+            <!-- When page loaded -->
+            <template lwc:else>
+                <template if:true={showHeader}>
+                    <!--Heading-->
+                    <div class="main-heading">
+                        <h1>User Activities</h1>
+                    </div>
+                    <!--User Selection-->
+                    <div class="header-panel">
+                        <div class="left-section">
+
+                            <div class="slds-m-right_xx-small slds-form-element">
+                                <div class="slds-form-element__control">
+                                    <div
+                                        class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
+                                            role="none">
+                                            <lightning-input label="Employee" data-index={index} type="search"
+                                                value={userSearchText} data-id="accountFields" variant="label-hidden"
+                                                message-when-value-missing="Search User" read-only={isReadOnly}
+                                                placeholder="Select Beat" class="readonly-bordered"
+                                                onchange={handleUserSearch}>
+                                            </lightning-input>
+                                        </div>
+                                        <template lwc:if={showUsers}>
+                                            <div id='beat'
+                                                class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid"
+                                                role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0"
+                                                aria-busy="false">
+                                                <template for:each={searchedUserList} for:item="srch">
+                                                    <ul key={srch.Id} class="slds-listbox slds-listbox_vertical"
+                                                        role="presentation">
+                                                        <li role="presentation" class="slds-listbox__item">
+                                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                                role="option" onclick={selectUser} data-id={srch.Id}
+                                                                data-name={srch.Name} data-index={index}
+                                                                data-profile={srch.Profile_Name__c}>
+                                                                <lightning-icon
+                                                                    icon-name="standard:product_service_campaign_item"
+                                                                    size="small">
+                                                                </lightning-icon>
+                                                                <span
+                                                                    class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                <span class="slds-media__body">
+                                                                    <span class="slds-truncate" title={srch.Name}>
+                                                                        <span>{srch.Name}
+                                                                            ({srch.Employee_Code__c})</span>
+                                                                    </span>
+                                                                </span>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- <lightning-combobox label="Select Name" value={selectedName} options={usersOptions}
+                                onchange={handleUserChange}>
+                            </lightning-combobox>-->
+                        </div>
+                        <div class="right-section">
+                            <h2 class="user-name">{nameSelected.user}</h2>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="custom-tabs">
+                    <lightning-tabset>
+
+                        <lightning-tab label="Details" onactive={selectTab} value="Details">
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+                            <template lwc:else>
+                                <c-employee-record-view-form record-id={employeeId} object-name={objectName}>
+                                </c-employee-record-view-form>
+                            </template>
+                        </lightning-tab>
+                        <lightning-tab label="Primary Customers" onactive={selectTab} value="primaryCustomerAssignment">
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+                            <template lwc:else>
+
+                                <template if:true={showDataUpload}>
+                                    <c-csv-data-loader object-name={dataUploadObjectName}
+                                        onmycustomevent={onClickDispatchEvent} selected-user={selectedUser}>
+                                    </c-csv-data-loader>
+                                </template>
+
+                                <template if:false={showDataUpload}>
+                                    <template if:true={isAdmin}>
+                                        <lightning-button label="Data Upload" name="beatdatamap1"
+                                            onclick={handleDataUpload}>
+                                        </lightning-button>
+                                        <lightning-button label="Share Access" name="beatdatamap2"
+                                            class="slds-m-left_small" onclick={reshareAccountAccess}
+                                            disabled={isSharing}>
+                                        </lightning-button>
+
+                                    </template>
+
+
+
+                                    <c-customer-assignment record-id={employeeId} object-name={objectName}
+                                        is-desktop={isDesktop}> </c-customer-assignment>
+
+                                </template>
+
+                            </template>
+                        </lightning-tab>
+                        <lightning-tab label="Secondary Customers" onactive={selectTab}
+                            value="secondaryCustomerAssignment">
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+                            <template lwc:else>
+
+                                <template if:true={showDataUpload}>
+                                    <c-csv-data-loader object-name={dataUploadObjectName}
+                                        onmycustomevent={onClickDispatchEvent} selected-user={selectedUser}>
+                                    </c-csv-data-loader>
+                                </template>
+                                <template if:false={showDataUpload}>
+                                    <template if:true={isAdmin}>
+                                        <lightning-button label="Data Upload" name="beatdatamap2"
+                                            onclick={handleDataUpload}>
+                                        </lightning-button>
+                                    </template>
+
+                                    <c-secondary-assignment record-id={employeeId} object-name={objectName}
+                                        is-desktop={isDesktop}>
+                                    </c-secondary-assignment>
+                                </template>
+
+
+
+                            </template>
+                        </lightning-tab>
+
+
+                        <!--<lightning-tab label="Summary" onactive={selectTab} value="Summary">
+                   
+                            <template lwc:if={isVfPage}>
+                                <iframe src="/apex/GoogleChart" onload={handleIframeLoad} width="100%"
+                                    height="750px"></iframe>
+                            </template>
+                            <template lwc:else>
+                                <div class="slds-truncate" style="text-align:center; width:100%;">
+                                    <span style="color:red;padding:10px;font-size:large">No records found!</span>
+                                </div>
+                            </template>
+                        
+
+                            <div class="chart-wrapper slds-m-bottom_small">
+                                <div class="chart-container">
+                                    <canvas id="sales-bar-chart" lwc:dom="manual"
+                                        class="sales-bar-chart chart"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas lwc:dom="manual" class="ord-bar-chart chart"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas lwc:dom="manual" class="exp-bar-chart chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="line-chart-container">
+                                <canvas lwc:dom="manual" class="tar-line-chart chart"></canvas>
+                            </div>
+                        </lightning-tab>-->
+
+                        <lightning-tab label="Beats & PJP" onactive={selectTab} value="Beats & PJP">
+                            <!-- <p>PJP Content</p> -->
+                            <!-- When page sub part is loading -->
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+
+                            <!-- When page sub part loaded -->
+                            <template lwc:else>
+                                <template lwc:if={isButtonFunctions}>
+                                    <div class="button-container">
+
+                                        <template lwc:if={isCalenderShow}>
+                                            <lightning-button label="View Beats" onclick={handleViewPJP}>
+                                            </lightning-button>
+                                            <template if:true={isAdmin}>
+                                                <lightning-button label="Data Upload" name="beatdatamap3"
+                                                    onclick={handleDataUpload}>
+                                                </lightning-button>
+                                            </template>
+                                            <lightning-button variant="brand-outline" label="View Holiday"
+                                                onclick={handleViewHoliday} class="slds-m-left_x-small">
+                                            </lightning-button>
+                                            <template lwc:if={isNotDSM}>
+                                                <template lwc:if={isPhone}>
+                                                    <template lwc:if={isPJPNotSubmitted}>
+                                                        <lightning-button label="Assign Beats"
+                                                            onclick={openAssignModal}>
+                                                        </lightning-button>
+                                                    </template>
+
+                                                </template>
+                                            </template>
+
+                                            <!--  <lightning-button variant="brand-outline" label="Repeat Days"
+                                                onclick={handleRepeatDays} class="slds-m-left_x-small">
+                                            </lightning-button>-->
+                                        </template>
+                                        <template lwc:if={isBeatPlanView}>
+                                            <template lwc:if={calenderBeat}>
+                                                <template if:false={isActiveUserDSM}>
+                                                    <template lwc:if={newBeatBtn}>
+                                                        <lightning-button label="New Beat" onclick={handleAddBeat}>
+                                                        </lightning-button>
+                                                        <template if:true={isAdmin}>
+                                                            <lightning-button label="Data Upload" name="beatdatamap"
+                                                                onclick={handleDataUpload}>
+                                                            </lightning-button>
+                                                        </template>
+                                                    </template>
+
+                                                </template>
+                                                <lightning-button label="Edit Beat" onclick={handleAddVisit}>
+                                                </lightning-button>
+                                                <template if:false={isActiveUserDSM}>
+                                                    <template lwc:if={newBeatBtn}>
+                                                        <lightning-button label="Clone Beat" onclick={handleCloneBeat}>
+                                                        </lightning-button>
+                                                    </template>
+                                                </template>
+
+                                                <lightning-button label="View Calender" onclick={handleViewCal}>
+                                                </lightning-button>
+                                                <template lwc:if={isDSM}>
+                                                    <template if:false={isActiveUserDSM}>
+                                                        <template if:true={isAdmin}>
+                                                            <lightning-button label="Run PJP" onclick={openModal}>
+                                                            </lightning-button>
+                                                        </template>
+                                                    </template>
+                                                </template>
+                                            </template>
+
+                                            <template lwc:else>
+                                                <lightning-button label="New PJP" onclick={createNewPJP}>
+                                                </lightning-button>
+                                            </template>
+
+                                        </template>
+
+                                    </div>
+
+
+                                    <template if:true={showPJPForm}>
+                                        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                                            <div class="slds-modal__container">
+                                                <header class="slds-modal__header">
+                                                    <h2 class="slds-text-heading_medium">Create PJP</h2>
+                                                </header>
+                                                <div class="slds-modal__content slds-p-around_medium">
+
+
+                                                    <lightning-input type="date" label="Start Date"
+                                                        value={newPJPRecord.Start_Month__c}
+                                                        onchange={handlePJPStartDate} min={todaydate}>
+                                                    </lightning-input>
+                                                    <lightning-input type="date" label="End Date"
+                                                        value={newPJPRecord.Next_Start_Date__c}
+                                                        onchange={handlePJPEndDate}>
+                                                    </lightning-input>
+                                                    <lightning-input label="User" value={nameSelected.user} disabled>
+                                                    </lightning-input>
+                                                    <!-- Add more fields as per the requirement -->
+
+
+                                                </div>
+
+                                                <footer class="slds-modal__footer">
+                                                    <lightning-button variant="neutral" label="Cancel"
+                                                        onclick={closePJPForm}></lightning-button>&nbsp;
+                                                    <lightning-button variant="brand" label="Create"
+                                                        onclick={handlePJPRecCreation}></lightning-button>
+                                                </footer>
+
+                                            </div>
+                                        </section>
+                                        <div class="slds-backdrop slds-backdrop_open"></div>
+                                    </template>
+
+                                    <template if:true={isModalOpen}>
+                                        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                                            <div class="slds-modal__container">
+                                                <header class="slds-modal__header">
+                                                    <h2 class="slds-text-heading_medium">{modalBody.headerName}</h2>
+                                                </header>
+                                                <div class="slds-modal__content slds-p-around_medium">
+                                                    <lightning-input type="date" label={modalBody.dateLabel}
+                                                        value={startDate} onchange={handleStartDateChange}
+                                                        min={todaydate}>
+                                                    </lightning-input>
+
+                                                    <div class="slds-form-element">
+
+                                                        <div class="slds-form-element__control">
+                                                            <div class="lookupContainer">
+                                                                <lightning-input type="search" name="beat"
+                                                                    label={modalBody.beatLabel}
+                                                                    value={filterBeatData.beatSearchKeyword}
+                                                                    onchange={handleSearchChange}
+                                                                    disabled={isBeatButton} placeholder="Search Beat..."
+                                                                    is-loading={isLoading} required></lightning-input>
+
+                                                                <template if:true={showDropdown}>
+                                                                    <ul
+                                                                        class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid">
+                                                                        <template for:each={filteredBeatOptions}
+                                                                            for:item="beat">
+                                                                            <li key={beat.beatId}
+                                                                                class="slds-listbox__item"
+                                                                                onclick={handleOptionSelect}
+                                                                                data-id={beat.beatId}>
+                                                                                <div
+                                                                                    class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small">
+                                                                                    <span class="slds-media__body">
+                                                                                        <span
+                                                                                            class="slds-truncate">{beat.beatName}</span>
+                                                                                    </span>
+                                                                                </div>
+                                                                            </li>
+                                                                        </template>
+                                                                    </ul>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <footer class="slds-modal__footer">
+                                                    <lightning-button variant="neutral" label="Cancel"
+                                                        onclick={closeModal}></lightning-button>&nbsp;
+                                                    <template lwc:if={autoCreatePJP}>
+                                                        <lightning-button variant="brand" label="Create"
+                                                            onclick={handlePJPCreation}></lightning-button>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <lightning-button variant="brand" label="Save"
+                                                            onclick={handlePJPSave}></lightning-button>
+                                                        <!--  <lightning-button variant="brand" label="Save & New"
+                                                            onclick={handlePJPSaveNew}></lightning-button> -->
+                                                    </template>
+                                                </footer>
+                                            </div>
+                                        </section>
+                                        <div class="slds-backdrop slds-backdrop_open"></div>
+                                    </template>
+                                </template>
+
+                                <template lwc:if={isCalenderShow}>
+                                    <template lwc:if={isDesktop}>
+                                        <!-- <div class="button-container">
+                                            <lightning-input type="date" label="PJP Start Date" name="PJPStartDate"
+                                                value={PJPStartDate} onchange={handlePjpDateChange}
+                                                message-when-bad-input="Please select a date within the current month.">
+                                            </lightning-input>
+
+
+                                            <lightning-input type="date" label="PJP End Date" name="fromDate"
+                                                value={PJPNextStartDate} onchange={handlePJPNextDateChange}
+                                                message-when-bad-input="Please select a date within the current month.">
+                                            </lightning-input>
+                                        </div>-->
+                                        <div class="slds-grid slds-gutters">
+                                            <template lwc:if={isActiveUserNotDSM}>
+                                                <div class="slds-col slds-size_3-of-12"
+                                                    style="min-height: 600px; overflow-y: auto;">
+                                                    <lightning-card hide-header>
+                                                        <div class="slds-p-around_medium">
+                                                            <lightning-input type="search" label="Beats"
+                                                                class="custom-input"
+                                                                placeholder="Search with Beat Name/Customer Name"
+                                                                onchange={handleAccountSearch}>
+                                                            </lightning-input>
+
+                                                            <div class="accounts-container">
+                                                                <template for:each={filteredBeats} for:item="account">
+                                                                    <template lwc:if={isPJPNotSubmitted}>
+                                                                        <div key={account.beatId} class="account-item"
+                                                                            draggable="true" data-id={account.beatId}
+                                                                            ondragstart={handleCalDragStart}>
+                                                                            <span
+                                                                                class="beat-info">{account.orderNumber}.
+                                                                                {account.beatName}</span>
+
+                                                                            <template
+                                                                                lwc:if={account.mainBeat.Primary_Customer__c}>
+                                                                                <!-- Display Primary Customer in a span -->
+                                                                                <span class="primary-customer">
+                                                                                    Primary Customer:
+                                                                                    {account.mainBeat.Primary_Customer__r.Name}
+                                                                                </span>
+                                                                                <template
+                                                                                    lwc:if={account.mainBeat.Sub_Stockist__c}>
+                                                                                    <span class="sec-customer">
+                                                                                        Substockist:
+                                                                                        {account.mainBeat.Sub_Stockist__r.Name}
+                                                                                    </span>
+                                                                                </template>
+                                                                            </template>
+                                                                        </div>
+
+                                                                    </template>
+                                                                    <template lwc:else>
+                                                                        <div key={account.beatId} class="account-item"
+                                                                            data-id={account.beatId}>
+                                                                            <span
+                                                                                class="beat-info">{account.orderNumber}.
+                                                                                {account.beatName}</span>
+                                                                            <template
+                                                                                lwc:if={account.mainBeat.Primary_Customer__c}>
+                                                                                <!-- Display Primary Customer in a span -->
+                                                                                <span class="primary-customer">
+                                                                                    Primary Customer:
+                                                                                    {account.mainBeat.Primary_Customer__r.Name}
+                                                                                </span>
+                                                                                <template
+                                                                                    lwc:if={account.mainBeat.Sub_Stockist__c}>
+                                                                                    <span class="sec-customer">
+                                                                                        Substockist:
+                                                                                        {account.mainBeat.Sub_Stockist__r.Name}
+                                                                                    </span>
+                                                                                </template>
+                                                                            </template>
+                                                                        </div>
+                                                                    </template>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </lightning-card>
+                                                </div>
+
+                                            </template>
+
+                                            <div class={divClass2}>
+                                                <lightning-card hide-header>
+                                                    <c-custom-confirmation-modal onconfirm={handleModalResponse}>
+                                                    </c-custom-confirmation-modal>
+
+                                                    <template if:true={calendarMonths}>
+
+                                                        <div class="month-year-header">
+                                                            <button onclick={showPreviousMonth}>&#8592;</button>
+                                                            <span>{currentMonthLabel}</span>
+                                                            <button onclick={showNextMonth}>&#8594;</button>
+
+                                                            <template lwc:if={isNotDSM}>
+                                                                <template lwc:if={isPJPNotSubmitted}>
+                                                                    <template lwc:if={showSubmitBtn}>
+                                                                        <lightning-button label="Submit for Approval"
+                                                                            onclick={submitApproval}>
+                                                                        </lightning-button>
+                                                                    </template>
+                                                                </template>
+                                                            </template>
+                                                            <template if:true={isAdmin}>
+                                                                <template lwc:if={isDSM}>
+                                                                    <div
+                                                                        style="display: inline-block; vertical-align: top;">
+                                                                        <lightning-input type="number"
+                                                                            label="Recurring Frequency"
+                                                                            value={calenderBeat.Recurring_Frequency__c}
+                                                                            onchange={setRecurringFrequency}>
+                                                                        </lightning-input>
+                                                                        <p
+                                                                            style="font-size: 0.75rem; color: #790909; margin-top: 2px;">
+                                                                            * Rotation will run starting today and
+                                                                            include
+                                                                            the
+                                                                            last n days specified.
+                                                                        </p>
+                                                                    </div>
+                                                                    &nbsp;
+                                                                    <lightning-button label="Rotate"
+                                                                        onclick={rotateBeats}></lightning-button>
+                                                                </template>
+                                                            </template>
+
+                                                        </div>
+
+
+                                                        <div class="calendar">
+                                                            <div class="calendar-header">
+                                                                <span>Sun</span>
+                                                                <span>Mon</span>
+                                                                <span>Tue</span>
+                                                                <span>Wed</span>
+                                                                <span>Thu</span>
+                                                                <span>Fri</span>
+                                                                <span>Sat</span>
+                                                            </div>
+                                                            <div class="calendar-grid">
+
+
+                                                                <template for:each={currentMonthDays} for:item="day"
+                                                                    for:index="i">
+
+                                                                    <div key={day.formattedDate} class="calendar-cell"
+                                                                        style={day.style} data-date={day.formattedDate}
+                                                                        ondragover={handleCalDragOver}
+                                                                        ondrop={handleCalDrop}>
+
+                                                                        <template if:true={day.date}>
+                                                                            <div class="date-number">{day.dayNumber}
+                                                                            </div>
+
+                                                                            <!--  <template lwc:if={isDSM}>
+
+                                                                                <template for:each={day.records}
+                                                                                    for:item="record" for:index="j">
+                                                                                    <div key={record.beatId}
+                                                                                        class="record"
+                                                                                        data-id={record.beatId}
+                                                                                        data-commonid={record.beatId}
+                                                                                        data-indexi={i} data-indexj={j}
+                                                                                        data-details={record.detailsString}
+                                                                                        onclick={openRecord}
+                                                                                        onmouseover={handleMouseOver}
+                                                                                        onmouseleave={handleMouseLeave}
+                                                                                        style={day.beatStyle}>
+                                                                                        {record.beatName}
+                                                                                    </div>
+                                                                                </template>
+                                                                            </template>
+
+                                                                            <template lwc:else> -->
+                                                                            <!--   <div class="calendar-events"> -->
+                                                                            <template for:each={day.records}
+                                                                                for:item="record" for:index="j">
+                                                                                <div key={record.pjpItemId}
+                                                                                    class="record"
+                                                                                    title={record.beatName}
+                                                                                    data-id={record.beatId}
+                                                                                    data-commonid={record.beatId}
+                                                                                    data-indexi={i} data-indexj={j}
+                                                                                    data-details={record.detailsString}
+                                                                                    onclick={openRecord}
+                                                                                    onmouseover={handleMouseOver}
+                                                                                    onmouseleave={handleMouseLeave}
+                                                                                    style={record.style}>
+
+                                                                                    <div class="record-content">
+                                                                                        <div class="beat-name"
+                                                                                            title={record.beatName}>
+                                                                                            {record.beatName}</div>
+
+                                                                                        <template
+                                                                                            if:false={isActiveUserDSM}>
+                                                                                            <template
+                                                                                                if:true={day.removePJPItembtn}>
+                                                                                                <template
+                                                                                                    lwc:if={isPJPNotSubmitted}>
+                                                                                                    <!--   <template
+                                                                                                        lwc:if={record.approvedBeat}> -->
+                                                                                                    <lightning-button-icon
+                                                                                                        class="remove-btn"
+                                                                                                        icon-name="utility:close"
+                                                                                                        alternative-text="Remove"
+                                                                                                        data-date={day.date}
+                                                                                                        data-account={record.pjpItemId}
+                                                                                                        data-indexi={i}
+                                                                                                        data-indexj={j}
+                                                                                                        onclick={removeItem}>
+                                                                                                    </lightning-button-icon>
+                                                                                                    <!--   </template> -->
+                                                                                                </template>
+                                                                                            </template>
+                                                                                        </template>
+                                                                                    </div>
+                                                                                    <!-- {record.beatName}
+                                                                                        <template
+                                                                                            lwc:if={day.isHoliday}>
+                                                                                        </template>
+                                                                                        <template lwc:else>
+                                                                                          
+                                                                                            <template
+                                                                                                lwc:if={isPJPNotSubmitted}>
+                                                                                                <template
+                                                                                                    lwc:if={record.approvedBeat}>
+                                                                                                    <lightning-button-icon
+                                                                                                        class="btnicon"
+                                                                                                        icon-name="utility:close"
+                                                                                                        alternative-text="Remove"
+                                                                                                        data-date={day.date}
+                                                                                                        data-account={record.pjpItemId}
+                                                                                                        data-indexi={i}
+                                                                                                        data-indexj={j}
+                                                                                                        onclick={removeItem}
+                                                                                                        style={day.beatStyle}>
+                                                                                                    </lightning-button-icon>
+                                                                                                </template>
+                                                                                            </template>
+                                                                                         
+                                                                                </template> -->
+                                                                                </div>
+                                                                            </template>
+                                                                            <!--  </div> -->
+
+
+                                                                            <!--  </template> -->
+
+
+                                                                            <template if:true={day.showTooltip}>
+                                                                                <div class="tooltip">
+                                                                                    <template for:each={tooltipData}
+                                                                                        for:item="tooltip">
+                                                                                        <div key={tooltip.id}>
+                                                                                            <strong>{tooltip.name}</strong>
+                                                                                        </div>
+                                                                                    </template>
+                                                                                </div>
+                                                                            </template>
+                                                                        </template>
+                                                                    </div>
+                                                                </template>
+
+
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Legends Section Below the Calendar -->
+                                                        <div class="legend-container">
+                                                            <div class="legend-item">
+                                                                <span class="legend-color assigned-beat"></span>
+                                                                <span class="legend-text">Not Submitted Beat</span>
+                                                            </div>
+                                                            <div class="legend-item">
+                                                                <span class="legend-color submitted-beat"></span>
+                                                                <span class="legend-text">Submitted Beat</span>
+                                                            </div>
+                                                            <div class="legend-item">
+                                                                <span class="legend-color approved-beat"></span>
+                                                                <span class="legend-text">Approved Beat</span>
+                                                            </div>
+                                                            <div class="legend-item">
+                                                                <span class="legend-color rejected-beat"></span>
+                                                                <span class="legend-text">Rejected Beat</span>
+                                                            </div>
+                                                            <div class="legend-item">
+                                                                <span class="legend-color holiday-beat"></span>
+                                                                <span class="legend-text">Holidays</span>
+                                                            </div>
+                                                        </div>
+
+
+                                                    </template>
+
+                                                </lightning-card>
+                                            </div>
+
+                                            <!--  <template lwc:if={isDSM}>
+                                                <lightning-card>
+                                                    <template if:true={calendarMonths}>
+                                                        <div class="month-year-header">
+                                                            <button onclick={showPreviousMonth}>&#8592;</button>
+                                                            <span>{currentMonthLabel}</span>
+                                                            <button onclick={showNextMonth}>&#8594;</button>
+                                                        </div>
+
+                                                        <div class="calendar">
+                                                            <div class="calendar-header">
+                                                                <span>Sun</span>
+                                                                <span>Mon</span>
+                                                                <span>Tue</span>
+                                                                <span>Wed</span>
+                                                                <span>Thu</span>
+                                                                <span>Fri</span>
+                                                                <span>Sat</span>
+                                                            </div>
+                                                            <div class="calendar-grid">
+
+
+                                                                <template for:each={currentMonthDays} for:item="day"
+                                                                    for:index="i">
+                                                                    <div key={day.formattedDate} class="calendar-cell"
+                                                                        style={day.style}>
+                                                                        <template if:true={day.date}>
+                                                                            <div class="date-number">{day.dayNumber}
+                                                                            </div>
+
+                                                                            <template for:each={day.records}
+                                                                                for:item="record" for:index="j">
+                                                                                <div key={record.beatId} class="record"
+                                                                                    data-id={record.beatId}
+                                                                                    data-commonid={record.beatId}
+                                                                                    data-indexi={i} data-indexj={j}
+                                                                                    data-details={record.detailsString}
+                                                                                    onclick={openRecord}
+                                                                                    onmouseover={handleMouseOver}
+                                                                                    onmouseleave={handleMouseLeave}
+                                                                                    style={day.beatStyle}>
+                                                                                    {record.beatName}
+                                                                                </div>
+                                                                            </template>
+
+                                                                            <div class="more-button-container">
+                                                                                <template if:true={day.hasMore}>
+                                                                                    <button class="more-btn" data-date={day.formattedDate} onclick={toggleMore}>
+                                                                            <template if:false={day.showAll}>More...</template>
+                                                                            <template if:true={day.showAll}>Show Less</template>
+                                                                        </button>
+                                                                                </template>
+                                                                            </div>
+
+                                                                            <template if:true={day.showTooltip}>
+                                                                                <div class="tooltip">
+                                                                                    <template for:each={tooltipData}
+                                                                                        for:item="tooltip">
+                                                                                        <div key={tooltip.id}>
+                                                                                            <strong>{tooltip.name}</strong>
+                                                                                        </div>
+                                                                                    </template>
+                                                                                </div>
+                                                                            </template>
+                                                                        </template>
+                                                                    </div>
+                                                                </template>
+
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                 
+                                                </lightning-card>
+
+                                            </template> -->
+                                        </div>
+                                    </template>
+                                    <template lwc:if={isPhone}>
+                                        <c-custom-confirmation-modal onconfirm={handleModalResponse}>
+                                        </c-custom-confirmation-modal>
+                                        <template lwc:if={isNotDSM}>
+                                            <template lwc:if={isPJPNotSubmitted}>
+                                                <template lwc:if={showSubmitBtn}>
+                                                    <lightning-button label="Submit for Approval"
+                                                        onclick={submitApproval}>
+                                                    </lightning-button>
+                                                </template>
+                                            </template>
+                                        </template>
+                                        <lightning-card title="PJP Calendar">
+                                            <div class="mobile-calendar-header">
+                                                <button onclick={showPreviousMonth}>&#8592;</button>
+                                                <span>{currentMonthLabel}</span>
+                                                <button onclick={showNextMonth}>&#8594;</button>
+                                            </div>
+
+                                            <div class="mobile-calendar-days">
+                                                <template for:each={currentMonthDays} for:item="day" for:index="i">
+                                                    <template if:true={day.date}>
+                                                        <div key={day.formattedDate} class="mobile-day"
+                                                            style={day.style}>
+                                                            <div class="mobile-date-label">{day.dayNumber} -
+                                                                {day.dayName}</div>
+
+                                                            <template for:each={day.records} for:item="record"
+                                                                for:index="j">
+                                                                <div key={record.beatId} class="mobile-record"
+                                                                    data-id={record.beatId}
+                                                                    data-commonid={record.beatId} data-indexi={i}
+                                                                    data-indexj={j} data-details={record.detailsString}
+                                                                    onclick={openRecord} onmouseover={handleMouseOver}
+                                                                    onmouseleave={handleMouseLeave}
+                                                                    style={record.style}>
+                                                                    {record.beatName}
+                                                                </div>
+                                                            </template>
+
+                                                            <template if:true={day.hasMore}>
+                                                                <button class="mobile-more-btn"
+                                                                    data-date={day.formattedDate} onclick={toggleMore}>
+                                                                    <template if:false={day.showAll}>More...</template>
+                                                                    <template if:true={day.showAll}>Show Less</template>
+                                                                </button>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                            </div>
+                                        </lightning-card>
+
+                                        <!-- Legends Section Below the Calendar -->
+                                        <div class="legend-container">
+                                            <div class="legend-item">
+                                                <span class="legend-color assigned-beat"></span>
+                                                <span class="legend-text">Not Submitted Beat</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-color submitted-beat"></span>
+                                                <span class="legend-text">Submitted Beat</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-color approved-beat"></span>
+                                                <span class="legend-text">Approved Beat</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-color rejected-beat"></span>
+                                                <span class="legend-text">Rejected Beat</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-color holiday-beat"></span>
+                                                <span class="legend-text">Holidays</span>
+                                            </div>
+                                        </div>
+
+
+                                    </template>
+                                </template>
+
+                                <template lwc:if={isBeatPlanView}>
+                                    <!-- Toggle switch to show/hide customers -->
+                                    <lightning-input type="toggle" label="Customers" message-toggle-active="Show"
+                                        message-toggle-inactive="Hide" checked={showCustomers}
+                                        onchange={handleToggleChange}>
+                                    </lightning-input>
+                                    <div class="beats-container">
+                                        <template for:each={beatPlan} for:item="beat">
+                                            <div key={beat.beatId} class="beat" draggable={isActiveUserNotDSM}
+                                                data-id={beat.beatId} ondragover={handleDragOver} ondrop={handleDrop}
+                                                ondragstart={handleBeatDragStart}>
+                                                <span class="beat-info">{beat.orderNumber}. {beat.beatName}</span>
+
+                                                <template lwc:if={beat.mainBeat.Primary_Customer__c}>
+                                                    <!-- Display Primary Customer in a span -->
+                                                    <span class="primary-customer">
+                                                        Primary Customer: {beat.mainBeat.Primary_Customer__r.Name}
+                                                    </span>
+                                                    <template lwc:if={beat.mainBeat.Sub_Stockist__c}>
+                                                        <span class="sec-customer">
+                                                            Substockist: {beat.mainBeat.Sub_Stockist__r.Name}
+                                                        </span>
+                                                    </template>
+                                                </template>
+                                                <template if:true={showCustomers}>
+                                                    <!--  <h3>{beat.orderNumber}. {beat.beatName}</h3> -->
+                                                    <template for:each={beat.accountList} for:item="store">
+                                                        <div key={store.accId} class="store"
+                                                            draggable={isActiveUserNotDSM} data-id={store.accId}
+                                                            data-beat-id={beat.beatId} data-storeid={store.accId}
+                                                            data-junction={store.JuncId} ondragstart={handleDragStart}
+                                                            ontouchstart={handleTouchStart}
+                                                            ontouchmove={handleTouchMove} ontouchend={handleTouchEnd}
+                                                            ontouchcancel={handleTouchCancel}>
+                                                            {store.orderNumber}. {store.accName}
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template lwc:if={isAddVisit}>
+                                    <c-user-profile_-beat-plan is-desktop={isDesktop} is-phone={isPhone}
+                                        is-new-beat-create={isNewBeatCreate} beats={beatPlan} selected-id={selectedId}
+                                        calender-beat-id={calenderBeat.Id} onmycustomevent={onClickDispatchEvent}
+                                        is-clone-beat={isCloneBeat}>
+                                    </c-user-profile_-beat-plan>
+                                </template>
+
+                                <template lwc:if={isHoliday}>
+                                    <template lwc:if={isSubPartLoad}>
+                                        <c-on-loading-screen></c-on-loading-screen>
+                                    </template>
+
+                                    <!-- When page loaded -->
+                                    <template lwc:else>
+                                    </template>
+                                    <div onclick={goBack} class="back-button slds-m-bottom_x-small">
+                                        <lightning-icon icon-name="utility:back" size="small"
+                                            class="slds-m-right_x-small"></lightning-icon>
+                                    </div>
+                                    <template lwc:if={isAdmin}>
+                                        <lightning-button variant="brand-outline" label="Add Holiday"
+                                            onclick={handleAddHoliday}
+                                            class="slds-m-left_x-small slds-m-bottom_x-small">
+                                        </lightning-button>
+                                    </template>
+
+                                    <div class="table-container">
+                                        <table>
+                                            <thead>
+                                                <tr>
+
+                                                    <th>Date</th>
+                                                    <th>Name</th>
+                                                    <th>Region</th>
+                                                    <th>Description</th>
+                                                    <template lwc:if={isAdmin}>
+                                                        <th>Action</th>
+                                                    </template>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template for:each={holidayData} for:item="store" for:index="i">
+                                                    <tr key={store.Id}>
+
+                                                        <td>
+                                                            <a href="javascript:void(0);" onclick={openRecord}
+                                                                data-id={store.Id}>
+                                                                {store.Date__c}
+                                                            </a>
+                                                        </td>
+                                                        <!-- <td onclick={openRecord} data-id={store.Id}>{store.Date__c}</td> -->
+                                                        <td>{store.Name}</td>
+                                                        <td>{store.Region__c}</td>
+                                                        <td>{store.Description__c}</td>
+                                                        <template lwc:if={isAdmin}>
+                                                            <td>
+                                                                <div onclick={removeHoliday} data-index={i}
+                                                                    data-id={store.Id}>
+                                                                    <lightning-button-icon icon-name="utility:delete"
+                                                                        alternative-text="Add">
+                                                                    </lightning-button-icon>
+                                                                </div>
+                                                            </td>
+                                                        </template>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </template>
+
+                                <template if:true={showDataUpload}>
+                                    <c-csv-data-loader object-name={dataUploadObjectName}
+                                        onmycustomevent={onClickDispatchEvent} selected-user={selectedUser}>
+                                    </c-csv-data-loader>
+                                </template>
+                            </template>
+
+                        </lightning-tab>
+
+                        <!--Attendence-->
+                        <lightning-tab label="Attendance" onactive={selectTab} value="Attendance">
+                            <!-- <p>Attendance Content</p> -->
+                            <div class="button-container">
+                                <lightning-input type="date" label="From Date" name="fromDate"
+                                    value={attFilter.fromDate} onchange={handleAttChange}>
+                                </lightning-input>
+                                <lightning-input type="date" label="To Date" name="toDate" value={attFilter.toDate}
+                                    onchange={handleAttChange}>
+                                </lightning-input>
+                            </div>
+                            <!-- When page sub part is loading -->
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+
+                            <!-- When page sub part loaded -->
+                            <template lwc:else>
+                                <lightning-card>
+                                    <div class="table-container">
+                                        <table class="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="minwidth">Date</th>
+                                                    <th class="minwidth">Attandance</th>
+                                                    <th class="minwidth">Start</th>
+                                                    <th class="minwidth">End</th>
+                                                    <th class="minwidth">Total working hrs</th>
+                                                    <th class="minwidth">First Call Time</th>
+                                                    <th class="minwidth">Last Call Time</th>
+
+                                                    <th class="minwidth">Total Outlets</th>
+                                                    <th class="minwidth">No of Outlets from Beat</th>
+                                                    <th class="minwidth">No of Outlets Non PJP Order</th>
+
+                                                    <th class="minwidth">TC %</th>
+                                                    <th class="minwidth">TC</th>
+                                                    <th class="minwidth">PJP TC</th>
+                                                    <th class="minwidth">Non PJP Order TC</th>
+
+                                                    <th class="minwidth">Total PC %</th>
+                                                    <th class="minwidth">Total PC</th>
+                                                    <th class="minwidth">PJP PC</th>
+                                                    <th class="minwidth">Non PJP Order PC</th>
+
+                                                    <th class="minwidth">Total Order Amount</th>
+                                                    <th class="minwidth">Primary Order Amount</th>
+                                                    <th class="minwidth">Secondary Order Amount</th>
+                                                    <th class="minwidth">TLSD</th>
+                                                    <th class="minwidth">TLSD Primary</th>
+                                                    <th class="minwidth">TLSD Retailers Outlets</th>
+                                                    <th class="minwidth">TLSD Sub Stockist</th>
+                                                    <th class="minwidth">Assigned Beat Name</th>
+                                                    <th class="minwidth">Worked Beat Name</th>
+                                                    <th class="minwidth">Distributor Id</th>
+                                                    <th class="minwidth">Distributor Name</th>
+                                                    <th class="minwidth">New Calls</th>
+                                                    <th class="minwidth">Collection Calls</th>
+                                                    <th class="minwidth">Stock Calls</th>
+                                                    <th class="minwidth">Return Calls</th>
+                                                    <th class="minwidth">Distance Travelled System</th>
+                                                    <th class="minwidth">Distance Travelled Odometer</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template lwc:if={isAttanData}>
+                                                    <template for:each={attFilter.allAttData} for:item="row">
+                                                        <tr key={row.Id}>
+                                                            <td onclick={openRecord} data-id={row.Id}
+                                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                {row.Date}
+                                                            </td>
+                                                            <td>{row.Status}</td>
+                                                            <td>{row.StartTime}</td>
+                                                            <td>{row.EndTime}</td>
+                                                            <td>{row.TotalHours}</td>
+                                                            <td>{row.First_Visit_Time1__c}</td>
+                                                            <td>{row.Last_Visit_Time1__c}</td>
+
+                                                            <td>{row.Total_No_of_Outlets__c}</td>
+                                                            <td>{row.Total_Outlets__c}</td>
+                                                            <td>{row.No_Of_Outlets_from_Non_PJP_Order__c}</td>
+
+                                                            <td>{row.Calls_Made__c}</td>
+                                                            <td>{row.Total_Calls__c}</td>
+                                                            <td>{row.Total_Visits__c}</td>
+                                                            <td>{row.Non_PJP_Order_Calls__c}</td>
+
+                                                            <td>{row.Prouctive_Calls_Made__c}</td>
+                                                            <td>{row.Total_Productive_Calls_Made__c}</td>
+                                                            <td>{row.Total_Productive_Calls__c}</td>
+                                                            <td>{row.Non_PJP_Productive_Calls__c}</td>
+
+
+                                                            <td>{row.Total_Order_Amount__c}</td>
+                                                            <td>{row.Primary_Order_Amount__c}</td>
+                                                            <td>{row.Secondary_Order_Amont__c}</td>
+                                                            <td>{row.TLSD__c}</td>
+                                                            <td>{row.TLSD_Primary__c}</td>
+                                                            <td>{row.TLSD_Retailers_Outlets__c}</td>
+                                                            <td>{row.TLSD_Sub_Stockist__c}</td>
+                                                            <td>{row.Assigned_Beat_Name__c}</td>
+                                                            <td>{row.Worked_Beat_Name__c}</td>
+                                                            <td>{row.Distributor_Id__c}</td>
+                                                            <td>{row.Distributor_Name__c}</td>
+                                                            <td>{row.New_Calls__c}</td>
+                                                            <td>{row.Collection_Calls__c}</td>
+                                                            <td>{row.Stock_Calls__c}</td>
+                                                            <td>{row.Return_Calls__c}</td>
+                                                            <td>{row.Distance_Travelled__c}</td>
+                                                            <td>{row.Distance_Travelled_by_Odometer__c}</td>
+                                                        </tr>
+                                                    </template>
+                                                </template>
+                                                <template lwc:else>
+                                                    <tr>
+                                                        <td colspan="11">
+                                                            <div class="slds-truncate" style="text-align:center">
+                                                                <span style="color:red;padding:10px;font-size:large">No
+                                                                    records found!</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </lightning-card>
+                            </template>
+                        </lightning-tab>
+                        <!--Visits-->
+                        <lightning-tab label="Visits" onactive={selectTab} value="Visits">
+                            <!-- When page sub part is loading -->
+                            <div class="button-container">
+                                <div class="filters">
+                                    <template lwc:if={isListViewShow}>
+                                        <lightning-input type="date" label="From Date" name="fromDate"
+                                            value={visFilter.fromDate} onchange={handleVisChange}>
+                                        </lightning-input>
+                                        <lightning-input type="date" label="To Date" name="toDate"
+                                            value={visFilter.toDate} onchange={handleVisChange}>
+                                        </lightning-input>
+                                        <lightning-combobox label="Select Status" name="status" value={visFilter.status}
+                                            options={visFilter.statusVal} onchange={handleVisChange}
+                                            class="comboboxClass">
+                                        </lightning-combobox>
+                                        <lightning-input type="search" label="Search customers" name="serchCust"
+                                            value={visFilter.srchVal} onchange={handleVisSerch}>
+                                        </lightning-input>
+                                        <lightning-combobox label="Select Duration" name="duration"
+                                            value={visFilter.duration} options={visFilter.durationVal}
+                                            onchange={handleVisChange} class="comboboxClass">
+                                        </lightning-combobox>
+                                    </template>
+                                </div>
+                                <!--<lightning-input data-id="toggle1" type="toggle" class="toggle slds-m-top_large"
+                                    onchange={changeToggle} unchecked message-toggle-active="Map"
+                                    message-toggle-inactive="List" value={isListView}>
+                                </lightning-input>-->
+                            </div>
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+
+                            <!-- When page sub part loaded -->
+                            <template lwc:else>
+                                <lightning-card>
+                                    <template lwc:if={isListViewShow}>
+                                        <div class="table-container">
+                                            <table class="custom-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="minwidth">Visit Id</th>
+                                                        <th class="minwidth">Date</th>
+                                                        <th class="minwidth">Customer</th>
+                                                        <th class="minwidth">Visit Type</th>
+                                                        <th class="minwidth">Customer Type</th>
+                                                        <th class="minwidth">Status</th>
+                                                        <th class="minwidth">Productive</th>
+                                                        <th class="minwidth">Location Type</th>
+                                                        <th class="minwidth">Start Time</th>
+                                                        <th class="minwidth">End Time</th>
+                                                        <th class="minwidth">Beat</th>
+                                                        <th class="minwidth">Duration</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template lwc:if={isVisitData}>
+                                                        <template for:each={VisitData} for:item="row">
+                                                            <tr key={row.visId}>
+                                                                <td onclick={openRecord} data-id={row.visId}
+                                                                    style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                    {row.name}
+                                                                </td>
+                                                                <td>{row.plannedDate}</td>
+                                                                <td onclick={openRecord} data-id={row.accId}
+                                                                    style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                    {row.accName}
+                                                                </td>
+                                                                <td>{row.visitType}</td>
+                                                                <td>{row.customerType}</td>
+                                                                <td>{row.Status}</td>
+                                                                <td>{row.Productive}</td>
+                                                                <td>{row.locationType}</td>
+                                                                <td>{row.startTime}</td>
+                                                                <td>{row.endTime}</td>
+                                                                <td>{row.Childbeat}</td>
+                                                                <td>{row.duration}</td>
+                                                            </tr>
+                                                        </template>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <tr>
+                                                            <td colspan="11">
+                                                                <div class="slds-truncate" style="text-align:center">
+                                                                    <span
+                                                                        style="color:red;padding:10px;font-size:large">No
+                                                                        records found!</span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </template>
+                                    <template lwc:else>
+
+                                        <c-user-profile_map-load selected-id={selectedId}></c-user-profile_map-load>
+                                        <!-- <iframe aura:id="vfFrame" frameborder="0" src="{! '/apex/GoogleMap?lcHost=' + v.lcHost}" width="100%" height="434"/> -->
+                                    </template>
+                                </lightning-card>
+                            </template>
+
+                        </lightning-tab>
+                        <!--Orders-->
+                        <lightning-tab label="Orders" onactive={selectTab} value="Orders">
+                            <!-- <p>Orders Content</p> -->
+                            <div class="button-container">
+                                <lightning-input type="date" label="From Date" name="fromDate"
+                                    value={ordFilter.fromDate} onchange={handleOrdChange}>
+                                </lightning-input>
+                                <lightning-input type="date" label="To Date" name="toDate" value={ordFilter.toDate}
+                                    onchange={handleOrdChange}>
+                                </lightning-input>
+                                <lightning-combobox label="Select Status" name="status" value={ordFilter.status}
+                                    options={ordFilter.statusVal} onchange={handleOrdChange} class="comboboxClass">
+                                </lightning-combobox>
+                                <lightning-input type="search" label="Search customers" name="serchCust"
+                                    value={ordFilter.srchVal} onchange={handleOrdSerch}>
+                                </lightning-input>
+                            </div>
+                            <!-- When page sub part is loading -->
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+
+                            <!-- When page sub part loaded -->
+                            <template lwc:else>
+
+
+
+
+                                <lightning-card>
+                                    <div class="slds-grid slds-wrap slds-m-around_x-small" style="min-height:0%">
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                            <b>Total Order Amount :</b> ₹{ordFilter.totalOrderAmount}
+                                        </div>
+                                        <div class={ordercustomclass}>
+                                            <b>No of Orders :</b> {ordFilter.totalNoOfOrders}
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                            <b>Primary Order Amount :</b> ₹{ordFilter.primaryOrderAmount}
+                                        </div>
+                                        <div class={ordercustomclass}>
+                                            <b>Secondary Order Amount :</b> ₹{ordFilter.secondaryOrderAmount}
+                                        </div>
+                                    </div>
+                                    <div class="table-container">
+                                        <table class="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="minwidth">Order Id</th>
+                                                    <th class="minwidth">Date</th>
+                                                    <th class="minwidth">Customer Type</th>
+                                                    <th class="minwidth">Customer</th>
+                                                    <th class="minwidth">SAP Code</th>
+                                                    <th class="minwidth">Customer Code</th>
+                                                    <th class="minwidth">Visit</th>
+                                                    <th class="minwidth">Status</th>
+                                                    <th class="minwidth">Fulfilment Status</th>
+                                                    <th class="minwidth">Amount</th>
+                                                    <th class="minwidth">Items</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template lwc:if={isOrderData}>
+                                                    <template for:each={ordFilter.allordData} for:item="row">
+                                                        <tr key={row.ordId}>
+                                                            <td onclick={openRecord} data-id={row.ordId}
+                                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                {row.name}
+                                                            </td>
+                                                            <td>{row.orderDate}</td>
+                                                            <td>{row.customerType}</td>
+                                                            <td onclick={openRecord} data-id={row.accId}
+                                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                {row.accName}
+                                                            </td>
+                                                            <td>{row.sapCode}</td>
+                                                            <td>{row.customerCode}</td>
+                                                            <td onclick={openRecord} data-id={row.visitId}
+                                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                {row.visitName}
+                                                            </td>
+                                                            <td>{row.Status}</td>
+                                                            <td>{row.orderfulfilmentStatus}</td>
+                                                            <td>{row.Amount}</td>
+                                                            <td>{row.ordItems}</td>
+                                                        </tr>
+                                                    </template>
+                                                </template>
+                                                <template lwc:else>
+                                                    <tr>
+                                                        <td colspan="11">
+                                                            <div class="slds-truncate" style="text-align:center">
+                                                                <span style="color:red;padding:10px;font-size:large">No
+                                                                    records found!</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </lightning-card>
+
+                            </template>
+                        </lightning-tab>
+                        <!--Invoices-->
+                        <lightning-tab label="Invoices" onactive={selectTab} value="Invoices">
+                            <div class="button-container">
+                                <lightning-input type="date" label="From Date" name="fromDate"
+                                    value={InvFilter.fromDate} onchange={handleInvChange}>
+                                </lightning-input>
+                                <lightning-input type="date" label="To Date" name="toDate" value={InvFilter.toDate}
+                                    onchange={handleInvChange}>
+                                </lightning-input>
+                                <lightning-input type="search" label="Search customers" name="serchCust"
+                                    value={InvFilter.srchVal} onchange={handleInvSerch}>
+                                </lightning-input>
+                            </div>
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+                            <template lwc:else>
+                                <lightning-card>
+                                    <div class="slds-grid slds-wrap slds-m-around_x-small" style="min-height:0%">
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                            <b>Total Invoice Amount :</b> ₹{InvFilter.totalAmount}
+                                        </div>
+                                        <div class={ordercustomclass}>
+                                            <b>No of Invoices :</b> {InvFilter.totalNoOfInvoices}
+                                        </div>
+                                    </div>
+                                    <div class="table-container">
+                                        <table class="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="minwidth">Invoice Id</th>
+                                                    <th class="minwidth">Bill No</th>
+                                                    <th class="minwidth">Customer Name</th>
+                                                    <th class="minwidth">Customer Code</th>
+                                                    <th class="minwidth">Date</th>
+                                                    <th class="minwidth">SAP Order Id</th>
+                                                    <th class="minwidth">Salesforce Order Id</th>
+                                                    <th class="minwidth">Ship to party Name</th>
+                                                    <th class="minwidth">Bill party GSTIN</th>
+                                                    <th class="minwidth">Total Case Qty</th>
+                                                    <th class="minwidth">Total Each Qty</th>
+                                                    <th class="minwidth">Amount</th>
+                                                    <th class="minwidth">Items</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template lwc:if={isInvData}>
+                                                    <template for:each={InvFilter.allInvData} for:item="row">
+                                                        <tr key={row.InvId}>
+                                                            <td onclick={openRecord} data-id={row.InvId}
+                                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                {row.name}
+                                                            </td>
+                                                            <td>{row.billNumber}</td>
+                                                            <td>{row.accName}</td>
+                                                            <td>{row.customerCode}</td>
+                                                            <td>{row.InvDate}</td>
+                                                            <td>{row.SapOrderId}</td>
+                                                            <td onclick={openRecord} data-id={row.SalesforceOrderId}
+                                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                {row.SalesforceOrderName}
+                                                            </td>
+                                                            <td>{row.shipToPartyName}</td>
+                                                            <td>{row.billtopartyGSTIN}</td>
+                                                            <td>{row.qtyCase}</td>
+                                                            <td>{row.qtyEach}</td>
+                                                            <td>{row.Amount}</td>
+                                                            <td>{row.InvItems}</td>
+                                                        </tr>
+                                                    </template>
+                                                </template>
+                                                <template lwc:else>
+                                                    <tr>
+                                                        <td colspan="11">
+                                                            <div class="slds-truncate" style="text-align:center">
+                                                                <span style="color:red;padding:10px;font-size:large">No
+                                                                    records found!</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </lightning-card>
+                            </template>
+                        </lightning-tab>
+                        <!--Visit Summary-->
+                        <lightning-tab label="Not Visited Customers" onactive={selectTab} value="Visit Summary">
+                            <div class="button-container">
+                                <lightning-input type="date" label="From Date" name="fromDate"
+                                    value={visitSummary.fromDate} onchange={handleVisitSummaryChange}>
+                                </lightning-input>
+                                <lightning-input type="date" label="To Date" name="toDate" value={visitSummary.toDate}
+                                    onchange={handleVisitSummaryChange}>
+                                </lightning-input>
+                            </div>
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+                            <template lwc:else>
+                                <lightning-card>
+                                    <div class="slds-grid slds-wrap slds-m-around_x-small" style="min-height:0%">
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                            <b>Total No of Customers :</b> {visitSummary.outletCount}
+                                        </div>
+
+                                    </div>
+                                    <div class="table-container" style="padding-bottom:10px">
+                                        <table class="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="minwidth">Date</th>
+                                                    <th class="minwidth">Customer</th>
+                                                    <th class="minwidth">OutletId</th>
+                                                    <th class="minwidth">Customer Code</th>
+                                                    <th class="minwidth">Beat</th>
+                                                    <th class="minwidth">Beat Id</th>
+                                                    <th class="minwidth">Primary Customer</th>
+                                                    <th class="minwidth">Primary Customer Code</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template lwc:if={visitSummary.showDailyOutletSummary}>
+
+                                                    <template for:each={visitSummary.DailyOutletSummary} for:item="nw">
+                                                        <tr key={nw.uniqueKey}>
+                                                            <td>{nw.workDate}</td>
+                                                            <td>{nw.outletName}</td>
+                                                            <td>{nw.outletCode}</td>
+                                                            <td>{nw.customerCode}</td>
+                                                            <td>{nw.beatName}</td>
+                                                            <td>{nw.beatCode}</td>
+                                                            <td>{nw.primaryCustomerName}</td>
+                                                            <td>{nw.primaryCustomerCode}</td>
+                                                        </tr>
+                                                    </template>
+
+                                                </template>
+                                                <template lwc:else>
+                                                    <tr>
+                                                        <td colspan="8" style="text-align:center">
+                                                            <span style="color:red;padding:10px;font-size:large">No
+                                                                records found!</span>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </lightning-card>
+                            </template>
+                        </lightning-tab>
+                        <!--Map View-->
+                        <lightning-tab label="Map" onactive={selectTab} value="Map">
+                            <c-custom-map-view selected-id={selectedId} record-id={recordId}></c-custom-map-view>
+                            <!-- <lightning-card title="Visit Locations" icon-name="standard:event" class="map-card">
+                                                <div class="button-container">
+                                                    <lightning-input type="date" label="From Date" name="fromDate"
+                                                        value={fromDate} onchange={handleFromDate}>
+                                                    </lightning-input>
+                                                    <lightning-input type="date" label="To Date" name="toDate"
+                                                        value={toDate} onchange={handleToDate}>
+                                                    </lightning-input>
+                                                    <lightning-button label="Get Visits" variant="brand" 
+                                                        onclick={loadVisits} class="visit-btn">
+                                                    </lightning-button>
+                                                </div>
+                    
+                                               
+                                                <template lwc:if={isSubPartLoad}>
+                                                    <c-on-loading-screen></c-on-loading-screen>
+                                                </template>
+                    
+                                                <template lwc:else>
+                                                    <template if:true={mapMarkers.length}>
+                                                        <lightning-map
+                                                            map-markers={mapMarkers}
+                                                            zoom-level="12"
+                                                            list-view="hidden"
+                                                            class="map-container">
+                                                        </lightning-map>
+                                                    </template>
+                                                </template>
+                    
+                                                <template if:false={mapMarkers.length}>
+                                                    <p class="slds-text-color_weak slds-p-around_small">No visits found for selected filters.</p>
+                                                </template>
+                                            </lightning-card> -->
+                        </lightning-tab>
+
+
+
+                        <!-- <lightning-tab label="Expenses" onactive={selectTab} value="Expenses">
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+                            <template lwc:else>
+                                <c-create-new-expense onmycustomevent={onClickDispatchEvent}
+                                    selected-user={selectedUser}>
+                                </c-create-new-expense>
+                            </template>
+                        </lightning-tab> -->
+
+
+
+
+                        <!--- <lightning-tab label="Expenses" onactive={selectTab} value="Expenses">
+
+                            <div class="button-container">
+                                <lightning-input type="date" label="From Date" name="fromDate"
+                                    value={expFilter.fromDate} onchange={handleExpChange}>
+                                </lightning-input>
+                                <lightning-input type="date" label="To Date" name="toDate" value={expFilter.toDate}
+                                    onchange={handleExpChange}>
+                                </lightning-input>
+                                <lightning-combobox label="Select Status" name="status" value={expFilter.status}
+                                    options={expFilter.statusVal} onchange={handleExpChange} class="comboboxClass">
+                                </lightning-combobox>
+                            </div>
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+
+                            <template lwc:else>
+
+                                <lightning-card>
+                                    <div class="table-container">
+                                        <table class="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Month</th>
+                                                    <th>Status</th>
+                                                    <th>TA</th>
+                                                    <th>DA</th>
+                                                    <th>Other</th>
+                                                    <th>Total Amt</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template lwc:if={isexpData}>
+                                                    <template for:each={expFilter.allExpData} for:item="row">
+                                                        <tr key={row.expId}>
+                                                            <td onclick={openExpRecord} data-id={row.expId}
+                                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                                {row.expDate}
+                                                            </td>
+
+                                                            <td>{row.Status}</td>
+                                                            <td>{row.TA}</td>
+                                                            <td>{row.DA}</td>
+                                                            <td>{row.otherAmt}</td>
+                                                            <td>{row.Amount}</td>
+                                                        </tr>
+                                                    </template>
+                                                </template>
+                                                <template lwc:else>
+                                                    <tr>
+                                                        <td colspan="11">
+                                                            <div class="slds-truncate" style="text-align:center">
+                                                                <span style="color:red;padding:10px;font-size:large">No records found!</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </lightning-card>
+
+                            </template>
+
+                        </lightning-tab>-->
+
+
+                        <!--<lightning-tab label="Incentives" onactive={selectTab} value="Incentives">
+                 
+                            <div class="button-container">
+                                <lightning-input type="date" label="From Date" name="fromDate"
+                                    value={InceFilter.fromDate} onchange={handleIncChange}>
+                                </lightning-input>
+                                <lightning-input type="date" label="To Date" name="toDate" value={InceFilter.toDate}
+                                    onchange={handleIncChange}>
+                                </lightning-input>
+                            </div>
+                            <template lwc:if={isSubPartLoad}>
+                                <c-on-loading-screen></c-on-loading-screen>
+                            </template>
+
+                 
+                            <template lwc:else>
+                                <div class="table-container">
+                                    <table class="custom-table">
+                                        <thead>
+                                            <tr>
+
+                                                <th>Period</th>
+                                                <th>Target type</th>
+                                                <th>Target</th>
+                                                <th>Actual</th>
+                                                <th>Incentives</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template lwc:if={isIncenTtData}>
+                                                <template for:each={InceFilter.allInvData} for:item="row">
+                                                    <tr key={row.periodId}>
+                                                        <td onclick={openTargetLWCPAGE} data-id={row.periodId}
+                                                            style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                            {row.period}
+                                                        </td>
+                                                        <td>{row.targetType}</td>
+                                                        <td>{row.totalTarget}</td>
+                                                        <td>{row.totalActual}</td>
+                                                        <td>{row.sumTeamActual}</td>
+                                                    </tr>
+                                                </template>
+                                            </template>
+                                            <template lwc:else>
+                                                <tr>
+                                                    <td colspan="11">
+                                                        <div class="slds-truncate" style="text-align:center">
+                                                            <span style="color:red;padding:10px;font-size:large">No records found!</span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                        </lightning-tab>-->
+
+
+                    </lightning-tabset>
+
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!--<template lwc:if={isNewBeatCreate}>
+        <c-user-profile_-new-beat-plan onmycustomevent={onClickDispatchEvent} selected-user={nameSelected} is-destop={isDesktop} is-phone={isPhone}></c-user-profile_-new-beat-plan>
+    </template>-->
+    <template lwc:if={isHolidayPopup}>
+        <c-user-profile_-holiday-popup onmycustomevent={onClickDispatchEvent} selected-user={nameSelected}
+            region-options={regions} is-destop={isDesktop} is-phone={isPhone}></c-user-profile_-holiday-popup>
+    </template>
+</template>

@@ -1,0 +1,353 @@
+<aura:component controller="StatusPathController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="selectedValue" type="String" />
+    <aura:attribute name="Followuppop" type="Boolean" default="false" />
+    <aura:attribute name="LostPop" type="Boolean" default="false" />
+    <aura:attribute name="tabHeight" type="String" default=""/>
+    <aura:attribute name="ratingField" type="List" default="[]"/>
+    <aura:attribute name="lostReasonField" type="List" default="[]"/>
+    <aura:attribute name="userSearchValue" type="String" default=""/>
+    <aura:attribute name="searchUsers" type="List" default="[]"/>
+    <aura:attribute name="AllUsers" type="List" default="[]"/>
+    <aura:attribute name="isCustomClass" type="String" default=""/>
+    <aura:attribute name="unSavedUsers" type="object[]" />
+    <aura:attribute name="oppUsers" type="List" default="[]"/>
+    <aura:attribute name="deleteList" type="List" />
+    <aura:attribute name="Ratingval" type="String" default="Hot"/>
+    <aura:attribute name="lostReasonFieldval" type="String" />
+    <aura:attribute name="Comments" type="String"/>
+    <aura:attribute name="variant" type="String" default="linear"/>
+    <aura:attribute name="stopReassign" type="Boolean" default="false" />
+    <aura:attribute name="LeadStatuspicklistValues" type="List" default="[]"/>
+    <aura:attribute name="TodaysDate" type="date"/>
+    <aura:attribute name="FollowUpDate" type="date"/>
+    <!--path -->
+    <aura:attribute name="currentStep" type="String" />
+    <aura:attribute name="ExsitedStep" type="String" />
+    <aura:attribute name="steps" type="String[]" />
+    <aura:attribute name="renderInfo" type="List" default="[]" />
+    <aura:attribute name="currentIndex" type="Decimal" />
+    <aura:attribute name="labelColour" type="String"/>
+    <aura:attribute name="currentIndexExisted" type="Decimal" />
+    
+    <!--New Fields-->
+    <aura:attribute name="SelectedRating" type="String" default=""/>
+    <aura:attribute name="isTrueval" type="Boolean" default="true" />
+    <aura:attribute name="ApprovalStatus" type="String" />
+    <!-- Handlers -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="LostToCompetitorName" type="String"/>
+    
+    
+    <aura:html tag="style">
+        .Fields{
+        padding-bottom: 7.5px;
+        padding-left: 8px;
+        padding-right: 8px;
+        }/*
+        @media (min-width: 48em){
+        .recordEditForm{
+        padding-top: 17rem; 
+        }
+        }*/
+        .tab-height{
+        display: grid;
+        height: 10rem;
+        }
+        .user-tab-height{
+        display: grid;
+        height: 1.5rem;
+        }
+        .dropdown_lookdown {
+        border: 1px solid #ccc;
+        background-color: #fff;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        z-index: 1;
+        max-height: 15rem;
+        overflow-y: auto; 
+        }
+        .dropdown_lookdown  .slds-input__icon{
+        display: inline-block;
+        margin-right: 0.5rem;
+        }
+        
+        :host {
+        display: block;
+        }
+        
+        /* Style the dropdown container */
+        .dropdownshow {
+        position: absolute;
+        z-index: 1;
+        }
+        
+        /* Style the dropdown content (hidden by default) */
+        .dropdownshow ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        }
+        
+        .dropdownshow li {
+        padding: 8px;
+        cursor: pointer;
+        }
+        
+        .dropdownshow li:hover {
+        background-color: #f0f0f0;
+        }
+        .inputWidth{
+        width: 32rem;
+        }
+      
+        .divCon {
+        display: flex;
+        flex-direction: row;
+        padding-bottom: 22rem;
+        }
+        
+        .modal-half {
+        flex: 1;
+        padding: 16px; /* Adjust the padding as needed */ 
+        box-sizing: border-box;
+        }
+        .slds-border{
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        }
+        .noteText{
+        font-size: xx-small;
+        }
+        .slds_userHeight{
+        display: grid;
+        height: 20rem;
+        }
+        .customHeight{
+        padding-top: 31px;
+        padding-bottom: 31px;
+        padding-left: 15px;
+        padding-right: 49px;
+        max-height: 12rem;
+        height: 16rem;
+        }
+        .phoneHeight{
+        padding-top: 31px;
+        padding-bottom: 31px;
+        
+        max-height: 35rem;
+        height: 35rem;
+        }
+        .customSpinner{
+        
+        position: relative;
+        display: flex;
+        height: auto;
+        width:20rem;
+        }
+        .divConPhone {
+        padding-bottom: 22rem;
+        }
+        .slds_unsavedUser{
+        padding-bottom: 10px;
+        padding-top: 10px;
+        }
+        .slds-modal__content.custom-modal-height {
+        height: 170px; 
+        overflow-y: auto; 
+        }
+        
+        @media screen and (max-width: 768px) {
+        .inputWidth {
+        width: 100%; 
+        }
+        .slds-border {
+        font-size: 10px;
+        display: flex;
+        justify-content: space-between;/
+        }
+        }
+        
+        
+		  /*===================== To add colours=============================*/
+        .slds-path__nav  .colorItem1:before,
+        .slds-path__nav  .colorItem1:after {
+        background: rgb(204, 204, 255) !important;
+        }
+        .slds-path__nav  .colorItem1 {
+        background: rgb(204, 204, 255) !important;
+        }
+        .slds-path__nav .colorItem2:before,
+        .slds-path__nav .colorItem2:after {
+        background: #dad476  !important;
+        }
+        .slds-path__nav .colorItem2 {
+        background: #dad476  !important;
+        }
+        .slds-path__nav .colorItem3:before,
+        .slds-path__nav .colorItem3:after {
+        background: #85C1E9  !important;
+        }
+        .slds-path__nav .colorItem3 {
+        background: #85C1E9  !important;
+        }
+        .slds-path__nav .colorItem4:before,
+        .slds-path__nav .colorItem4:after {
+        background: #EB984E !important;
+        }
+        .slds-path__nav .colorItem4 {
+        background: #EB984E !important;
+        }
+        .slds-path__nav .colorItem5:before,
+        .slds-path__nav .colorItem5:after {
+        background: #82E0AA !important;
+        }
+        .slds-path__nav .colorItem5 {
+        background: #82E0AA !important;
+        }
+         .slds-path__nav .colorItem6:before,
+        .slds-path__nav .colorItem6:after {
+        background: #de7990 !important;
+        }
+        .slds-path__nav .colorItem6 {
+        background: #de7990 !important;
+        }
+         .slds-path__nav .colorItem7:before,
+        .slds-path__nav .colorItem7:after {
+        background: #9e8ee8 !important;
+        }
+        .slds-path__nav .colorItem7 {
+        background: #9e8ee8 !important;
+        }
+         .slds-path__nav .colorItem8:before,
+        .slds-path__nav .colorItem8:after {
+        background: #014486 !important;
+        }
+        .slds-path__nav .colorItem8 {
+        background: #014486 !important;
+        }
+        .autoScroll {
+        overflow-x: auto;
+        }
+        .slds-path_rating {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        }
+     
+        .slds-path__title-white {
+        color: #ffffff !important;
+        }
+        
+        
+      
+         
+        
+    </aura:html>
+
+    <div class="slds-card">
+        <div class="slds-card__body slds-card__body_inner">
+            <div class="slds-path">
+                <div class="slds-grid slds-path__track">
+                    <div class="slds-grid slds-path__scroller-container">
+                        <div class="slds-path__scroller">
+                            <div class="slds-path__scroller_inner">
+                                <ul class="slds-path__nav autoScroll" role="listbox" aria-orientation="horizontal">
+                                    <aura:iteration items="{!v.renderInfo}" var="item" indexVar="index">
+                                        <li role="presentation" class="{!'slds-path__item '+item.state}">
+                                            <a onclick="{!if(AND(v.ApprovalStatus != 'Admin Approved' ,AND(v.ApprovalStatus != 'Submitted', v.ApprovalStatus != 'RSM Approved')), c.click, c.click2)}" aria-selected="{!item.selected}" 
+                                               class="slds-path__link" title="{!item.label}"
+                                               role="option" tabindex="-1" data-index="{!index}">
+                                                <span class="slds-path__stage">
+                                                    <lightning:icon iconName="utility:check" alternativeText="Warning!" variant="inverse" size="x-small" />
+                                                    <span class="slds-assistive-text">  {!item.label}</span>
+                                                </span>
+                                                <span class="{!item.bgColor}" aura:id="titleSpan">  {!item.label}</span>
+                                            </a>
+                                        </li>
+                                    </aura:iteration>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <aura:if isTrue="{!($Browser.formFactor != 'DESKTOP')}">
+                        <br/>
+                        <div style="display: block; width: 100%; height: 10px;"></div>
+                        <div > 
+                            <b> Stage : {!v.currentStep} </b>
+                        </div>
+                        <div style="display: block; width: 100%; height: 10px;"></div>
+                        <br/>
+                    </aura:if>
+                    <div > 
+                        <button class="slds-button slds-button_brand"  onclick="{!c.MarkStatus}"
+                                   disabled="{!if(AND(v.ApprovalStatus != 'Admin Approved' ,AND(v.ApprovalStatus != 'Submitted', v.ApprovalStatus != 'RSM Approved')),if(or(v.currentStep == 'New', v.currentStep == 'Working'), 'false', 'true') , true)}"
+                         >Mark Lead Status as Complete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <aura:if isTrue="{!v.Followuppop}">
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-label="Meaningful description of the modal content" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+              
+                <div class="slds-modal__content slds-p-around_medium slds-modal__content_headless" id="modal-content-id-1">
+                    <lightning:tabset variant="scoped" class="{!v.tabHeight}">
+                        
+                        <lightning:tab label="Follow Up" title="Details Record" >
+                            <lightning:input type="date" required="true" min="{!v.TodaysDate}" name="input4" label="FollowUp Date"  value="{!v.FollowUpDate}"/>
+                            <lightning:select  value="{!v.SelectedRating}" label="Rating">       
+                                <aura:iteration items="{!v.ratingField}" var="s">
+                                    <option value="{!s}" >{!s}</option>
+                                </aura:iteration> 
+                            </lightning:select>
+                        </lightning:tab>
+                        
+                        
+                    </lightning:tabset>
+                </div>
+                <div class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" aria-label="Cancel and close" onclick="{!c.Cancel}">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick="{!c.SaveRatingPop}"   >Save</button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+      
+    </aura:if>
+    <aura:if isTrue="{!v.LostPop}">
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-label="Meaningful description of the modal content" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse">
+                    <lightning:icon iconName="utility:close" alternativeText="Warning!"  onclick="{!c.Cancel}" variant="inverse" size="x-small" />
+                    <span class="slds-assistive-text">Cancel and close</span>
+                </button>
+                <div class="slds-modal__content slds-p-around_medium slds-modal__content_headless custom-modal-height" id="modal-content-id-1">
+                    <lightning:select  value="{!v.lostReasonFieldval}" label="Lost Reasons">   
+                        <option value="None">--None--</option>
+                        <aura:iteration items="{!v.lostReasonField}" var="s">
+                            <option value="{!s}"  selected="{!s == v.lostReasonFieldval}">{!s}</option>
+                        </aura:iteration> 
+                    </lightning:select>
+                    <aura:if isTrue="{!v.lostReasonFieldval=='Other'}">
+                        <lightning:textarea name="input3" required="true" label="Other reason" placeholder="type here..."  value="{!v.Comments}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.lostReasonFieldval=='Lost to competitor'}">
+                        <lightning:input name="input4" required="true" label="Competitor Name" placeholder="type here..."  value="{!v.LostToCompetitorName}"/>
+                    </aura:if>
+                </div>
+                <div class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" aria-label="Cancel and close" onclick="{!c.Cancel}">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick="{!c.SavelostPop}">Save</button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+      
+    </aura:if>
+    
+</aura:component>

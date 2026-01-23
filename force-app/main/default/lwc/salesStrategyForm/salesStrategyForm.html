@@ -1,0 +1,182 @@
+<template>
+    <lightning-card  >
+        <div class="slds-p-around_medium">
+            <!-- Top Sales Channel Dropdown -->
+           <div class="custom-card">
+    <div class="custom-card-header">
+        <lightning-icon icon-name="standard:strategy" size="small" class="slds-m-right_small"></lightning-icon>
+        <h1 class="custom-card-title">Sales Strategy Setup</h1>
+    </div>
+    <div class="slds-p-around_medium">
+        <!-- your form content goes here -->
+    </div>
+</div>
+            <!-- Dynamic Rows -->
+            <template for:each={strategyRows} for:item="item" for:index="index">
+                <div key={item.index} class="slds-box slds-m-top_small slds-grid slds-wrap">
+
+    <!-- 🔁 Sales Channel -->
+    <div class="slds-col slds-size_1-of-6 slds-p-around_x-small">
+        <lightning-combobox
+            label="Sales Channel"
+            value={item.Sales_Channel__c}
+            options={salesChannelOptions}
+            data-index={index}
+            name="Sales_Channel__c"
+            onchange={handleInputChange}
+            required>
+        </lightning-combobox>
+    </div>
+
+    <!-- 🔁 SKU Name -->
+    <div class="slds-col slds-size_1-of-6 slds-p-around_x-small">
+        <c-lookup
+            label="SKU Name"
+            placeholder="Search Product"
+            object-api-name="Product__c"
+            icon-name="standard:product"
+            filter-value={item.Sales_Channel__c}
+            filter-field="Channel__c"
+            index={index}
+            field="Product__c"
+            onlookupselect={handleLookupChange}
+            required>
+        </c-lookup>
+    </div>
+
+    <!-- 🔁 Must/Focused -->
+    <div class="slds-col slds-size_1-of-6 slds-p-around_x-small">
+        <lightning-combobox
+            label="Must/Focused"
+            value={item.Must_Focused__c}
+            options={focusTypeOptions}
+            data-index={index}
+            name="Must_Focused__c"
+            onchange={handleInputChange}
+            required>
+        </lightning-combobox>
+    </div>
+
+    <!-- 🔁 Type -->
+    <div class="slds-col slds-size_1-of-6 slds-p-around_x-small">
+        <lightning-combobox
+            label="Type"
+            value={item.Type__c}
+            options={typeOptions}
+            data-index={index}
+            name="Type__c"
+            onchange={handleTypeChange}
+            required>
+        </lightning-combobox>
+    </div>
+
+    <!-- 🔁 Region/User/Customer -->
+    <div class="slds-col slds-size_1-of-6 slds-p-around_x-small">
+        
+
+        <template if:true={item.showCustomerCategory}>
+            <lightning-combobox
+                label="Customer Category"
+                value={item.Customer_Category__c}
+                options={customerCategoryOptions}
+                data-index={index}
+                name="Customer_Category__c"
+                onchange={handleInputChange}
+                required>
+            </lightning-combobox>
+        </template>
+<template if:true={item.showArea}>
+    <lightning-combobox
+        label="Area"
+        value={item.Area__c}
+        options={areaOptions}
+        data-index={index}
+        name="Area__c"
+        onchange={handleInputChange}
+        required>
+    </lightning-combobox>
+</template>
+        <template if:true={item.showUser}>
+            <c-lookup
+                label="User"
+                placeholder="Search User"
+                object-api-name="User"
+                icon-name="standard:user"
+                index={index}
+                field="User__c"
+                onlookupselect={handleLookupChange}
+                required>
+            </c-lookup>
+        </template>
+
+        <template if:true={item.showCustomer}>
+            <c-lookup
+                label="Customer"
+                placeholder="Search Account"
+                object-api-name="Account"
+                icon-name="standard:account"
+                index={index}
+                field="Account__c"
+                onlookupselect={handleLookupChange}
+                required>
+            </c-lookup>
+        </template>
+    </div>
+
+    <!-- 🔁 From Date -->
+    <div class="slds-col slds-size_1-of-6 slds-p-around_x-small">
+        <lightning-input
+            type="date"
+            label="From Date"
+            value={item.From_Date__c}
+            data-index={index}
+            name="From_Date__c"
+            onchange={handleInputChange}
+            required>
+        </lightning-input>
+    </div>
+
+    <!-- 🔁 To Date -->
+    <div class="slds-col slds-size_1-of-6 slds-p-around_x-small">
+        <lightning-input
+            type="date"
+            label="To Date"
+            value={item.To_Date__c}
+            data-index={index}
+            name="To_Date__c"
+            onchange={handleInputChange}
+            required>
+        </lightning-input>
+    </div>
+
+    <!-- 🔁 Add/Delete -->
+    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-12 slds-align-bottom slds-p-around_x-small slds-text-align_right">
+    <lightning-button-icon
+        icon-name="utility:add"
+        data-index={index}
+        onclick={addRow}
+        alternative-text="Add Row">
+    </lightning-button-icon>
+    <template if:true={item.canDelete}>
+        <lightning-button-icon
+            icon-name="utility:delete"
+            data-index={index}
+            onclick={deleteRow}
+            alternative-text="Delete Row">
+        </lightning-button-icon>
+    </template>
+</div>
+
+</div>
+
+            </template>
+        </div>
+
+        <div class="slds-align_absolute-center slds-p-around_medium">
+            <lightning-button label="Save" variant="brand" onclick={saveStrategies}></lightning-button>
+            <lightning-button label="Cancel" variant="neutral" onclick={handleClickCancel}></lightning-button>
+        </div>
+    </lightning-card>
+
+
+</template>

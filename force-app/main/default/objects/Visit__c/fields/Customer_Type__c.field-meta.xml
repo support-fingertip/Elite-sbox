@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Customer_Type__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(TEXT(Account1__r.Customer_Type__c ) ==&apos;Primary Customer&apos;,  TEXT(Account1__r.Primary_Customer_Type__c), TEXT(Account1__r.Secondary_Customer_Type__c) )</formula>
+    <label>Customer Type</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

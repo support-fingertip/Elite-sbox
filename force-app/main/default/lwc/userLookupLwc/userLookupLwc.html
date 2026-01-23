@@ -1,0 +1,40 @@
+<template>
+    <div class="slds-form-element">
+        <lightning-input
+            label={label}
+            type="search"
+            value={selectedUserName}
+            placeholder="search Employee"
+            read-only={isReadOnly}
+            class="readonly-bordered"
+            required={required}
+            onchange={handleSearch}>
+        </lightning-input>
+
+        <template if:true={showDropdown}>
+            <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                <template for:each={filteredUsers} for:item="user" for:index="index">
+                    <ul key={user.Id} class="slds-listbox slds-listbox_vertical" role="presentation">
+                        <li role="presentation" class="slds-listbox__item">
+                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                role="option"
+                                onclick={handleSelect}
+                                data-id={user.Id}
+                                data-name={user.Name}>
+
+                                <lightning-icon  icon-name="standard:avatar" size="small"></lightning-icon>
+                                <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                <span class="slds-media__body">
+                                   <span class="user-info">
+                                        <span class="name">{user.Name}</span>
+                                        <span class="code">{user.Employee_Code__c}</span>
+                                    </span>
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

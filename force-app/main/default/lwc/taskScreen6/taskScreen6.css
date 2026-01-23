@@ -1,0 +1,210 @@
+/* Reset margin for elements */
+h4, h6, body {
+    margin: 0;
+}
+
+/* Main container */
+.screen-1-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Top Filter Bar */
+.top-filter-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* Tasks Section */
+.home {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tasks {
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 20px;
+}
+
+.task-head {
+    background-color: #f6f8fa;
+    padding: 8px 20px;
+    font-size: 14px;
+    border-bottom: 1px solid #CECECE;
+    margin-bottom: 10px;
+}
+
+.task {
+    margin: 0 20px;
+    padding: 8px 0;
+    border-bottom: 1px solid #CECECE;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+   
+}
+.taskWdith1{
+    width: 40%;
+}
+.floatright{
+    float: right;
+}
+.task-price{
+    color: #2f5597;
+    text-align: center;
+    display: flex;
+    float: right;
+}
+
+
+.task-input {
+    all: unset;
+    width: 30px;
+    height: 30px;
+    border: 1px solid #2f5597;
+    border-radius: 5px;
+    padding: 0 5px;
+    text-align: center;
+}
+.not-started-icon {
+    background-color:  rgb(128,128,128);
+}
+
+.in-progress-icon {
+    background-color:   rgb(128,128,128);
+}
+
+.completed-icon {
+    background-color:  rgb(80, 179, 53);
+}
+.toggle {
+    --slds-c-checkbox-toggle-color-background: #50b335;
+    --slds-c-checkbox-toggle-color-background-hover:#50b335;
+    --sds-c-checkbox-toggle-color-background-focus: #50b335;
+    
+    --sds-c-checkbox-toggle-color-background-checked: #50b335;
+    --sds-c-checkbox-toggle-color-background-checked-hover: #50b335;
+    --slds-c-checkbox-toggle-color-background-checked-focus:#50b335;
+    
+    --slds-c-checkbox-toggle-color-border: #50b335;
+    --sds-c-checkbox-toggle-color-border-focus: #50b335;
+    
+    --sds-c-checkbox-toggle-color-border-checked: #50b335;
+    }
+.chevron-icon-ex {
+    margin-left: 10px;
+}
+.outlet-icon{
+    cursor: pointer;
+}
+.popup {
+    /* display: none; */
+    position: absolute; 
+    width: 130px;
+    font-size: 14px;
+    background-color: #2f5597;
+    color: #fff;
+    min-width: auto;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 4px 12px;
+    z-index: 20;
+    border-radius: 5px;
+    right:40px;
+}
+
+.popup ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.popup li {
+    padding: 5px 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+}
+.popup li i{
+    font-size: 16px;
+}
+.popup li:hover {
+    border-radius: 5px;
+    background-color:rgb(31, 56, 100)
+}
+.invert-image {
+    filter: brightness(0) invert(1);
+}
+.custom-checkbox .slds-checkbox {
+    transform: scale(1.5); /* Adjust the scale to increase size */
+    margin: 0; /* Optional: Adjust spacing if needed */
+}
+.task-summary {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background-color: #f3f3f3;
+    border-radius: 8px;
+}
+
+.summary-item {
+    text-align: center;
+    font-size: 14px;
+}
+
+.summary-title {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.summary-count {
+    font-size: 16px;
+    color: #333;
+}
+
+.slds-modal__container {
+    overflow: hidden;
+    width: 40rem;
+    max-width: 100%;
+}
+@media (max-width: 768px) {
+    .slds-modal__container {
+        width: 90%; /* Set a smaller width for mobile devices */
+        margin: 0 auto; /* Center the modal */
+        border-radius: 0.5rem; /* Add some rounding for a better look */
+    }
+}
+
+.slds-modal__header {
+    justify-content: space-between;
+}
+@media (max-width: 768px) {
+    .small-modal-title {
+        font-size: 18px; 
+        font-weight: bold;
+    }
+    }
+.slds-modal__content {
+    padding: 1rem;
+}
+.centeralign{
+    text-align: center;
+}
+
+
+.slds-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+}

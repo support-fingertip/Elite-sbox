@@ -1,0 +1,196 @@
+<apex:page showHeader="false" sidebar="false">
+<html>
+<head>
+    <meta charset="UTF-8"/>
+</head>
+
+<body class="slds-scope">
+    <div id="map" style="height:600px; width:100%;"></div>
+
+<script>
+    var map;
+    var data;
+    var directionsService;
+    var geocoder; // For Google location names
+
+    /*---------------------------------------------
+        LISTENER FOR AURA → VF MESSAGE
+    ---------------------------------------------*/
+    window.addEventListener("message", function(event) {
+        if (!event.data || !event.data.mapData) {
+            console.warn("Invalid map data received");
+            return;
+        }
+
+        data = event.data;
+        // Load Google API if not already
+        if (typeof google === "undefined" || typeof google.maps === "undefined") {
+            var script = document.createElement("script");
+            //   script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyA_EkXJnRHAg7_SZ5zbxNSTfJKk1bg9rzU&callback=initMap";
+            script.src = "https://maps.googleapis.com/maps/api/js?key="+data.tok+"&callback=initMap";
+            script.async = true;
+            document.body.appendChild(script);
+        } else {
+            initMap();
+        }
+    });
+
+    /*---------------------------------------------
+        MAIN MAP INITIALIZATION
+    ---------------------------------------------*/
+    function initMap() {
+        if (!data || !data.loadGoogleMap) {
+            console.warn("No map data available");
+            return;
+        }
+
+        var mapOptions = {
+            zoom: 12,
+            center: data.mapOptionsCenter,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+
+        map = new google.maps.Map(document.getElementById("map"), mapOptions);
+        directionsService = new google.maps.DirectionsService();
+        geocoder = new google.maps.Geocoder();
+
+        var points = JSON.parse(JSON.stringify(data.mapData)); 
+
+        drawRouteInBatches(points).then(() => {
+            addMarkers(points);
+        });
+    }
+
+    /*---------------------------------------------
+        UNLIMITED ROUTE BATCH HANDLER
+    ---------------------------------------------*/
+    async function drawRouteInBatches(points) {
+        let batchSize = 25; // Google limit
+
+        for (let i = 0; i < points.length - 1; i += batchSize) {
+            let start = i;
+            let end = Math.min(i + batchSize, points.length - 1);
+
+            let origin = new google.maps.LatLng(points[start].lat, points[start].lng);
+            let destination = new google.maps.LatLng(points[end].lat, points[end].lng);
+
+            let waypoints = [];
+            for (let j = start + 1; j < end; j++) {
+                waypoints.push({
+                    location: new google.maps.LatLng(points[j].lat, points[j].lng),
+                    stopover: true
+                });
+            }
+
+            let request = {
+                origin: origin,
+                destination: destination,
+                waypoints: waypoints,
+                travelMode: google.maps.TravelMode.DRIVING,
+                optimizeWaypoints: false
+            };
+
+            await new Promise((resolve) => {
+                directionsService.route(request, function(result, status) {
+                    if (status === google.maps.DirectionsStatus.OK) {
+                        let renderer = new google.maps.DirectionsRenderer({
+                            map: map,
+                            suppressMarkers: true,
+                            preserveViewport: true
+                        });
+                        renderer.setDirections(result);
+                    } else {
+                        console.error("Batch failed:", status);
+                    }
+                    resolve();
+                });
+            });
+        }
+    }
+
+    /*---------------------------------------------
+        ADD MARKERS + GOOGLE LOCATION NAME
+    ---------------------------------------------*/
+    function addMarkers(points) {
+        var existingCoords = {};
+
+        points.forEach(function(item, index) {
+            var key = item.lat + "," + item.lng;
+
+            // Offset duplicates slightly
+            if (existingCoords[key]) {
+                existingCoords[key]++;
+                var offset = existingCoords[key] * 0.00005;
+                item.lat = parseFloat(item.lat) + offset;
+                item.lng = parseFloat(item.lng) + offset;
+            } else {
+                existingCoords[key] = 1;
+            }
+
+            var pos = new google.maps.LatLng(item.lat, item.lng);
+
+            const pinPath = "M0-48c-9.94,0-18,8.06-18,18c0,13.36,18,30,18,30s18-16.64,18-30C18-39.94,9.94-48,0-48z";
+
+            var icon = {
+                path: pinPath,
+                fillColor: "#00AA00",
+                fillOpacity: 1,
+                strokeWeight: 1,
+                strokeColor: "#ffffff",
+                scale: 0.8,
+                anchor: new google.maps.Point(0, -10),
+                labelOrigin: new google.maps.Point(0, -28)
+            };
+
+            // Apply color logic
+            if (item.startingPoint) icon.fillColor = "#FF0000";
+            else if (item.endingPoint) icon.fillColor = "#808080";
+
+            if (item.outcome === 'PJP Successful') icon.fillColor = "#008000";
+            else if (item.outcome === 'PJP Unsuccessful') icon.fillColor = "#800080";
+            else if (item.outcome === 'Non PJP Productive') icon.fillColor = "#ffff00";
+            else if (item.outcome === 'New Outlet') icon.fillColor = "#008080";
+
+            var linkHtml =
+                '<a href="' + data.bUrl + item.id + '" target="_blank" style="color:#1a73e8;font-weight:bold;text-decoration:underline;">'
+                + item.name + '</a>';
+
+            var marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                label: '' + (index),
+                icon: icon,
+                title: index + '. ' + item.name
+            });
+
+            /*---------------------------------------------
+                SHOW GOOGLE LOCATION NAME ON CLICK
+            ---------------------------------------------*/
+            marker.addListener("click", function() {
+                geocoder.geocode({ location: pos }, function(results, status) {
+
+                    let googlePlaceName = "Address not available";
+
+                    if (status === "OK" && results[0]) {
+                        googlePlaceName = results[0].formatted_address;
+                    }
+
+                    var finalContent =
+                        '<strong style="font-size:14px;">' + googlePlaceName + '</strong><br/>' +
+                        linkHtml + '<br/>' +
+                        item.markerText;
+
+                    var info = new google.maps.InfoWindow({
+                        content: finalContent
+                    });
+
+                    info.open(map, marker);
+                });
+            });
+        });
+    }
+</script>
+
+</body>
+</html>
+</apex:page>

@@ -1,0 +1,264 @@
+.mainHome {
+    overflow: hidden;
+    background-color: rgb(199, 232, 241);
+}
+/* Apply margin only for desktop screens */
+@media screen and (min-width: 768px) {
+    .mainHome {
+        margin: -0.75rem;
+    }
+}
+.screen {
+    display: flex;
+    flex-direction: column;
+    background-image: url('screen-1-bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh; /* Ensure the background covers at least the full viewport height */
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: rgb(199, 232, 241);
+}
+.custom-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adds a soft shadow */
+    border-radius: 8px; /* Optional: Rounds the corners */
+    overflow: hidden; /* Ensures no overflow */
+}
+.navbar {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Pushes items to left & right */
+    background-color: rgb(243, 243, 243);
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adds spacing between icon & text */
+}
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.slds-card
+{
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adds a soft shadow */
+}
+:host {
+    /* Removes SF Card Header padding/margin top/bottom only */
+    --slds-c-card-header-spacing-block-end: 0px;
+    --slds-c-card-header-spacing-block-start: 0px;
+}
+/* Icon styles */
+.icon-left {
+    margin-right: 10px;
+    display: flex;
+    align-items: center; /* Ensure icon is also vertically centered */
+}
+/* Header text styles */
+.header {
+    font-size: 20px; /* Increase text size */
+    font-weight: bold;
+    display: flex;
+    align-items: center; /* Vertically center the text */
+}
+.combobox-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+/* Wrap dropdowns inside a container */
+.combobox-group {
+    display: flex;
+    gap: 10px;
+    width: 50%; /* Dropdowns take half the width */
+}
+/* Ensure dropdowns take full width inside the group */
+.combobox-group lightning-combobox {
+    flex: 1;
+}
+/* Wrap buttons inside a container */
+.button-group {
+    display: flex;
+}
+.no-records-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.no-records-box {
+    text-align: center;
+    border-radius: 5px;
+    background-color: #ffeded;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 100%;
+    max-width: 100%;
+    color: red; 
+    font-size: large;
+}
+
+
+
+
+.combobox-containerPopUp {
+    display: grid;
+    grid-template-columns:1fr 1fr;
+    gap: 10px;
+    align-items: center;
+}
+.table-container {
+    overflow-x: auto;
+    margin-top: 10px;
+    overflow: initial;
+}
+table { 
+    margin-top: 10px;
+    border: 0.25px solid #808080;
+    border-collapse: separate;
+    border-left: 0;
+    border-radius: 4px;
+    border-spacing: 0px;
+}
+thead {
+    display: table-header-group;
+    vertical-align: middle;
+    border-color: inherit;
+    border-collapse: separate;
+    background-color:  #4472c4;
+    color: white;
+}
+tr {
+    display: table-row;
+    vertical-align: inherit;
+    border-color: inherit;
+}
+th, td {
+    padding: 5px; 
+    text-align: center;
+    vertical-align: top;
+    border-left: 0.25px solid #808080;
+    min-width: 50px;
+}
+td {
+    border-top: 0.25px solid #808080;   
+}
+thead:first-child tr:first-child th:first-child, tbody:first-child tr:first-child td:first-child {
+    border-radius: 4px 0 0 0;
+}
+thead:last-child tr:last-child th:first-child, tbody:last-child tr:last-child td:first-child {
+    border-radius: 0 0 0 4px;
+}
+.custommargin{
+    margin: 10px;
+    border-radius: 5px;
+}
+.nav-title{
+    color: #fff;
+    background-color: #2f5597;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+}
+.menu-open, .menu-close{
+    cursor: pointer;
+}
+/* Custom width for modal container */
+.slds-modal__container {
+    width: 60% !important;
+    max-width: 90% !important;
+}
+@media screen and (max-width: 768px) {
+    .slds-modal__container {
+        width: 90% !important;
+        max-width: 90% !important;
+        margin: auto; /* Centers the modal */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Ensures proper centering */
+        position: absolute; /* Needed for centering */
+    }
+}
+.fixed-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fixed-table th, .fixed-table td {
+    min-width: 100px; /* Ensures minimum width */
+    text-align: center;
+    padding: 8px;
+    border: 0.25px solid #808080;
+}
+
+/* Ensuring all columns have equal width */
+.fixed-table th {
+    width: 1%; /* Distributes width evenly */
+    white-space: nowrap;
+}
+.box-container2 {
+    height: 40px; 
+    width: 100%; /* Width of the box */
+    background-color:  #ffeded; /* Background color of the box */
+    box-sizing: border-box; /* Include border in width calculation */
+    margin: 0 auto; /* Center the box horizontally */
+     display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    cursor: pointer; 
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adds a soft shadow */
+}
+.box-text {
+    
+    color: black; /* Text color */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header{
+font-size: 16px;
+font-weight: 500;
+}
+
+.dropdown{
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    margin: 10px;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.customButton {
+    --sds-c-button-brand-color-background: #4472c4 !important;
+    --sds-c-button-brand-color-border: #4472c4 !important;
+    --sds-c-button-brand-color-background-hover: #4472c4 !important;
+    --sds-c-button-brand-color-border-hover: #4472c4 !important;
+    --sds-c-button-radius-border: 4px !important;
+}
+
+/* Ensure border-radius is applied */
+:host .customButton {
+    border-radius: 4px !important;
+}

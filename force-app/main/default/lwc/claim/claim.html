@@ -1,0 +1,84 @@
+<template>
+    <template lwc:if={isPageLoaded}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+    <template lwc:else>
+        <div class="orders layouts" id="ClaimLayout">
+            <!-- Header with Save/Cancel -->
+            <div class="order-head">
+                <h3 class="order-title">New Claim</h3>
+                <div class="order-filters">
+                    <button class="actionButton" onclick={handleSave}>Save</button>
+                    <button class="actionButton1 slds-m-left_small" onclick={handleCancel}>Cancel</button>
+                </div>
+            </div>
+
+            <!-- Claim Rows -->
+            <div class="contacts-table slds-p-around_medium">
+                <template for:each={claims} for:item="claim" for:index="index">
+                    <div key={claim.id} class="slds-box slds-m-around_x-small slds-grid slds-wrap slds-gutters claim-row">
+
+                        <!-- Claim Amount -->
+                        <div class="slds-col slds-size_1-of-4" >
+                            <lightning-input 
+                                label="Claim Amount" 
+                                type="number"
+                                value={claim.amount}
+                                required
+                                data-index={index}
+                                
+                                   onchange={handleAmountChange}>
+                            </lightning-input>
+                        </div>
+
+                        <!-- Status (New) -->
+                        <div class="slds-col slds-size_1-of-4">
+                            <lightning-input 
+                                label="Status" 
+                                value="New" 
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="slds-col slds-size_1-of-4">
+                            <lightning-textarea 
+                                label="Description" 
+                                value={claim.description}
+                                required
+                                data-index={index}
+                                  onchange={handleDescriptionChange}
+                           >
+                            </lightning-textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="slds-col slds-size_1-of-4 slds-align_absolute-end" style="text-align: right; padding-top: 25px; ">
+                            <lightning-button-icon 
+                                icon-name="utility:delete"
+                                alternative-text="Remove Row"
+                                onclick={removeRow}
+                                data-index={index}
+                                class="large-icon"
+                                variant="bare"
+                                style="padding-right:10px"
+                               >
+                            </lightning-button-icon>
+
+                            <lightning-button-icon 
+                                icon-name="utility:add"
+                                alternative-text="Add Row"
+                                onclick={addRow}
+                                class="large-icon"
+                                variant="bare"
+                                data-index={index}>
+                            </lightning-button-icon>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+ <c-custom-toast auto-close-time="8000"></c-custom-toast> <!-- Added custom toast at the bottom of the page -->
+</template>

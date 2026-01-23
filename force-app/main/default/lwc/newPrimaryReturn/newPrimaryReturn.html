@@ -1,0 +1,233 @@
+<!-- 
+<template>
+    <template lwc:if={isPageLoaded}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+    <template lwc:else>
+        <div class="orders layouts" id="PrimaryReturnLayout">
+            <div class="order-head">
+                <h3 class="order-title">New Primary Return</h3>
+                <div class="order-filters">
+                    <button class="actionButton" onclick={handleSave}>Save</button>
+                    <button class="actionButton1 slds-m-left_small" onclick={handleCancel}>Cancel</button>
+                </div>
+            </div>
+
+            <div class="contacts-table slds-p-around_medium">
+                <template for:each={returnItems} for:item="item" for:index="index">
+                    <div key={item.id} class="slds-box slds-m-around_x-small slds-grid slds-wrap slds-gutters">
+                       
+                        <div class="slds-col slds-size_2-of-12">
+                            <lightning-combobox label="Product"
+                                value={item.productId}
+                                options={productOptions}
+                                data-index={index}
+                                onchange={handleProductChange}>
+                            </lightning-combobox>
+                        </div>
+
+                   
+                        <div class="slds-col slds-size_1-of-12">
+                            <lightning-input label="Qty" type="number"
+                                value={item.quantity}
+                                data-index={index}
+                                onchange={handleQuantityChange}>
+                            </lightning-input>
+                        </div>
+
+                      
+                        <div class="slds-col slds-size_2-of-12">
+                            <lightning-input label="Unit Price"
+                                value={item.unitPrice}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                   
+                        <div class="slds-col slds-size_2-of-12">
+                            <lightning-input label="Amount"
+                                value={item.amount}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                        <div class="slds-col slds-size_2-of-12">
+                            <lightning-input label="UOM"
+                                value={item.uom}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                  
+                        <div class="slds-col slds-size_2-of-12">
+                            <lightning-combobox label="Reason"
+                                value={item.reason}
+                                options={returnReasonOptions}
+                                data-index={index}
+                                onchange={handleReasonChange}>
+                            </lightning-combobox>
+                        </div>
+
+                    
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                            <lightning-button-icon icon-name="utility:delete"
+                                alternative-text="Remove"
+                                onclick={removeRow}
+                                data-index={index}>
+                            </lightning-button-icon>
+                        </div>
+                    </div>
+                </template>
+
+             
+                <div class="slds-m-top_medium">
+                    <lightning-button label="Add Row" icon-name="utility:add" onclick={addRow}></lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>  -->
+
+
+
+<template>
+    <template lwc:if={isPageLoaded}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+    <template lwc:else>
+        <div class="orders layouts" id="PrimaryReturnLayout">
+            <div class="order-head">
+                <h3 class="order-title">New Primary Return</h3>
+                <div class="order-filters">
+                    <button class="actionButton" onclick={handleSave}>Save</button>
+                    <button class="actionButton1 slds-m-left_small" onclick={handleCancel}>Cancel</button>
+                </div>
+            </div>
+
+            <div class="contacts-table slds-p-around_medium">
+                <template for:each={returnItems} for:item="item" for:index="index">
+                    <div key={item.id} class="slds-box slds-m-around_x-small slds-grid slds-wrap slds-gutters">
+                        
+                        <!-- Product Search -->
+                        <div class="" style="position: relative;width:250px;">
+                            <lightning-input 
+                                label="Product" 
+                                value={item.productName}
+                                type="search"
+                                required
+                                data-index={index}
+                                onfocus={handleProductFocus}
+                                onchange={handleProductSearch}>
+                            </lightning-input>
+
+                            <template if:true={item.showSuggestions}>
+                                <div class="suggestion-box" role="listbox" style="max-height: 8.5rem; overflow-y: auto;">
+                                    <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                        <template for:each={item.filteredProducts} for:item="prod">
+                                            <li key={prod.value} role="presentation" class="slds-listbox__item">
+                                                <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                     role="option"
+                                                     onclick={selectProduct}
+                                                     data-index={index}
+                                                     data-id={prod.value}
+                                                     style="cursor: pointer;">
+                                                     
+                                                    <span class="slds-media__figure slds-listbox__option-icon">
+                                                        <lightning-icon 
+                                                            icon-name="standard:product"
+                                                            size="small"
+                                                             
+                                                            alternative-text="Product"
+                                                            class="slds-icon slds-icon_small">
+                                                        </lightning-icon>
+                                                    </span>
+                                                    
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-truncate" title={prod.label}>{prod.label}</span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </template>
+                             </div>
+
+                        <!-- Quantity -->
+                        <div class="slds-col slds-size_1-of-12" style="width:150px;">
+                            <lightning-input label="Qty" type="number"
+                                value={item.quantity}
+                                data-index={index}
+                                required
+                                onchange={handleQuantityChange}>
+                            </lightning-input>
+                        </div>
+
+                        <!-- Unit Price -->
+                        <div class="slds-col slds-size_2-of-12" style="width:150px;">
+                            <lightning-input label="Unit Price"
+                                value={item.unitPrice}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="slds-col slds-size_2-of-12" style="width:150px;">
+                            <lightning-input label="Amount"
+                                value={item.amount}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                        <!-- UOM -->
+                        <div class="slds-col slds-size_2-of-12" style="width:150px;">
+                            <lightning-input label="UOM"
+                                value={item.uom}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                        <!-- Reason -->
+                        <div class="" style="width:180px;">
+                            <lightning-combobox label="Reason"
+                                class="full-width"
+                                value={item.reason}
+                                 required
+                                options={returnReasonOptions}
+                                data-index={index}
+                                onchange={handleReasonChange}>
+                            </lightning-combobox>
+                        </div>
+
+                        <!-- Delete -->
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" style="text-align: right; padding-top: 20px;padding-right:10px">
+                            <lightning-button-icon 
+                                icon-name="utility:delete"
+                                alternative-text="Remove Row"
+                                onclick={removeRow}
+                                class="large-icon"
+                                variant="bare"
+                                 style="padding-right:10px"
+                               
+                                data-index={index}>
+                            </lightning-button-icon>
+                            <lightning-button-icon 
+                                icon-name="utility:add"
+                                alternative-text="Add Row"
+                                onclick={addRow}
+                                 class="large-icon"
+                                variant="bare"
+                                data-index={index}>
+                            </lightning-button-icon>
+                        </div>
+                    </div>
+                </template>
+
+                
+            </div>
+        </div>
+    </template>
+     <c-custom-toast auto-close-time="8000"></c-custom-toast>
+</template>

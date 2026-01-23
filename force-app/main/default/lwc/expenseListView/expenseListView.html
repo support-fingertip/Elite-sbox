@@ -1,0 +1,253 @@
+<template>
+    <div class="custom1">
+   
+        <!-- When page is loading -->
+        <template lwc:if={isLoading}>
+            <div style="margin: 10px;">
+            <c-on-loading-screen></c-on-loading-screen>
+            </div>
+        </template>
+        <!-- When page loaded -->
+        <template lwc:else>
+            <div class="expense-detailed-container">
+            <div class="screen-1"> 
+                <div class="home">
+                    <div class="navbar">
+                        <template if:true={expenseDetailePage}>
+                            <i class="material-icons screen-bar-nav-icon" onclick={goBackScreen}>
+                                <!-- keyboard_backspace -->
+                                <lightning-icon  icon-name="utility:back" size="small" alternative-text="Back" class=""></lightning-icon>
+                            </i>
+                        </template>
+                        <template if:true={expenseListViewPage}>
+                            <i class="material-icons screen-bar-nav-icon" onclick={goBackScreen}>
+                                <!-- keyboard_backspace -->
+                                <lightning-icon  icon-name="utility:refresh" size="small" alternative-text="Back" class=""></lightning-icon>
+                            </i>
+                        </template>
+                        <span class="header slds-align_absolute-center"><b>Expenses</b></span>
+                        <template if:false={expenseListViewPage}>
+                            <template lwc:if={isValidExpense}>
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col"> 
+                                        <h4 class="nav-title menu-close" onclick={openModal}>Submit</h4>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        
+                    </div>
+                 
+                   
+                    <!-- Expense List View Page-->
+                    <template lwc:if={expenseListViewPage}>
+                        <!-- Dropdown filters -->
+                        <div class="filters" style="background-color: #f6f8fa;margin-bottom:10px">
+                            <div class="slds-grid slds-wrap slds-p-around_small">
+                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-p-around_x-small">
+                                    <lightning-combobox
+                                        name="employee"
+                                        label="Employee"
+                                        value={selectedEmployee}
+                                        options={employeeOptions}
+                                        onchange={handleFilterChange}>
+                                    </lightning-combobox>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-p-around_x-small">
+                                    <lightning-combobox
+                                        name="year"
+                                        label="Year"
+                                        value={selectedYear}
+                                        options={yearOptions}
+                                        onchange={handleFilterChange}>
+                                    </lightning-combobox>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-p-around_x-small">
+                                    <lightning-combobox
+                                        name="month"
+                                        label="Month"
+                                        value={selectedMonth}
+                                        options={monthOptions}
+                                        onchange={handleFilterChange}>
+                                    </lightning-combobox>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-p-around_x-small">
+                                    <lightning-combobox
+                                        name="approvalStatus"
+                                        label="Approval Status"
+                                        value={selectedStatus}
+                                        options={statusOptions}
+                                        onchange={handleFilterChange}>
+                                    </lightning-combobox>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="dropdowns">
+                            <template lwc:if={isExpensesExisted}>
+                                <template for:each={expenses} for:item="expense" for:index="index">
+                                    <div key={expense.Id} class="dropdown">
+                                        <div class="dropdown-head">
+                                            <div class="dropdown-head-left" data-id={expense.Id} onclick={toggleDropdown}>
+                                                <i class="material-icons dropdown-head-nav-icon">
+                                                    <lightning-icon icon-name="utility:chevrondown" size="x-small" alternative-text="" class="chevron-icon-pyt" ></lightning-icon>
+                                                </i>
+                                                <h4 class="dropdown-head-title visitHeading">
+                                                    <img src={summeryIcons.payment} width="15" height="15" > &nbsp;&nbsp;
+                                                    {expense.Name}
+                                                </h4>
+                                            </div>
+                                            <div class="dropdown-head-right">
+                                                <div class="" data-id={expense.Id}  onclick={openExpenseDetailePage}>
+                                                    <lightning-icon 
+                                                        icon-name="utility:forward" 
+                                                        size="x-small" 
+                                                        alternative-text=""
+                                                        class="">
+                                                    </lightning-icon>
+                                                </div>
+                                                   <template lwc:if={expense.isNotSubmitted}>
+                                                        <lightning-icon 
+                                                            icon-name="utility:approval" 
+                                                            size="x-small" 
+                                                            alternative-text="" 
+                                                            class="planned-icon"
+                                                            data-index={index}>
+                                                    </lightning-icon>
+                                                </template>
+                                                <template lwc:if={expense.isRejected}>
+                                                    <lightning-icon 
+                                                        icon-name="utility:close" 
+                                                        size="x-small" 
+                                                        alternative-text="" 
+                                                        class="missed-icon"
+                                                        data-index={index}>
+                                                    </lightning-icon>
+                                                </template>
+                                                <template lwc:if={expense.isApproved}>
+                                                    <lightning-icon 
+                                                        icon-name="utility:check" 
+                                                        size="x-small" 
+                                                        alternative-text="" 
+                                                        class="completed-icon"
+                                                        data-index={index}>
+                                                    </lightning-icon>
+                                                </template>
+                                                <template lwc:if={expense.isPending}>
+                                                    <lightning-icon 
+                                                        icon-name="utility:clock" 
+                                                        size="x-small" 
+                                                        alternative-text=""
+                                                        class="cloclColor">
+                                                    </lightning-icon>
+                                                </template>
+                                               
+                                            </div>
+                                        </div>
+                                        <div  class={expense.CustomClass}>
+                                            <div class="dropdown-head">
+                                                <template lwc:if={expense.Expenses_line_items__r}>
+                                                    <table class="dropdown-table">
+                                                        <tbody>
+                                                            <tr >
+                                                                <template  for:each={expnseHeader} for:item="item" for:index="index">
+                                                                    <th class="slds-border_top " key={item}><b>{item}</b></th> 
+                                                                </template>
+                                                            </tr>
+                                                            <template for:each={expense.Expenses_line_items__r} for:item="exItem">
+                                                                <tr class="slds-border_top slds-border_bottom" key={exItem.Id}>
+                                                                    <td>{exItem.Expense_Date__c}</td>
+                                                                    <td>&nbsp;&nbsp;&nbsp;&nbsp;{exItem.Allowance_Type__c}</td>
+                                                                    <td>{exItem.Amount__c}</td>
+                                                                </tr>
+                                                            </template>
+                                                            <tr class="slds-border_top slds-border_bottom" style="color: #545454;">
+                                                                <td><b>TA Amount</b></td>
+                                                                <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b></td>
+                                                                <td><b>{expense.Total_Amount_TA__c}</b></td>
+                                                            </tr>
+                                                            <tr class="slds-border_top slds-border_bottom" style="color: #545454;">
+                                                                <td><b>DA Amount</b></td>
+                                                                <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b></td>
+                                                                <td><b>{expense.Total_Amount_DA__c}</b></td>
+                                                            </tr>
+                                                            <tr class="slds-border_top slds-border_bottom" style="color: #545454;">
+                                                                <td><b>Other Amount</b></td>
+                                                                <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b></td>
+                                                                <td><b>{expense.Total_other_amount__c}</b></td>
+                                                            </tr>
+                                                            <tr class="slds-border_top slds-border_bottom" style="color: #545454;">
+                                                                <td><b>Total Amount</b></td>
+                                                                <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b></td>
+                                                                <td><b>{expense.Total_Amount__c}</b></td>
+                                                            </tr>
+                                                            <tr class="slds-border_top slds-border_bottom" style="color: #545454;">
+                                                                <td><b>Approval Status</b></td>
+                                                                <td><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</b></td>
+                                                                <td><b>{expense.Approval_Status__c}</b></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="slds-align_absolute-center">
+                                                        <b>Expenses not created yet.</b>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template lwc:else>
+                                <div class="slds-size_1-of-1 dropdown" style="padding:20px; display: flex; justify-content: center; align-items: center; font-size: var(--lwc-fontSize9, 1.75rem); font-weight: 700; color: darkgrey;">
+                                    Oops! No Data Found....
+                                </div>
+                            </template>
+                        </div>
+                        
+                    </template>
+                    
+                    <!-- Expense Detailed Page-->
+                    <template lwc:if={expenseDetailePage}>
+                        <c-expense-detailed-page record-id={recordId} is-desktop={isDesktop} 
+                        onapprovalstatuschange={handleApprovalStatusChange}>
+                        </c-expense-detailed-page>
+                    </template>
+                  
+                </div> 
+            </div>
+            
+            </div>
+            <!-- Submit for Approval Modal -->
+            <template if:true={isDeleteModalOpen}>
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header" style="color: black;">
+                            <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Submit for Approval</h2>
+                        </header>
+                        
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning-textarea
+                                label="Comments"
+                                value={comments}
+                                required="true"
+                                onchange={handleCommentsChange}
+                                placeholder="Enter your comments here"
+                            ></lightning-textarea>
+                        </div>
+                        
+                        <!-- Modal Footer -->
+                        <footer class="slds-modal__footer">
+                            <button class="slds-button slds-button_neutral" onclick={handleDeleteCancel}>Cancel</button>
+                            <button class="slds-button slds-button_brand" onclick={handleSubmit}>Submit</button>
+                        </footer>
+                    </div>
+                </section>
+                <template lwc:if={isDesktop}>
+                    <div class="slds-backdrop slds-backdrop_open"></div>
+                </template>
+            </template>
+        </template>
+    </div>
+</template>

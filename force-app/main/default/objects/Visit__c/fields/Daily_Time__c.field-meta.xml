@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Daily_Time__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF ( (Clockout_Date__c  - Clockin_Date__c) &gt; 0, 
+IF(TEXT(FLOOR((Clockout_Date__c  - Clockin_Date__c))) != &quot;0&quot;,TEXT(FLOOR((Clockout_Date__c  - Clockin_Date__c))) &amp; &quot; day(s) &quot;,&quot;&quot;) &amp; 
+IF(TEXT( FLOOR( 24 * ((Clockout_Date__c  - Clockin_Date__c) - FLOOR((Clockout_Date__c  - Clockin_Date__c)) )))!=&quot;0&quot;,TEXT( FLOOR( 24 * ((Clockout_Date__c  - Clockin_Date__c) - FLOOR((Clockout_Date__c  - Clockin_Date__c)) ))) &amp; &quot; hour(s) &quot;,&quot;&quot;) &amp; 
+IF(TEXT( ROUND(60 * (ROUND( 24 * ((Clockout_Date__c  - Clockin_Date__c) - FLOOR((Clockout_Date__c  - Clockin_Date__c)) ),8) - FLOOR( 
+ROUND( 24 * ((Clockout_Date__c  - Clockin_Date__c) - FLOOR((Clockout_Date__c  - Clockin_Date__c)) ),8)) ),0)) != &quot;0&quot;,TEXT( ROUND(60 * (ROUND( 24 * ((Clockout_Date__c  - Clockin_Date__c) - FLOOR((Clockout_Date__c  - Clockin_Date__c)) ),8) - FLOOR( 
+ROUND( 24 * ((Clockout_Date__c  - Clockin_Date__c) - FLOOR((Clockout_Date__c  - Clockin_Date__c)) ),8)) ),0)) &amp; &quot; min(s) &quot;,&quot;&quot;)
+, &quot;&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Daily Time</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

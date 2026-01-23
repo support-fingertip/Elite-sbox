@@ -1,0 +1,28 @@
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table thead {
+    background-color: #4472c4;
+    color: white;
+}
+
+.custom-table th, .custom-table td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: center;
+}
+
+.custom-card-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.custom-card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+}

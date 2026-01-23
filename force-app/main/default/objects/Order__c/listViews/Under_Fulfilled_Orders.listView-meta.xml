@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Under_Fulfilled_Orders</fullName>
+    <columns>NAME</columns>
+    <columns>CREATED_DATE</columns>
+    <columns>Order_Type__c</columns>
+    <columns>Order_Fulfillment_Status__c</columns>
+    <columns>Owner_Name__c</columns>
+    <columns>Delivery_To__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Order_Fulfillment_Status__c</field>
+        <operation>equals</operation>
+        <value>Under-Fulfilled</value>
+    </filters>
+    <label>Under Fulfilled Orders</label>
+</ListView>

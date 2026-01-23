@@ -1,0 +1,115 @@
+<template>
+    <section role="dialog" tabindex="-1" aria-modal="true"
+        aria-labelledby="modal-heading-lead"
+        class="slds-modal slds-fade-in-open">
+        <div class={containerClass}>
+
+            <!-- Desktop Close Button -->
+            <template lwc:if={isDesktop}>
+                <button class="slds-button slds-button_icon slds-modal__close"
+                    onclick={closeModal} disabled={isDisabled}>
+                    <lightning-icon icon-name="utility:close" size="small"
+                        alternative-text="Close"
+                        class="slds-button__icon"></lightning-icon>
+                </button>
+            </template>
+
+            <!-- Header -->
+            <div class="slds-modal__header">
+                <div class="slds-grid slds-gutters">
+                    <template if:false={isDesktop}>
+                        <div class="slds-col slds-clearfix">
+                            <div class="slds-float_left">
+                                <lightning-button variant="base" label="Save"
+                                    onclick={handleSave}
+                                    disabled={isDisabled}></lightning-button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="slds-col slds-align_absolute-center">
+                        <h1 id="modal-heading-lead"
+                            class="slds-modal__title slds-hyphenate">Create
+                            Visit Form</h1>
+                    </div>
+
+                    <template if:false={isDesktop}>
+                        <div class="slds-col slds-clearfix">
+                            <div class="slds-float_right">
+                                <lightning-button variant="base" label="Cancel"
+                                    onclick={closeModal}
+                                    disabled={isDisabled}></lightning-button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="slds-modal__content slds-p-around_medium"
+                id="modal-content-lead">
+                <lightning-input type="text" name="name" label="Name"
+                    value={name} onchange={handleInputChange}
+                    required></lightning-input>
+                <lightning-input type="tel" name="phone" label="Phone Number"
+                    value={phone}
+                    onchange={handleInputChange}></lightning-input>
+                <lightning-input type="text" name="location" label="Location"
+                    value={location}
+                    onchange={handleInputChange}></lightning-input>
+
+                <!-- File Upload -->
+                <div class="slds-text-align_center slds-box"
+                    style="margin-top:10px">
+                    <lightning-file-upload
+                        label="Upload Photo"
+                        name="photo"
+                        accept={acceptedFormats}
+                        onuploadfinished={handleUploadFinished}
+                        multiple>
+                    </lightning-file-upload>
+
+                    <!-- Show uploaded photo -->
+                    <template if:true={uploadedDocIds}>
+                        <table class="slds-table slds-table_bordered slds-table_fixed-layout slds-m-top_small slds-m-bottom_small">
+                            <tbody>
+                                <template for:each={uploadedDocIds} for:item="file">
+                                    <tr key={file.id}>
+                                        <td class="slds-cell-wrap" width="80%">
+                                            <a href="javascript:void(0);" data-id={file.id} onclick={previewFile}>
+                                                {file.name}
+                                            </a>
+                                        </td>
+                                        <td width="20%">
+                                            
+                                            <lightning-button-icon
+                                                icon-name="utility:delete"
+                                                data-id={file.id}
+                                                onclick={deleteFile}
+                                                alternative-text="Delete"
+                                                title="Delete"
+                                            ></lightning-button-icon>
+                                            
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Footer (Desktop) -->
+            <template lwc:if={isDesktop}>
+                <div class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral"
+                        onclick={closeModal}
+                        disabled={isDisabled}>Cancel</button>
+                    <button class="slds-button slds-button_brand"
+                        onclick={handleSave} disabled={isDisabled}>Save</button>
+                </div>
+            </template>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

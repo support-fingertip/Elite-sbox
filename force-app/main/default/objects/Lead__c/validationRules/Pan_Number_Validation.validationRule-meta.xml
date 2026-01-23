@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Pan_Number_Validation</fullName>
+    <active>true</active>
+    <errorConditionFormula>NOT(ISBLANK( PAN__c )) &amp;&amp; LEN( PAN__c ) &lt;&gt; 10</errorConditionFormula>
+    <errorDisplayField>PAN__c</errorDisplayField>
+    <errorMessage>Please enter valid PAN number</errorMessage>
+</ValidationRule>

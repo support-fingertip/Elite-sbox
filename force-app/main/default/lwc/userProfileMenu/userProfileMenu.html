@@ -1,0 +1,37 @@
+<!-- <template>
+    <div class="profile-container">
+        <div class="avatar" onclick={toggleMenu}>
+            <lightning-icon icon-name="action:user" alternative-text="User" size="x-small"></lightning-icon>
+        </div>
+
+        <template if:true={isMenuOpen}>
+            <div class="dropdown">
+                <div class="arrow-up"></div>
+                <ul class="menu">
+                    <li class="menu-item username">{userName}</li>
+                    <li class="menu-item" onclick={handleLogout}>Log Out</li>
+                </ul>
+            </div>
+        </template>
+    </div>
+</template> -->
+
+
+<template>
+    <!-- Profile Button with Avatar -->
+    <div class="profile-container">
+        <div class="avatar" onclick={toggleSidebar}>
+            <lightning-icon icon-name="action:user" alternative-text="User" size="x-small"></lightning-icon>
+        </div>
+    </div>
+
+    <!-- Sidebar (Right Side Navigation) -->
+    <template if:true={isSidebarOpen}>
+        <section class="sidebar-overlay" onclick={closeSidebar}></section>
+        <div class="sidebar-content">
+            <!-- Sidebar content like Username and Logout -->
+            <p class="username">{userName}</p>
+            <lightning-button label="Logout" onclick={handleLogout} variant="destructive"></lightning-button>
+        </div>
+    </template>
+</template>

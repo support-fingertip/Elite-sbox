@@ -1,0 +1,108 @@
+/* Make "Name" look like a hyperlink */
+.slds-button_base {
+    color: #1b96ff;
+    text-decoration: underline;
+    font-weight: normal;
+}
+/* yourLwc.css */
+.custom-card-header {
+    background-color: #f3f2f2;   /* Same as datatable header */
+    padding: 0.5rem 1rem;        /* Adjust padding to match look */
+    border-bottom: 1px solid #dddbda; /* subtle border like datatable */
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+
+/* yourLwc.css */
+
+/* Apply smaller font size for the whole datatable */
+:host ::slotted(.slds-table) {
+    font-size: 0.75rem; /* smaller font */
+}
+
+.table-container {
+    overflow-x: auto;
+    border-left: 0.25px solid black; /* ensure visible divider */
+}
+/* ✅ Apply only for desktop */
+@media (min-width: 768px) {
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto; /* optional, to make it scroll vertically */
+    }
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+     
+}
+
+/* Apply sticky header only for desktop screens */
+@media (min-width: 768px) {
+    .custom-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;                 /* higher than first column */
+        background-color: #4472c4;  /* keep header color */
+        color: white;
+        padding: 8px;
+        text-align: left;
+        border: 0.25px solid black;
+    }
+        /* Special case: first column header */
+    .custom-table thead th:first-child {
+        top: 0; /* Stick to top too */
+        left: 0;
+        z-index: 4; /* Highest to overlap */
+        background-color: #4472c4; /* Match header color */
+        color: white;
+    }
+}
+
+
+/* Fix only first column */
+.custom-table td:first-child,
+.custom-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 3;           /* Keep it above cells */
+    min-width: 120px;     /* Adjust width */
+}
+
+
+.custom-table th {
+    background-color: #4472c4;
+    color: white;
+    padding: 8px;
+    text-align: left;
+    border: 0.25px solid black;
+}
+
+.custom-table td {
+    padding: 8px;
+    border: 0.25px solid black;
+}
+/* First column data cells (row 2 onwards) */
+.custom-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #ffffff;  /* White */
+    border-left: none; 
+}
+
+
+
+
+.minwidth {
+    min-width: 150px;
+}
+
+.custom-table th {
+    background-color: #4472c4;
+    color: white;
+    padding: 8px;
+    text-align: left;
+    border: 0.25px solid black;
+}

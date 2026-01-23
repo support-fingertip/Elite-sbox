@@ -1,0 +1,164 @@
+<template>
+    <template lwc:if={isPageLoaded}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+    <template lwc:else>
+        <div class="orders layouts" id="SecondaryReturnLayout">
+            <!-- Header Section -->
+            <div class="order-head slds-grid slds-wrap slds-gutters slds-p-around_medium">
+
+                <!-- Title -->
+                <div class="slds-col slds-size_1-of-3">
+                    <h3 class="order-title slds-text-heading_medium">New Secondary Return</h3>
+                </div>
+
+                <!-- Customer Search -->
+                <div class="slds-col slds-size_1-of-3">
+                    <div style="position: relative;">
+                        <lightning-input label="Search Secondary Customers" type="search" required
+                            value={customerSearch} onchange={handleCustomerSearch} onfocus={handleCustomerFocus}>
+                        </lightning-input>
+
+                        <template if:true={showCustomerSuggestions}>
+                            <div class="suggestion-box" role="listbox">
+                                <ul class="slds-listbox slds-listbox_vertical">
+                                    <template for:each={filteredCustomers} for:item="cust">
+                                        <li key={cust.value} class="slds-listbox__item">
+                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                onclick={selectCustomer} data-id={cust.value} style="cursor: pointer;">
+                                                <span class="slds-media__figure slds-listbox__option-icon">
+                                                    <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
+                                                </span>
+                                                <span class="slds-media__body">
+                                                    <span class="slds-truncate" title={cust.label}>{cust.label}</span>
+                                                </span>
+                                            </div>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="slds-col slds-size_1-of-3 slds-text-align_right">
+                    <button class="actionButton" onclick={handleSave}>Save </button>
+                    <button onclick={handleCancel} class="slds-m-left_small actionButton1">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Grid Table Section -->
+            <div class="slds-p-around_medium">
+                <div class="slds-box" style="padding-bottom:250px">
+                    <!-- Table Header -->
+                    <div class="slds-grid slds-gutters slds-p-around_small slds-theme_shade"
+                        style="font-weight: bold; border-bottom: 2px solid #dddbda; align-items: center;">
+                        <div class="slds-col" style="flex: 0 0 25%; max-width: 25%; min-width: 0;">Product</div>
+                        <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">Saleable Qty</div>
+                        <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">Non-Saleable Qty</div>
+                        <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">Unit Price</div>
+                        <div class="slds-col" style="flex: 0 0 10%; max-width: 12%; min-width: 0;">Amount</div>
+                        <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">UOM</div>
+                        <div class="slds-col" style="flex: 0 0 20%; max-width: 18%; min-width: 0;">Reason</div>
+                        <div class="slds-col" style="flex: 0 0 5%; max-width: 5%; min-width: 0; text-align: right;">
+                            Actions</div>
+                    </div>
+
+                    <!-- Table Rows -->
+                    <template for:each={returnItems} for:item="item" for:index="index">
+                        <div key={item.id} class="slds-grid slds-gutters slds-p-around_small slds-border_bottom"
+                            style="align-items: center;">
+
+                            <!-- Product Search -->
+                            <div class="slds-col"
+                                style="flex: 0 0 25%; max-width: 25%; min-width: 0; position: relative;">
+                                <lightning-input variant="label-hidden" value={item.productName} type="search" required
+                                    data-index={index} onfocus={handleProductFocus} onchange={handleProductSearch}
+                                    placeholder="Search product...">
+                                </lightning-input>
+
+                                <template if:true={item.showSuggestions}>
+                                    <div class="suggestion-box" role="listbox"
+                                        style="max-height: 200px; overflow-y: auto;">
+                                        <ul class="slds-listbox slds-listbox_vertical">
+                                            <template for:each={item.filteredProducts} for:item="prod">
+                                                <li key={prod.value} class="slds-listbox__item">
+                                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                        onclick={selectProduct} data-index={index} data-id={prod.value}
+                                                        style="cursor: pointer;">
+                                                        <span class="slds-media__figure">
+                                                            <lightning-icon icon-name="standard:product" size="small"></lightning-icon>
+                                                        </span>
+                                                        <span class="slds-media__body">
+                                                            <span class="slds-truncate" title={prod.label}>{prod.label}</span>
+                                                        </span>
+                                                    </div>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Saleable Quantity -->
+                            <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">
+                                <lightning-input variant="label-hidden" type="number" value={item.quantity}
+                                    data-index={index} required onchange={handleQuantityChange} placeholder="Qty">
+                                </lightning-input>
+                            </div>
+                            <!--Non-Saleable Quantity -->
+                            <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">
+                                <lightning-input variant="label-hidden" type="number" value={item.quantity}
+                                    data-index={index} required onchange={handleQuantityChange} placeholder="Qty">
+                                </lightning-input>
+                            </div>
+
+                            <!-- Unit Price -->
+                            <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">
+                                <lightning-input variant="label-hidden" value={item.unitPrice} disabled>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">
+                                <lightning-input variant="label-hidden" value={item.amount} disabled>
+                                </lightning-input>
+                            </div>
+
+                            <!-- UOM -->
+                            <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">
+                                <lightning-input variant="label-hidden" value={item.uom} disabled>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Reason -->
+                            <div class="slds-col" style="flex: 0 0 20%; max-width: 20%; min-width: 0; ">
+                                <div style="width: 100%;">
+                                    <lightning-combobox variant="label-hidden" value={item.reason} required
+                                        options={resonForReturnOptions} data-index={index} onchange={handleReasonChange}
+                                        placeholder="Select reason..." class="reason-combobox">
+                                    </lightning-combobox>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="slds-col"
+                                style="flex: 0 0 5%; max-width: 5%; min-width: 0; text-align: right;">
+                                <lightning-button-icon icon-name="utility:delete" alternative-text="Remove Row"
+                                    onclick={removeRow} variant="bare" data-index={index} class="slds-m-right_xx-small">
+                                </lightning-button-icon>
+                                <lightning-button-icon icon-name="utility:add" alternative-text="Add Row"
+                                    onclick={addRow} variant="bare" data-index={index}>
+                                </lightning-button-icon>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <c-custom-toast auto-close-time="8000"></c-custom-toast>
+</template>

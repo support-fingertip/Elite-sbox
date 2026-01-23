@@ -1,0 +1,48 @@
+.hidden-checkbox {
+    position: absolute;
+    opacity: 0;
+    height: 0;
+    width: 0;
+}
+
+.custom-checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.custom-checkbox {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #706e6b;
+    border-radius: 4px;
+    margin-right: 8px;
+    position: relative;
+    background: white;
+}
+
+.custom-checkbox:hover {
+    border-color: #1589ee;
+}
+
+.custom-checkbox[data-checked="true"] {
+    background: #1589ee;
+    border-color: #1589ee;
+}
+
+.checkmark {
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.custom-checkbox-container[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Area__c</fullName>
+    <externalId>false</externalId>
+    <label>Area</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <controllingField>Region__c</controllingField>
+        <restricted>true</restricted>
+        <valueSetName>Area</valueSetName>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>All</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>Central</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>CPD_Central</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>North</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>CPD_North</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>South1</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>South2</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>South3</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>CPD_South</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>CPD_South 2</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Ker_Bulk</controllingFieldValue>
+            <controllingFieldValue>TN</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD</controllingFieldValue>
+            <controllingFieldValue>Tamil Nadu</controllingFieldValue>
+            <controllingFieldValue>Ker_CPD_North</controllingFieldValue>
+            <controllingFieldValue>Kerala</controllingFieldValue>
+            <controllingFieldValue>Ker_Cake (Klmsry)</controllingFieldValue>
+            <controllingFieldValue>Ker_Idukki Depot</controllingFieldValue>
+            <controllingFieldValue>Ker_Institutional Sales</controllingFieldValue>
+            <controllingFieldValue>Ker_Wayanad Depot</controllingFieldValue>
+            <controllingFieldValue>MT</controllingFieldValue>
+            <controllingFieldValue>Madurai</controllingFieldValue>
+            <controllingFieldValue>AP &amp; TG</controllingFieldValue>
+            <controllingFieldValue>APTG</controllingFieldValue>
+            <controllingFieldValue>West</controllingFieldValue>
+            <controllingFieldValue>Bread</controllingFieldValue>
+            <controllingFieldValue>CPD</controllingFieldValue>
+            <controllingFieldValue>Cake</controllingFieldValue>
+            <controllingFieldValue>Institution</controllingFieldValue>
+            <controllingFieldValue>KA</controllingFieldValue>
+            <controllingFieldValue>Karnataka</controllingFieldValue>
+            <controllingFieldValue>North East</controllingFieldValue>
+            <controllingFieldValue>Ker_Bread (Aroor)</controllingFieldValue>
+            <controllingFieldValue>Rest of TN</controllingFieldValue>
+            <valueName>Idukki</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>West</controllingFieldValue>
+            <valueName>Mumbai</valueName>
+        </valueSettings>
+    </valueSet>
+</CustomField>

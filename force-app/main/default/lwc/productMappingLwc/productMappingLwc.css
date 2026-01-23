@@ -1,0 +1,108 @@
+:host {
+    display: block;
+}
+.custom-padding {
+    padding-left: 10px; 
+    padding-right: 10px; 
+}
+.inputcustompadding{
+    padding-left: 5px; 
+}
+.readonly-bordered {
+  --slds-c-input-shadow: 0 0 0 0.45px black;
+  --slds-c-input-color-background: #ffffff;
+  --slds-c-input-color-border: #d8dde6;
+  --slds-c-input-radius-border: 0.25rem;
+}
+.border {
+    border-style: solid;
+    border-width: 0.5px;
+    border-color: rgba(50, 50, 93, 0.25);
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(50, 50, 93, 0.15) !important;
+}
+
+.product-Container {
+    display: flex;
+    width: 100%; 
+    margin-bottom: 40px;
+  
+}
+.table-container {
+    overflow-x: auto;
+    margin-top: 10px;
+    overflow: initial;
+}
+table { 
+    margin-top: 10px;
+    border: 0.25px solid #808080;
+    border-collapse: separate;
+    border-left: 0;
+    border-radius: 4px;
+    border-spacing: 0px;
+}
+thead {
+    display: table-header-group;
+    vertical-align: middle;
+    border-color: inherit;
+    border-collapse: separate;
+    background-color:  #4472c4;
+    color: white;
+}
+tr {
+    display: table-row;
+    vertical-align: inherit;
+    border-color: inherit;
+}
+th, td {
+    padding: 5px; 
+    text-align: center;
+    vertical-align: top;
+    border-left: 0.25px solid #808080;    
+    min-width: 50px;
+}
+td {
+    border-top: 0.25px solid #808080;   
+}
+thead:first-child tr:first-child th:first-child, tbody:first-child tr:first-child td:first-child {
+    border-radius: 4px 0 0 0;
+}
+thead:last-child tr:last-child th:first-child, tbody:last-child tr:last-child td:first-child {
+    border-radius: 0 0 0 4px;
+}
+
+.custom-button {
+    font-size: 13px !important;
+}
+.footer {
+    align-items: center;
+}
+.slds-col {
+    margin-left: 5px;
+}
+.custompadding
+{
+    padding-bottom: 0px;
+}
+
+/* Mobile-only: Fix footer at bottom */
+@media screen and (max-width: 768px) {
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: white;
+        padding: 5px;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .custompadding
+    {
+        padding-bottom: 10px;
+    }
+}

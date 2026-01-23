@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Designation__c</fullName>
+    <externalId>false</externalId>
+    <label>Designation</label>
+    <required>false</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Area Sales Manager</fullName>
+                <default>false</default>
+                <label>Area Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Chief Executive Officer - Sales</fullName>
+                <default>false</default>
+                <label>Chief Executive Officer - Sales</label>
+            </value>
+            <value>
+                <fullName>Consultant/Mentor</fullName>
+                <default>false</default>
+                <label>Consultant/Mentor</label>
+            </value>
+            <value>
+                <fullName>Delivery Boy</fullName>
+                <default>false</default>
+                <label>Delivery Boy</label>
+            </value>
+            <value>
+                <fullName>Depot In Charge</fullName>
+                <default>false</default>
+                <label>Depot In Charge</label>
+            </value>
+            <value>
+                <fullName>Deputy Area Sales Manager</fullName>
+                <default>false</default>
+                <label>Deputy Area Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Deputy Regional Sales Manager</fullName>
+                <default>false</default>
+                <label>Deputy Regional Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Deputy Territory Sales Manager</fullName>
+                <default>false</default>
+                <label>Deputy Territory Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Distributor Salesman</fullName>
+                <default>false</default>
+                <label>Distributor Salesman</label>
+            </value>
+            <value>
+                <fullName>Executive</fullName>
+                <default>false</default>
+                <label>Executive</label>
+            </value>
+            <value>
+                <fullName>General  Manager</fullName>
+                <default>false</default>
+                <label>General  Manager</label>
+            </value>
+            <value>
+                <fullName>Interim Sales Representative</fullName>
+                <default>false</default>
+                <label>Interim Sales Representative</label>
+            </value>
+            <value>
+                <fullName>Jr.Territory Sales Executive</fullName>
+                <default>false</default>
+                <label>Jr.Territory Sales Executive</label>
+            </value>
+            <value>
+                <fullName>Junior Territory Sales Executive</fullName>
+                <default>false</default>
+                <label>Junior Territory Sales Executive</label>
+            </value>
+            <value>
+                <fullName>Key Accounts Executive</fullName>
+                <default>false</default>
+                <label>Key Accounts Executive</label>
+            </value>
+            <value>
+                <fullName>Key Accounts Manager</fullName>
+                <default>false</default>
+                <label>Key Accounts Manager</label>
+            </value>
+            <value>
+                <fullName>Management Trainee</fullName>
+                <default>false</default>
+                <label>Management Trainee</label>
+            </value>
+            <value>
+                <fullName>Manager</fullName>
+                <default>false</default>
+                <label>Manager</label>
+            </value>
+            <value>
+                <fullName>Merchandiser</fullName>
+                <default>false</default>
+                <label>Merchandiser</label>
+            </value>
+            <value>
+                <fullName>Regional Sales Manager</fullName>
+                <default>false</default>
+                <label>Regional Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Sales Representative</fullName>
+                <default>false</default>
+                <label>Sales Representative</label>
+            </value>
+            <value>
+                <fullName>Secondary Sales Associates</fullName>
+                <default>false</default>
+                <label>Secondary Sales Associates</label>
+            </value>
+            <value>
+                <fullName>Senior Area Sales Manager</fullName>
+                <default>false</default>
+                <label>Senior Area Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Senior Executive</fullName>
+                <default>false</default>
+                <label>Senior Executive</label>
+            </value>
+            <value>
+                <fullName>Senior Key Accounts Officer</fullName>
+                <default>false</default>
+                <label>Senior Key Accounts Officer</label>
+            </value>
+            <value>
+                <fullName>Senior Regional Sales Manager</fullName>
+                <default>false</default>
+                <label>Senior Regional Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Senior Sales &amp; Distribution Manager</fullName>
+                <default>false</default>
+                <label>Senior Sales &amp; Distribution Manager</label>
+            </value>
+            <value>
+                <fullName>Senior Territory Sales Executive</fullName>
+                <default>false</default>
+                <label>Senior Territory Sales Executive</label>
+            </value>
+            <value>
+                <fullName>Senior Territory Sales Manager</fullName>
+                <default>false</default>
+                <label>Senior Territory Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Territory Sales Executive</fullName>
+                <default>false</default>
+                <label>Territory Sales Executive</label>
+            </value>
+            <value>
+                <fullName>Territory Sales Manager</fullName>
+                <default>false</default>
+                <label>Territory Sales Manager</label>
+            </value>
+            <value>
+                <fullName>Trainee</fullName>
+                <default>false</default>
+                <label>Trainee</label>
+            </value>
+            <value>
+                <fullName>Distributor Sales Man</fullName>
+                <default>false</default>
+                <label>Distributor Sales Man</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

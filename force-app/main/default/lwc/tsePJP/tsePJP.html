@@ -1,0 +1,70 @@
+<template>
+    <div class="slds-grid slds-gutters">
+        <div class="slds-col slds-size_3-of-12" style="min-height: 600px; overflow-y: auto;">
+            <lightning-card title="Beats">
+                <div class="slds-p-around_medium">
+                    <lightning-input
+                        type="search"
+                        placeholder="Search Beat"
+                        onchange={handleAccountSearch}>
+                    </lightning-input>
+                    <div class="accounts-container">
+                        <template for:each={filteredAccounts} for:item="account">
+                            <div key={account.Id} class="account-item" draggable="true"
+                                data-id={account.Id}
+                                ondragstart={handleDragStart}>
+                                {account.Name}
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </lightning-card>
+        </div>
+
+        <div class="slds-col slds-size_9-of-12">
+            <lightning-card>
+                <div class="calendar-controls slds-p-around_medium">
+                    <button class="slds-button slds-button_neutral" onclick={previousMonth}>&#8592; Previous</button>
+                    <span class="slds-p-horizontal_medium">{currentMonth} {currentYear}</span>
+                    <button class="slds-button slds-button_neutral" onclick={nextMonth}>Next &#8594;</button>
+                </div>
+
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <div class="calendar-header-day">Sun</div>
+                        <div class="calendar-header-day">Mon</div>
+                        <div class="calendar-header-day">Tue</div>
+                        <div class="calendar-header-day">Wed</div>
+                        <div class="calendar-header-day">Thu</div>
+                        <div class="calendar-header-day">Fri</div>
+                        <div class="calendar-header-day">Sat</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <template for:each={calendarDays} for:item="day">
+                            <div key={day.date} class="calendar-day" 
+                                 data-date={day.date}
+                                 ondragover={handleDragOver}
+                                 ondrop={handleDrop}>
+                                <div class="calendar-date">{day.dayNumber}</div>
+                                <div class="calendar-events">
+                                    <template for:each={day.accounts} for:item="account">
+                                        <div key={account.Id} class="calendar-event">
+                                            {account.Name}
+                                            <lightning-button-icon 
+                                                icon-name="utility:close" 
+                                                alternative-text="Remove"
+                                                data-date={day.date}
+                                                data-account={account.Id}
+                                                onclick={removeAccount}>
+                                            </lightning-button-icon>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </lightning-card>
+        </div>
+    </div>
+</template>

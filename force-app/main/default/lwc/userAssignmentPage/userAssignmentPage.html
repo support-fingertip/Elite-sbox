@@ -1,0 +1,130 @@
+<template>
+    <div class="slds-tabs_card">
+        <div class="slds-page-header">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-opportunity">
+                <lightning-icon
+                  icon-name="standard:customer_360"
+                  alternative-text="Event"
+                  title="Event"
+                ></lightning-icon>
+              </span>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span>ELITE FOODS</span>
+                                        <span class="slds-page-header__title slds-truncate" title="Assign Users to Beat">Assign Users to Beat</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <lightning-card>
+        <div class="slds-p-around_medium slds-theme_default slds-box" style="width: 100%;">
+            <div class="slds-grid slds-wrap slds-gutters">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                    <lightning-input type="text" label="Search by name" value={nameFilter}
+                        onchange={handleUserFilterChange}>
+                    </lightning-input>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                    <lightning-input type="text" label="Search by Username" value={usernameFilter}
+                        onchange={handleUserFilterChange}>
+                    </lightning-input>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                    <lightning-combobox label="Search by Region" name="reg" options={data.regionPick}
+                        value={regionFilter} onchange={handleUserFilterChange}>
+                    </lightning-combobox>
+                </div>
+            </div>
+            <div class="slds-align_absolute-center slds-m-top_large">
+                <lightning-button variant="brand" label="Save" onclick={handleSave}></lightning-button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <template if:true={isDesktop}>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Region</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={data.users} for:item="user" for:index="i">
+                            <tr key={user.Id}>
+                                <td>{user.Name}</td>
+                                <td>{user.Username}</td>
+                                <td>{user.Region__c}</td>
+                                <td>
+                                    <template if:true={user.isAddButtonShow}>
+                                        <div onclick={handleAddUser} data-index={i}>
+                                            <lightning-button-icon icon-name="utility:add" class="green"
+                                                alternative-text="Add">
+                                            </lightning-button-icon>
+                                        </div>
+                                    </template>
+                                    <template if:false={user.isAddButtonShow}>
+                                        <div onclick={handleRemoveUser} data-index={i}>
+                                            <lightning-button-icon icon-name="utility:delete" class="red"
+                                                alternative-text="Add">
+                                            </lightning-button-icon>
+                                        </div>
+                                    </template>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+
+            <template if:false={isDesktop}>
+                <template for:each={users} for:item="user" for:index="i">
+                    <div class="store-card" key={user.Id}>
+                        <div class="store-header">
+                            <span class="store-name">{user.Name}</span>
+                            <span class="store-phone">{user.Username}</span>
+                        </div>
+                        <div class="store-details">
+                            <p><strong>Region:</strong> {user.Region__c}</p>
+                        </div>
+                        <div class="store-action">
+                            <template if:true={user.isAddButtonShow}>
+                                <div onclick={handleAddUser} data-index={i}>
+                                    <lightning-button-icon icon-name="utility:add" alternative-text="Add">
+                                    </lightning-button-icon>
+                                </div>
+                            </template>
+                            <template if:false={user.isAddButtonShow}>
+                                <div onclick={handleRemoveUser} data-index={i}>
+                                    <lightning-button-icon icon-name="utility:delete" alternative-text="Delete">
+                                    </lightning-button-icon>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </div>
+
+
+    </lightning-card>
+
+    <template lwc:if={isSubPartLoad}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+</template>

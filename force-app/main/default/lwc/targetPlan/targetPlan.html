@@ -1,0 +1,525 @@
+<template>
+    <div class="mainHome">
+         <!-- When page is loading -->
+        <template lwc:if={isLoading}>
+            <c-on-loading-screen></c-on-loading-screen>
+        </template>
+        <template lwc:else>
+            <div class="screen">
+                <div class="navbar">
+                    <!-- Left-aligned icon & text -->
+                    <div class="navbar-left">
+                        <!--<lightning-icon icon-name="standard:report" alternative-text="Report" size="medium"></lightning-icon>-->
+                        <img src={targetPlanIcon} width="35" height="35" >
+                        <span class="header"><b>Target Plan</b></span>
+                    </div>
+                
+                    <!-- Right-aligned refresh icon -->
+                    <div class="navbar-right">
+                        <i class="material-icons screen-bar-nav-icon" onclick={getAllData}>
+                            <lightning-icon icon-name="utility:refresh" size="small" alternative-text="Refresh"></lightning-icon>
+                        </i>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <div class="combobox-container">
+                        <!-- Left Side: Dropdowns -->
+                        <div class="combobox-group">
+                            <!--Division-->
+                            <lightning-combobox
+                                label="Division"
+                                value={targetPlan.Division__c}
+                                name ="Division"
+                                placeholder="Select Division"
+                                data-id="Division"
+                                options={divisionOptions}
+                                required="true"
+                                dropdown-alignment="left"
+                                message-when-value-missing="Select Division"
+                                onchange={handleInputChnage}>
+                            </lightning-combobox>
+                            <!--Region-->
+                            <lightning-combobox
+                                label="Region"
+                                value={targetPlan.Region__c}
+                                name ="Region"
+                                data-id="Region"
+                                placeholder="Select Region"
+                                options={regionOptions}
+                                required="true"
+                                dropdown-alignment="left"
+                                message-when-value-missing="Select Region"
+                                onchange={handleInputChnage}>
+                            </lightning-combobox>
+                            <!--Incentive Type-->
+                            <lightning-combobox
+                                label="Incentive Type"
+                                value={targetPlan.Incentive_Type__c}
+                                name ="IncentiveType"
+                                placeholder="Select Incentive Type"
+                                data-id="IncentiveType"
+                                options={incentiveTypeOptions}
+                                required="true"
+                                dropdown-alignment="left"
+                                message-when-value-missing="Select Incentive Type"
+                                onchange={handleInputChnage}>
+                            </lightning-combobox>
+                            <!--<lightning-input 
+                                label="Slab Applied At"
+                                type="Number" 
+                                name ="SlabAppliedAt"
+                                value={targetPlan.Slab_Applied_At__c}
+                                data-index={index}
+                                onchange={handleInputChnage}>
+                            </lightning-input>-->
+                            <div class="togglebutton">
+                                <lightning-input type="toggle" 
+                                    class={toggleclass} 
+                                    label="Toggle Button" 
+                                    name="toggle" 
+                                    message-toggle-active ="" 
+                                    message-toggle-inactive=""
+                                    checked={targetPlan.Active__c}
+                                    variant="label-hidden"
+                                    onchange={handleInputChnage}>
+                                </lightning-input>
+                            </div>
+                           <!--<div class="checkbox-wrapper">
+                                <lightning-input label="Active" type="checkbox" checked={checkboxVal} variant="label-stacked"></lightning-input>
+                            </div>-->
+                        </div>
+                    
+                        <!-- Right Side: Buttons -->
+                        <div class="button-group">
+                            <lightning-button 
+                                variant="neutral" 
+                                label="Cancel" 
+                                onclick={handleCancel}
+                                class="slds-m-right_small">
+                            </lightning-button>
+                            <lightning-button 
+                                class="customButton"
+                                variant="brand" 
+                                label="Save" 
+                                onclick={handleSave}>
+                            </lightning-button>
+                        </div>
+                        
+                    </div>
+                    <!--Logic List-->
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Target Type</th>
+                                    <th>Formula</th>
+                                    <th>Object</th>
+                                    <th>Field</th>
+                                    <th>Value</th>
+                                    <th>Weightage</th>
+                                    <th>Max Incentive</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={logicList} for:item="log" for:index="index">
+                                    <tr  key={log.index}>
+                                        <!--Name-->
+                                        <td style="width:11.25%;">
+                                            <lightning-input 
+                                                type="text" 
+                                                data-id="logicFields"
+                                                data-index={index}
+                                                variant="label-hidden"
+                                                onchange={handleInputLogicChange}
+                                                message-when-value-missing="Enter Name"
+                                                name="Name"
+                                                value={log.Name}
+                                                required="true">
+                                            </lightning-input>
+                                        </td>
+                                        <!--Target Type-->
+                                        <td style="width:11.25%;">
+                                            <lightning-combobox
+                                                variant="label-hidden"
+                                                data-index={index}
+                                                data-id="logicFields"
+                                                name="targetType"
+                                                value={log.targetType}
+                                                dropdown-alignment="auto"
+                                                options={targetTypeOptions}
+                                                message-when-value-missing="Select Target Type"
+                                                placeholder="Select Target Type"
+                                                required="true"
+                                                onchange={handleInputLogicChange}>
+                                            </lightning-combobox>
+                                        </td>
+                                        <!--Formula-->
+                                        <td style="width:11.25%;">
+                                            <lightning-combobox
+                                                variant="label-hidden"
+                                                data-index={index}
+                                                data-id="logicFields"
+                                                name="formula"
+                                                value={log.formula}
+                                                dropdown-alignment="auto"
+                                                placeholder="Select Formula"
+                                                message-when-value-missing="Select Formula"
+                                                options={log.formulaOptions}
+                                                required="true"
+                                                disabled={log.isFormulaDisabled}
+                                                onchange={handleInputLogicChange}>
+                                        </lightning-combobox>
+                                        </td>
+                                        <!--Object-->
+                                        <td style="width:11.25%;">
+                                            <lightning-combobox
+                                                variant="label-hidden"
+                                                data-index={index}
+                                                data-id="logicFields"
+                                                name="object"
+                                                value={log.object}
+                                                dropdown-alignment="auto"
+                                                placeholder="Select Object"
+                                                message-when-value-missing="Select Object"
+                                                options={log.objectOptions}
+                                                required="true"
+                                                disabled={log.isObjectDisabled}
+                                                onchange={handleInputLogicChange}>
+                                            </lightning-combobox>
+                                        </td>
+                                        <!--Field-->
+                                        <td style="width:11.25%;"> 
+                                            <lightning-combobox
+                                                variant="label-hidden"
+                                                data-index={index}
+                                                data-id="logicFields"
+                                                name="field"
+                                                value={log.field}
+                                                dropdown-alignment="auto"
+                                                options={log.fieldOptions}
+                                                placeholder="Select Field"
+                                                message-when-value-missing="Select Field"
+                                                required="true"
+                                                disabled={log.isFieldDisabled}
+                                                onchange={handleInputLogicChange}>
+                                            </lightning-combobox>
+                                        </td>
+                                        <!--Product Category/Selling Category/Product/Account Type-->
+                                        <td style="width:14.25%;">
+                                            <!--Product Category-->
+                                            <template lwc:if={log.isShowProductCategory}>
+                                                <div class="slds-m-right_xx-small slds-form-element">
+                                                    <div class="slds-form-element__control">
+                                                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                <lightning-input
+                                                                    label="Product Category"
+                                                                    variant="label-hidden"
+                                                                    data-index={index}
+                                                                    type="search"
+                                                                    value={log.productCategoryName} 
+                                                                    data-id={log.productCatDataId} 
+                                                                    disabled={log.productCategoryDisable}
+                                                                    placeholder="Product Category"
+                                                                    message-when-value-missing="Product Category"
+                                                                    onchange={handleProductCategorySearch}
+                                                                    required="true">
+                                                                </lightning-input> 
+                                                            </div>
+                                                            <template lwc:if={log.isShowProductCategoryValues}>
+                                                                <div id={log.index} class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                    <template for:each={SearchedProductCategoryData} for:item="srch">
+                                                                        <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                            <li role="presentation" class="slds-listbox__item">
+                                                                              <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" 
+                                                                              role="option" onclick={selectProductCategory} data-id={srch.Id} data-name={srch.Name} data-index={index}>
+                                                                                <lightning-icon 
+                                                                                    icon-name="standard:product_service_campaign_item" size="small">
+                                                                                </lightning-icon>
+                                                                                <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                                <span class="slds-media__body">
+                                                                                  <span class="slds-truncate" title={srch.Name}>
+                                                                                    <span>{srch.Name}</span>
+                                                                                  </span>
+                                                                                </span>
+                                                                              </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <!--Product -->
+                                            <template lwc:if={log.isShowProduct}>
+                                                <div class="slds-m-right_xx-small slds-form-element">
+                                                    <div class="slds-form-element__control">
+                                                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                <lightning-input
+                                                                    label="Product"
+                                                                    variant="label-hidden"
+                                                                    data-index={index}
+                                                                    type="search"
+                                                                    value={log.productName} 
+                                                                    data-id={log.productDataId} 
+                                                                    message-when-value-missing="Select Product"
+                                                                    disabled={log.prouctDisable}
+                                                                    placeholder="Product"
+                                                                    onchange={handleProductSearch}
+                                                                    required="true">
+                                                                </lightning-input> 
+                                                            </div>
+                                                            <template lwc:if={log.isShowProductValues}>
+                                                                <div id={log.index} class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                    <template for:each={SearchedProduct} for:item="srch">
+                                                                        <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                            <li role="presentation" class="slds-listbox__item">
+                                                                              <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                              onclick={selectProduct} data-id={srch.Id} data-name={srch.Name}  data-index={index}>
+                                                                                <lightning-icon 
+                                                                                    icon-name="standard:product_service_campaign_item" size="small">
+                                                                                </lightning-icon>
+                                                                                <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                                <span class="slds-media__body">
+                                                                                  <span class="slds-truncate" title={srch.Name}>
+                                                                                    <span>{srch.Name}</span>
+                                                                                  </span>
+                                                                                </span>
+                                                                              </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <!--Account Type-->
+                                            <template lwc:if={log.isShowAccountType}>
+                                                <lightning-combobox
+                                                    variant="label-hidden"
+                                                    data-index={index}
+                                                    data-id="logicFields"
+                                                    name="accountType"
+                                                    value={log.accountType}
+                                                    dropdown-alignment="auto"
+                                                    options={AccountTypeOptions}
+                                                    message-when-value-missing="Select Account Type"
+                                                    placeholder="Select Account Type"
+                                                    required="true"
+                                                    disabled={log.accountTypeDisable}
+                                                    onchange={handleInputLogicChange}>
+                                                </lightning-combobox>
+                                            </template>
+                                            <!--Selling Category-->
+                                            <template lwc:if={log.isShowSellingCategory}>
+                                                <div class="slds-m-right_xx-small slds-form-element">
+                                                    <div class="slds-form-element__control">
+                                                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                <lightning-input
+                                                                    label="Selling Category"
+                                                                    variant="label-hidden"
+                                                                    data-index={index}
+                                                                    type="search"
+                                                                    value={log.sellingCategoryName} 
+                                                                    data-id={log.sellingCatDataId} 
+                                                                    disabled={log.sellingCategoryDisable}
+                                                                    placeholder="Selling Category"
+                                                                    message-when-value-missing="Selling Category"
+                                                                    onchange={handleSellingCategorySearch}
+                                                                    required="true">
+                                                                </lightning-input> 
+                                                            </div>
+                                                            <template lwc:if={log.isShowSellingCategoryValues}>
+                                                                <div id={log.index} class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                    <template for:each={searchedSellingCategoryData} for:item="srch">
+                                                                        <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                            <li role="presentation" class="slds-listbox__item">
+                                                                              <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" 
+                                                                              role="option" onclick={selectSelllingCategory} data-id={srch.Id} data-name={srch.Name} data-index={index}>
+                                                                                <lightning-icon 
+                                                                                    icon-name="standard:product_service_campaign_item" size="small">
+                                                                                </lightning-icon>
+                                                                                <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                                <span class="slds-media__body">
+                                                                                  <span class="slds-truncate" title={srch.Name}>
+                                                                                    <span>{srch.Name}</span>
+                                                                                  </span>
+                                                                                </span>
+                                                                              </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <!--For Empty field-->
+                                            <template lwc:if={log.isDisabledfield}>
+                                                <lightning-input 
+                                                    type="text" 
+                                                    data-index={index}
+                                                    variant="label-hidden"
+                                                    name="Name"
+                                                    disabled="true">
+                                                </lightning-input>
+                                            </template>
+                                        </td>
+                                        <!--Weightage-->
+                                        <td style="width:11.25%;">
+                                            <lightning-input 
+                                                type="Number" 
+                                                name="weightage"
+                                                data-id="logicFields"
+                                                message-when-value-missing="Enter Weightage"
+                                                data-index={index}
+                                                variant="label-hidden"
+                                                required="true"
+                                                onchange={handleInputLogicChange}
+                                                value={log.weightage}>
+                                            </lightning-input>
+                                        </td>
+                                        <!--Max Inc.-->
+                                        <td style="width:11.25%;">
+                                            <lightning-input 
+                                                type="Number" 
+                                                name="maxIncentive"
+                                                data-id="logicFields"
+                                                required="true"
+                                                message-when-value-missing="Enter Weightage"
+                                                data-index={index}
+                                                variant="label-hidden"
+                                                onchange={handleInputLogicChange}
+                                                value={log.maxIncentive}>
+                                            </lightning-input>
+                                        </td>
+                                        <!--Action-->
+                                        <td style="width:8%;">
+                                            <div class="action-buttons">
+                                                <lightning-button-icon 
+                                                icon-name="utility:delete"
+                                                onclick={removeRow} 
+                                                data-index={index}>
+                                                </lightning-button-icon>
+                                                <lightning-button-icon 
+                                                    icon-name="utility:add"
+                                                    onclick={addRow}
+                                                    data-index={index}>
+                                                </lightning-button-icon>
+                                            
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!--Slab List-->
+                    <div class="Wage-Container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>WA From</th>
+                                    <th>WA To</th>
+                                    <th>Incentive Percentage</th>
+                                    <th>Incentive Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={wagelist} for:item="wg" for:index="index">
+                                    <tr  key={wg.index}>
+                                        <!--WA From-->
+                                        <td style="width:20%;">
+                                            <lightning-input 
+                                                type="Number" 
+                                                name="waFrom"
+                                                data-id="wageFields"
+                                                message-when-value-missing="Enter WA From"
+                                                data-index={index}
+                                                variant="label-hidden"
+                                                required="true"
+                                                onchange={handleInputWageChange}
+                                                value={wg.waFrom}>
+                                            </lightning-input>
+                                        </td>
+                                        <!--WA To-->
+                                        <td style="width:20%;">
+                                            <lightning-input 
+                                                type="Number" 
+                                                name="waTo"
+                                                message-when-value-missing="Enter WA To"
+                                                message-when-range-underflow="Please enter more than WA From"
+                                                data-id="wageFields"
+                                                data-index={index}
+                                                variant="label-hidden"
+                                                required="true"
+                                                onchange={handleInputWageChange}
+                                                value={wg.waTo}
+                                                min={wg.waFrom}>
+                                            </lightning-input>
+                                        </td>
+                                        <!--Incentive Percentage-->
+                                        <td style="width:20%;">
+                                            <lightning-input 
+                                                type="Number" 
+                                                name="incentivePercentage"
+                                                message-when-value-missing="Enter Incentive Percentage"
+                                                data-id="wageFields"
+                                                data-index={index}
+                                                variant="label-hidden"
+                                                required="true"
+                                                onchange={handleInputWageChange}
+                                                value={wg.incentivePercentage}>
+                                            </lightning-input>
+                                        </td>
+                                        <!--Incentive Amount-->
+                                        <td style="width:20%;">
+                                            <lightning-input 
+                                                type="Number" 
+                                                name="incentiveAmount"
+                                                message-when-value-missing="Enter Incentive Amount"
+                                                data-id="wageFields"
+                                                data-index={index}
+                                                variant="label-hidden"
+                                                required="true"
+                                                onchange={handleInputWageChange}
+                                                value={wg.incentiveAmount}>
+                                            </lightning-input>
+                                        </td>
+                                        <!--Action-->
+                                        <td style="width:15%;">
+                                            <div class="action-buttons">
+                                                <lightning-button-icon 
+                                                icon-name="utility:delete"
+                                                onclick={removeWageRow} 
+                                                data-index={index}>
+                                                </lightning-button-icon>
+                                                <lightning-button-icon 
+                                                    icon-name="utility:add"
+                                                    onclick={addWageRow}
+                                                    data-index={index}>
+                                                </lightning-button-icon>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                 
+                </div>
+            </div>
+        </template>
+    </div>
+    
+</template>

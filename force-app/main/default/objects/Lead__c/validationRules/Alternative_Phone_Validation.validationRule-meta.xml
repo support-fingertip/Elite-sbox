@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Alternative_Phone_Validation</fullName>
+    <active>true</active>
+    <errorConditionFormula>NOT(AND(LEN(  Alternative_Phone_Number__c ) = 10,ISNUMBER(Alternative_Phone_Number__c )) || LEN(Alternative_Phone_Number__c ) = 0)</errorConditionFormula>
+    <errorDisplayField>Alternative_Phone_Number__c</errorDisplayField>
+    <errorMessage>Please Enter Valid Phone Number</errorMessage>
+</ValidationRule>

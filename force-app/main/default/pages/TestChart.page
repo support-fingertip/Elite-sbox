@@ -1,0 +1,70 @@
+<apex:page controller="TargetActualsChartController">
+    <html>
+        <head>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </head>
+        <body>
+            <h2>Target vs Actuals Chart</h2>
+
+            <canvas id="myChart" width="400" height="200"></canvas>
+
+            <script>
+                // Fetch serialized data from Apex controller
+                var chartData = {!chartDataList}; // Pass chartDataList directly into JS
+
+                var labels = [];
+                var targetData = [];
+                var actualData = [];
+                var yetToAchieveData = [];
+
+                // Process the data for the chart
+                chartData.forEach(function(data) {
+                    labels.push(data.userName + ' (' + data.monthYear + ')');
+                    targetData.push(data.targetValue);
+                    actualData.push(data.actualValue);
+                    yetToAchieveData.push(data.yetToAchieve);
+                });
+
+                // Chart.js configuration
+                var ctx = document.getElementById('myChart').getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels, // User Name + Month-Year on X-axis
+                        datasets: [{
+                            label: 'Target Value',
+                            data: targetData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Actual Value',
+                            data: actualData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Yet to Achieve',
+                            data: yetToAchieveData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            </script>
+        </body>
+    </html>
+</apex:page>

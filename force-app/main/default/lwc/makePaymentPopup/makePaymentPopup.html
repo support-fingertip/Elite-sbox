@@ -1,0 +1,64 @@
+<!-- <template>
+    <template if:true={isOpen}>
+        <section class="modalOverlay">
+            <div class="modalContent">
+                <h2 class="modalTitle">Make Payment</h2>
+
+                <div class="formGroup">
+                    <label class="inputLabel">Payment Method</label>
+                    <lightning-combobox
+                        name="paymentMethod"
+                        value={paymentMethod}
+                        placeholder="Select Payment Method"
+                        options={paymentOptions}
+                        onchange={handlePicklistChange}>
+                    </lightning-combobox>
+                </div>
+
+                <div class="formGroup">
+                    <label class="inputLabel">Payment Status</label>
+                    <lightning-combobox
+                        name="paymentStatus"
+                        value={paymentStatus}
+                        placeholder="Select Payment Status"
+                        options={statusOptions}
+                        onchange={handlePicklistChange}>
+                    </lightning-combobox>
+                </div>
+
+                <div class="buttonGroup">
+                    <button class="payButton" onclick={handlePay}>Pay</button>
+                    <button class="cancelButton" onclick={handleCancel}>Cancel</button>
+                </div>
+            </div>
+        </section>
+    </template>
+</template> -->
+
+
+<template>
+    <template if:true={isOpen}>
+        <section class="modalOverlay">
+            <div class="modalContent">
+                <h2 class="modalTitle">Make Payment</h2>
+
+                <div class="summaryRow">
+                    <span class="summaryLabel">No. of Invoices:</span>
+                    <span class="summaryValue">{invoiceCount}</span>
+                </div>
+
+                <div class="summaryRow">
+                    <span class="summaryLabel">Total Amount:</span>
+                    <span class="summaryValue">₹ {totalAmount}</span>
+                </div>
+               
+
+                <div class="buttonGroup">
+                    <button class="payButton" onclick={handlePay} disabled={isPayDisabled}>Pay</button>
+                    <button class="cancelButton" onclick={handleCancel}>Cancel</button>
+                </div>
+            </div>
+        </section>
+    </template>
+<c-custom-toast auto-close-time="8000"></c-custom-toast> <!-- Added custom toast at the bottom of the page -->
+</template>

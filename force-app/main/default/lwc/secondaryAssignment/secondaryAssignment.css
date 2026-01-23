@@ -1,0 +1,318 @@
+/**View From CSS**/
+.dropdown{
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    overflow: visible;
+}
+.readonly-bordered {
+  --slds-c-input-shadow: 0 0 0 0.45px black;
+  --slds-c-input-color-background: #ffffff;
+  --slds-c-input-color-border: #d8dde6;
+  --slds-c-input-radius-border: 0.25rem;
+}
+.task-head-button{
+    margin-top:10px;
+    padding: 10px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 0px 20px 10px 20px;
+}
+.task-button{
+    padding: 5px 8px;
+    background-color: #e8e8e8;
+    color: #2f5597;
+    border-radius: 15px;
+    font-weight: 550;
+    width: 100%;
+    text-align: center;
+}
+.pointer{
+    cursor: pointer;
+}
+.competiton-body{
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    position: relative;
+}
+.borderLine{
+    border-bottom: #c3c3c3 1px solid;
+}
+.route{
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+}
+.route-outlet{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 8px;
+    padding-bottom: 10px;
+}
+.route-left {
+    display: flex;
+    flex-direction: column;
+}
+.outlet-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.outlet-label {
+    min-width: 130px; 
+    text-align: left;
+}
+
+
+.outlet-value {
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: calc(100% - 100px); 
+    white-space: normal;
+    word-break: break-word;
+}
+
+
+
+
+
+
+
+
+
+/**Edit Form CSS **/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+    cursor: pointer;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 2px solid #d1d1d1;
+    /* Light grey border */
+    border-radius: 5px;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+   /*  margin-top: 1.2rem; */
+}
+
+.back-button:hover {
+    background-color: #f3f3f3;
+    /* Light grey on hover */
+    border-color: #e9ecf4;
+    /* Salesforce blue on hover */
+    box-shadow: 2px 2px 10px rgba(0, 112, 210, 0.2);
+    /* Slight blue glow */
+}
+
+.butto_slds {
+    margin-top: 1.2rem;
+}
+
+/* Default width for filter inputs */
+.filterClass {
+    width: 12rem;
+    min-width: 150px;
+    /* Minimum width for inputs */
+}
+.user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.4; /* Tightens vertical spacing */
+    margin-bottom: 8px;
+}
+@media screen and (max-width: 768px) {
+  .user-info {
+  margin-top: 8px;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .filters {
+        flex-direction: column;
+        /* Stack items vertically on mobile */
+        gap: 15px;
+        /* Increase gap for mobile */
+        align-items: stretch;
+        /* Ensure full width of the inputs */
+    }
+
+    .filterClass {
+        width: 100%;
+        /* Ensure inputs take full width on mobile */
+        min-width: 100%;
+        /* Remove any minimum width restriction */
+    }
+
+    .back-button {
+        margin-top: 1rem;
+        /* Reduce margin on mobile */
+    }
+
+    .butto_slds {
+        margin-top: 1rem;
+        /* Reduce margin on mobile */
+    }
+
+    .table-container {
+        display: block;
+    }
+
+    .store-card {
+        display: block;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+    }
+
+    .store-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .store-name {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .store-phone {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .store-details {
+        margin-bottom: 12px;
+    }
+
+    .store-details p {
+        margin: 6px 0;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .store-action {
+        text-align: right;
+    }
+
+    .store-action div {
+        display: inline-block;
+    }
+
+    .store-action lightning-button-icon {
+        margin: 5px;
+    }
+
+    .store-card:hover {
+        background-color: #f9f9f9;
+        cursor: pointer;
+    }
+}
+
+/* For tablet or small desktop screens */
+@media (max-width: 1024px) {
+    .filters {
+        flex-direction: row;
+        /* Arrange items in a row */
+        gap: 15px;
+        /* Adjust gap for tablets */
+        justify-content: space-between;
+        /* Spread out the items */
+    }
+
+    .filterClass {
+        width: 200px;
+        /* Adjust input width on tablets */
+    }
+
+    .back-button {
+        margin-top: 1.2rem;
+        /* Keep margin consistent with larger screens */
+    }
+
+   
+}
+
+.lookupContainer {
+    position: relative;
+}
+
+.slds-dropdown {
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+}
+.red{
+  --slds-g-color-neutral-base-50: red;
+}
+.green{
+  --slds-g-color-neutral-base-50: green  !important; /* Icon color */
+}

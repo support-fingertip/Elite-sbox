@@ -1,0 +1,19 @@
+<template>
+    <lightning-card title="Account Locations Map" icon-name="standard:account">
+        <div class="slds-p-around_medium">
+            <template if:true={mapMarkers}>
+                <lightning-map
+                    map-markers={mapMarkers}
+                    map-polylines={mapPolylines}
+                    map-shapes={mapShapes}
+                    zoom-level="15"
+                    
+                    class="slds-m-around_medium">
+                </lightning-map>
+            </template>
+            <template if:false={mapMarkers}>
+                <p>No account locations to display.</p>
+            </template>
+        </div>
+    </lightning-card>
+</template>

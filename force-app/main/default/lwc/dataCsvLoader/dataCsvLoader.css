@@ -1,0 +1,87 @@
+.success {
+    --slds-c-badge-color-background: #4bca81;
+    --slds-c-badge-text-color: white;
+}
+
+.failed {
+    --slds-c-badge-color-background: #c23934;
+    --slds-c-badge-text-color: white;
+}
+
+.slds-table_striped tbody tr:nth-of-type(odd) {
+    --slds-g-color-neutral-base-95: #f3f3f3;
+}
+
+.filter-section {
+    background: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.1);
+}
+
+.stats-label {
+    font-size: 0.8125rem;
+    line-height: 1.25;
+    color: #706e6b;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.0625em;
+}
+
+.slds-text-heading_medium.slds-text-color_success {
+    color: #2e844a;
+}
+
+.slds-text-heading_medium.slds-text-color_error {
+    color: #c23934;
+}
+
+.results-count {
+    font-weight: 300;
+    color: #706e6b;
+}
+
+.table-container {
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.1);
+}
+
+.record-id {
+    font-family: monospace;
+    background: #f3f3f3;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.125rem;
+    font-size: 0.8125rem;
+}
+/* Anything with class="unmapped" that is a Lightning input/combobox */
+/* red outline + very light red background for the whole row */
+.unmapped {
+    border: 1px solid #c23934;     /* Salesforce error-red */
+    border-radius: 0.25rem;
+    background: #fcebeb;
+}
+
+
+
+
+
+  .custom-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Adjust gap between columns */
+  }
+
+  .custom-col {
+    flex: 1 1 20%; /* This ensures 4 items per row */
+    padding: 10px; /* Adjust padding as per need */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+  }
+
+  .custom-col lightning-combobox {
+    width: 100%; /* Ensure combobox takes full width within the column */
+  }
+
+   .custom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust column width */
+    gap: 20px; /* Space between fields */
+  }

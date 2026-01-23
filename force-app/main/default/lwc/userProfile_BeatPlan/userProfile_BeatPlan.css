@@ -1,0 +1,242 @@
+.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+    cursor: pointer;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 2px solid #d1d1d1;
+    /* Light grey border */
+    border-radius: 5px;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+   /*  margin-top: 1.2rem; */
+}
+
+.back-button:hover {
+    background-color: #f3f3f3;
+    /* Light grey on hover */
+    border-color: #e9ecf4;
+    /* Salesforce blue on hover */
+    box-shadow: 2px 2px 10px rgba(0, 112, 210, 0.2);
+    /* Slight blue glow */
+}
+
+.butto_slds {
+    margin-top: 1.2rem;
+}
+
+/* Default width for filter inputs */
+.filterClass {
+    width: 15rem;
+    min-width: 150px;
+    /* Minimum width for inputs */
+}
+
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .filters {
+        flex-direction: column;
+        /* Stack items vertically on mobile */
+        gap: 15px;
+        /* Increase gap for mobile */
+        align-items: stretch;
+        /* Ensure full width of the inputs */
+    }
+
+    .filterClass {
+        width: 100%;
+        /* Ensure inputs take full width on mobile */
+        min-width: 100%;
+        /* Remove any minimum width restriction */
+    }
+
+    .back-button {
+        margin-top: 1rem;
+        /* Reduce margin on mobile */
+    }
+
+    .butto_slds {
+        margin-top: 1rem;
+        /* Reduce margin on mobile */
+    }
+
+    .table-container {
+        display: block;
+    }
+
+    .store-card {
+        display: block;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+    }
+
+    .store-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .store-name {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .store-phone {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .store-details {
+        margin-bottom: 12px;
+    }
+
+    .store-details p {
+        margin: 6px 0;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .store-action {
+        text-align: right;
+    }
+
+    .store-action div {
+        display: inline-block;
+    }
+
+    .store-action lightning-button-icon {
+        margin: 5px;
+    }
+
+    .store-card:hover {
+        background-color: #f9f9f9;
+        cursor: pointer;
+    }
+}
+
+/* For tablet or small desktop screens */
+@media (max-width: 1024px) {
+    .filters {
+        flex-direction: row;
+        /* Arrange items in a row */
+        gap: 15px;
+        /* Adjust gap for tablets */
+        justify-content: space-between;
+        /* Spread out the items */
+    }
+
+    .filterClass {
+        width: 200px;
+        /* Adjust input width on tablets */
+    }
+
+    .back-button {
+        margin-top: 1.2rem;
+        /* Keep margin consistent with larger screens */
+    }
+
+   
+}
+
+.lookupContainer {
+    position: relative;
+}
+
+.slds-dropdown {
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+}
+.red{
+  --slds-g-color-neutral-base-50: red;
+}
+.green{
+  --slds-g-color-neutral-base-50: green  !important; /* Icon color */
+}
+
+
+/*.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+    cursor: pointer;
+}
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 2px solid #d1d1d1; // Light grey border 
+    border-radius: 5px;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    margin-top: 1.2rem;
+}
+
+.back-button:hover {
+    background-color: #f3f3f3; // Light grey on hover 
+    border-color: #e9ecf4; //Salesforce blue on hover 
+    box-shadow: 2px 2px 10px rgba(0, 112, 210, 0.2); // Slight blue glow 
+}
+.butto_slds{
+    margin-top: 1.2rem;
+}
+.filterClass{
+    width: 12rem;
+}*/

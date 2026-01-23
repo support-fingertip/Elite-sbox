@@ -1,0 +1,11 @@
+<aura:component implements="lightning:actionOverride,force:hasRecordId,force:hasSObjectName">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="heading" type="String"/>
+    <aura:attribute name="pageReference" type="Object"/>
+    <aura:attribute name="isSchemeTrue" type="boolean" default="false"/>
+    
+    <aura:if isTrue="{!v.isSchemeTrue}">
+        <c:salesStrategyForm recordId="{!v.recordId}"/>
+    </aura:if>
+</aura:component>

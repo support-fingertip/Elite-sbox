@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Beat_Owner_DSM_SSA__c</fullName>
+    <externalId>false</externalId>
+    <formula>Child_beat__r.Owner:User.Profile.Name ==&apos;DSM&apos; ||  Child_beat__r.Owner:User.Profile.Name ==&apos;SSA&apos;</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Is Beat Owner DSM/SSA</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Heirarchial_Number__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE(
+TEXT(Profile__c) ,
+&quot;SSA&quot;, 1,
+&quot;DSM&quot;,1,
+&quot;Jr. TSE&quot;, 2,
+&quot;SR&quot;, 2,
+&quot;ISR&quot;, 2,
+&quot;TSE&quot;, 3,
+&quot;Sr. TSE&quot;, 3,
+&quot;TSM&quot;, 4,
+&quot;Sr. TSM&quot;,4,
+&quot;Deputy TSM&quot;,4,
+&quot;Deputy ASM&quot;, 5,
+&quot;Sr. ASM&quot;, 5,
+&quot;ASM &quot;, 5,
+&quot;RSM&quot;,6,
+&quot;Deputy RSM&quot;,6,
+&quot;Sr. RSM&quot;,6,
+&quot;General Manager - Sales&quot;,6,
+&quot;HR&quot;,7,
+&quot;Credit Department&quot;,7,
+&quot;Finance Department&quot;,7,
+&quot;SAP Admin&quot;,8,
+&quot;Admin&quot;,8,
+&quot;System Administrator&quot;,9,
+9
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Heirarchial Number</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

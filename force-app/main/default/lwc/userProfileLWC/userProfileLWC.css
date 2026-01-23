@@ -1,0 +1,937 @@
+.custom1 {
+    background-color: rgb(199, 232, 241)
+}
+
+.minwidth {
+    min-width: 150px;
+}
+.readonly-bordered {
+  --slds-c-input-shadow: 0 0 0 0.45px black;
+  --slds-c-input-color-background: #ffffff;
+  --slds-c-input-color-border: #d8dde6;
+  --slds-c-input-radius-border: 0.25rem;
+}
+
+/* Apply margin only for desktop screens (min-width: 768px) */
+@media screen and (min-width: 768px) {
+    .custom1 {
+        margin: -0.75rem;
+    }
+
+    .custom2 {
+        margin: -0.75rem;
+    }
+}
+
+.screen-1 {
+    display: flex;
+    flex-direction: column;
+    background-image: url('screen-1-bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    overflow: hidden;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.screen-2 {
+    display: flex;
+    flex-direction: column;
+    background-image: url('screen-1-bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    scrollbar-width: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+.header-panel {
+    border-radius: 5px;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f3f3f3;
+    padding: 10px 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.left-section {
+    flex: 1;
+}
+
+.right-section {
+    flex: 1;
+    text-align: center;
+}
+
+.user-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Mobile view (below 768px) */
+@media only screen and (max-width: 768px) {
+    .header-panel {
+        flex-direction: column;  /* stack sections vertically */
+        align-items: stretch;    /* make full width */
+        text-align: center;
+    }
+
+    .left-section, .right-section {
+        flex: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+}
+
+.custom-tabs {
+    margin: 10px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.custom-tabs lightning-tabset {
+    border-bottom: 2px solid #d1d1d1;
+}
+
+.main-heading {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #005792;
+    margin-top: 15px;
+}
+
+.chart-wrapper {
+    display: flex;
+    /* justify-content: center;  */
+    gap: 10px;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+}
+
+.chart-container {
+    width: 327px;
+    height: 200px;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.line-chart-container {
+    width: 50rem;
+    height: 374px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto;
+}
+
+/* Calender */
+.calendar {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: #005fb2;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background-color: #ccc;
+    grid-auto-rows: 120px;
+    /* Adjust height as needed */
+}
+
+.scrolladd {
+    overflow-y: auto;
+    /* Enables vertical scroll */
+    max-height: 80vh;
+    /* Limit the height of the grid */
+}
+
+.calendar-cell {
+    min-height: 60px;
+    /* background: white; */
+    border: 1px solid #ddd;
+    padding: 5px;
+    font-size: 12px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Ensures proper spacing */
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.date-number {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+    width: 100%;
+    padding-right: 5px;
+    margin-bottom: 4px;
+}
+
+.record {
+    background-color: #0070d2;
+    color: white;
+    padding: 3px 5px;
+    border-radius: 5px;
+    margin-top: 4px;
+    text-align: center;
+    font-size: 10px;
+    width: 90%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    /* display: flex; */
+    justify-content: space-between;
+    /* Ensure content is spaced out */
+    align-items: center;
+    /* Vertically align items */
+    /* flex-grow: 1; */
+    margin-bottom: 2px;
+    max-width: 100%;
+    /* important for ellipsis */
+    display: block;
+}
+
+.record-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+}
+
+.beat-name {
+    flex: 1;
+    word-wrap: break-word;
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* limits to 2 lines */
+    -webkit-box-orient: vertical;
+}
+
+.remove-btn {
+    flex-shrink: 0;
+    --slds-g-color-neutral-base-50: #cb2f2f;
+    --slds-g-color-border-base-4: #fff8f8;
+}
+
+
+.record .btnicon {
+    margin-left: 10px;
+    /* Adjust margin for spacing between beat name and button */
+}
+
+
+.more-btn {
+    background: #f3f3f3;
+    border: none;
+    color: #0070d2;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-top: .4rem;
+    /* Pushes button to the bottom */
+    align-self: center;
+}
+
+.more-btn:hover {
+    text-decoration: underline;
+}
+
+.month-year-header {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* MOBILE VIEW */
+@media screen and (max-width: 600px) {
+    .mobile-calendar {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        border: 1px solid #005fb2;
+        /* Border for mobile calendar */
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .mobile-day {
+        border-bottom: 1px solid #ddd;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .mobile-day-header {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .record {
+        background-color: #0070d2;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 12px;
+        margin-top: 5px;
+        cursor: pointer;
+        width: fit-content;
+    }
+}
+
+.table-container {
+    overflow-x: auto;
+
+}
+/* ✅ Apply only for desktop */
+@media (min-width: 768px) {
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto; /* optional, to make it scroll vertically */
+    }
+}
+/* Apply sticky header only for desktop screens */
+@media (min-width: 768px) {
+    .custom-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;                 /* higher than first column */
+        background-color: #4472c4;  /* keep header color */
+        color: white;
+        padding: 8px;
+        text-align: left;
+        border: 0.25px solid black;
+    }
+        /* Special case: first column header */
+    .custom-table thead th:first-child {
+        top: 0; /* Stick to top too */
+        left: 0;
+        z-index: 4; /* Highest to overlap */
+        background-color: #4472c4; /* Match header color */
+        color: white;
+    }
+}
+
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+/* Fix only first column */
+.custom-table td:first-child,
+.custom-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 3;           /* Keep it above cells */
+    min-width: 120px;     /* Adjust width */
+}
+
+
+.custom-table th {
+    background-color: #4472c4;
+    color: white;
+    padding: 8px;
+    text-align: left;
+    border: 0.25px solid black;
+}
+
+.custom-table td {
+    padding: 8px;
+    border: 0.25px solid black;
+}
+/* First column data cells (row 2 onwards) */
+.custom-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #ffffff;  /* White */
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    /*    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center; */
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.toggle {
+    margin-left: auto;
+    /* Pushes the toggle to the right */
+}
+
+.map-container {
+    width: 100%;
+    height: 400px;
+    border-radius: 8px;
+}
+
+.slds-input {
+    border: none;
+    border-bottom: 1px solid black;
+    font-size: 14px;
+    padding: 4px;
+}
+
+/*.beats-container {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+.beat {
+    background: #f4f4f4;
+    padding: 10px;
+    min-width: 150px;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.store {
+    background: rgb(233, 236, 244);
+    color: #2f5597;
+    padding: 5px;
+    margin: 18px 0;
+    cursor: grab;
+    border-radius: 5px;
+}*/
+
+.beats-container {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    overflow-x: auto;
+    /* Enable horizontal scroll on small screens */
+    flex-wrap: wrap;
+    /* Allow items to wrap on smaller screens */
+}
+
+.beat {
+    flex: 1 1 200px;
+    /* Allow the beats to be flexible with a base size of 200px */
+    min-width: 200px;
+    /* Ensure a minimum width for each beat */
+    margin: 10px;
+    background: #f4f4f4;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    border: 2px dashed #ddd;
+    transition: background-color 0.3s ease;
+}
+
+
+.store {
+    margin-bottom: 5px;
+    background: rgb(233, 236, 244);
+    color: #2f5597;
+    padding: 5px;
+    margin: 18px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    position: relative;
+    touch-action: none;
+    /* prevents scroll during drag */
+    user-select: none;
+    /* optional: disables text selection */
+}
+
+.store[draggable="true"] {
+    cursor: grab;
+}
+
+/* .store.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+} */
+.store.dragging {
+    opacity: 0.8;
+    transform: scale(1.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+}
+
+.beat:hover {
+    background-color: #f4f4f4;
+}
+
+.beat.drop-target {
+    background-color: #e0e0e0;
+    /* Highlight the drop target when dragging over it */
+}
+
+
+/* Media queries for mobile devices */
+@media (max-width: 768px) {
+    .beats-container {
+        padding: 5px;
+        gap: 5px;
+    }
+
+    .beat {
+        flex: 1 1 100%;
+        /* Take full width on mobile */
+        min-width: 100%;
+        /* Ensure each item stacks vertically */
+    }
+
+    .button-container {
+        align-items: center;
+        /* Center the buttons */
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .legend-container {
+        flex-direction: column;
+        /* Stacks items vertically on smaller screens */
+        align-items: flex-start;
+        /* Aligns to the left */
+    }
+
+    .legend-item {
+        font-size: 16px;
+        /* Adjusts font size for better readability */
+    }
+
+}
+
+@media (max-width: 480px) {
+    .beat {
+        flex: 1 1 100%;
+        /* Take full width on very small screens */
+        min-width: 100%;
+        /* Make the items stack on top of each other */
+    }
+
+    .legend-container {
+        gap: 8px;
+        /* Reduces space between items on very small screens */
+    }
+
+    .legend-item {
+        font-size: 14px;
+        /* Further reduces font size for smaller screens */
+    }
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 2px solid #d1d1d1;
+    /* Light grey border */
+    border-radius: 5px;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    margin-top: 1.2rem;
+    /* box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); Soft shadow */
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    /* border-radius: 5px; */
+}
+
+th {
+    background-color: #f4f4f4;
+    /* color: white; */
+    cursor: pointer;
+}
+
+.tooltip {
+    position: absolute;
+    top: 6.5rem;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    z-index: 800;
+    display: inline-block;
+    right: 0.5rem;
+    top: 20px;
+    left: 0;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    max-width: 150px;
+    white-space: normal;
+}
+
+.comboboxClass {
+    width: 12rem;
+}
+
+.fontSize {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.month-year-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    /* spacing between elements */
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.month-year-header button {
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 35px;
+}
+
+.month-year-header button:hover {
+    background-color: #e0e0e0;
+}
+
+.month-year-header span {
+    min-width: 120px;
+    text-align: center;
+}
+
+.mobile-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.mobile-calendar-header button {
+    padding: 6px 10px;
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.mobile-calendar-days {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 8px;
+}
+
+.mobile-day {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    background-color: #fafafa;
+}
+
+.mobile-date-label {
+    font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+.mobile-record {
+    background-color: #e0f7fa;
+    border-radius: 4px;
+    padding: 4px 6px;
+    margin: 2px 0;
+    font-size: 0.85rem;
+    color: white;
+}
+
+.mobile-more-btn {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    background: none;
+    border: none;
+    color: #0070d2;
+    cursor: pointer;
+}
+
+.dragging {
+    transition: transform 0.2s ease;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.accounts-container {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 500px;
+    /* or whatever height fits your design */
+    overflow-y: auto;
+    /* Enables vertical scrolling */
+}
+
+.account-item {
+    padding: 0.5rem;
+    background: #f3f3f3;
+    border-radius: 4px;
+    cursor: grab;
+    border: 1px solid #dddbda;
+}
+
+.account-item:hover {
+    background: #e8e8e8;
+}
+
+.beat-info {
+    font-size: 14px;
+    font-weight: bold;
+    color: #555555;
+    word-wrap: break-word;
+}
+
+.primary-customer {
+    display: block;
+    /* Forces the primary customer to appear on the next line */
+    font-size: 12px;
+    font-weight: bold;
+    color: #194b78;
+    /* Blue color for primary customer */
+    margin-top: 5px;
+}
+
+.sec-customer {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #953636;
+    font-weight: bold;
+}
+
+.calendar-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.calendar-header-day {
+    padding: 0.5rem;
+}
+
+
+.calendar-day {
+    min-height: 100px;
+    background: white;
+    padding: 0.5rem;
+    position: relative;
+}
+
+.calendar-date {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.calendar-event {
+    background: #e8f4ff;
+    padding: 0.25rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calendar-day.empty {
+    background: #f9f9f9;
+}
+
+.slds-grid {
+    min-height: 600px;
+}
+
+.btnicon {
+    --sds-c-button-brand-color: blue;
+    /* Border color */
+    --sds-c-icon-color-foreground: white;
+    /* Icon color */
+    --sds-c-button-color-background: lightblue;
+    /* Button background color (optional) */
+    --slds-g-color-neutral-base-50: red;
+}
+
+.legend-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    border-radius: 50%;
+}
+
+.assigned-beat {
+    background-color: #e2880f;
+    /* Not Submitted Beat color */
+}
+
+.submitted-beat {
+    background-color: #2558b0;
+    /* Submitted Beat color */
+}
+
+.approved-beat {
+    background-color: #008a07;
+    /* Approved Beat color */
+}
+
+.rejected-beat {
+    background-color: #ec1818;
+    /* Rejected Beat color */
+}
+
+.holiday-beat {
+    background-color: #b20d0d;
+    /* Rejected Beat color */
+}
+
+.legend-text {
+    font-size: 14px;
+    color: #333;
+}
+
+.custom-input {
+    --lwc-formLabelFontSize: 1rem;
+    font-weight: bold;
+}
+
+.map-card {
+    margin: 0; /* Remove extra margins from card */
+}
+
+/* Make button + inputs mobile friendly */
+.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-end;
+    padding: 0.5rem;
+}
+
+.visit-btn {
+    margin-top: 0; /* Remove unwanted margin in mobile */
+}
+
+/* Full-width map on mobile */
+.map-container {
+    width: 100% !important;
+    height: 60vh; /* Flexible height for mobile */
+    margin: 0; /* Remove left/right margins */
+    padding: 0;
+    border-radius: 0; /* Remove extra curve on edges */
+}
+
+/* Mobile adjustments */
+@media only screen and (max-width: 600px) {
+    .button-container {
+        flex-direction: column; /* stack neatly */
+        align-items: stretch;
+    }
+    .visit-btn {
+        width: 100%; /* full width button */
+    }
+    .map-container {
+        height: 70vh; /* taller map on small screen */
+    }
+}

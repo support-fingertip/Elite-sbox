@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Start_Date__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+  AND(
+    NOT(ISBLANK(User__r.DOJ__c)), 
+    YEAR(User__r.DOJ__c) = VALUE(TEXT(Year__c)),
+    MONTH(User__r.DOJ__c) = VALUE(TEXT(Month__c))
+  ),
+  /* If Joining_Date__c is a Date field, use it directly.
+     If it&apos;s a Date/Time, wrap with DATEVALUE(). */
+     User__r.DOJ__c,
+   DATE(VALUE(TEXT(Year__c)), VALUE(TEXT(Month__c)), 1)
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Start Date</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

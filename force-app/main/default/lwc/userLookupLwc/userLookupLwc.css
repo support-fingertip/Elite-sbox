@@ -1,0 +1,17 @@
+.readonly-bordered {
+  --slds-c-input-shadow: 0 0 0 0.45px black;
+  --slds-c-input-color-background: #ffffff;
+  --slds-c-input-color-border: #d8dde6;
+  --slds-c-input-radius-border: 0.25rem;
+}
+.user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.4; /* Tightens vertical spacing */
+    margin-bottom: 8px;
+}
+@media screen and (max-width: 768px) {
+    .user-info {
+    margin-top: 8px;
+    }
+  }

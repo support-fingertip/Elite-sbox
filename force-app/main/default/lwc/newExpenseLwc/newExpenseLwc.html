@@ -1,0 +1,444 @@
+<template>
+    <template lwc:if={isLoading}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+    <template lwc:else>
+        <!--Header-->
+        <div class="slds-modal__header slds-size_1-of-1">
+            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">
+                <b>{expenseTitle}</b>
+            </h2>
+            <br />
+            <lightning-progress-indicator current-step={currentStep} type="path" variant="base">
+                <lightning-progress-step label="Expense Details" value="1"></lightning-progress-step>
+                <lightning-progress-step label="Upload Files" value="2"></lightning-progress-step>
+            </lightning-progress-indicator>
+        </div>
+
+        <!--Body-->
+        <div class="slds-modal__content slds-p-around_medium">
+            <!--Header-->
+            <div class="border">
+                <lightning-card>
+                    <div class="slds-m-left_small slds-m-right_small">
+                        <!--Expense Date and trvel type-->
+                        <div class="slds-grid slds-wrap slds-grid_pull-padded-x-small">
+                            <!--Expense Date-->
+                            <div class="slds-size_1-of-2 slds-p-horizontal_x-small">
+                                <lightning-input 
+                                    name="Expense_Date__c" 
+                                    label="Expense Date" 
+                                    type="date" 
+                                    required ="true"
+                                    data-id="Expense_Date__c"
+                                    value={expense.Expense_Date__c} 
+                                    message-when-value-missing="Please Enter Expense Date" 
+                                    disabled={expenseDateDisabled} 
+                                    onchange={expenseDateChangeHandler}>
+                                </lightning-input>
+                            </div>
+                            <!--Travel Type-->
+                            <div class="slds-size_1-of-2 slds-p-horizontal_x-small">
+                                <lightning-combobox
+                                    label="Travel Type"
+                                    data-index={index}
+                                    value={expense.Travel_Type__c}
+                                    options={travelTypes}
+                                    message-when-value-missing="Select Travel Type"
+                                    disabled ="true">
+                                </lightning-combobox>
+                            </div>
+                        </div>
+                        <!--TA DA-->
+                        <div class="slds-grid slds-wrap slds-grid_pull-padded-x-small">
+                            <div class={customClass}>
+                                <lightning-input 
+                                    label="TA Amount" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.TA_Amount__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                            <div class={customClass}>
+                                <lightning-input 
+                                    label="DA Amount" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.DA_Amount__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                            <div class={customClass}>
+                                <lightning-input 
+                                    label="Other/Misc Expense Amount" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.Other_Misc_Expense_Amount__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                             <div class={customClass}>
+                                <lightning-input 
+                                    label="Lodging Expense Amount" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.Lodging_Expense_Amount__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                            <div class={customClass}>
+                                <lightning-input 
+                                    label="Food Expense Amount" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.Food_Expense_Amount__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                            <div class={customClass}>
+                                <lightning-input 
+                                    label="Local Conveyance Amount" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.Local_Conveyance_Amount__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                            <div class={customClass}>
+                                <lightning-input 
+                                    label="Courier Charges" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.Courier_Charges__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                            <div class={customClass}>
+                                <lightning-input 
+                                    label="Mobile Charges" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.Mobile_Charges__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                            <div class={customClass}>
+                                <lightning-input 
+                                    label="Total Expense Amount" 
+                                    type="number" 
+                                    disabled 
+                                    value={expense.Total_Expense_Amount__c} 
+                                    formatter="currency" 
+                                    step="0.01">
+                                </lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                </lightning-card>
+            </div>
+            <template lwc:if={showExpeneItems}>
+                <div class="slds_CustomClass slds-m-vertical_medium">
+                    <div class="slds-text-color_inverse slds-text-align_center">
+                        Day by expense
+                    </div>
+                </div>
+            </template>
+            <template lwc:if={subLoading}>
+                <div style="padding-top:10px">
+                    <c-on-loading-screen></c-on-loading-screen>
+                </div>
+            </template>
+            <template lwc:else>
+                <!--Expense Items-->
+                <template lwc:if={showExpeneItems}>
+                    <template for:each={expItems} for:item="exp" for:index="index">
+                        <div key={exp.indexvalue}  style="margin:0" class="border">
+                            <lightning-card >
+                                <div class="slds-grid slds-wrap slds-grid_pull-padded-x-small custom-padding">
+                                    <!--Actions-->
+                                    <template if:false={showUpload}>
+                                        <div class="slds-size_1-of-1">
+                                            <div class="slds-grid slds-grid_align-spread">
+                                                <!-- Index on the left side -->
+                                                <div class="slds-col slds-size_1-of-2" style="font-size:17px; padding-left:15px; display: flex; align-items: center;">
+                                                    <p><b>{exp.indexvalue})</b></p>
+                                                </div>
+                                                <!-- Action buttons on the right side -->
+                                                <div class="slds-col slds-size_1-of-2 slds-text-align_right" style="padding-right:10px">
+                                                    <lightning-button-icon 
+                                                        icon-name="utility:add"
+                                                        onclick={addRow}
+                                                        data-index={index}>
+                                                    </lightning-button-icon>
+                                                    <template if:false={exp.hideDelete}>
+                                                        <lightning-button-icon 
+                                                            icon-name="utility:delete"
+                                                            onclick={removeRow} 
+                                                            data-index={index}>
+                                                        </lightning-button-icon>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <!-- Expense Type -->
+                                    <div class={customClass}>
+                                        <lightning-combobox
+                                            label="Expense Type"
+                                            data-index={index}
+                                            data-id={exp.expenseTypeId}
+                                            value={exp.Expense_Type__c}
+                                            options={expenseTypes}
+                                            message-when-value-missing="Select Expense Type"
+                                            onchange={expenseTypeChangeHandler}
+                                            disabled={isDisabled}>
+                                        </lightning-combobox>
+                                    </div>
+                                    <!-- From Location -->
+                                    <div class={customClass}>
+                                        <lightning-input 
+                                            label="From" 
+                                            data-id="From__c"
+                                            type="text" 
+                                            value={exp.From__c} 
+                                            data-index={index}
+                                            onchange={handlerInputChange}
+                                            message-when-value-missing="Please enter from location"
+                                            disabled={isDisabled}>
+                                        </lightning-input>
+                                    </div>
+                                    <!-- To Location -->
+                                    <div class={customClass}>
+                                        <lightning-input 
+                                            label="To" 
+                                            type="text" 
+                                            data-id="To__c"
+                                            data-index={index}
+                                            onchange={handlerInputChange}
+                                            value={exp.To__c} 
+                                            message-when-value-missing="Please enter to location"
+                                            disabled={isDisabled}>
+                                        </lightning-input>
+                                    </div>
+                                    <template if:true={exp.isLodging}>
+                                        <div class={customClass}>
+                                            <div class="slds-m-right_xx-small slds-form-element">
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                            <lightning-input
+                                                                label="City"
+                                                                data-index={index}
+                                                                type="search"
+                                                                value={exp.City_Name__c} 
+                                                                read-only={exp.isCityReadOnly}
+                                                                class="readonly-bordered"
+                                                                data-id="skufield" 
+                                                                message-when-value-missing="Search City"
+                                                                placeholder="Select City"
+                                                                onchange={handleCitySearch}
+                                                                required="true">
+                                                            </lightning-input> 
+                                                        </div>
+                                                        <template lwc:if={exp.isShowCity}>
+                                                            <div id={exp.index} class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                <template for:each={searchedCities} for:item="srch">
+                                                                    <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                        <li role="presentation" class="slds-listbox__item">
+                                                                        <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                        onclick={selectCity} data-id={srch.Id} data-name={srch.Name}  data-index={index} data-type={srch.Type__c}>
+                                                                            <lightning-icon 
+                                                                                icon-name="standard:product_service_campaign_item" size="small">
+                                                                            </lightning-icon>
+                                                                            <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                            <span class="slds-media__body">
+                                                                            <span class="slds-truncate" title={srch.Name}>
+                                                                                <span>{srch.Name}</span>
+                                                                            </span>
+                                                                            </span>
+                                                                        </div>
+                                                                        </li>
+                                                                    </ul>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    
+                                    <!-- Travel Type-->
+                                    <template if:true={exp.isTA}>
+                                        <div class={customClass}>
+                                            <lightning-combobox
+                                                label="Travel Mode"
+                                                value={exp.Travel_Mode__c}
+                                                data-id={exp.travelModeId}
+                                                data-index={index}
+                                                options={travelModes}
+                                                required
+                                                dropdown-alignment="top"
+                                                message-when-value-missing="Select Travel Mode"
+                                                onchange={travelModeChangeHandler}
+                                                disabled={isDisabled}>
+                                            </lightning-combobox>
+                                        </div>
+                                    </template>
+                                    <!-- Travel Mode Car/Bike -->
+                                    <template if:true={exp.isTransportCarBike}>
+                                        <!--Distance Travledd-->
+                                        <div class={customClass}>
+                                            <lightning-input 
+                                                label="Distance Travelled"
+                                                type="number"
+                                                data-id="Total_KM"
+                                                data-index={index}
+                                                value={exp.Total_KM__c}
+                                                required ="true"
+                                                message-when-value-missing="Enter total distance travelled"
+                                                onchange={travelModeChangeHandler}
+                                                disabled={isDisabled}>
+                                            </lightning-input>
+                                        </div> 
+                                        <!--Amount-->
+                                        <div class={customClass}>
+                                            <lightning-input 
+                                                label="Amount"
+                                                type="number"
+                                                value={exp.Amount__c}
+                                                formatter="currency"
+                                                step="0.01" 
+                                                data-index={index}
+                                                onchange={handlerInputChange}
+                                                disabled="true">
+                                            </lightning-input>
+                                        </div>
+                                        <!--System Calculated KM-->
+                                        <div class={customClass}>
+                                            <lightning-input 
+                                                label="System Calculated Distance"
+                                                type="number"
+                                                value={exp.Calculated_KM__c}
+                                                disabled="true">
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+                                    <!-- mode of transport Not Car/Bike -->
+                                    <template if:true={exp.isTransportNotBikeCar}>
+                                        <div class={customClass}>
+                                            <lightning-input 
+                                                label="Amount"
+                                                data-id="Amount"
+                                                type="number"
+                                                data-index={index}
+                                                required="true"
+                                                onchange={handlerInputChange}
+                                                value={exp.Amount__c}
+                                                message-when-value-missing="Please enter amount"
+                                                formatter="currency"
+                                                step="0.01"
+                                                disabled={isDisabled}>
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+                                    <!-- DA Type -->
+                                    <template if:true={exp.isDA}>
+                                        <div class={customClass}>
+                                            <lightning-input 
+                                                label="Amount"
+                                                type="number"
+                                                value={exp.Amount__c}
+                                                formatter="currency"
+                                                step="0.01"
+                                                disabled="true">
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+                                    <!-- Other Allowance -->
+                                    <template if:true={exp.isOtherExpense}>
+                                        <div class={customClass}>
+                                            <lightning-input 
+                                                label="Amount"
+                                                data-id="Amount"
+                                                type="number"
+                                                value={exp.Amount__c}
+                                                formatter="currency"
+                                                step="0.01"
+                                                data-index={index}
+                                                onchange={handlerInputChange}
+                                                required ="true"
+                                                message-when-value-missing="Please enter amount"
+                                                disabled={isDisabled}>
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+
+                                    <!-- Description -->
+                                    <div class="slds-size_1-of-1 slds-p-horizontal_small">
+                                        <lightning-textarea 
+                                            name="Remarks"
+                                            data-id="Remarks__c"
+                                            data-index={index}
+                                            value={exp.Remarks__c}
+                                            label="Remarks"
+                                            message-when-value-missing=" Please enter Remarks"
+                                            onchange={handlerInputChange}
+                                            disabled={isDisabled}>
+                                        </lightning-textarea>
+                                    </div>
+                                    <!--File Upload-->
+                                    <template if:true={showUpload}>
+                                        <div class="slds-size_1-of-1 slds-p-horizontal_small">
+                                            <br/>
+                                            <c-file-upload-l-w-c record-id={exp.Id}></c-file-upload-l-w-c>
+                                        </div>
+                                    </template>
+                                </div>
+                            </lightning-card>
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </div>
+
+        <!--Footer-->
+        <div class="modal-footer slds-modal__footer slds-size_1-of-1"  style="background-color: #ffffff;">
+        
+                <div class="slds-p-around_medium customcontainer">
+                    <b>Grand Total :</b>
+                    <span style="color:red; font-size:15px; font-weight:bold; padding:10px;">₹{grandTotal}</span>
+                    <br/><br/>
+
+                    <template if:true={showExpense}>
+                        <lightning-button variant="neutral" label="Cancel" onclick={closeExpense}></lightning-button>
+
+                        <template if:false={showUpdate}>
+                            <lightning-button variant="brand" label="Save and Next" class="slds-m-left_small" onclick={doSave} disabled={isButtonDisabled}></lightning-button>
+                        </template>
+
+                        <template if:true={showUpdate}>
+                            <lightning-button variant="brand" label="Update and Next" class="slds-m-left_small" onclick={doSave} disabled={isButtonDisabled}></lightning-button>
+                        </template>
+                    </template>
+
+                    <template if:true={showUpload}>
+                        <lightning-button variant="neutral" label="Previous" onclick={doPrevious}></lightning-button>
+                        <lightning-button variant="brand" label="Done" class="slds-m-left_small" onclick={gotoRecord}></lightning-button>
+                    </template>
+                </div>
+            
+        </div>
+
+    </template>
+</template>

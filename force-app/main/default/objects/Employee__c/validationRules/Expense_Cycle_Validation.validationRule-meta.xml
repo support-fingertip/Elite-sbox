@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Expense_Cycle_Validation</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+    OR(
+        ISCHANGED(Expense_Start_Date__c),
+        ISCHANGED(Expense_End_Date__c)
+    ),
+    NOT(
+        OR(
+            /* Case 1: exactly 1 → 15 */
+            AND(
+                Expense_Start_Date__c = 1,
+                Expense_End_Date__c = 15
+            ),
+
+            /* Case 2: cycle length = 30 */
+            ( (31 - Expense_Start_Date__c + 1) + Expense_End_Date__c ) = 30,
+
+            /* Case 3: cycle length = 31 */
+            ( (31 - Expense_Start_Date__c + 1) + Expense_End_Date__c ) = 31
+        )
+    )
+)</errorConditionFormula>
+    <errorMessage>Invalid Expense Cycle. Please enter either 1 → 15 or a cycle covering 30/31 days (e.g., 25 → 24, 27 → 26).</errorMessage>
+</ValidationRule>

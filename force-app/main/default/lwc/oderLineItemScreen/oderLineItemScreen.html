@@ -1,0 +1,192 @@
+<template>
+    <template lwc:if={isPageLoaded}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+    <template lwc:else>
+
+        <template lwc:if={showAllProducts}>
+            <div class="route">
+
+                <!--  Header Section: One Line Layout -->
+                <div
+                    class="slds-grid slds-wrap slds-gutters slds-m-bottom_medium">
+                    <!-- Fulfillment Type -->
+                    <div
+                        class="slds-col slds-size_1-of-1 slds-small-size_1-of-3">
+                        <lightning-combobox
+                            label="Order Fulfillment Type"
+                            value={fulfillmentType}
+                            options={fulfillmentOptions}
+                            onchange={handleFulfillmentTypeChange}>
+                        </lightning-combobox>
+                    </div>
+
+                    <!-- Order Status (only if Order-wise) -->
+                    <template if:true={notisOrderWise}>
+                        <div
+                            class="slds-col slds-size_1-of-1 slds-small-size_1-of-3">
+                            <lightning-combobox
+                                label="Order Status"
+                                value={status}
+                                options={statusOptions}
+                                onchange={handleStatusChange}>
+                            </lightning-combobox>
+                        </div>
+                    </template>
+                </div>
+
+                <!--  Line Items Section -->
+                <template if:true={orderslineitems}>
+                    <template for:each={orderslineitems} for:item="item">
+                        <div key={item.Id} class="slds-box slds-m-bottom_small">
+                            <div class="outlet-title">
+                                <span class="icon-wrapper">
+                                    <img src={googleIcons.order}
+                                        class="custom-icon" width="20"
+                                        height="20" />
+                                </span>
+                                &nbsp;
+                                <b>{item.Name}</b>
+                            </div>
+
+                            <div class="slds-grid slds-wrap slds-gutters">
+                                <div
+                                    class="slds-col slds-small-size_1-of-1 slds-small-size_1-of-4">
+                                    <lightning-input
+                                        label="SKU Name"
+                                        value={item.Product__r.Name}
+                                        data-id={item.Id}
+                                        data-field="Product__r.Name"
+                                        onchange={handleInputChange}
+                                        disabled>
+                                    </lightning-input>
+                                </div>
+                                <div
+                                    class="slds-col slds-small-size_1-of-1 slds-small-size_1-of-4">
+                                    <lightning-input
+                                        label="Quantity"
+                                        type="number"
+                                        value={item.Quantity__c}
+                                        data-id={item.Id}
+                                        data-field="Quantity__c"
+                                        onchange={handleInputChange}
+                                        disabled>
+                                    </lightning-input>
+                                </div>
+                                <div
+                                    class="slds-col slds-small-size_1-of-1 slds-small-size_1-of-4">
+                                    <lightning-input
+                                        label="Delivery Quantity"
+                                        value={item.Delivered_Quantity__c}
+                                        data-id={item.Id}
+                                        data-field="Delivered_Quantity__c"
+                                        onchange={handleInputChange}
+                                        disabled={disableInputs}>
+                                    </lightning-input>
+                                </div>
+                                <div
+                                    class="slds-col slds-small-size_1-of-1 slds-small-size_1-of-4">
+                                    <lightning-combobox
+                                        label="Status"
+                                        value={item.Status__c}
+                                        data-id={item.Id}
+                                        data-field="Status__c"
+                                        options={statusOptions}
+                                        onchange={handleInputChange}
+                                        disabled={disableInputs}>
+                                    </lightning-combobox>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </template>
+
+        <!-- Summary product -->
+        <template lwc:if={isSummaryProduct}>
+            <lightning-card >
+                <div class="slds-p-horizontal_medium slds-p-vertical_small">
+                    <lightning-input type="text" name="DB Bill Number"
+                        label="DB Bill Number"
+                        value={billNumber} onchange={handleInputChange1}
+                        required>
+                    </lightning-input>
+
+                    <lightning-input type="number" name="DB Bill Value"
+                        label="DB Bill Value"
+                        value={billValue} onchange={handleInputChange1} required>
+                    </lightning-input>
+
+                    <lightning-input type="number" name="DB Bill Quantity"
+                        label="DB Bill Quantity" required
+                        value={billQuantity} onchange={handleInputChange1}>
+                    </lightning-input>
+
+                    <lightning-input type="date" name="DB Bill Date"
+                        label="DB Bill Date" required
+                        value={billDate} onchange={handleInputChange1}>
+                    </lightning-input>
+                </div>
+                <div style="margin-top:10px;">
+                    <lightning-card class="no-border-radius"
+                        style="margin-top:10px;">
+                        <div style="margin: 15px;">
+                            <div class="task-button pointer slds-m-top_x-small"
+                                onclick={save} style="margin-bottom:20px;">Save Order Fulfillments</div>
+
+                            <div class="custom-table-container" >
+                                <table class="slds-table custom-scroll-table"  style="margin-bottom:30px;">
+                                    <thead>
+                                        <tr>
+                                            <th>SKU
+                                                Name</th>
+                                            <th
+                                                >Quantity</th>
+                                            <th>Delivered Quantity</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={orderslineitems}
+                                            for:item="item">
+                                            <tr key={item.index}>
+                                                <td
+                                                    >{item.Product__r.Name}</td>
+                                                <td
+                                                    >{item.Quantity__c}</td>
+                                                <td>{item.Delivered_Quantity__c}</td>
+                                                <td>{item.Status__c}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </lightning-card>
+                </div>
+            </lightning-card>
+
+        </template>
+
+        <div class="screen-3-bottom-bar">
+            <div class="bottom-bar-item pointer" onclick={selectedProduct}
+                data-name="SelectedItems">
+                All items
+            </div>
+            <div class="bottom-bar-item pointer" onclick={selectedProduct}
+                data-name="Summary">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12.33 6.624C12.4295 6.71145 12.4902 6.83481 12.4988 6.96698C12.5075 7.09916 12.4633 7.22936 12.376 7.329L8.876 11.329C8.83097 11.3806 8.77581 11.4224 8.71396 11.4518C8.6521 11.4812 8.58487 11.4976 8.51643 11.4999C8.44798 11.5023 8.37978 11.4905 8.31606 11.4654C8.25234 11.4403 8.19446 11.4024 8.146 11.354L6.146 9.354C6.09951 9.30751 6.06264 9.25232 6.03748 9.19158C6.01232 9.13084 5.99937 9.06574 5.99937 9C5.99937 8.93426 6.01232 8.86916 6.03748 8.80842C6.06264 8.74768 6.09951 8.69249 6.146 8.646C6.19249 8.59951 6.24768 8.56264 6.30842 8.53748C6.36916 8.51232 6.43426 8.49937 6.5 8.49937C6.56574 8.49937 6.63084 8.51232 6.69158 8.53748C6.75232 8.56264 6.80751 8.59951 6.854 8.646L8.476 10.268L11.624 6.671C11.7113 6.57137 11.8346 6.51046 11.9668 6.50165C12.099 6.49284 12.2302 6.53684 12.33 6.624ZM3 6C3 5.20435 3.31607 4.44129 3.87868 3.87868C4.44129 3.31607 5.20435 3 6 3H12C12.7956 3 13.5587 3.31607 14.1213 3.87868C14.6839 4.44129 15 5.20435 15 6V12C15 12.7956 14.6839 13.5587 14.1213 14.1213C13.5587 14.6839 12.7956 15 12 15H6C5.20435 15 4.44129 14.6839 3.87868 14.1213C3.31607 13.5587 3 12.7956 3 12V6ZM6 4C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V12C4 12.5304 4.21071 13.0391 4.58579 13.4142C4.96086 13.7893 5.46957 14 6 14H12C12.5304 14 13.0391 13.7893 13.4142 13.4142C13.7893 13.0391 14 12.5304 14 12V6C14 5.46957 13.7893 4.96086 13.4142 4.58579C13.0391 4.21071 12.5304 4 12 4H6ZM5.754 16C6.304 16.614 7.101 17 7.99 17H12.49C13.0809 17 13.6661 16.8836 14.2121 16.6575C14.758 16.4313 15.2541 16.0998 15.672 15.682C16.0898 15.2641 16.4213 14.768 16.6475 14.2221C16.8736 13.6761 16.99 13.0909 16.99 12.5V8C16.99 7.116 16.607 6.32 15.999 5.772V11C15.999 11.1 15.9957 11.1997 15.989 11.299V12.499C15.989 13.4273 15.6203 14.3175 14.9639 14.9739C14.3075 15.6303 13.4173 15.999 12.489 15.999H11.055L10.999 16H5.754Z"
+                        fill="white" />
+                </svg>
+                Summary
+            </div>
+        </div>
+
+    </template>
+
+</template>

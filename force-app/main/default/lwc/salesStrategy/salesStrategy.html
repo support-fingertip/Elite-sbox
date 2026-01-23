@@ -1,0 +1,243 @@
+<template>
+    <div class="custom1">
+        <div class="screen-1 "> 
+
+            <!-- When page is loading -->
+            <template lwc:if={isPageLoaded}> 
+                <c-on-loading-screen></c-on-loading-screen>
+            </template>
+
+            <!-- When page loaded -->
+            <template lwc:else> 
+                <div class="main-heading">
+                    <h1>{header}</h1>
+                </div>
+
+                <div class="container">
+
+                    <div class="header">
+                        <div class="input-group">
+                            <lightning-input
+                                type="text"
+                                name="Name"
+                                label="Name"
+                                value={salesStartegy.Name}
+                                disabled={isDisable.allFields}
+                                class="dropdown"
+                                onchange={handleSchemeType}
+                                placeholder="Enter Name">
+                            </lightning-input>
+
+                            <lightning-combobox 
+                                label="Customer Type" 
+                                options={customerType} 
+                                value={salesStartegy.Customer_type__c}
+                                name="Customer_type__c" 
+                                class="dropdown"
+                                disabled={isDisable.allFields}
+                                onchange={handleSchemeType}>
+                            </lightning-combobox>    
+                        </div>
+                        
+                    </div>
+                    
+
+                    <div class="dropdown-group">
+                        <div class="slds-m-right_xx-small slds-form-element">
+                            <div class="slds-form-element__control">
+                                <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                        <lightning-input 
+                                            type="search"
+                                            label="Region"
+                                            class="search-input" 
+                                            autocomplete="off" 
+                                            placeholder="Search Region...." 
+                                            value={regionName} 
+                                            onchange={handleSearchRegion}
+                                            disabled={isDisable.allFields}
+                                            onblur={handleOnBlur}>
+                                        </lightning-input>  
+                                    </div>
+                                    <template lwc:if={value.regionData.length}>
+                                        <div id="listbox-id-11" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                            <template for:each={value.regionData} for:item="srch">
+                                                <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                    <li role="presentation" class="slds-listbox__item">
+                                                      <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" onclick={selectObjName} data-id={srch.Id} data-name={srch.Name}>
+                                                        <lightning-icon icon-name="action:new_account" size="xx-small"> 
+                                                        </lightning-icon>
+                                                        &nbsp;&nbsp;
+                                                        <span class="slds-media__body">
+                                                          <span class="slds-truncate" title={srch.Name}>
+                                                            <span>{srch.Name}</span>
+                                                          </span>
+                                                        </span>
+                                                      </div>
+                                                    </li>
+                                                </ul>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <lightning-button label="Save" variant="brand"  onclick={handleSave} disabled={isDisable.allFields}></lightning-button>
+                            <lightning-button label="Cancel" variant="brand"  onclick={handleCancel} disabled={isDisable.allFields}></lightning-button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="container_Data">
+
+                        <!-- Region
+                        <template lwc:if={salesRegionData.length}>
+                            <lightning-input type="search" label={filter.label} placeholder={filter.placeholder} onchange={handleSearch} data-key={filter.key} class="search-box">
+                            </lightning-input>
+
+                        </template> -->
+
+                        <!-- product Category -->
+                        <template lwc:if={salesProductCategoryData.length}>
+                            
+                            <div class="filter-box">
+                                <lightning-input 
+                                    type="search" 
+                                    name="proCat"
+                                    value={value.proCat}
+                                    disabled={isDisable.allFields}
+                                    placeholder="Search Pro Category...." 
+                                    onchange={handleSearchProCat} 
+                                    class="search-box">
+                                </lightning-input>
+                                
+                                <div class="checkbox-list">
+                                    <template for:each={salesProductCategoryData} for:index="i" for:item="dt">
+                                        <div key={dt.Id} class="checkbox-item">
+                                            <lightning-input 
+                                                type="checkbox" 
+                                                name={dt.productCategoryName} 
+                                                label={dt.productCategoryName} 
+                                                checked={dt.isSaveDt}
+                                                data-index={i}
+                                                data-procatid={dt.productCategoryId}
+                                                data-salesid={dt.salesProductCategories}
+                                                onchange={handleCheckBoxProCat}
+                                                disabled={isDisable.allFields}>
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- product -->
+                        <!-- <template lwc:if={salesProductData.length}> -->
+                            
+                            <div class="filter-box">
+                                <lightning-input 
+                                    type="search" 
+                                    name="pro"
+                                    value={value.pro}
+                                    disabled={isDisable.allFields}
+                                    placeholder="Search Product...." 
+                                    onchange={handleSearchPro} 
+                                    class="search-box">
+                                </lightning-input>
+                                
+                                <div class="checkbox-list">
+                                    <template for:each={salesProductData} for:index="i" for:item="dt">
+                                        <div key={dt.Id} class="checkbox-item">
+                                            <lightning-input 
+                                                type="checkbox" 
+                                                name={dt.productName} 
+                                                label={dt.productName} 
+                                                checked={dt.isSaveDt}
+                                                data-index={i}
+                                                data-proid={dt.productId}
+                                                data-procatid={dt.productCategoryId}
+                                                data-salesid={dt.salesProducts}
+                                                onchange={handleCheckBoxPro}
+                                                disabled={isDisable.allFields}>
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>                  
+                        <!-- </template> -->
+
+                        <!-- Customer -->
+                        <template lwc:if={salesCustomerData.length}>
+                            
+                            <div class="filter-box">
+                                <lightning-input 
+                                    type="search"
+                                    disabled={isDisable.allFields}
+                                    name="cust" 
+                                    value={value.cust}
+                                    placeholder="Search Customer...." 
+                                    onchange={handleSearchCus} 
+                                    class="search-box"></lightning-input>
+                                
+                                <div class="checkbox-list">
+                                    <template for:each={salesCustomerData} for:index="i" for:item="dt">
+                                        <div key={dt.Id} class="checkbox-item">
+                                            <lightning-input 
+                                                type="checkbox" 
+                                                name={dt.customerName} 
+                                                label={dt.customerName} 
+                                                checked={dt.isSaveDt}
+                                                data-index={i}
+                                                data-cusid={dt.customerId}
+                                                data-salesid={dt.salesCustomers}
+                                                onchange={handleCheckBoxCus}
+                                                disabled={isDisable.allFields}>
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>                            
+                        </template>
+
+                        <!-- Area -->
+                        <!-- <template lwc:if={salesAreaData.length}> -->
+                           
+                            <div class="filter-box">
+                                <lightning-input 
+                                    type="search" 
+                                    name="area"
+                                    value={value.area}
+                                    placeholder="Search Area...." 
+                                    onchange={handleSearchArea} 
+                                    disabled={isDisable.allFields}
+                                    class="search-box">
+                                </lightning-input>
+                                
+                                <div class="checkbox-list">
+                                    <template for:each={salesAreaData} for:index="i" for:item="dt">
+                                        <div key={dt.Id} class="checkbox-item">
+                                            <lightning-input 
+                                                type="checkbox" 
+                                                name={dt.areaName} 
+                                                label={dt.areaName} 
+                                                checked={dt.isSaveDt}
+                                                data-index={i}
+                                                data-areaid={dt.areaId}
+                                                data-salesid={dt.salesAreas}
+                                                onchange={handleCheckBoxArea}
+                                                disabled={isDisable.allFields}>
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>                            
+                        <!-- </template> -->
+                    </div>                
+                </div>
+            </template>
+        </div>
+    </div>
+    
+</template>

@@ -1,0 +1,28 @@
+.slds-modal__close {
+    z-index: 10; /* Ensure it's above other elements */
+}
+.slds-button__icon {
+    display: flex;
+    justify-content: center; 
+    align-items: center;   
+}
+.customHeight{
+    height: 17rem;
+}
+.CompleteHeight{
+    height: 100% !important; 
+}
+/* Modal content adjustments */
+.slds-modal__content {
+    height: auto;
+    max-height: none;
+    min-height: auto;
+}
+@media screen and (max-width: 768px) {
+    .slds-modal__content {
+        min-height: 100vh;
+        height: auto;
+        overflow-y: auto;
+        max-height: Auto;
+    }
+}

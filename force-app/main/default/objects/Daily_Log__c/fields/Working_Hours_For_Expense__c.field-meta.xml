@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Working_Hours_For_Expense__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+    AND(
+        NOT(ISBLANK(Day_started_time__c)),
+        NOT(
+            ISBLANK(
+                IF(Is_System_Ended__c, Last_Visit_Date_and_Time__c, Day_ended_time__c)
+            )
+        )
+    ),
+    ROUND(
+        (IF(Is_System_Ended__c, Last_Visit_Date_and_Time__c, Day_ended_time__c) - Day_started_time__c) * 24,
+        2
+    ),
+    NULL
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Working Hours (For Expense)</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

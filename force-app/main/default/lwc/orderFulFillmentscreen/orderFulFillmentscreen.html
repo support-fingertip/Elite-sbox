@@ -1,0 +1,60 @@
+<template>
+    <template lwc:if={isPageLoaded}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+    <template lwc:else>
+        <div class="route">
+            <template lwc:if={hasOrders}>
+                <template for:each={orders} for:item="order" for:index="index">
+                    <div class="route-outlets" key={order.Id}>
+                        <div class="borderLine slds-m-top_small">
+                            <div class="route-outlet">
+                                <div class="route-left">
+                                    <div class="outlet-title">
+                                        <span class="icon-wrapper">
+                                            <img src={googleIcons.order}
+                                                class="custom-icon" width="20"
+                                                height="20" />
+                                        </span>
+                                        &nbsp;
+                                        <b>{order.Name}</b>&nbsp;&nbsp;
+
+                                    </div>
+                                    <div class="outlet-title"
+                                        style="padding-left:14px">
+                                        &nbsp;&nbsp; Status:
+                                        {order.Order_Fulfillment_Status__c}
+                                    </div>
+                                    <div class="outlet-title"
+                                    style="padding-left:14px">
+                                    &nbsp;&nbsp; Order Date:
+                                    {order.Order_Date__c}
+                                </div>
+                                </div>
+
+                                <div class="outlet-icon">
+                                    <div onclick={handleShowItems}
+                                        data-id={order.Id}>
+                                        <img src={googleIcons.forward}
+                                            width="20" height="20">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template lwc:else>
+                <div class="borderLine slds-m-top_small">
+                    
+                        
+                            <div class="middle">
+                                <h2><b>No orders Fulfillments</b></h2>
+                            </div>
+                        
+                    </div>
+                
+            </template>
+        </div>
+    </template>
+</template>

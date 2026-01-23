@@ -1,0 +1,54 @@
+@media only screen and (max-width: 768px) {
+.border {
+/* Add the border style here */
+border-style: solid;
+border-width: 0.5px;
+border-color: rgba(50, 50, 93, 0.25);
+border-radius: 5px;
+box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+}
+.readonly-bordered {
+  --slds-c-input-shadow: 0 0 0 0.45px black;
+  --slds-c-input-color-background: #ffffff;
+  --slds-c-input-color-border: #d8dde6;
+  --slds-c-input-radius-border: 0.25rem;
+}
+.customMargin
+{
+    margin-top:0;
+    margin-bottom:0;
+}
+.slds_CustomClass {
+    padding:0.5rem;
+    background:#014486;
+    border-radius: 25px;
+}
+.custom-padding {
+    padding-left: 10px; 
+    padding-right: 10px; 
+}
+.floatright
+{
+    float: right;
+}
+floatleft
+{
+    float: left;
+}
+:host {
+    /* Removes SF Card Header padding/margin top/bottom only */
+    --slds-c-card-header-spacing-block-end: 0px;
+    --slds-c-card-header-spacing-block-start: 0px;
+}
+.customcontainer{
+    background-color: #f3f3f2;
+    border-style: solid;
+    border-width: 0.5px;
+    border-color: rgba(50, 50, 93, 0.25);
+    border-radius: 5px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+.slds-modal__content{
+    overflow: initial;
+}

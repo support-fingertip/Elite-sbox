@@ -1,0 +1,185 @@
+<template>
+    
+    <template lwc:if={isDesktopCheckoutPage}>
+        <div class="custom1"> 
+            <div class="screen-1 "> 
+                <div class="outlets"> 
+
+                    <!-- When page is loading -->
+                    <template lwc:if={isPageLoaded}>
+                        <c-on-loading-screen></c-on-loading-screen>
+                    </template>
+            
+                    <!-- When page loaded -->
+                    <template lwc:else>
+                        <div class="route"> 
+                            <div class="route-filters">
+                                <div class="route-filter" style="width: 30%;">
+                                    <div class="route-filter-title">
+                                        
+                                        <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M4.52941 14.5C3.72894 14.5 3.04843 14.2197 2.48788 13.6592C1.92733 13.0986 1.64706 12.4181 1.64706 11.6176V4.60035C1.16667 4.42192 0.772196 4.14988 0.463647 3.78424C0.155098 3.41859 0.00054902 3.01176 0 2.56376C0 1.99059 0.200118 1.50333 0.600353 1.102C1.00004 0.700667 1.48565 0.5 2.05718 0.5C2.62871 0.5 3.11486 0.700667 3.51565 1.102C3.91643 1.50333 4.1171 1.99086 4.11765 2.56459C4.11765 3.01149 3.96337 3.41776 3.65482 3.78341C3.34627 4.14906 2.95153 4.42165 2.47059 4.60118V11.6176C2.47059 12.1837 2.67263 12.6685 3.07671 13.072C3.48023 13.475 3.96557 13.6765 4.5327 13.6765C5.09984 13.6765 5.58408 13.475 5.98541 13.072C6.38674 12.669 6.58769 12.1842 6.58823 11.6176V3.38235C6.58823 2.58188 6.86851 1.90137 7.42906 1.34082C7.98961 0.780274 8.67012 0.5 9.47059 0.5C10.2711 0.5 10.9516 0.780274 11.5121 1.34082C12.0727 1.90137 12.3529 2.58188 12.3529 3.38235V10.3996C12.8333 10.5781 13.2281 10.8501 13.5372 11.2158C13.8463 11.5814 14.0005 11.988 14 12.4354C14 13.0091 13.8002 13.4967 13.4005 13.898C13.0002 14.2993 12.5144 14.5 11.9428 14.5C11.3713 14.5 10.8851 14.2993 10.4844 13.898C10.0836 13.4967 9.8829 13.0094 9.88235 12.4362C9.88235 11.9888 10.0369 11.5787 10.346 11.2059C10.6551 10.8331 11.0496 10.5644 11.5294 10.3996V3.38235C11.5294 2.81631 11.3276 2.33153 10.9241 1.928C10.52 1.52502 10.0344 1.32353 9.46729 1.32353C8.90016 1.32353 8.41592 1.52529 8.01459 1.92882C7.61325 2.33235 7.41231 2.81686 7.41176 3.38235V11.6176C7.41176 12.4181 7.13149 13.0986 6.57094 13.6592C6.01039 14.2197 5.32988 14.5 4.52941 14.5Z" fill="#3F3F3F"/>
+                                        </svg>                                    
+                                        &nbsp; Route
+                                    </div>
+                                    <select name="filter-route" class="filter-route" onchange={handleRouteChange}>
+                                        <template for:each={routeDropdown} for:item="route">
+                                            <option key={route.label} data-name={route.label} value={route.value} >{route.label}</option>
+                                        </template>
+                                    </select>
+                                </div>
+            
+                                <div class="route-filter" style="width: 30%;">
+                                    <div class="route-filter-title">
+                                        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <g clip-path="url(#clip0_146_201)">
+                                            <path d="M16.6251 3.5H15.0001V4.5H16.5001V15.5H2.50013V4.5H4.00013V3.5H2.37513C2.25825 3.50195 2.1429 3.52691 2.03566 3.57345C1.92843 3.61999 1.83141 3.6872 1.75016 3.77125C1.6689 3.85529 1.605 3.95451 1.5621 4.06325C1.5192 4.17199 1.49814 4.28812 1.50013 4.405V15.595C1.49814 15.7119 1.5192 15.828 1.5621 15.9367C1.605 16.0455 1.6689 16.1447 1.75016 16.2288C1.83141 16.3128 1.92843 16.38 2.03566 16.4265C2.1429 16.4731 2.25825 16.498 2.37513 16.5H16.6251C16.742 16.498 16.8574 16.4731 16.9646 16.4265C17.0718 16.38 17.1688 16.3128 17.2501 16.2288C17.3314 16.1447 17.3953 16.0455 17.4382 15.9367C17.4811 15.828 17.5021 15.7119 17.5001 15.595V4.405C17.5021 4.28812 17.4811 4.17199 17.4382 4.06325C17.3953 3.95451 17.3314 3.85529 17.2501 3.77125C17.1688 3.6872 17.0718 3.61999 16.9646 3.57345C16.8574 3.52691 16.742 3.50195 16.6251 3.5Z" fill="#3F3F3F"/>
+                                            <path d="M4.5 7.5H5.5V8.5H4.5V7.5Z" fill="#3F3F3F"/>
+                                            <path d="M7.5 7.5H8.5V8.5H7.5V7.5Z" fill="#3F3F3F"/>
+                                            <path d="M10.5 7.5H11.5V8.5H10.5V7.5Z" fill="#3F3F3F"/>
+                                            <path d="M13.5 7.5H14.5V8.5H13.5V7.5Z" fill="#3F3F3F"/>
+                                            <path d="M4.5 10H5.5V11H4.5V10Z" fill="#3F3F3F"/>
+                                            <path d="M7.5 10H8.5V11H7.5V10Z" fill="#3F3F3F"/>
+                                            <path d="M10.5 10H11.5V11H10.5V10Z" fill="#3F3F3F"/>
+                                            <path d="M13.5 10H14.5V11H13.5V10Z" fill="#3F3F3F"/>
+                                            <path d="M4.5 12.5H5.5V13.5H4.5V12.5Z" fill="#3F3F3F"/>
+                                            <path d="M7.5 12.5H8.5V13.5H7.5V12.5Z" fill="#3F3F3F"/>
+                                            <path d="M10.5 12.5H11.5V13.5H10.5V12.5Z" fill="#3F3F3F"/>
+                                            <path d="M13.5 12.5H14.5V13.5H13.5V12.5Z" fill="#3F3F3F"/>
+                                            <path d="M5.5 5.5C5.63261 5.5 5.75979 5.44732 5.85355 5.35355C5.94732 5.25979 6 5.13261 6 5V2C6 1.86739 5.94732 1.74021 5.85355 1.64645C5.75979 1.55268 5.63261 1.5 5.5 1.5C5.36739 1.5 5.24021 1.55268 5.14645 1.64645C5.05268 1.74021 5 1.86739 5 2V5C5 5.13261 5.05268 5.25979 5.14645 5.35355C5.24021 5.44732 5.36739 5.5 5.5 5.5Z" fill="#3F3F3F"/>
+                                            <path d="M13.5 5.5C13.6326 5.5 13.7598 5.44732 13.8536 5.35355C13.9473 5.25979 14 5.13261 14 5V2C14 1.86739 13.9473 1.74021 13.8536 1.64645C13.7598 1.55268 13.6326 1.5 13.5 1.5C13.3674 1.5 13.2402 1.55268 13.1464 1.64645C13.0527 1.74021 13 1.86739 13 2V5C13 5.13261 13.0527 5.25979 13.1464 5.35355C13.2402 5.44732 13.3674 5.5 13.5 5.5Z" fill="#3F3F3F"/>
+                                            <path d="M7 3.5H12V4.5H7V3.5Z" fill="#3F3F3F"/>
+                                            </g>
+                                            <defs>
+                                            <clipPath id="clip0_146_201">
+                                            <rect width="18" height="18" fill="white" transform="translate(0.5 0.5)"/>
+                                            </clipPath>
+                                            </defs>
+                                        </svg>                                    
+                                        Date
+                                    </div>
+                                    
+                                    <input type="date" class="filter-date" name="fromDate" value={fromDate} style="width: 80%;" onchange={dateChange}/>
+                                </div>
+            
+                                <div class="custom-route-filter">
+                                    <div class="route-filter-title" style="color: #fff;">Filter</div>
+                                    <div class="custom-dropbtn" onclick={toggleFilterDropdown}>
+                                        <span id="selected-item" class="SelectedOption">
+                                            <span if:true={buttonSelected}>
+                                                {buttonSelected} &nbsp; 
+                                            </span>
+                                            <span if:false={buttonSelected}>
+                                                &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                                            </span>
+                                            
+                                            <img src={buttonSelectedIcon} width="15" height="15" class="invert-image">&nbsp;
+                                        </span>
+                                        <i class="material-icons">
+                                            <lightning-icon icon-name="utility:chevrondown"  size="x-small" alternative-text="" class="invert-image white-icon" ></lightning-icon>
+                                        </i>
+                                    </div>
+                                    <div class="custom-dropdown-content" id="dropdown-content">
+                                        <!-- <div class="custom-dropdown-items" data-id="hrs" onclick={selectItem}>
+                                            Day &nbsp;
+                                            <img src={hrs} width="15" height="15" >
+                                        </div> -->
+                                        <div class="custom-dropdown-items" data-id="week" onclick={selectItem}>
+                                            Week
+                                            <img src={week} width="15" height="15" >
+                                        </div>
+                                        <div class="custom-dropdown-items" data-id="month" onclick={selectItem}>
+                                            Month
+                                            <img src={year} width="15" height="15" >
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <template if:false={isOneDay}> -->
+                                <template  for:each={VisitData} for:item="item" for:index="index">
+                                    <div class="route-outlets" key={item.id}>
+                                        
+                                            <!-- <div class="slds-box slds-box_x-small custom-box slds-m-top_small" > -->
+                                            <div class="borderLine slds-m-top_small">
+                                                <!-- <div  class="route-outlet "> -->
+                                                    <div class="route-left">
+                                                        <!-- <div class="outlet-date">{item.formattedVisitDate}</div> -->
+                                                        <div class="outlet-date expenses-date ">{item.date}</div>
+                                                        <span class="dateData">
+                                                            <template if:true={item.visits} for:each={item.visits} for:item="vis" for:index="index1">
+                                                                <div key={vis.Id} class="visitDropdown">
+                                                                    
+                                                                    <span  class="outlet-title">
+                                                                        <img src={googleIcons.account} width="15" height="15" >
+                                                                        &nbsp;&nbsp;
+                                                                        {vis.accountName}
+                                                                    </span>
+                                                                    <template lwc:if={isOneDay}>
+                                                                        <template lwc:if={vis.execute}>
+                                                                            <span class="outlet-icon" onclick={openMenu} tabindex="0"  data-id={vis.id} data-index={index} data-index2={index1}>
+                            
+                                                                                <lightning-icon 
+                                                                                                icon-name="utility:threedots_vertical" 
+                                                                                                size="x-small" 
+                                                                                                alternative-text="" 
+                                                                                                class="chevron-icon-ex"
+                                                                                                data-id={vis.id}
+                                                                                                data-index={index}
+                                                                                                data-index2={index1} ></lightning-icon>
+                                                                            </span>
+                                                                        </template>
+                                                                    </template>
+                                                                    
+                                                                </div>
+                                                                
+                                                            </template>
+                                                        </span>
+                                                        <!-- <div class="outlet-title">{item.accountName}</div> -->
+                                                        
+                                                        <!-- <template if:false={item.isMoreLoad}>
+                                                            <template if:false={item.isShowAllData}>
+                                                                <div class="outlet-title">Status :{item.status}</div>
+                                                                <div class="outlet-title">Start time :{item.actualStartDateTimeString}</div>
+                                                                <div class="outlet-title">End Time :{item.formattedActualEndDateTime}</div>
+                                                                <div class="outlet-title">Comments :{item.comments}</div>
+                                                                <div class="outlet-title">Approval status :{item.approvalStatus}</div>
+                                                            </template>
+                                                        </template> -->
+                                                        <!-- <template lwc:if={item.isShowAllData}>
+                                                            <div class="outlet-title">Status :{item.status}</div>
+                                                            <div class="outlet-title">Start time :{item.actualStartDateTimeString}</div>
+                                                            <div class="outlet-title">End Time :{item.formattedActualEndDateTime}</div>
+                                                            <div class="outlet-title">Comments :{item.comments}</div>
+                                                            <div class="outlet-title">Approval status :{item.approvalStatus}</div>
+                                                        </template> -->
+                                                    </div>
+                
+                                                <template if:true={item.isShowAllData}>
+                                                    <div    if:true={item.isMoreLoad} 
+                                                        class="custom-more-button outlet-icon slds-align_absolute-center" 
+                                                        data-index={index} 
+                                                        onclick={showLessMoreVisit}>More</div>
+                                                    <div    if:false={item.isMoreLoad}  
+                                                            class="custom-more-button outlet-icon slds-align_absolute-center" 
+                                                            data-index={index} 
+                                                            onclick={showLessMoreVisit}>Less</div>
+                                                </template>
+                                                
+                                            </div>
+                                        <!-- </template> -->
+                                    </div>
+                                </template>
+                            <!-- </template> -->
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        
+    </template>
+    
+    <template lwc:if={openVisit}>
+        <c-create-visit-popup record-id={currentVisitId} is-desktop={isDesktop} onmyvisitclick={createNewVisit} complete-visit={completeVisit} reshedule={Reshedule} new-visit-create={newVisit}></c-create-visit-popup>
+    </template>
+    
+</template>

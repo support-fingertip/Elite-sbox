@@ -1,0 +1,2624 @@
+import { LightningElement, track, api, wire } from 'lwc';
+import ORD_DATA from '@salesforce/apex/DMSPortalLwc.allOrderData';
+import SEC_ORD_DATA from '@salesforce/apex/DMSPortalLwc.getSecondaryOrders';
+import allInvoiceData from '@salesforce/apex/DMSPortalLwc.allInvoiceData';
+import getInvoiceItems from '@salesforce/apex/DMSPortalLwc.getInvoiceItems';
+import PRETURN_DATA from '@salesforce/apex/DMSPortalLwc.allPrimaryReturnsData';
+import PAY_Rec_DATA from '@salesforce/apex/DMSPortalLwc.allPaymentReceiptData';
+import GRN_DATA from '@salesforce/apex/DMSPortalLwc.allGRNData';
+import CLAIM_DATA from '@salesforce/apex/DMSPortalLwc.allClaimData';
+import STOCK_DATA from '@salesforce/apex/DMSPortalLwc.allDistributorStockData';
+import CREDIT_NOTE_DATA from '@salesforce/apex/DMSPortalLwc.allCreditNoteData';
+import SEC_INV_DATA from '@salesforce/apex/DMSPortalLwc.allSecoundaryInvoiceData';
+import SRETURN_DATA from '@salesforce/apex/DMSPortalLwc.allSecoundaryReturnsData';
+import GET_GRN_DATA from '@salesforce/apex/DMSPortalLwc.getGRNData';
+import DMSIcon from '@salesforce/resourceUrl/DMS_LOGO';
+import FORM_FACTOR from '@salesforce/client/formFactor';
+import { NavigationMixin } from 'lightning/navigation';
+import createPaymentWithItems from '@salesforce/apex/DMSPortalLwc.createPaymentWithItems';
+import getSecondaryOrders from '@salesforce/apex/DMSPortalLwc.getSecondaryOrders';
+import DMS_Offer1 from '@salesforce/resourceUrl/DMS_Offer1';
+import DMS_Offer2 from '@salesforce/resourceUrl/DMS_Offer2';
+import DMS_Offer3 from '@salesforce/resourceUrl/DMS_Offer3';
+import DMS_Offer4 from '@salesforce/resourceUrl/DMS_Offer4';
+import DMS_Offer5 from '@salesforce/resourceUrl/DMS_Offer5';
+
+
+import getPrimaryReturns from '@salesforce/apex/DMSPortalLwc.getPrimaryReturns';
+import getPrimaryReturnItems from '@salesforce/apex/DMSPortalLwc.getPrimaryReturnItems';
+import getPaymentReceiptDetails from '@salesforce/apex/DMSPortalLwc.getPaymentReceiptDetails';
+import getReceiptItems from '@salesforce/apex/DMSPortalLwc.getReceiptItems';
+import getGRNList from '@salesforce/apex/DMSPortalLwc.getGRNList';
+import getGRNItems from '@salesforce/apex/DMSPortalLwc.getGRNItems';
+import getSecondaryReturnItems from '@salesforce/apex/DMSPortalLwc.getSecondaryReturnItems';
+import getSecondaryInvoiceItems from '@salesforce/apex/DMSPortalLwc.getSecondaryInvoiceItems';
+import getOrderItems from '@salesforce/apex/DMSPortalLwc.getOrderItems';
+import getInvoices from '@salesforce/apex/InvoiceController.getInvoices';
+import getPrimaryInvoices from '@salesforce/apex/InvoiceController.getPrimaryInvoices';
+import getUsers from '@salesforce/apex/DMSPortalLwc.getUsers';
+import getSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getSecondaryCustomers';
+import getInvoicePdfUrl from '@salesforce/apex/DMSPortalLwc.getInvoicePdfUrl';
+
+const TAB_WIDTH = 135;     // realistic average width per tab
+const RESERVED_WIDTH = 250; // logo + profile + spacing
+
+export default class NavigationComponent extends LightningElement {
+    //Varible related to tab Function
+    @track selectedTab  = 'Home';
+    @track showMoreMenu = false;
+    @track visibleTabCount = 0;
+
+    allTabs = [
+        { id: 'Home', label: 'Home' },
+        { id: 'Orders', label: 'Primary Orders' },
+        { id: 'Invoices', label: 'Primary Invoices' },
+        { id: 'Returns', label: 'Primary Returns' },
+        { id: 'Payments', label: 'Receipts' },
+        { id: 'GRN', label: 'GRNs' },
+        { id: 'Claims', label: 'Claims' },
+        { id: 'Stock', label: 'Stock' },
+        { id: 'Secondary Orders', label: 'Secondary Orders' },
+        { id: 'Secondary Invoices', label: 'Secondary Invoices'},
+        { id: 'Secondary Returns', label: 'Secondary Returns'},
+        { id: 'Secondary Customers', label: 'Seondary Customers'},
+        { id: 'Users', label: 'Users' },
+        { id: 'Stock Adjustment', label: 'Stock Adjustment' }
+    ];
+
+    //Variables related to data
+    @track isNewDataUpload = false;
+    @track showSecondaryOrders = true; // Show Secondary Orders table
+    @track showSecondaryOrderItems = false; // Show Secondary Order Items table
+    @track selectedSecondaryOrderId = ''; // Store the selected Secondary Order Id
+    @track selectedSecondaryOrderNo = ''; // Store the selected Secondary Order Number
+    @track secondaryOrderItems = [];
+    @track hasSecondaryOrderItems = false;
+
+
+    @track secondaryInvoiceItems = [];
+    @track selectedSecondaryInvoiceId = null;
+    @track selectedSecondaryInvoiceNo = '';
+    @track showSecondaryInvoiceItems = false;
+    @track hasSecondaryInvoiceItems = false;
+
+
+    @track showSecondaryReturnItems = false
+    @track secondaryReturnItems = [];
+    @track selectedSecondaryReturnNo = '';
+    @track selectedSecondaryReturnId = null;
+    @track hasSecondaryReturnItems = false;
+
+
+    @track orderItems = [];      // List of order items with Tax_Amount__c field
+    @track totalTaxAmount = 0;   // Total tax amount calculated
+
+
+    @track grnList = [];
+    @track selectedGrnId = '';
+    @track selectedGrnName = '';
+    @track grnItems = [];
+    @track showGrnItems = false;
+
+
+
+    @track showReceiptItems = false;
+    @track selectedReceipt = null;
+    @track selectedReceiptItems = [];
+    @track hasReceiptItems = false;
+
+
+
+    @track primaryReturnItems = [];
+    @track showPrimaryReturnItems = false;
+    @track selectedPrimaryReturnNo = '';
+    @track selectedPrimaryReturnId = null;
+    @track isSubPartLoad = false;
+
+    selectedOrderIds = [];
+    selectedCustomerName = [];
+    selectedCustomerId = '';
+
+
+    @track invoiceItems = [];
+    @track showInvoiceItems = false;
+    @track selectedInvoiceId = null;
+    @track hasInvoiceItems = false;
+
+
+
+    dmsIcon = DMSIcon;
+    @track showModal = false;
+    @track showOrderItems = false;
+    @track hasOrderItems = false;
+    @track selectedOrderItems = [];
+    @track selectedOrderNo = '';
+    @track isgenerateGRN = false;
+    @track isNewReturn = false;
+    @track isNewClaim = false;
+    @track isNewOrder = false;
+    @track isNewOrder2 = false;
+    @track isNewOrder3 = false;
+
+
+    @track isNewSecondaryReturn = false;
+    @track selectedOrders = [];
+    @track selectedInvoiceId;
+    @track selectedInvoiceIds = [];
+    @track allInvoiceItems = []; // Declare separately
+
+    @track selectedInvoiceItems = [];
+
+    /* secondary orders*/
+    @track orderList = [];
+    @track selectedOrders = [];
+
+
+    /**Primary**/
+    showHome = true;
+    showOrders = false;
+    showPrimaryOrders = false;
+    showPrimaryInvoices = false;
+    showPrimaryReturn = false;
+    showPrimaryPayments = false;
+    showPrimaryGrn = false;
+    showClaim = false;
+    showStockAdjustment = false;
+
+
+    showStock = false;
+    showCreditNote = false;
+
+    showCreatePrimaryGrn = false;
+
+    /**Secoundary **/
+    showSecondaryOrders = false;
+    showSecoundaryInvoices = false;
+    showSecoundaryReturn = false;
+    isgenerateGRN = false;
+    isGenerateInvoice = false;
+
+
+    @track hideOrders = false;
+
+
+    @track ordFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        orderType: '',
+        isOrderDataExisted: false,
+        status: 'All',
+        statusVal: [],
+        allordData: [],
+        originalOrdData: []
+    };
+    @track InvFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        status: 'All',
+        statusVal: [],
+        allInvData: [],
+        originalInvData: [],
+        isInvoiceDataExisted: false,
+    };
+
+
+
+    @track primaryReturnFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        statusVal: [],
+        allPReturnData: [],
+        originalPReturnata: [],
+        isDataExisted: false,
+    };
+
+    @track primaryPaymentsFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        statusVal: [],
+        allPaymentData: [],
+        originalPaymentData: [],
+        isDataExisted: false,
+    };
+    @track GRNFilter = {
+        fromDate: '',
+        toDate: '',
+        srchVal: '',
+        allGRNData: [],
+        originalGRNData: [],
+        isDataExisted: false,
+        allGRNList: [],
+        originalGRNList: [],
+        isListDataExisted: false,
+        allGRNItems: [],
+        isItemsDataExisted: false
+    };
+
+    @track claimFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        status: '',
+        statusVal: [],
+        allClaimData: [],
+        originalClaimData: [],
+        isDataExisted: false,
+    };
+    @track stockFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        status: 'All',
+        statusVal: [],
+        productCategories: [],
+        selectedCategory: '',
+        allStockData: [],
+        originalStockData: [],
+        isDataExisted: false,
+    };
+    @track creditNoteFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        status: '',
+        statusVal: [],
+        allCreditNoteData: [],
+        originalCreditNoteData: [],
+        isDataExisted: false,
+    };
+    @track secInvFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        status: '',
+        statusVal: [],
+        allSecInvData: [],
+        originalSecInvData: [],
+        isDataExisted: false,
+    };
+    @track secoundaryReturnFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        statusVal: [],
+        allSReturnData: [],
+        originalSReturnata: [],
+        isDataExisted: false,
+    };
+
+    @track secoundaryCustomerFilter = {
+        allSecondaryCustomers: [],
+        originalSecondaryCustomers: [],
+        searchCustomer :'',
+        isshowData :false
+    };
+
+    isSubPartLoad = false;
+    isPageLoaded = false;
+    isDesktop = false;
+    isPhone = false;
+    containerClass = 'slds-modal__container';
+    isPopupLoading = false;
+    userList = [];
+    allUsers = [];
+    searchKey ='';
+    isShowSecondaryCustomers = false;
+    invoiceIdToDownloadPdf = '';
+
+
+
+    /*Dynamic Tabs */
+    get primaryTabs() {
+        return this.allTabs.slice(0, this.visibleTabCount).map(tab => ({
+            ...tab,
+            cssClass: this.selectedTab  === tab.id
+                ? 'nav-item selected'
+                : 'nav-item'
+        }));
+    }
+
+    get overflowTabs() {
+        return this.allTabs.slice(this.visibleTabCount).map(tab => ({
+            ...tab,
+            cssClass: this.selectedTab  === tab.id
+                ? 'more-menu-item selected'
+                : 'more-menu-item'
+        }));
+    }
+
+    get hasOverflow() {
+        return this.allTabs.length > this.visibleTabCount;
+    }
+
+    connectedCallback() {
+        try {
+            this.calculateTabs();
+            this.resizeHandler = this.calculateTabs.bind(this);
+            window.addEventListener('resize', this.resizeHandler);
+            this.isDesktop = FORM_FACTOR === 'Large' ? true : false;
+            this.isPhone = FORM_FACTOR === 'Small' ? true : false;
+            if (FORM_FACTOR === 'Medium') this.isDesktop = true;
+            isPageLoaded = true;
+            this.containerClass = this.isDesktop ? 'slds-modal__container' : 'mobilePopup';
+            this.disablePullToRefresh();
+
+        } catch (error) {
+            console.error('Error in connectedCallback:', error);
+        }
+
+        loadScript(this, XLSX)
+        .then(() => {
+            this.xlsxJsLibrary = window.XLSX;  // Make sure the XLSX object is available globally
+            console.log('XLSX library loaded successfully!');
+        })
+        .catch((error) => {
+            console.error('Error loading XLSX library', error);
+        });
+    }
+
+    disconnectedCallback() {
+        window.removeEventListener('resize', this.resizeHandler);
+    }
+    renderedCallback() {
+        if (!this.visibleTabCount) {
+            this.calculateTabs();
+        }
+    }
+    /*  Calculate based on screen width */
+    calculateTabs() {
+        const width = window.innerWidth - RESERVED_WIDTH;
+        const count = Math.floor(width / TAB_WIDTH);
+
+        // Minimum tabs safety
+        this.visibleTabCount = Math.max(3, count);
+    }
+    toggleMoreMenu(event) {
+        event.stopPropagation();
+        this.showMoreMenu = !this.showMoreMenu;
+    }
+    handleOutsideClick = (event) => {
+        const dropdown = this.template.querySelector('.more-dropdown');
+        if (dropdown && !dropdown.contains(event.target)) {
+            this.showMoreMenu = false;
+        }
+    };
+    selectTab(event) {
+        const tabId = event.currentTarget.dataset.id;
+        this.selectedTab  = tabId;
+        this.showMoreMenu = false;
+
+        const selectedIndex = this.allTabs.findIndex(tab => tab.id === tabId);
+
+        // If selected tab is in overflow, bring it into visible area
+        if (selectedIndex >= this.visibleTabCount) {
+            const selectedTab = this.allTabs.splice(selectedIndex, 1)[0];
+
+            // Insert selected tab at last visible position
+            this.allTabs.splice(this.visibleTabCount - 1, 0, selectedTab);
+        }
+        const rowId = event.target.dataset.id;
+        this.selectedTabFunction();
+        this.dispatchEvent(new CustomEvent('tabselect', {
+            detail: { tabId }
+        }));
+    }
+
+    resetAllFlags() {
+        this.showHome = false;
+        this.showOrders = false;
+        this.showPrimaryOrders = false;
+        this.showPrimaryInvoices = false;
+        this.showPrimaryReturn = false;
+        this.showPrimaryPayments = false;
+        this.showPrimaryGrn = false;
+        this.showClaim = false;
+        this.showStock = false;
+        this.showCreditNote = false;
+
+        this.showSecondaryOrders = false;
+        this.showSecoundaryInvoices = false;
+        this.showSecoundaryReturn = false;
+
+        this.showOrderItems = false;
+        this.showInvoiceItems = false;
+        this.showPrimaryReturnItems = false;
+        this.showReceiptItems = false;
+        this.showGrnItems = false;
+        this.showSecondaryReturnItems = false;
+        this.showSecondaryInvoiceItems = false;
+        this.showSecondaryOrderItems = false;
+
+        this.isNewOrder = false;
+        this.isNewOrder2 = false;
+        this.isNewOrder3 = false;
+        this.isNewReturn = false;
+        this.isNewClaim = false;
+        this.isNewSecondaryReturn = false;
+        this.isGenerateInvoice = false;
+        this.isgenerateGRN = false;
+
+        this.isNewDataUpload = false;
+        this.showusers = false;
+        this.isShowSecondaryCustomers = false;
+        this.showStockAdjustment = false;
+    }
+ 
+    selectedTabFunction() {
+        this.resetAllFlags();  
+
+        switch (this.selectedTab) {
+
+            case 'Home':
+                this.showHome = true;
+                break;
+
+            case 'Orders':
+                this.showOrders = true;
+                this.showPrimaryOrders = true;
+                this.getOrderData();
+                break;
+
+            case 'Invoices':
+                this.showPrimaryInvoices = true;
+                this.getInvoiceData();
+                break;
+
+            case 'Returns':
+                this.showPrimaryReturn = true;
+                this.getPrimaryReturnData();
+                break;
+
+            case 'Payments':
+                this.showPrimaryPayments = true;
+                this.getPrimaryPaymemtsData();
+                break;
+
+            case 'GRN':
+                this.showPrimaryGrn = true;
+                this.getGRNsData();
+                break;
+
+            case 'Claims':
+                this.showClaim = true;
+                this.getClaimData();
+                break;
+
+            case 'Stock':
+                this.showStock = true;
+                this.getStockData();
+                break;
+
+            case 'Credit Note':
+                this.showCreditNote = true;
+                this.getCreditData();
+                break;
+
+            case 'Secondary Orders':
+                this.showSecondaryOrders = true;
+                this.getSecoundaryOrderData();
+                break;
+
+            case 'Secondary Invoices':
+                this.showSecoundaryInvoices = true;
+                this.getSecoundaryInvoiceData();
+                break;
+
+            case 'Secondary Returns':
+                this.showSecoundaryReturn = true;
+                this.getSecoundaryReturnData();
+                break;
+
+            case 'users':
+                this.showusers = true;
+                this.getUserData();
+                break;
+
+            case 'Secondary Customers':
+                this.isShowSecondaryCustomers = true;
+                this.getCustomerData();
+                break;
+            case 'Stock Adjustment':
+                this.showStockAdjustment = true;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+    /**------user Data------**/
+    getUserData() {
+        this.userFilter = {
+            searchKey: '',
+            status: 'Active'  // Active | Inactive | All
+        };
+
+        this.fetchUsers();
+    }
+    fetchUsers() {
+        console.log('===== fetchUsers START =====');
+
+        console.log('Search Key:', this.userFilter.searchKey);
+        console.log('Status    :', this.userFilter.status);
+
+        // Optional loader
+        this.isSubPartLoad = true;
+
+        getUsers({
+            searchKey: this.userFilter.searchKey,
+            status: this.userFilter.status
+        })
+            .then(result => {
+                if (!result || result.length === 0) {
+                    this.userList = [];
+                    this.allUsers = [];
+                    this.isSubPartLoad = false;
+                    return;
+                }
+
+                const mappedUsers = result.map(u => ({
+                    id: u.Id,
+                    name: u.Executive_Name__c,
+                    username: u.Username,
+                    email: u.Email,
+                    profile: u.Profile ? u.Profile.Name : '',
+                    isActive: u.IsActive,
+                    statusLabel: u.IsActive ? 'Active' : 'Inactive',
+                    Manager: u.Manager_Name__c
+                }));
+
+                this.allUsers = mappedUsers;        
+                this.userList = [...mappedUsers];     
+
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error('Apex Error:', error);
+                this.userList = [];
+                this.isSubPartLoad = false;
+                console.log('===== fetchUsers END (ERROR) =====');
+            });
+    }
+    handleSearch(event) {
+        this.searchKey = event.target.value || '';
+        const key = this.searchKey.toLowerCase();
+
+        if (!key) {
+            this.userList = [...this.allUsers];
+            return;
+        }
+
+        this.userList = this.allUsers.filter(u =>
+            (u.name || '').toLowerCase().includes(key) ||
+            (u.username || '').toLowerCase().includes(key)
+        );
+    }
+    get hasUsers() {
+        return this.userList && this.userList.length > 0;
+    }
+
+    /**Secondary Customer Data */
+    getCustomerData() {
+        this.isSubPartLoad = true;
+
+        getSecondaryCustomers()
+            .then(result => {
+                console.log('data'+JSON.stringify(result.customerData ))
+                this.secoundaryCustomerFilter.originalSecondaryCustomers = result.customerData || [];
+                this.secoundaryCustomerFilter.allSecondaryCustomers = result.customerData || [];
+                this.secoundaryCustomerFilter.isshowData =
+                result.customerData && result.customerData.length > 0;
+            })
+            .catch(error => {
+                console.error('Error fetching secondary customers:', error);
+            })
+            .finally(() => {
+                this.isSubPartLoad = false;
+            });
+    }
+
+    handleCustomerSearch(event) {
+        const searchVal = event.target.value || '';
+        const key = searchVal.toLowerCase();
+
+        // Reset when search is empty
+        if (!key) {
+            this.secoundaryCustomerFilter.originalSecondaryCustomers = [
+                ...this.secoundaryCustomerFilter.allSecondaryCustomers
+            ];
+            this.secoundaryCustomerFilter.isshowData =
+                this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
+            return;
+        }
+
+        // Filter data
+        this.secoundaryCustomerFilter.originalSecondaryCustomers =
+            this.secoundaryCustomerFilter.allSecondaryCustomers.filter(c =>
+                (c.secondaryCustomerName || '').toLowerCase().includes(key) ||
+                (c.secondaryCustomerCode || '').toLowerCase().includes(key) ||
+                (c.primaryPhoneNumber || '').toLowerCase().includes(key)
+            );
+
+        // Show / hide data
+        this.secoundaryCustomerFilter.isshowData =
+            this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
+    }
+
+
+
+
+    /**------Order Data------**/
+    getOrderData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.ordFilter.fromDate = formatDate(firstDate);
+        this.ordFilter.toDate = formatDate(lastDate);
+        this.ordFilter.status = 'All';
+        this.ordFilter.orderType = this.selectedTab == 'Secondary Orders' ? 'Dealer' : 'Distributor';
+        this.OrderData();
+    }
+
+    getSecoundaryOrderData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.ordFilter.fromDate = formatDate(firstDate);
+        this.ordFilter.toDate = formatDate(lastDate);
+        this.ordFilter.status = 'All';
+        this.ordFilter.orderType = 'Dealer';
+        this.secoundaryOrderData();
+    }
+    secoundaryOrderData() {
+        this.isSubPartLoad = true;
+        const { status, fromDate, toDate, orderType } = this.ordFilter;
+        SEC_ORD_DATA({
+            status: status,
+            frmDate: fromDate,
+            toDate: toDate,
+            orderType: orderType
+        })
+            .then(result => {
+                console.log('result.TotalOrderData' + result.TotalOrderData);
+                this.ordFilter.statusVal = result.statusOptions;
+                this.ordFilter.allordData = this.addRowIndex(result.TotalOrderData);
+                this.ordFilter.originalOrdData = this.addRowIndex(result.TotalOrderData);
+                this.ordFilter.isOrderDataExisted = this.ordFilter.allordData.length != 0 ? true : false;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+    OrderData() {
+
+        this.isSubPartLoad = true;
+        const { status, fromDate, toDate, orderType } = this.ordFilter;
+        ORD_DATA({
+            status: status,
+            frmDate: fromDate,
+            toDate: toDate,
+            orderType: orderType
+        })
+            .then(result => {
+                // Ensure unique orders by orderId
+                const uniqueOrders = [];
+                const orderIds = new Set();
+                result.TotalOrderData.forEach(order => {
+                    if (!orderIds.has(order.orderId)) {
+                        orderIds.add(order.orderId);
+                        uniqueOrders.push(order);
+                    } else {
+                        console.warn('Duplicate order detected in Apex response: ' + order.orderId);
+                    }
+                });
+
+                this.ordFilter.statusVal = result.statusOptions;
+                this.ordFilter.allordData = this.addRowIndex(uniqueOrders);
+                this.ordFilter.originalOrdData = this.addRowIndex(uniqueOrders);
+                this.ordFilter.isOrderDataExisted = uniqueOrders.length !== 0;
+                this.isSubPartLoad = false;
+                console.log('Processed Orders in LWC: ', uniqueOrders.length);
+            })
+            .catch(error => {
+                console.error('Error fetching orders: ', error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    // Handle filter changes
+    handleOrdChange(event) {
+        this.ordFilter.srchVal = '';
+        this.ordFilter[event.target.name] = event.target.value;
+        this.OrderData();
+    }
+
+    // Handle secondary filter changes (if applicable)
+    handleSecOrdChange(event) {
+        this.ordFilter.srchVal = '';
+        this.ordFilter[event.target.name] = event.target.value;
+        this.secoundaryOrderData();
+    }
+
+   // Handle search
+    handleOrdSerch(event) {
+        const txt = event.target.value;
+        console.log('Searched Value: ' + txt);
+
+        this.ordFilter = { ...this.ordFilter, srchVal: txt };
+
+        if (txt && txt.length > 0) {
+            // Filter data based on search text
+            const filteredData = this.ordFilter.originalOrdData.filter(ord =>
+                (ord.orderNo && ord.orderNo.toLowerCase().includes(txt.toLowerCase())) ||
+                (ord.customerName && ord.customerName.toLowerCase().includes(txt.toLowerCase()))
+            );
+
+            // Remove duplicates + add rowIndex
+            const uniqueOrders = [];
+            const orderIds = new Set();
+
+            filteredData.forEach((order, index) => {
+                if (!orderIds.has(order.orderId)) {
+                    orderIds.add(order.orderId);
+                    uniqueOrders.push({
+                        ...order,
+                        rowIndex: uniqueOrders.length + 1
+                    });
+                }
+            });
+
+            this.ordFilter = {
+                ...this.ordFilter,
+                allordData: uniqueOrders,
+                isOrderDataExisted: uniqueOrders.length !== 0
+            };
+
+        } else {
+            // Reset to original data + reassign rowIndex
+            const resetData = this.ordFilter.originalOrdData.map((order, index) => ({
+                ...order,
+                rowIndex: index + 1
+            }));
+
+            this.ordFilter = {
+                ...this.ordFilter,
+                allordData: resetData,
+                isOrderDataExisted: resetData.length !== 0
+            };
+        }
+    }
+
+
+    addRowIndex(data) {
+        return data.map((row, index) => {
+            return {
+                ...row,
+                rowIndex: index + 1
+            };
+        });
+    }
+
+    // Call this method after you load or update the order items list
+    calculateTotalTax() {
+        if (!this.orderItems || this.orderItems.length === 0) {
+            this.totalTaxAmount = 0;
+            return;
+        }
+
+        this.totalTaxAmount = this.orderItems.reduce((acc, item) => {
+            const taxAmount = item.Tax_Amount__c ? parseFloat(item.Tax_Amount__c) : 0;
+            return acc + taxAmount;
+        }, 0);
+    }
+
+    // Example: call this after fetching order items from Apex
+    handleOrderItemsFetched(items) {
+        this.orderItems = items;
+        this.calculateTotalTax();
+    }
+
+
+
+    handleSecondaryOrderNoClick(event) {
+        const orderId = event.target.dataset.id;  // Get the Order ID
+        const orderNo = event.target.textContent; // Get the Order Number
+
+        if (!orderId) {
+            console.error('No order ID found in event target:', event.target);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error',
+                    message: 'Invalid order ID. Please try again.',
+                    variant: 'error'
+                })
+            );
+            return;
+        }
+
+        this.selectedSecondaryOrderId = orderId;
+        this.selectedSecondaryOrderNo = orderNo;
+        this.isSubPartLoad = true;
+
+        // Fetch Secondary Order Items for the selected Secondary Order ID (pass it as an array)
+        getOrderItems({ orderIds: [orderId] })  // Pass orderId in an array to match the Apex method signature
+            .then(items => {
+                console.log('Loaded secondary order items:', JSON.stringify(items));
+                this.secondaryOrderItems = items.map(item => ({
+                    Id: item.OrderItemId,
+                    Product_Name__c: item.ProductName || 'N/A',  // Product Name
+                    Quantity__c: item.Quantity || 0,  // Quantity
+                    Total_Amount__c: item.TotalAmount || 0,  // Total Amount
+                    Tax_Amount__c: item.TaxAmount || 0,  // Tax Amount
+                    Tax_Percent__c: item.TaxPercent || 0,  // Tax Percent
+                    Unit_price__c: item.UnitPrice || 0  // Unit Price
+                }));
+
+                this.showSecondaryOrderItems = true; // Show Order Items table
+                this.showSecondaryOrders = false; // Hide Secondary Orders table
+                this.isSubPartLoad = false; // Stop loading state
+
+                this.hasSecondaryOrderItems = this.secondaryOrderItems.length > 0; // Check if items exist
+                console.log('showSecondaryOrderItems:', this.showSecondaryOrderItems);
+                console.log('🧾 secondaryOrderItems length:', this.secondaryOrderItems.length);
+            })
+            .catch(error => {
+                console.error('Error loading secondary order items:', error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    // Close the Secondary Order Items table and go back to Secondary Orders
+    closeSecondaryOrderItems() {
+        this.showSecondaryOrders = true; // Show Secondary Orders table
+        this.showSecondaryOrderItems = false; // Hide Secondary Order Items table
+        this.selectedSecondaryOrderId = ''; // Clear the selected Order ID
+        this.secondaryOrderItems = []; // Clear the Secondary Order Items
+        this.selectedSecondaryOrderNo = ''; // Clear the selected Order No
+    }
+
+    get hasSecondaryOrderItems() {
+
+        console.log(this.secondaryOrderItems.length > 0);
+        return this.secondaryOrderItems.length > 0;
+    }
+
+
+
+
+
+    /** ---Invoice Data -----**/
+    getInvoiceData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.InvFilter.fromDate = formatDate(firstDate);
+        this.InvFilter.toDate = formatDate(lastDate);
+        this.InvFilter.status = 'GRN Pending';
+        this.invoiceData();
+    }
+    invoiceData() {
+        this.isSubPartLoad = true;
+        const { status, fromDate, toDate } = this.InvFilter;
+        allInvoiceData({
+            status: status,
+            frmDate: fromDate,
+            toDate: toDate
+        })
+        .then(result => {
+            this.InvFilter.statusVal = result.statusOptions;
+            this.InvFilter.allInvData = this.addRowIndex(result.TotalInvoiceData);
+            this.InvFilter.originalInvData = this.addRowIndex(result.TotalInvoiceData);
+            this.InvFilter.isInvoiceDataExisted = result.TotalInvoiceData.length > 0;
+        
+            // Hide invoice items table on new load
+            this.showInvoiceItems = false;
+            this.invoiceItems = [];
+            this.selectedInvoiceId = null;
+
+            this.isSubPartLoad = false;
+        })
+        .catch(error => {
+            console.error(error);
+            this.isSubPartLoad = false;
+        });
+    }
+
+    handleInvChange(event) {
+        this.InvFilter[event.target.name] = event.target.value;
+        this.InvFilter.srchVal = '';
+        this.invoiceData();
+    }
+    handleInvSerch(event) {
+        const txt = event.target.value;
+        console.log('Searched Value: ' + txt);
+
+        // Create a shallow copy to trigger reactivity
+        this.InvFilter = { ...this.InvFilter, srchVal: txt };
+
+        if (txt.length > 0) {
+            const dataUpdate = this.InvFilter.originalInvData.filter(rec =>
+                (rec.accName && rec.accName.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.name && rec.name.toLowerCase().includes(txt.toLowerCase()))
+            );
+            const indexedData = this.addRowIndex(dataUpdate);
+            this.InvFilter = {
+                ...this.InvFilter,
+                allInvData: indexedData,
+                isInvoiceDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            const indexedData = this.addRowIndex(this.InvFilter.originalInvData);
+            this.InvFilter = {
+                ...this.InvFilter,
+                allInvData: indexedData,
+                isInvoiceDataExisted: this.InvFilter.originalInvData.length !== 0 ? true : false
+            };
+        }
+    }
+
+
+    handleInvoiceClick(event) {
+        const invoiceId = event.target.dataset.id;
+        const invoiceName = event.target.textContent;
+        if (!invoiceId) return;
+
+        this.selectedInvoiceId = invoiceName;
+        this.isSubPartLoad = true;
+        this.showPrimaryInvoices = false;
+
+        this.showInvoiceItems = true; // show loading if needed
+
+        getInvoiceItems({ invoiceId })
+            .then(items => {
+                this.invoiceItems = items;
+                this.hasInvoiceItems = this.invoiceItems.length > 0;
+                this.showInvoiceItems = true;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error('Error loading invoice items', error);
+                this.invoiceItems = [];
+                this.showInvoiceItems = false;
+                this.isSubPartLoad = false;
+            });
+    }
+
+    get noInvoiceItems() {
+        return this.invoiceItems && this.invoiceItems.length === 0;
+    }
+
+
+    /**------Primary Returns-----**/
+    get hasPrimaryReturnItems() {
+        return this.primaryReturnItems && this.primaryReturnItems.length > 0;
+    }
+
+
+    handlePrimaryReturnChange(event) {
+        const { name, value } = event.target;
+
+        // Ensure the date is in 'yyyy-mm-dd' format
+        if (name === 'fromDate' || name === 'toDate') {
+            this.primaryReturnFilter[name] = value;
+        }
+
+        this.primaryReturnFilter.srchVal = ''; // Clear search filter
+        this.loadPrimaryReturns(); // Fetch primary returns data with the new date filter
+    }
+
+    // Method to handle the search filter for Primary Returns
+    handlePrimaryReturnSerch(event) {
+        const txt = event.target.value;
+        console.log('Searched Value: ' + txt);
+
+        // Create a shallow copy to trigger reactivity
+        this.primaryReturnFilter = { ...this.primaryReturnFilter, srchVal: txt };
+
+        // Perform search if the text length is greater than 0
+        if (txt.length > 0) {
+            const dataUpdate = this.primaryReturnFilter.originalPReturnata.filter(rec =>
+                (rec.productName && rec.productName.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.primaryReturnNo && rec.primaryReturnNo.toLowerCase().includes(txt.toLowerCase()))
+            );
+            this.primaryReturnFilter = {
+                ...this.primaryReturnFilter,
+                allPReturnData: dataUpdate,
+                isDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            // Reset to original data when search text is empty
+            this.primaryReturnFilter = {
+                ...this.primaryReturnFilter,
+                allPReturnData: this.primaryReturnFilter.originalPReturnata,
+                isDataExisted: this.primaryReturnFilter.originalPReturnata.length !== 0 ? true : false
+            };
+        }
+    }
+
+    // Method to fetch Primary Return data based on date range
+    getPrimaryReturnData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1); // First day of the month
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of the month
+        const formatDate = (date) => date.toLocaleDateString('en-CA');  // Format date to 'yyyy-mm-dd'
+
+        // Set date filters
+        this.primaryReturnFilter.fromDate = formatDate(firstDate);
+        this.primaryReturnFilter.toDate = formatDate(lastDate);
+
+        this.loadPrimaryReturns();
+    }
+
+    // Method to fetch Primary Returns data from Apex based on filters
+    loadPrimaryReturns() {
+        this.isSubPartLoad = true;
+        const { fromDate, toDate } = this.primaryReturnFilter;
+
+        // Ensure the dates are properly formatted before passing to Apex
+        getPrimaryReturns({ frmDate: fromDate, toDate })
+            .then(results => {
+                console.log('Primary Returns loaded:', results);
+                this.primaryReturnFilter.allPReturnData = results;
+                this.primaryReturnFilter.originalPReturnata = results;
+                this.primaryReturnFilter.isDataExisted = results.length > 0;
+                this.isSubPartLoad = false;
+                this.showPrimaryReturnItems = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    // Handle click on Return No. to load return items
+    handleReturnNoClick(event) {
+        const returnId = event.target.dataset.id;
+        if (!returnId) return;
+
+        this.selectedPrimaryReturnId = returnId;
+        this.selectedPrimaryReturnNo = event.target.textContent;
+
+        this.isSubPartLoad = true;
+        getPrimaryReturnItems({ primaryReturnId: returnId })
+            .then(items => {
+                console.log('Loaded primary return items:', items);
+                this.primaryReturnItems = items;
+                this.showPrimaryReturnItems = true;
+                this.isSubPartLoad = false;
+                this.showPrimaryReturn = false; // Hide returns list while showing items
+            })
+            .catch(error => {
+                console.error(error);
+                this.primaryReturnItems = [];
+                this.showPrimaryReturnItems = false;
+                this.isSubPartLoad = false;
+            });
+    }
+
+    // Close return items and show returns list again
+    closePrimaryReturnItems() {
+        this.showPrimaryReturnItems = false;
+        this.primaryReturnItems = [];
+        this.selectedPrimaryReturnId = null;
+        this.selectedPrimaryReturnNo = '';
+        this.showPrimaryReturn = true;
+    }
+
+
+    /**----Primary Payments-------**/
+    getPrimaryPaymemtsData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.primaryPaymentsFilter.fromDate = formatDate(firstDate);
+        this.primaryPaymentsFilter.toDate = formatDate(lastDate);
+        this.PrimaryPaymentsData();
+    }
+
+    PrimaryPaymentsData() {
+        this.isSubPartLoad = true;
+        const { fromDate, toDate } = this.primaryPaymentsFilter;
+        PAY_Rec_DATA({
+            frmDate: fromDate,
+            toDate: toDate
+        })
+            .then(result => {
+                const data = result.TotalPaymentData;
+
+                // 1. Build map of receiptId => total amount
+                const receiptTotals = {};
+                data.forEach(item => {
+                    const receiptId = item.paymenetId;
+                    const itemAmount = parseFloat(item.Amount) || 0;
+                    if (receiptTotals[receiptId]) {
+                        receiptTotals[receiptId] += itemAmount;
+                    } else {
+                        receiptTotals[receiptId] = itemAmount;
+                    }
+                });
+
+                // 2. Assign total amount to each item as 'receiptTotalAmount'
+                const dataWithTotals = data.map(item => ({
+                    ...item,
+                    receiptTotalAmount: receiptTotals[item.paymenetId] || 0
+                }));
+
+                // 3. Update state with modified data
+                this.primaryPaymentsFilter.allPaymentData = dataWithTotals;
+                this.primaryPaymentsFilter.isDataExisted = dataWithTotals.length > 0;
+                this.primaryPaymentsFilter.originalPaymentData = dataWithTotals;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    handlePrimaryPaymentsChange(event) {
+        this.primaryPaymentsFilter[event.target.name] = event.target.value;
+        this.primaryPaymentsFilter.srchVal = '';
+        this.PrimaryPaymentsData();
+    }
+
+    handlePrimaryPaymentsSearch(event) {
+        const txt = event.target.value.toLowerCase();
+        this.primaryPaymentsFilter.srchVal = txt;
+
+        if (txt.length > 0) {
+            const filtered = this.primaryPaymentsFilter.originalPaymentData.filter(rec =>
+                (rec.paymenetNo && rec.paymenetNo.toLowerCase().includes(txt)) ||
+                (rec.invoiceNo && rec.invoiceNo.toLowerCase().includes(txt))
+            );
+            this.primaryPaymentsFilter.allPaymentData = filtered;
+            this.primaryPaymentsFilter.isDataExisted = filtered.length > 0;
+        } else {
+            this.primaryPaymentsFilter.allPaymentData = this.primaryPaymentsFilter.originalPaymentData;
+            this.primaryPaymentsFilter.isDataExisted = this.primaryPaymentsFilter.originalPaymentData.length > 0;
+        }
+    }
+
+    /** 
+     * When Payment Receipt No. clicked — show receipt detail
+     */
+    handlePaymentReceiptClick(event) {
+        const receiptId = event.target.dataset.id;
+        if (!receiptId) return;
+
+        this.isSubPartLoad = true;
+        this.showPrimaryPayments = false;
+
+        Promise.all([
+            getPaymentReceiptDetails({ receiptId }),
+            getReceiptItems({ receiptId })
+        ])
+            .then(([receipt, items]) => {
+                //alert(JSON.stringify(receipt));
+                //alert(JSON.stringify(items));
+                this.selectedReceipt = receipt;
+                this.selectedReceiptItems = items;
+                this.hasReceiptItems = items.length > 0;
+                this.showReceiptItems = true;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error('Failed to load payment receipt details:', error);
+                this.showToast('Error', 'Failed to load payment receipt details', 'error');
+                this.isSubPartLoad = false;
+                this.showPrimaryPayments = true;
+            });
+    }
+
+    /** 
+     * Back button from receipt detail to list
+     */
+    closeReceiptItems() {
+        this.showReceiptItems = false;
+        this.selectedReceipt = null;
+        this.selectedReceiptItems = [];
+        this.hasReceiptItems = false;
+        this.showPrimaryPayments = true;
+    }
+    /**-----------GRN---------**/
+    // Load initial GRN date filters and load GRN list (distinct GRNs)
+
+    getGRNsData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.GRNFilter.fromDate = formatDate(firstDate);
+        this.GRNFilter.toDate = formatDate(lastDate);
+        this.loadGRNList();
+    }
+
+    // Fetch distinct GRN list from Apex getGRNList method
+    handleGRNDateChange(event) {
+        const { name, value } = event.target;
+
+        // Store the date in 'yyyy-mm-dd' format
+        if (name === 'fromDate' || name === 'toDate') {
+            this.GRNFilter[name] = value;
+        }
+
+        // Fetch GRN list based on updated dates
+        this.loadGRNList();
+    }
+
+    // Method to handle Search for GRN by GRN Name or Invoice__c
+    handleGRNSearch(event) {
+        const txt = event.target.value.toLowerCase();
+        this.GRNFilter.srchVal = txt;
+
+        // Search the GRN list based on search value
+        if (txt.length > 0) {
+            const filtered = this.GRNFilter.originalGRNList.filter(grn =>
+                (grn.Name && grn.Name.toLowerCase().includes(txt)) ||
+                (grn.Invoice__c && grn.Invoice__c.toLowerCase().includes(txt))
+            );
+            this.GRNFilter.allGRNList = filtered;
+            this.GRNFilter.isListDataExisted = filtered.length > 0;
+        } else {
+            this.GRNFilter.allGRNList = this.GRNFilter.originalGRNList;
+            this.GRNFilter.isListDataExisted = this.GRNFilter.originalGRNList.length > 0;
+        }
+    }
+
+    // Method to Load GRN List based on Date Range
+    loadGRNList() {
+        this.isSubPartLoad = true;
+        const { fromDate, toDate } = this.GRNFilter;
+
+        // Ensure the dates are correctly formatted and passed to Apex
+        getGRNList({ frmDate: fromDate, toDate })
+            .then(result => {
+                this.GRNFilter.allGRNList = result;
+                this.GRNFilter.originalGRNList = result;
+                this.GRNFilter.isListDataExisted = result.length > 0;
+                this.isSubPartLoad = false;
+                this.showGrnItems = false; // Hide GRN Items view
+                this.selectedGrnId = null;
+                this.selectedGrnName = '';
+                this.GRNFilter.allGRNItems = [];
+                this.GRNFilter.isItemsDataExisted = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    // Method to handle Click on GRN Name to Load Items for that GRN
+    handleGrnNameClick(event) {
+        const grnName = event.target.textContent;
+        const grnId = event.target.dataset.id;
+
+        if (!grnId) return;
+
+        this.selectedGrnId = grnId;
+        this.selectedGrnName = grnName;
+        this.isSubPartLoad = true;
+
+        // Fetch GRN items based on selected GRN Id
+        getGRNItems({ grnId: grnId })
+            .then(items => {
+                this.GRNFilter.allGRNItems = items;
+                this.GRNFilter.isItemsDataExisted = items.length > 0;
+                this.showGrnItems = true;
+                this.showPrimaryGrn = false;
+
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+                this.GRNFilter.allGRNItems = [];
+                this.GRNFilter.isItemsDataExisted = false;
+                this.showGrnItems = false;
+            });
+    }
+
+    // Method to Close GRN Items View and Show GRN List
+    closeGrnItems() {
+        this.showGrnItems = false;
+        this.showPrimaryGrn = true;
+        this.selectedGrnName = '';
+        this.GRNFilter.allGRNItems = [];
+        this.GRNFilter.isItemsDataExisted = false;
+    }
+
+    /**----------Claim---------**/
+    getClaimData() {
+        console.log('Get');
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.claimFilter.fromDate = formatDate(firstDate);
+        this.claimFilter.toDate = formatDate(lastDate);
+        this.claimFilter.status = '';
+        this.claimData();
+
+    }
+    claimData() {
+        this.isSubPartLoad = true;
+        const { fromDate, toDate, status } = this.claimFilter;
+        CLAIM_DATA({
+            frmDate: fromDate,
+            toDate: toDate,
+            status: status
+        })
+            .then(result => {
+                console.log('Data' + result.totalClaimData);
+                this.claimFilter.allClaimData = result.totalClaimData;
+                this.claimFilter.statusVal = result.statusOptions;
+                this.claimFilter.isDataExisted = this.claimFilter.allClaimData.length != 0 ? true : false;
+                this.claimFilter.originalClaimData = result.totalClaimData;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+    handleClaimhange(event) {
+        this.claimFilter[event.target.name] = event.target.value;
+        this.claimFilter.srchVal = '';
+        this.claimData();
+    }
+    handleClaimSearch(event) {
+        const txt = event.target.value;
+        console.log('Searched Value: ' + txt);
+
+        // Create a shallow copy to trigger reactivity
+        this.claimFilter = { ...this.claimFilter, srchVal: txt };
+
+        if (txt.length > 0) {
+            const dataUpdate = this.claimFilter.originalClaimData.filter(rec =>
+                (rec.description && rec.description.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.claimName && rec.claimName.toLowerCase().includes(txt.toLowerCase()))
+            );
+            this.claimFilter = {
+                ...this.claimFilter,
+                allClaimData: dataUpdate,
+                isDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            this.claimFilter = {
+                ...this.claimFilter,
+                allClaimData: this.claimFilter.originalClaimData,
+                isDataExisted: this.claimFilter.originalClaimData.length !== 0 ? true : false
+            };
+        }
+    }
+
+    /**-------Stock-----------**/
+    getStockData() {
+        this.isSubPartLoad = true;
+        this.stockFilter.selectedCategory = '';
+        const { selectedCategory } = this.stockFilter;
+        STOCK_DATA({
+            productCategory: selectedCategory,
+        })
+            .then(result => {
+                console.log('Data' + result.totalDistributorStockData);
+                this.stockFilter.allStockData = result.totalDistributorStockData;
+                this.stockFilter.isDataExisted = this.stockFilter.allStockData.length != 0 ? true : false;
+                this.stockFilter.originalStockData = result.totalDistributorStockData;
+                this.stockFilter.productCategories = this.populateOptions(result?.productCategories, 'Name', 'Id');
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+    handleStockChange(event) {
+        this.stockFilter[event.target.name] = event.target.value;
+        this.stockFilter.srchVal = '';
+        this.getStockData();
+    }
+    handleStockSearch(event) {
+        const txt = event.target.value;
+        console.log('Searched Value: ' + txt);
+
+        // Create a shallow copy to trigger reactivity
+        this.stockFilter = { ...this.stockFilter, srchVal: txt };
+
+        if (txt.length > 0) {
+            const dataUpdate = this.stockFilter.originalStockData.filter(rec =>
+                (rec.productName && rec.productName.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.stockName && rec.stockName.toLowerCase().includes(txt.toLowerCase()))
+            );
+            this.stockFilter = {
+                ...this.stockFilter,
+                allStockData: dataUpdate,
+                isDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            this.stockFilter = {
+                ...this.stockFilter,
+                allStockData: this.stockFilter.originalStockData,
+                isDataExisted: this.stockFilter.originalStockData.length !== 0 ? true : false
+            };
+        }
+    }
+
+    /**-----Credit Note-----**/
+    getCreditData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.creditNoteFilter.fromDate = formatDate(firstDate);
+        this.creditNoteFilter.toDate = formatDate(lastDate);
+        this.creditNoteFilter.status = '';
+        this.creditData();
+    }
+    creditData() {
+        this.isSubPartLoad = true;
+        const { fromDate, toDate, status } = this.creditNoteFilter;
+        CREDIT_NOTE_DATA({
+            frmDate: fromDate,
+            toDate: toDate,
+            status: status
+        })
+            .then(result => {
+                console.log('Data' + result.totalCreditNoteData);
+                this.creditNoteFilter.allCreditNoteData = result.totalCreditNoteData;
+                this.creditNoteFilter.isDataExisted = this.creditNoteFilter.allCreditNoteData.length != 0 ? true : false;
+                this.creditNoteFilter.originalCreditNoteData = result.totalCreditNoteData;
+                this.creditNoteFilter.statusVal = result.statusOptions;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+    handleCreditChange(event) {
+        this.creditNoteFilter[event.target.name] = event.target.value;
+        this.creditNoteFilter.srchVal = '';
+        this.creditData();
+    }
+    handleCreditSearch(event) {
+        const txt = event.target.value;
+        console.log('Searched Value: ' + txt);
+
+        // Create a shallow copy to trigger reactivity
+        this.creditNoteFilter = { ...this.creditNoteFilter, srchVal: txt };
+
+        if (txt.length > 0) {
+            const dataUpdate = this.creditNoteFilter.originalCreditNoteData.filter(rec =>
+                (rec.claimNo && rec.claimNo.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.primaryReturnNo && rec.primaryReturnNo.toLowerCase().includes(txt.toLowerCase()))
+            );
+            this.creditNoteFilter = {
+                ...this.creditNoteFilter,
+                allCreditNoteData: dataUpdate,
+                isDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            this.creditNoteFilter = {
+                ...this.creditNoteFilter,
+                allCreditNoteData: this.creditNoteFilter.originalCreditNoteData,
+                isDataExisted: this.creditNoteFilter.originalCreditNoteData.length !== 0 ? true : false
+            };
+        }
+    }
+
+    /** ---Secoundary Invoice Data -----**/
+    getSecoundaryInvoiceData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.secInvFilter.fromDate = formatDate(firstDate);
+        this.secInvFilter.toDate = formatDate(lastDate);
+        this.secInvFilter.status = '';
+        this.secoundaryInvoiceData();
+    }
+    secoundaryInvoiceData() {
+        console.log('entered');
+        this.isSubPartLoad = true;
+        const { status, fromDate, toDate } = this.secInvFilter;
+        SEC_INV_DATA({
+            status: status,
+            frmDate: fromDate,
+            toDate: toDate
+        })
+            .then(result => {
+                console.log('Data' + result.totalSecoundaryInvoiceData);
+                this.secInvFilter.statusVal = result.statusOptions
+                this.secInvFilter.allSecInvData = result.totalSecoundaryInvoiceData;
+                this.secInvFilter.isDataExisted = this.secInvFilter.allSecInvData.length != 0 ? true : false;
+                this.secInvFilter.originalSecInvData = result.totalSecoundaryInvoiceData;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+    handleSecInvChange(event) {
+        this.secInvFilter[event.target.name] = event.target.value;
+        this.secInvFilter.srchVal = '';
+        this.secoundaryInvoiceData();
+    }
+    handleSecInvSerch(event) {
+        const txt = event.target.value;
+        console.log('Searched Value: ' + txt);
+
+        // Create a shallow copy to trigger reactivity
+        this.secInvFilter = { ...this.secInvFilter, srchVal: txt };
+
+        if (txt.length > 0) {
+            const dataUpdate = this.secInvFilter.originalSecInvData.filter(rec =>
+                (rec.accName && rec.accName.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.name && rec.name.toLowerCase().includes(txt.toLowerCase()))
+            );
+            this.secInvFilter = {
+                ...this.secInvFilter,
+                allSecInvData: dataUpdate,
+                isDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            this.secInvFilter = {
+                ...this.secInvFilter,
+                allSecInvData: this.secInvFilter.originalSecInvData,
+                isDataExisted: this.secInvFilter.originalSecInvData.length !== 0 ? true : false
+            };
+        }
+    }
+
+
+
+    //newly added
+    handleSecondaryInvoiceNoClick(event) {
+        const invoiceId = event.currentTarget.dataset.id;
+        console.log(invoiceId); // Get Invoice ID
+        const invoiceNo = event.currentTarget.textContent || event.currentTarget.innerText; // Get Invoice Name
+        this.invoiceIdToDownloadPdf = invoiceId;
+        if (!invoiceId) {
+            console.error('No invoice ID found in event target:', event.currentTarget);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error',
+                    message: 'Invalid invoice ID. Please try again.',
+                    variant: 'error'
+                })
+            );
+            return;
+        }
+
+        this.selectedSecondaryInvoiceId = invoiceId;
+        this.selectedSecondaryInvoiceNo = invoiceNo;
+        this.isSubPartLoad = true;
+
+        console.log('Fetching items for invoiceId:', invoiceId);
+
+        getSecondaryInvoiceItems({ invoiceId: invoiceId })
+            .then(items => {
+                console.log('Loaded secondary invoice items:', JSON.stringify(items));
+                this.secondaryInvoiceItems = items.map(item => ({
+                    Id: item.Id,
+                    Product__r: item.Product__r || { Name: 'N/A' },
+                    Quantity__c: item.Quantity__c || 0,
+                    Unit_Price__c: item.Unit_Price__c || 0,
+                    Tax_Percent__c: item.Tax_Percent__c || 0,
+                    Tax_Amount__c: item.Tax_Amount__c || 0,
+                    Total_Amount__c: item.Total_Amount__c || 0
+                }));
+
+                this.hasSecondaryInvoiceItems = this.secondaryInvoiceItems.length > 0;
+                this.showSecondaryInvoiceItems = true;
+                console.log(this.showSecondaryInvoiceItems);
+                this.showSecoundaryInvoices = false; // Corrected variable name
+
+                this.isSubPartLoad = false;
+
+                console.log('State after fetch:', {
+                    showSecoundaryInvoices: this.showSecoundaryInvoices,
+                    showSecondaryInvoiceItems: this.showSecondaryInvoiceItems,
+                    hasSecondaryInvoiceItems: this.hasSecondaryInvoiceItems,
+                    secondaryInvoiceItemsLength: this.secondaryInvoiceItems.length
+                });
+            })
+            .catch(error => {
+                console.error('Error loading secondary invoice items:', error);
+                this.isSubPartLoad = false;
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error',
+                        message: 'Failed to load invoice items. Please try again.',
+                        variant: 'error'
+                    })
+                );
+            });
+    }
+    // Handle Back to Invoices
+    closeSecondaryInvoiceItems() {
+        this.showSecoundaryInvoices = true; // Show Secondary Invoices table
+        this.showSecondaryInvoiceItems = false; // Hide Secondary Invoice Items table
+        this.selectedSecondaryInvoiceId = null; // Reset selected invoice ID
+        this.secondaryInvoiceItems = []; // Clear the invoice items array
+        this.selectedSecondaryInvoiceNo = ''; // Reset selected invoice number
+        this.hasSecondaryInvoiceItems = false;
+
+
+    }
+
+    downloadSecondaryInvoicePdf() {
+        getInvoicePdfUrl({ recordId: this.invoiceIdToDownloadPdf })
+            .then(url => {
+                // Open PDF in new tab (downloadable)
+                console.log('url'+url);
+                window.open(url, '_blank');
+            })
+            .catch(error => {
+                console.error('Error downloading PDF', error);
+            });
+    }
+
+
+
+
+    get hasSecondaryInvoiceItems() {
+        alert('hi');
+        console.log(this.secondaryInvoiceItems.length > 0);
+        return this.secondaryInvoiceItems.length > 0;
+    }
+
+
+    /**------Secoundary Returns-----**/
+    handleSecoundaryReturnChange(event) {
+        this.secoundaryReturnFilter[event.target.name] = event.target.value;
+        this.secoundaryReturnFilter.srchVal = '';  // Reset search value
+        this.secoundaryReturnData();  // Fetch new data based on filters
+    }
+
+    // Handle search changes for secondary returns
+    handleSecoundaryReturnSerch(event) {
+        const txt = event.target.value;
+        this.secoundaryReturnFilter = { ...this.secoundaryReturnFilter, srchVal: txt };
+
+        if (txt.length > 0) {
+            const dataUpdate = this.secoundaryReturnFilter.originalSReturnata.filter(rec =>
+                (rec.productName && rec.productName.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.secoundaryReturnNo && rec.secoundaryReturnNo.toLowerCase().includes(txt.toLowerCase()))
+            );
+            this.secoundaryReturnFilter = {
+                ...this.secoundaryReturnFilter,
+                allSReturnData: dataUpdate,
+                isDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            this.secoundaryReturnFilter = {
+                ...this.secoundaryReturnFilter,
+                allSReturnData: this.secoundaryReturnFilter.originalSReturnata,
+                isDataExisted: this.secoundaryReturnFilter.originalSReturnata.length !== 0
+            };
+        }
+    }
+
+    // Method to fetch secondary returns based on filters (date, search)
+    getSecoundaryReturnData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.secoundaryReturnFilter.fromDate = formatDate(firstDate);
+        this.secoundaryReturnFilter.toDate = formatDate(lastDate);
+        this.secoundaryReturnData();
+    }
+
+    // Fetch secondary return data from Apex
+    secoundaryReturnData() {
+        this.isSubPartLoad = true;
+        const { fromDate, toDate } = this.secoundaryReturnFilter;
+        SRETURN_DATA({
+            frmDate: fromDate,
+            toDate: toDate
+        })
+            .then(result => {
+                console.log('Data' + result.totalSecoundaryReturnData);
+                this.secoundaryReturnFilter.allSReturnData = result.totalSecoundaryReturnData;
+                this.secoundaryReturnFilter.isDataExisted = this.secoundaryReturnFilter.allSReturnData.length != 0;
+                this.secoundaryReturnFilter.originalSReturnata = result.totalSecoundaryReturnData;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    // Method to handle click on Secondary Return Number and fetch its items
+    handleSecondaryReturnNoClick(event) {
+        const returnId = event.currentTarget.dataset.id;  // Use currentTarget for consistency
+        const returnNo = event.currentTarget.textContent || event.currentTarget.innerText;
+
+        if (!returnId) {
+            console.error('No returnId found in event target:', event.currentTarget);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error',
+                    message: 'Invalid return ID. Please try again.',
+                    variant: 'error'
+                })
+            );
+            return;
+        }
+
+        this.selectedSecondaryReturnId = returnId;
+        this.selectedSecondaryReturnNo = returnNo;
+        this.isSubPartLoad = true;
+
+        getSecondaryReturnItems({ secondaryReturnId: returnId })
+            .then(items => {
+                console.log('Loaded secondary return items:', JSON.stringify(items));
+                this.secondaryReturnItems = items.map(item => ({
+                    Id: item.Id,
+                    SKU__r: item.SKU__r || { Name: 'N/A' },
+                    Quantity__c: item.Quantity__c || 0,
+                    Reason_For_Return__c: item.Reason_For_Return__c || 'N/A',
+                    Unit_Price__c: item.Unit_Price__c || 0,
+                    UOM__c: item.UOM__c || 'N/A'
+                }));
+
+                // Set the flag to check if items exist
+                this.hasSecondaryReturnItems = this.secondaryReturnItems.length > 0;
+                this.showSecondaryReturnItems = true;
+                this.showSecoundaryReturn = false; // Hide returns list
+                console.log('showSecondaryReturnItems:', this.showSecondaryReturnItems);
+                console.log('🧾 secondaryReturnItems length:', this.secondaryReturnItems.length);
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error('Error loading secondary return items:', JSON.stringify(error));
+                this.hasSecondaryReturnItems = false;
+                this.isSubPartLoad = false;
+            });
+    }
+
+    // Method to close the Secondary Return Items view and show the return list again
+    closeSecondaryReturnItems() {
+        this.showSecondaryReturnItems = false;
+        this.secondaryReturnItems = [];
+        this.selectedSecondaryReturnNo = '';
+        this.selectedSecondaryReturnId = null;
+        this.showSecoundaryReturn = true;
+    }
+
+    // Check if there are secondary return items to display
+    get hasSecondaryReturnItems() {
+        alert('hi');
+        console.log(this.secondaryReturnItems.length > 0);
+        return this.secondaryReturnItems.length > 0;
+    }
+
+
+
+
+    // Handle "Select All" for invoices
+    handleSelectAll(event) {
+        const isChecked = event.target.checked;
+        this.isAllSelected = isChecked;
+
+        // Update all rows with new selection state
+        this.InvFilter.allInvData = this.InvFilter.allInvData.map(row => ({
+            ...row,
+            isSelected: isChecked
+        }));
+
+        // Update selectedRows array
+        this.selectedRows = isChecked ? [...this.InvFilter.allInvData] : [];
+
+        this.dispatchEvent(new CustomEvent('selectionchange', {
+            detail: { selectedOrders: this.selectedOrders }
+        }));
+    }
+
+    // Handle "Select All" for orders
+    toggleSelectAll(event) {
+        const isChecked = event.target.checked;
+        this.isAllSelected = isChecked;
+
+        this.ordFilter.allordData = this.ordFilter.allordData.map(row => ({
+            ...row,
+            isSelected: isChecked
+        }));
+
+        // Update selectedOrders array if needed
+        this.selectedOrders = isChecked ? [...this.ordFilter.allordData] : [];
+
+        this.dispatchEvent(new CustomEvent('selectionchange', {
+            detail: { selectedRows: this.selectedRows }
+        }));
+    }
+
+    // Handle individual row selection
+    handleRowSelection(event) {
+        const rowId = event.detail.name; // Using name instead of dataset.id
+        const isChecked = event.detail.checked;
+
+        // Update the specific row
+        this.InvFilter.allInvData = this.InvFilter.allInvData.map(row =>
+            row.InvId === rowId ? { ...row, isSelected: isChecked } : row
+        );
+
+        // Update selectedRows array
+        this.selectedRows = this.InvFilter.allInvData.filter(row => row.isSelected);
+
+        // Update "Select All" checkbox state
+        this.isAllSelected = this.selectedRows.length === this.InvFilter.allInvData.length;
+
+        // If using a timeout is necessary for your specific case
+        setTimeout(() => {
+            this.dispatchEvent(new CustomEvent('selectionchange', {
+                detail: { selectedRows: this.selectedRows }
+            }));
+        }, 0);
+    }
+
+
+    handleCheckboxChange(event) {
+        const rowId = event.target.dataset.id;
+        const isChecked = event.target.checked;
+
+        // Use map to return a new array with updated isSelected property
+        this.ordFilter.allordData = this.ordFilter.allordData.map(row => {
+            if (row.orderId === rowId) {
+                return { ...row, isSelected: isChecked };
+            }
+            return row;
+        });
+
+        // Update isAllSelected based on the updated data
+        this.isAllSelected = this.ordFilter.allordData.every(row => row.isSelected);
+    }
+
+    // Generate GRN - Only one invoice allowed
+    generateGRN() {
+        const selectedInvoices = this.InvFilter.allInvData.filter(row => row.isSelected);
+        if (selectedInvoices.length === 0) {
+            this.showToast('Error', 'Please select at least one invoice.', 'Error');
+            return;
+        }
+        if (selectedInvoices.length > 1) {
+            this.showToast('Error', 'You can select only one invoice to generate GRN.', 'Error');
+            return;
+        }
+        this.GRNData();
+    }
+
+
+    // Make Payment - Multiple invoices allowed
+
+    makePaymemt() {
+        const selectedInvoices = this.InvFilter.allInvData.filter(row => row.isSelected);
+        if (selectedInvoices.length === 0) {
+            this.showToast('Error', 'Please select at least one invoice.', 'Error');
+            return;
+        }
+        // Map selected invoices and set payableAmount to null
+        this.paymentItems = selectedInvoices.map(invoice => ({
+            ...invoice,
+            payableAmount: null
+        }));
+
+        this.showPaymentModal = true;
+
+    }
+    closePayment() {
+        this.showPaymentModal = false;
+        this.paymentItems = [];
+    }
+
+
+
+
+
+
+
+
+
+    /**-------Helper methods--------**/
+
+    //Genric method to get the picklist values
+    populateOptions(dataList, labelField, valueField) {
+        const options = dataList?.map(item => ({
+            label: item[labelField],
+            value: item[valueField]
+        })) || [];
+
+        // Add "All" as the first option
+        return [{ label: 'All', value: 'All' }, ...options];
+    }
+
+    //Navigate to record page
+    openRecord(event) {
+        const recordId = event.target.dataset.id;
+
+        // Generate URL for the record
+        this[NavigationMixin.GenerateUrl]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId: recordId,
+                actionName: 'view'
+            }
+        }).then(url => {
+            // Open the record in a new tab
+            window.open(url, '_blank');
+        });
+    }
+    //disable pull to refesh
+    disablePullToRefresh() {
+        const disableRefresh = new CustomEvent("updateScrollSettings", {
+            detail: {
+                isPullToRefreshEnabled: false
+            },
+            bubbles: true,
+            composed: true
+        });
+        this.dispatchEvent(disableRefresh);
+    }
+    //Show Toast---------------
+    showToast(title, message, variant) {
+        const toast = this.template.querySelector('c-custom-toast'); // Query the toast component
+        console.log('Custom Toast component:', toast);  // Log the reference
+
+        if (toast) {
+            toast.showToast(variant, message); // Show the toast with the correct variant
+        } else {
+            console.error('Custom Toast component not found!');
+        }
+    }
+
+    @track showModal = false;
+
+    openPopup() {
+        this.showModal = true;
+    }
+
+    handleCancelEvent() {
+        this.showModal = false;
+    }
+
+    handlePayEvent() {
+
+        const paidInvoices = this.selectedInvoices.filter(inv => inv.Status === 'Paid');
+        if (paidInvoices.length > 0) {
+            const paidNames = paidInvoices.map(inv => inv.name || inv.InvoiceNumber || 'Unknown').join(', ');
+            this.showToast('Error', `The following invoice(s) are already paid: ${paidNames}`, 'Error');
+            return;
+        }
+
+
+        let paymentItemList = [];
+        this.selectedInvoices.forEach(inv => {
+            paymentItemList.push({ sobjectType: 'Payment_Receipt_Item__c', Invoice__c: inv.InvId, Amount__c: inv.Amount });
+        });
+        const total = this.selectedTotalAmount;
+
+        createPaymentWithItems({ selectedinvoicesList: paymentItemList, totalAmount: total })
+            .then((receiptId) => {
+                console.log(receiptId);
+                this.showToast('Success', 'Payment Receipt saved successfully', 'success');
+                this.showModal = false;
+                this.showPrimaryPayments = true;
+                this.showPrimaryInvoices = false;
+                this.getPrimaryPaymemtsData();
+                this.selectedInvoices = [];
+                this.selectedTotalAmount = 0;
+                this.invoiceData();
+            })
+            .catch((error) => {
+                console.error(error);
+                this.showToast('Error', error.body ? error.body.message : error.message, 'error');
+            });
+    }
+
+
+
+    @track selectedInvoices = [];
+    @track selectedTotalAmount = 0;
+
+    makePaymemt() {
+        const selectedInvoices = this.InvFilter.allInvData.filter(row => row.isSelected);
+        if (selectedInvoices.length === 0) {
+            this.showToast('Error', 'Please select at least one invoice.', 'error');
+            return;
+        }
+
+        // Set invoice list and total
+        this.selectedInvoices = selectedInvoices;
+        this.selectedTotalAmount = selectedInvoices.reduce(
+            (sum, inv) => sum + parseFloat(inv.Amount || 0), 0
+        );
+
+        console.log('Selected Invoices:', this.selectedInvoices);
+        console.log('Total Amount:', this.selectedTotalAmount);
+
+        //  Open modal
+        this.showModal = true;
+    }
+
+    get makePaymentTooltip() {
+        return this.isMakePaymentDisabled
+            ? 'Select Payment pending Invoices'
+            : '';
+    }
+    get isdableGRNbutton() {
+        return this.InvFilter?.status === 'GRN Completed';
+    }
+    get grnButtonClass() {
+        return this.isdableGRNbutton
+            ? 'actionButton disabledButton'
+            : 'actionButton';
+    }
+    get isMakePaymentDisabled() {
+        return this.InvFilter?.status === 'All';
+    }
+    get makePaymentButtonClass() {
+        return this.isMakePaymentDisabled
+            ? 'actionButton disabledButton'
+            : 'actionButton';
+    }
+
+
+    get invoiceCountForModal() {
+        return this.selectedInvoices?.length || 0;
+    }
+
+    get totalAmountForModal() {
+        return this.selectedTotalAmount || 0;
+    }
+
+    generateGRNpage() {
+        try {
+
+
+            // Get all selected invoices
+            const selectedInvoices = this.InvFilter.allInvData.filter(row => row.isSelected);
+
+            if (selectedInvoices.length === 0) {
+                this.showToast('Error', 'Please select at least one invoice.', 'error');
+                return;
+            }
+            if (selectedInvoices.length > 1) {
+                this.showToast('Error', 'Please select only one invoice.', 'error');
+                return;
+            }
+
+
+
+            // Hide main list and show GRN section
+            this.showPrimaryInvoices = false;
+            this.isgenerateGRN = true;
+
+            // Store selected invoice IDs
+            this.selectedInvoiceIds = selectedInvoices.map(inv => inv.InvId);
+
+
+
+            // Filter invoice items related to selected invoice IDs
+            const allItems = this.allInvoiceItems;
+            this.selectedInvoiceItems = allItems.filter(item =>
+                this.selectedInvoiceIds.includes(item.Invoice__c)
+            );
+
+        } catch (e) {
+            console.error('generateGRNpage error:', e);
+            this.showToast('Error', e.message || 'Unknown error', 'error');
+        }
+    }
+
+
+    handleGRNComplete(event) {
+        this.isgenerateGRN = false;
+        this.showPrimaryGrn = true;
+        this.getGRNsData();
+
+        this.selectedInvoiceId = null;
+
+
+
+    }
+
+    handleGRNCancel() {
+        this.isgenerateGRN = false;
+        this.showPrimaryInvoices = true;
+        this.selectedInvoiceId = null;
+    }
+    newreturnScreen() {
+        this.showPrimaryReturn = false;
+        this.isNewReturn = true;
+
+
+    }
+    handleReturnCreated() {
+        //primary returns
+        this.isNewReturn = false;
+        this.loadPrimaryReturns()
+
+        this.showPrimaryReturn = true;
+        this.showPrimaryReturnItems = false;
+
+    }
+    newClaimScreen() {
+        this.showClaim = false;
+        this.isNewClaim = true;
+    }
+    handleClaimCreated() {
+        this.isNewClaim = false;
+        this.showClaim = true;
+        this.getClaimData();
+
+    }
+    handleClaimCancel() {
+        this.isNewClaim = false;
+        this.showClaim = true;
+    }
+    handleNewPayment() {
+        this.showPrimaryInvoices = true;
+        this.showPrimaryPayments = false;
+        this.getInvoiceData();
+
+    }
+
+    handleNewGRN() {
+        this.showPrimaryInvoices = true;
+        this.showPrimaryGrn = false;
+        this.getInvoiceData();
+
+    }
+
+    handleNewSecondaryReturn() {
+        this.showSecoundaryReturn = false;
+        this.isNewSecondaryReturn = true;
+
+    }
+    handleSecondaryReturnCreated(event) {
+        this.isNewSecondaryReturn = false;
+        this.showSecoundaryReturn = true;
+        this.getSecoundaryReturnData();
+
+
+
+    }
+
+    handleSecondaryReturnCancel() {
+        this.showSecoundaryReturn = true;
+        this.isNewSecondaryReturn = false;
+
+
+    }
+    handleReturncancel() {
+        this.showPrimaryReturn = true;
+        this.isNewReturn = false;
+        this.getPrimaryReturnData();
+    }
+
+    handleGenerateInvoice() {
+        try {
+            // Get all selected orders
+            const selectedOrders = this.ordFilter.allordData.filter(row => row.isSelected);
+
+            if (selectedOrders.length === 0) {
+                this.showToast('Error', 'Please select at least one order to generate an invoice.', 'error');
+                return;
+            }
+
+            // Get unique customer names from selected orders
+            const customerNames = [...new Set(selectedOrders.map(order => order.customerName))];
+            const customerIds = [...new Set(selectedOrders.map(order => order.customerId))];
+
+            // Check if all selected orders belong to the same customer
+            if (customerNames.length > 1) {
+                this.showToast('Error', 'You can only generate an invoice for orders from the same customer.', 'error');
+                return;
+            }
+
+            // Store selected order IDs and customer name
+            this.selectedOrderIds = selectedOrders.map(order => order.orderId);
+            this.selectedCustomerName = customerNames[0];
+            this.selectedCustomerId = customerIds[0];
+
+            console.log('Selected Customer Name:', this.selectedCustomerName);
+
+            // Hide order list and show invoice generation section
+            this.showSecondaryOrders = false;
+            this.isGenerateInvoice = true;
+
+        } catch (e) {
+            console.error('handleGenerateInvoice error:', e);
+            this.showToast('Error', e.message || 'Unknown error', 'error');
+        }
+    }
+
+
+
+    handleSecondaryOrderCancel() {
+        // Back to order list
+        this.isGenerateInvoice = false;
+        this.showSecondaryOrders = true;
+        this.getSecoundaryOrderData();
+    }
+    handleSecondaryorderCreated() {
+        this.isGenerateInvoice = false;
+        this.showSecoundaryInvoices = true;
+        this.getSecoundaryInvoiceData();
+
+
+    }
+    get statusOptions() {
+        return [
+            { label: 'GRN Pending', value: 'GRN Pending' },
+            { label: 'GRN Completed', value: 'GRN Completed' }
+        ];
+    }
+    handleStatusChange(event) {
+        this.InvFilter.status = event.detail.value;
+        // Reapply filter logic based on the selected status
+        this.invoiceData();
+    }
+
+
+
+    downloadInvoicesAsPDF() {
+        const from = this.InvFilter.fromDate;
+        const to = this.InvFilter.toDate;
+        const status = this.InvFilter.status;
+
+        if (!from || !to) {
+            this.showToast('Error', 'Please select From and To dates.', 'error');
+            return;
+        }
+
+        const url = `/apex/DMSprimaryInvoicePDF?fromDate=${from}&toDate=${to}&status=${status}`;
+        window.open(url, '_blank');
+    }
+
+
+    downloadSecondaryInvoicesAsPDF() {
+        const from = this.secInvFilter.fromDate;
+        const to = this.secInvFilter.toDate;
+        const status = this.secInvFilter.status;
+
+        // Check if both from and to dates are selected
+        if (!from || !to) {
+            this.showToast('Error', 'Please select From and To dates.', 'error');
+            return;
+        }
+
+        // Format the dates to 'yyyy-MM-dd' (exclude time part)
+        const formattedFromDate = this.formatDate(from);
+        const formattedToDate = this.formatDate(to);
+
+        console.log('Formatted From Date:', formattedFromDate);
+        console.log('Formatted To Date:', formattedToDate);
+
+        // Construct the URL for the Secondary Invoices PDF page
+        const url = `/apex/DMSsecondaryInvoicePDF?fromDate=${formattedFromDate}&toDate=${formattedToDate}&status=${status}`;
+        window.open(url, '_blank');
+    }
+
+    //Helper function to format the date as 'yyyy-MM-dd'
+    formatDate(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0'); // Add leading zero if needed
+        const day = String(d.getDate()).padStart(2, '0'); // Add leading zero if needed
+        return `${year}-${month}-${day}`;
+    }
+
+
+
+    newPrimaryOrder() {
+        this.isNewOrder = true;
+        this.showPrimaryOrders = false;
+    }
+
+    handlePrimaryOrdercancel() {
+        this.isNewOrder = false;
+        this.showPrimaryOrders = true;
+
+    }
+
+
+    handlePrimaryOrderCreated() {
+        this.isNewOrder = false;
+        this.showPrimaryOrders = true;
+        this.getOrderData();
+    }
+
+    newPrimaryOrder2() {
+        this.isNewOrder2 = true;
+        this.showPrimaryOrders = false;
+    }
+
+    handlePrimaryOrdercancel2() {
+        this.isNewOrder2 = false;
+        this.showPrimaryOrders = true;
+
+    }
+    handlePrimaryOrderCreated2() {
+        this.isNewOrder2 = false;
+        this.showPrimaryOrders = true;
+        this.getOrderData();
+    }
+
+
+    newPrimaryOrder3() {
+        this.isNewOrder3 = true;
+        this.showPrimaryOrders = false;
+    }
+
+    handlePrimaryOrderCancel3() {
+        this.isNewOrder3 = false;
+        this.showPrimaryOrders = true;
+
+    }
+
+    handlePrimaryOrderCreated3() {
+        this.isNewOrder3 = false;
+        this.showPrimaryOrders = true;
+        this.getOrderData();
+    }
+
+
+    images = [
+        DMS_Offer1,
+        DMS_Offer2,
+        DMS_Offer3,
+
+    ];
+
+    currentIndex = 0;
+
+    get currentImage() {
+        return this.images[this.currentIndex];
+    }
+
+    connectedCallback() {
+        this.startCarousel();
+    }
+
+    startCarousel() {
+        this.interval = setInterval(() => {
+            this.currentIndex = (this.currentIndex + 1) % this.images.length;
+        }, 3000); // Change image every 3 seconds
+    }
+
+    disconnectedCallback() {
+        clearInterval(this.interval);
+    }
+
+    openOrderItems(event) {
+        const orderId = event.currentTarget.dataset.id; // Use currentTarget instead of target
+        console.log('Order clicked, orderId:', orderId);
+
+        // Optional: log all orders for debug
+        console.log('All orders in ordFilter.allordData:', JSON.stringify(this.ordFilter.allordData.map(ord => ({
+            orderId: ord.orderId,
+            orderNo: ord.orderNo,
+            itemsCount: ord.items ? ord.items.length : 0
+        }))));
+
+        // Find the selected order from all orders
+        const selectedOrder = this.ordFilter.allordData.find(ord => ord.orderId === orderId);
+
+        if (selectedOrder) {
+            console.log('Selected order:', JSON.stringify({
+                orderId: selectedOrder.orderId,
+                orderNo: selectedOrder.orderNo,
+                items: selectedOrder.items
+            }));
+
+            // Set order details and show items inline
+            this.selectedOrderItems = this.addRowIndex(selectedOrder.items || []);
+            this.selectedOrderNo = selectedOrder.orderNo;
+            this.showOrderItems = true;    // Show the order item section
+            this.hasOrderItems = this.selectedOrderItems.length > 0;
+            this.showPrimaryOrders = false;   // Hide the primary orders table
+        } else {
+            console.error('No order found for orderId:', orderId);
+        }
+    }
+
+    closePrimaryOrderItems() {
+        this.showPrimaryOrders = true;
+        this.showOrderItems = false;
+        this.selectedOrderItems = [];
+        this.selectedOrderNo = '';
+        this.hasOrderItems = false;
+    }
+    closePrimaryInvoiceItems() {
+        this.showPrimaryInvoices = true;
+        this.showInvoiceItems = false;
+        this.selectedInvoiceId = '';
+        this.invoiceItems = [];
+        this.hasInvoiceItems = false;
+    }
+
+    handleFocus(event) {
+        try {
+            event.preventDefault();
+            event.stopPropagation();
+            // Your blur logic here
+        } catch (error) {
+            console.error('Error in focus handler:', error);
+        }
+    }
+    handleBlur(event) {
+        try {
+            event.preventDefault();
+            event.stopPropagation();
+            // Your blur logic here
+        } catch (error) {
+            console.error('Error in blur handler:', error);
+        }
+    }
+
+
+
+    @track secinvoices = [];
+
+
+
+    // Wire method to get invoices based on filters
+    @wire(getInvoices, { fromDate: '$secInvFilter.fromDate', toDate: '$secInvFilter.toDate', })
+
+
+
+
+    wiredSecondaryInvoices({ error, data }) {
+        if (data) {
+            this.secinvoices = data; // Assuming DmsData contains the list of invoices
+        } else if (error) {
+            console.error('Error fetching secondary invoices', error);
+        }
+    };
+
+
+
+    // Method to download the CSV
+    downloadSecondaryInvoicesasCSV() {
+
+
+        if (!this.secInvFilter.fromDate || !this.secInvFilter.toDate) {
+            alert('Please provide both From Date and To Date.');
+            return;
+        }
+
+        if (this.secinvoices.length === 0) {
+            console.log('Number of invoices:', this.secinvoices.length);
+            this.showToast('No Data Found', 'No invoices found for the selected filters.', 'error');
+            console.log('Invoices data:', this.secinvoices); // Log to check if it's empty
+            return;
+        }
+
+        // Define CSV header
+        const header = ['Invoice Name', 'Secondary Customer', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Grand Total',];
+
+        // Map invoices to CSV rows
+        const rows = this.secinvoices.map(invoice => [
+
+            invoice.Name,
+            invoice.Store__r ? invoice.Store__r.Name : '',  // Store Name (Ensure it's checked for null)
+            invoice.Invoice_Date__c,
+            invoice.Status__c,
+            invoice.Total_Quantity__c,
+            invoice.Total_Tax__c,
+
+            invoice.Grand_Total__c,
+
+        ]);
+
+        // Create CSV content
+        let csvContent = 'data:text/csv;charset=utf-8,' + header.join(',') + '\n';
+        rows.forEach(row => {
+            csvContent += row.join(',') + '\n';
+        });
+
+        // Encode CSV content and trigger download
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'filtered_secondary_invoices.csv');
+        link.click();
+    }
+
+
+    //================================================================================
+    // PRIMARY INVOICES AS CSV
+
+    @track Primaryinvoices = [];
+
+    @wire(getPrimaryInvoices, {
+        status: '$InvFilter.status',
+        frmDate: '$InvFilter.fromDate',
+        toDate: '$InvFilter.toDate'
+    })
+    wiredInvoices({ error, data }) {
+        if (data) {
+            this.Primaryinvoices = data; // Assuming DmsData contains the list of invoices
+        } else if (error) {
+            console.error('Error fetching Primary invoices', error);
+        }
+    }
+
+
+
+
+    // Method to download the filtered CSV and show toast on no data
+    downloadPrimaryInvoicesasCSV() {
+        if (!this.InvFilter.fromDate || !this.InvFilter.toDate) {
+            alert('Please provide both From Date and To Date.');
+            return;
+        }
+
+        if (this.Primaryinvoices.length === 0) {
+            // Show toast message if no invoices are found
+            this.showToast('No Data Found', 'No primary invoices found for the selected filters.', 'error');
+            return;
+        }
+
+        // Define CSV header with fields as per the invoice data
+        const header = ['Invoice Name', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Total Amount'];
+
+        // Map invoices to CSV rows
+        const rows = this.Primaryinvoices.map(invoice => [
+
+            invoice.Name,
+            // invoice.Store__r ? invoice.Store__r.Name : '',  // Store Name (Ensure it's checked for null)
+            invoice.Invoice_Date__c,
+            invoice.Status__c,
+            invoice.Total_Quantity__c,
+            invoice.Total_Tax__c,
+            invoice.Grand_Total__c,
+
+
+
+        ]);
+
+        // Create CSV content
+        let csvContent = 'data:text/csv;charset=utf-8,' + header.join(',') + '\n';
+        rows.forEach(row => {
+            csvContent += row.join(',') + '\n';
+        });
+
+        // Encode CSV content and trigger download
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'filtered_primary_invoices.csv');
+        link.click();
+    }
+
+
+
+    handleUploadSecondaryInvoices() {
+        this.showSecoundaryInvoices = false;
+        this.isNewDataUpload = true;
+    }
+
+    handleUploadCancel() {
+        this.isNewDataUpload = false;
+        this.showSecoundaryInvoices = true;
+
+    }
+
+}

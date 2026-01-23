@@ -1,0 +1,63 @@
+/* Make "Name" look like a hyperlink */
+.slds-button_base {
+    color: #1b96ff;
+    text-decoration: underline;
+    font-weight: normal;
+}
+/* yourLwc.css */
+.custom-card-header {
+    background-color: #f3f2f2;   /* Same as datatable header */
+    padding: 0.5rem 1rem;        /* Adjust padding to match look */
+    border-bottom: 1px solid #dddbda; /* subtle border like datatable */
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+
+/* yourLwc.css */
+
+/* Apply smaller font size for the whole datatable */
+:host ::slotted(.slds-table) {
+    font-size: 0.75rem; /* smaller font */
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+/* Fix only first column */
+.custom-table td:first-child,
+.custom-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;           /* Keep it above cells */
+    min-width: 120px;     /* Adjust width */
+}
+.minwidth {
+    min-width: 150px;
+}
+
+.custom-table th {
+    background-color: #4472c4;
+    color: white;
+    padding: 8px;
+    text-align: left;
+    border: 0.25px solid black;
+}
+
+.custom-table td {
+    padding: 8px;
+    border: 0.25px solid black;
+}
+/* First column data cells (row 2 onwards) */
+.custom-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #ffffff;  /* White */
+}

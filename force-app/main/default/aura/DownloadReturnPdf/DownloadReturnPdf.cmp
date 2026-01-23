@@ -1,0 +1,8 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+     <aura:attribute name="navService" type="Object"/>
+    
+    <lightning:navigation aura:id="navService" /> 
+    <aura:attribute name="customLabel" type="String" default="{!$Label.c.orgUrl}" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+	
+</aura:component>

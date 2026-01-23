@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Other_Brands__c</fullName>
+    <externalId>false</externalId>
+    <label>Competitor Brands</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+            <value>
+                <fullName>TATA</fullName>
+                <default>false</default>
+                <label>TATA</label>
+            </value>
+            <value>
+                <fullName>Tech Mahindra</fullName>
+                <default>false</default>
+                <label>Tech Mahindra</label>
+            </value>
+            <value>
+                <fullName>Adani Group</fullName>
+                <default>false</default>
+                <label>Adani Group</label>
+            </value>
+            <value>
+                <fullName>Reliance Industries</fullName>
+                <default>false</default>
+                <label>Reliance Industries</label>
+            </value>
+            <value>
+                <fullName>Baskin robins</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Baskin robins</label>
+            </value>
+            <value>
+                <fullName>Kwality walls</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Kwality walls</label>
+            </value>
+            <value>
+                <fullName>Lazza</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Lazza</label>
+            </value>
+            <value>
+                <fullName>Mercelys</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Mercelys</label>
+            </value>
+            <value>
+                <fullName>Skei</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Skei</label>
+            </value>
+            <value>
+                <fullName>cream bell</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>cream bell</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>4</visibleLines>
+</CustomField>

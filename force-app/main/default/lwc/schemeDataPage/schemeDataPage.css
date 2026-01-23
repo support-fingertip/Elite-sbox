@@ -1,0 +1,237 @@
+.custom1 {
+    padding: -10px !important;
+    margin: -0.75rem;
+    background-color: rgb(199, 232, 241)
+}
+.screen-1{
+    display: flex;
+    flex-direction: column;
+    background-image: url('screen-1-bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center; 
+    height: 100vh;
+    overflow: hidden;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.container {
+    padding: 10px;
+    border-radius: 5px;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-top: 1rem;
+    padding: 10px 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #f3f3f3;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+.input-field {
+    width: 200px;
+}
+.dropdown-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.dropdown{
+    width: 10rem;
+}
+.button-group {
+    margin-top: 23.5px;
+    display: flex;
+    margin-left: auto;
+    gap: 10px;
+}
+.table-container {
+    margin-top: 20px;
+    border-radius: 5px;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-top: 1rem;
+    padding: 10px 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    overflow-y: auto;
+    height: 100% !important;
+}
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.custom-table th {
+    background-color: #4472c4;
+    color: white;
+    padding: 5px;
+    text-align: left;
+    border: 0.25px solid black;
+}
+.custom-table td {
+    padding: 5px;
+    border: 0.25px solid black;
+}
+.input-box {
+    width: 100px;
+}
+.input-group {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.input-field {
+    width: 220px; /* Slightly increased for better alignment */
+}
+
+.table-container {
+    margin-top: 20px;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Ensures equal column distribution */
+}
+
+.custom-table th,
+.custom-table td {
+    padding: 10px;
+    text-align: center; /* Centers the content */
+    border: 1px solid black;
+}
+
+.input-box {
+    width: 100%;
+    text-align: center;
+}
+.product-search-dropdown {
+    max-height: 200px;  /* Limits dropdown height */
+    overflow-y: auto;   /* Adds scroll if needed */
+    width: auto;       /* Adjusts width to content */
+    position: absolute; /* Ensures dropdown floats */
+    z-index: 1000;     /* Keeps dropdown above other elements */
+    background: white;  /* Improves visibility */
+    border: 1px solid #dddbda;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* .navbar-right {
+    display: flex;
+    align-items: center;
+} */
+.navbar-right {
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    padding: 4px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    margin-top: 23px;
+    margin-bottom: 24px;
+
+}
+.main-heading {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #005792;
+    margin-top: 15px;
+}
+
+.navbar-right:hover {
+    background-color: #e6e6e6; /* Slightly darker on hover */
+    cursor: pointer;
+}
+.refresh-button {
+    border: 1px solid #dcdcdc;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    border-radius: 4px;
+    height: 32px;
+    width: 32px;
+    margin-top: 1.5rem;
+}
+
+.custom-table th:nth-child(1), /* Sales Channel */
+.custom-table td:nth-child(1) {
+    width: 120px; /* Reduced from 200px */
+}
+
+.custom-table th:nth-child(2),
+.custom-table td:nth-child(2) {
+    width: 100px; /* Buy Quantity */
+}
+
+.custom-table th:nth-child(3), /* Product */
+.custom-table td:nth-child(3) {
+    width: 280px; /* Increased width */
+}
+
+.custom-table th:nth-child(4),
+.custom-table td:nth-child(4) {
+    width: 100px; /* Offer Quantity */
+}
+
+.custom-table th:nth-child(5),
+.custom-table td:nth-child(5) {
+    width: 100px; /* Offer Value */
+}
+
+.custom-table th:nth-child(6),
+.custom-table td:nth-child(6) {
+    width: 100px; /* Offer Percent */
+}
+
+.custom-table th:nth-child(7),
+.custom-table td:nth-child(7) {
+    width: 100px; /* Min */
+}
+
+.custom-table th:nth-child(8),
+.custom-table td:nth-child(8) {
+    width: 100px; /* Max */
+}
+
+.custom-table th:nth-child(9),
+.custom-table td:nth-child(9) {
+    width: 130px; /* Action */
+    text-align: center;
+}
+.custom_icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px; /* Spacing between icons */
+}
+
+.search-wrapper {
+    position: relative; /* Makes dropdown align to this container */
+}
+
+.product-search-dropdown {
+    position: absolute;
+    top: 100%; /* below input */
+    left: 0;   /* align to input */
+    z-index: 1000;
+    background: white;
+    width: 100%;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}

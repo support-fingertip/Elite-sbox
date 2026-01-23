@@ -1,0 +1,119 @@
+<template>
+    <div class="mainHome">
+         <!-- When page is loading -->
+         <template lwc:if={isLoading}>
+            <c-on-loading-screen></c-on-loading-screen>
+        </template>
+        <template lwc:else>
+            <div class="screen">
+                <div class="navbar">
+                    <!-- Left-aligned icon & text -->
+                    <div class="navbar-left">
+                        <!--<lightning-icon icon-name="standard:report" alternative-text="Report" size="medium"></lightning-icon>-->
+                        <img src={foreCasticon} width="35" height="35" >
+                        <span class="header"><b>Product Forecast</b></span>
+                    </div>
+                
+                    <!-- Right-aligned refresh icon -->
+                    <div class="navbar-right">
+                        <i class="material-icons screen-bar-nav-icon" onclick={fetchAllData}>
+                            <lightning-icon icon-name="utility:refresh" size="small" alternative-text="Refresh"></lightning-icon>
+                        </i>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <div class="combobox-container">
+                        <!-- Left Side: Dropdowns -->
+                        <div class="combobox-group">
+                            <lightning-combobox
+                                label="Select Category"
+                                value={selectedCategory}
+                                data-id="selectedCategory"
+                                options={productCategoryOptions}
+                                required="true"
+                                dropdown-alignment="left"
+                                message-when-value-missing="Select Category"
+                                onchange={productCategoryChangeHandler}>
+                            </lightning-combobox>
+                    
+                            <lightning-combobox
+                                label="Select Period"
+                                value={selectedPeriod}
+                                data-id="selectedPeriod"
+                                options={periodOptions}
+                                required="true"
+                                dropdown-alignment="left"
+                                message-when-value-missing="Select Period"
+                                onchange={periodChangeHandler}>
+                            </lightning-combobox>
+                        </div>
+                    
+                        <!-- Right Side: Buttons -->
+                        <div class="button-group">
+                            <lightning-button 
+                                variant="neutral" 
+                                label="Cancel" 
+                                onclick={handleCancel}
+                                class="slds-m-right_small">
+                            </lightning-button>
+                            <lightning-button 
+                                variant="brand" 
+                                class="customButton"
+                                label="Save" 
+                                onclick={handleSave}>
+                            </lightning-button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Product Code</th>
+                                    <th>Forecast</th>
+                                    <th>Last Week</th>
+                                    <th>3 Week Average</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template lwc:if={currentforeCast}>
+                                    <template for:each={curForeCast} for:item="fr" for:index="index">
+                                        <tr  key={fr.Id}>
+                                            <td style="width:20%;"><b>{fr.productName}</b></td>
+                                            <td style="width:20%;">{fr.productCode}</td>
+                                            <td style="width:20%;">
+                                                <lightning-input 
+                                                    type="number" 
+                                                    data-name={fr.Name}
+                                                    data-forecastid ={fr.foreCastId}
+                                                    variant="label-hidden"
+                                                    data-id={fr.Id}
+                                                    onchange={handleInputChange}
+                                                    value={fr.foreCast}>
+                                                </lightning-input>
+                                            </td>
+                                            <td style="width:20%;">{fr.lastWeekAvg}</td>
+                                            <td style="width:20%;">{fr.threeWeekAvg}</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                                <template lwc:else>
+                                    <tr>
+                                        <th  colspan="5">
+                                            <div class="slds-truncate"  style="text-align:center">
+                                                <span style="color:red;padding:10px;font-size:large">No records found!</span>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                 
+                </div>
+            </div>
+        </template>
+    </div>
+    
+</template>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Secondary_Customer_Primary_Customer</fullName>
+    <active>true</active>
+    <errorConditionFormula>Customer_Type__c == &apos;Secondary Customer&apos; &amp;&amp;
+ISBLANK(Primary_Customer__c )</errorConditionFormula>
+    <errorDisplayField>Primary_Customer__c</errorDisplayField>
+    <errorMessage>Please Fill the Primary Customer</errorMessage>
+</ValidationRule>

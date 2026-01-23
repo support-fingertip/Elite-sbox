@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>azureIntegration</label>
+    <protected>false</protected>
+    <values>
+        <field>EndPoint__c</field>
+        <value xsi:type="xsd:string">https://portal.eliteconnect.in</value>
+    </values>
+    <values>
+        <field>X_API_KEY__c</field>
+        <value xsi:type="xsd:string">ProdSecretKey987!</value>
+    </values>
+</CustomMetadata>

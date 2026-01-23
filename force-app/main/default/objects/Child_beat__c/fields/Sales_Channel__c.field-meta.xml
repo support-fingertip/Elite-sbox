@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Sales_Channel__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;TN&quot;), &quot;TN; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;AP&quot;), &quot;AP; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;TS&quot;), &quot;TS; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;Cake&quot;), &quot;Cake; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;Institutional&quot;), &quot;Institutional; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;District Bulk&quot;), &quot;District Bulk; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;Bread&quot;), &quot;Bread; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;KA&quot;), &quot;KA; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;Bulk Depot&quot;), &quot;Bulk Depot; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;CPD&quot;), &quot;CPD; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;Madurai&quot;), &quot;Madurai; &quot;, &quot;&quot;) &amp;
+IF(INCLUDES(Owner:User.Sales_Channel__c, &quot;West&quot;), &quot;West; &quot;, &quot;&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Sales Channel</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

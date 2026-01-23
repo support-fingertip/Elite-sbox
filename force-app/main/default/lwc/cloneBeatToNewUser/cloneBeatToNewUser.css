@@ -1,0 +1,32 @@
+/* Basic Styling for the Component */
+.slds-p-around_medium {
+    padding: 16px;
+}
+
+/* Style the Clone button */
+.clone-button {
+    margin-top: 10px;
+    background-color: #0070d2;
+    border-color: #0070d2;
+}
+
+/* Style the Combobox to make it more appealing */
+.lightning-combobox {
+    margin-top: 15px;
+}
+
+/* Style the card title */
+.slds-card__header {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Add some padding to the whole component */
+lightning-card {
+    margin: 10px;
+}
+
+/* Adjust the layout of the form */
+.lightning-input {
+    margin-bottom: 10px;
+}

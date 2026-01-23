@@ -1,0 +1,7 @@
+<aura:component implements="lightning:hasPageReference,force:hasSObjectName,lightning:actionOverride,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,lightning:isUrlAddressable" access="global" >
+    <aura:attribute name="openPopup" type="Boolean" default="false"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:if isTrue="{!v.openPopup}">
+        <c:productMappingLwc recordId="{!v.recordId}" onclosepopup ="{!c.onClickClosePopup}"/>
+    </aura:if>
+</aura:component>

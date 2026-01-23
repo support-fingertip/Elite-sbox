@@ -1,0 +1,84 @@
+<aura:component controller="ExpenseApprovalHistoryController"
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+    access="global">
+
+    <!-- Attributes -->
+    <aura:attribute name="paginationList" type="Object[]"/>
+    <aura:attribute name="spinner" type="Boolean" default="false"/>
+    <aura:attribute name="selFilter" type="String" default="All"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <!-- Card -->
+    <lightning:card>
+        <!-- Header -->
+        <div class="slds-media slds-media_center slds-grid slds-grid_align-spread slds-p-around_small">
+            <div class="slds-media__figure">
+                <lightning:icon iconName="standard:portal_roles" size="small" alternativeText="Expense History" />
+            </div>
+            <div class="slds-media__body">
+                <span class="slds-text-heading_small">
+                    Expense Approval History
+                </span>
+            </div>
+            <div class="slds-media__figure">
+               <lightning:buttonIcon 
+                    iconName="utility:refresh" 
+                    alternativeText="Refresh" 
+                    title="Refresh" 
+                    onclick="{!c.refresh}" 
+                    variant="border-filled"
+                    size="small"
+                />
+
+            </div>
+        </div>
+		<aura:if isTrue="{!v.spinner}">
+            <div style="overflow:hidden">
+                <c:loadingScreen size="3"></c:loadingScreen>
+            </div>
+          
+            <aura:set attribute="else">
+                <!-- Table -->
+        		<div class="slds-p-horizontal_small slds-p-bottom_small">
+            <aura:if isTrue="{!v.paginationList.length > 0}">
+                <div class="slds-scrollable_y" style="max-height: 500px;">
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th class="minwidth">Expense Type</th>
+                                    <th class="minwidth">Expense Date</th>
+                                    <th class="minwidth">Action</th>
+                                    <th class="minwidth">Changed By</th>
+                                    <th class="minwidth">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.paginationList}" var="item">
+                                    <tr>
+                                        <td>{!item.ExpenseType}</td>
+                                        <td>{!item.ExpenseDate}</td>
+                                        <td>{!item.NewValue}</td>
+                                        <td>{!item.CreatedByName}</td>
+                                        <td><ui:outputDateTime value="{!item.CreatedDate}" /></td>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <aura:set attribute="else">
+                    <div class="slds-align_absolute-center slds-p-around_medium">
+                        <span class="slds-text-color_error slds-text-heading_small">No records found!</span>
+                    </div>
+                </aura:set>
+            </aura:if>
+        </div>
+            </aura:set>
+    	</aura:if>
+        
+    </lightning:card>
+</aura:component>

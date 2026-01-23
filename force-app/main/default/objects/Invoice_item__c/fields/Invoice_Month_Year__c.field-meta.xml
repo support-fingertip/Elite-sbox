@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Invoice_Month_Year__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE(MONTH(Invoice__r.Invoice_Date__c),
+1, &apos;Jan -&apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+2, &apos;Feb - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+3, &apos;Mar - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+4, &apos;Apr - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+5, &apos;May - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+6, &apos;Jun - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+7, &apos;Jul - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+8, &apos;Aug - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+9, &apos;Sep - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+10, &apos;Oct - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+11, &apos;Nov - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+12, &apos;Dec - &apos; &amp; RIGHT(TEXT(YEAR(Invoice__r.Invoice_Date__c)), 2),
+&apos;&apos;
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Invoice Month-Year</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,108 @@
+<template>
+    <div class="orders layouts" id="InvoiceLayout">
+        <h3 class="order-title">Generate Invoices</h3>
+        <div class="order-head">
+            <!-- Customer Info -->
+            <div class="slds-m-around_medium">
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-3 slds-p-around_small">
+                        <lightning-input label="Customer Name" value={selectedCustomerName} disabled
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3 slds-p-around_small">
+                        <lightning-input label="Invoice Date" value={invoiceDate} type="date" disabled
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3 slds-p-around_small">
+                        <lightning-textarea label="Remarks" value={remarks} placeholder="Enter remarks"
+                            onchange={onUpdateRemakrs} variant="label-stacked">
+                        </lightning-textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="order-filters">
+                <button class="actionButton" onclick={handleSave}>Save</button>
+                <button class="slds-m-left_small actionButton1" onclick={handleCancel}>Cancel</button>
+            </div>
+
+
+
+        </div>
+        <div class="contacts-table">
+            <!-- Invoice Line Items -->
+            <template if:true={invoiceItems}>
+                <template for:each={invoiceItems} for:item="item" for:index="index">
+                    <div key={item.OrderItemId} class=" slds-m-around_medium">
+                        <div class="slds-grid slds-wrap">
+
+                            <!-- Item Name -->
+                            <div class="slds-col slds-size_1-of-8 slds-p-around_small" style="width:150px;">
+                                <lightning-input label="Item Name" value={item.ItemName} disabled
+                                    variant="label-stacked">
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-8 slds-p-around_small" style="width:250px;">
+                                <lightning-input label="SKU Name" value={item.ProductName} disabled
+                                    variant="label-stacked">
+                                </lightning-input>
+                            </div>
+                            <!-- Quantity -->
+                            <div class="slds-col slds-size_1-of-8 slds-p-around_small" style="width:150px;">
+                                <lightning-input label="Available Qty" type="number" value={item.availableQuantity}
+                                    data-id={item.OrderItemId} onchange={handleQuantityChange} variant="label-stacked"
+                                    disabled>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="slds-col slds-size_1-of-8 slds-p-around_small" style="width:150px;">
+                                <lightning-input label="Invoice Qty" type="number" value={item.Quantity}
+                                    data-id={item.OrderItemId} onchange={handleQuantityChange} variant="label-stacked">
+                                </lightning-input>
+                            </div>
+
+                            <!-- Unit Price -->
+                            <div class="slds-col slds-size_1-of-8 slds-p-around_small" style="width:150px;">
+                                <lightning-input label="Unit Price" value={item.UnitPrice} disabled
+                                    variant="label-stacked">
+                                </lightning-input>
+                            </div>
+
+                            <!-- Tax % -->
+                            <div class="slds-col slds-size_1-of-8 slds-p-around_small" style="width:150px;">
+                                <lightning-input label="Tax %" value={item.TaxPercent} disabled variant="label-stacked">
+                                </lightning-input>
+                            </div>
+
+                            <!-- Tax Amount -->
+                            <div class="slds-col slds-size_1-of-8 slds-p-around_small" style="width:150px;">
+                                <lightning-input label="Tax Amount" value={item.TaxAmount} disabled
+                                    variant="label-stacked">
+                                </lightning-input>
+                            </div>
+
+                            <!-- Total Amount -->
+                            <div class="slds-col slds-size_1-of-8 slds-p-around_small" style="width:150px;">
+                                <lightning-input label="Total Amount" value={item.TotalAmount} disabled
+                                    variant="label-stacked">
+                                </lightning-input>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </div>
+
+        <template if:false={invoiceItems}>
+            <div class="slds-align_absolute-center slds-text-color_error slds-m-top_medium">
+                No items available to invoice.
+            </div>
+        </template>
+    </div>
+    <c-custom-toast auto-close-time="8000"></c-custom-toast> <!-- Added custom toast at the bottom of the page -->
+</template>

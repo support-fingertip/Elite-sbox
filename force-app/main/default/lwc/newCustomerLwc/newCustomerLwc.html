@@ -1,0 +1,1204 @@
+<template>
+    <lightning-record-edit-form object-api-name="Account">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-2" class="slds-modal slds-fade-in-open">
+            <div class={containerClass}>
+                <!-- Modal/Popup Header -->
+                <header class="slds-modal__header">
+                    <div class="slds-grid slds-gutters">
+                        <template if:false={isDesktop}>
+                            <div class="slds-col  slds-clearfix">
+                                <div class="slds-float_right">
+                                    <lightning-button variant="base" disabled={isLoading} label={backbuttonlabel} onclick={handlePrevious} class="slds-m-left_xx-small"></lightning-button>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="slds-col slds-align_absolute-center">
+                            <h1 id="modal-heading-02" class="slds-modal__title slds-hyphenate small-modal-title" tabindex="-1">{currentStep}</h1>
+                        </div>
+                        <template if:false={isDesktop}>
+                            <div class="slds-col  slds-clearfix">
+                                <div class="slds-float_left">
+                                    <lightning-button variant="base" disabled={isLoading} label={proceedbuttonlabel} class="slds-m-left_xx-small" onclick={handleProceed}></lightning-button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </header>
+                <!--Body-->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <template lwc:if={isLoading}>
+                        <c-loading-screen></c-loading-screen>
+                    </template>
+                    <template lwc:else>
+                        <!--Account Details-->
+                        <template if:true={showAccountScreen}>
+                            <!--Customer Information-->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Customer Information</span>
+                                </h3>
+                                <br />
+                                <div class="slds-grid slds-wrap">
+                                    <!--Customer Type-->
+                                    <div class={accountCustomClass} style="padding-right:5px;padding-left:5px">
+                                        <lightning-combobox
+                                            id="customerType"
+                                            label="Customer Type"
+                                            data-id="accountFields"
+                                            name="Customer_Type__c"
+                                            value={accountData.Customer_Type__c}
+                                            options={recordTypes}
+                                            dropdown-alignment="auto"
+                                            placeholder="--None--"
+                                            required
+                                            onchange={handleCustomerChange}>
+                                        </lightning-combobox>
+                                    </div>
+                                    <!--Name-->
+                                    <div class={accountCustomClass} >
+                                        <lightning-input-field
+                                            field-name="Name" 
+                                            data-id="accountFields"
+                                            value={accountData.Name}
+                                            onchange={handleInputChangeChange}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                   
+                                    <!--Primary Customer Fields-->
+                                    <template if:true={showPrimaryfields}>
+                                        <div class={accountCustomClass} >
+                                            <lightning-input-field
+                                                field-name="Customer_Group__c" 
+                                                data-id="accountFields"
+                                                value={accountData.Customer_Group__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field 
+                                                field-name="Primary_Customer_Type__c"
+                                                value={accountData.Primary_Customer_Type__c}
+                                                required="true" 
+                                                data-id="accountFields"
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field 
+                                                field-name="Primary_Customer_Business_Type__c"
+                                                value={accountData.Primary_Customer_Business_Type__c} 
+                                                required="true"
+                                                data-id="accountFields"
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    </template>
+                                    <!--Secoundary Customer Fields-->
+                                    <template if:true={showSecoundaryfields}>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field 
+                                                field-name="Secondary_Customer_Type__c" 
+                                                value={accountData.Secondary_Customer_Type__c} 
+                                                required="true" 
+                                                data-id="accountFields"
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Secondary_Customer_Business_Type__c" 
+                                                value={accountData.Secondary_Customer_Business_Type__c}
+                                                required="true"
+                                                data-id="accountFields"
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field 
+                                                field-name="Secondary_Customer_Category__c" 
+                                                value={accountData.Secondary_Customer_Category__c}
+                                                required="true" 
+                                                data-id="accountFields"
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        
+                                    </template>
+                                </div>
+                            </div>
+                            <!--Contact Information-->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Contact Information</span>
+                                </h3>
+                                <br />
+                                <div class="slds-grid slds-wrap">
+                                    <!--Primary Phome Number-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="Primary_Phone_Number__c" 
+                                        data-id="accountFields"
+                                        value={accountData.Primary_Phone_Number__c} 
+                                        onchange={handleInputChangeChange}
+                                        maxlength="10"
+                                        minlength="10"
+                                        pattern="[0-9]{10}"
+                                        required="true"
+                                        autocomplete="off"
+                                        name="Primary_Phone_Number__c"
+                                        message-when-too-short="Please Enter Valid Primary Phone Number"
+                                        message-when-pattern-mismatch="Please Enter Valid Primary Phone Number"
+                                        message-when-too-long="Please Enter Valid Primary Phone Number"
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--Aadhaar_No-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                            field-name="Aadhaar_No__c"
+                                            data-id="accountFields"
+                                            autocomplete="off"
+                                            value={accountData.Aadhaar_No__c} 
+                                            onchange={handleInputChangeChange}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--GST_Number-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="GST_Number__c" 
+                                        data-id="accountFields"
+                                        name="GST_Number__c"
+                                        autocomplete="off"
+                                        value={accountData.GST_Number__c}
+                                        required={showPrimaryfields}
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                 
+                                    <!--Email_Id-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="Email_ID__c" 
+                                        autocomplete="off"
+                                        name="Email_ID__c"
+                                        data-id="accountFields"
+                                        value={accountData.Email_ID__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--Contact_Person_Name-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field 
+                                        field-name="Contact_Person_Name__c"
+                                        value={accountData.Contact_Person_Name__c} 
+                                        onchange={handleInputChangeChange}
+                                        autocomplete="off"
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--Secondary_Phone_Number-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field 
+                                        field-name="Secondary_Phone_Number__c"
+                                        autocomplete="off"
+                                        name="Secondary_Phone_Number__c"
+                                        value={accountData.Secondary_Phone_Number__c}
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--Contact_Person_Phone-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field 
+                                        field-name="Contact_Person_Phone__c"
+                                        autocomplete="off"
+                                        name="Contact_Person_Phone__c"
+                                        value={accountData.Contact_Person_Phone__c}
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--PAN_Number-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                            field-name="PAN_Number__c"
+                                            autocomplete="off"
+                                            name="PAN_Number__c"
+                                            value={accountData.PAN_Number__c} 
+                                            onchange={handleInputChangeChange}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                </div>
+                            </div>
+                            <template if:true={showPrimaryfields}>
+                                    <!--Bank Details-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Bank Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <!--Company_Name__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Company_Name__c" 
+                                                data-id="accountFields"
+                                                required="true"
+                                                autocomplete="off"
+                                                name="Company_Name__c"
+                                                value={accountData.Company_Name__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Owner_Name__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Owner_Name__c" 
+                                                data-id="accountFields"
+                                                required="true"
+                                                autocomplete="off"
+                                                name="Owner_Name__c"
+                                                value={accountData.Owner_Name__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Security_Cheque_Status__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Security_Cheque_Status__c" 
+                                                data-id="accountFields"
+                                                required="true"
+                                                autocomplete="off"
+                                                name="Security_Cheque_Status__c"
+                                                value={accountData.Security_Cheque_Status__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Security_Amount__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Security_Amount__c" 
+                                                data-id="accountFields"
+                                                autocomplete="off"
+                                                name="Security_Amount__c"
+                                                value={accountData.Security_Amount__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    
+                                    </div>
+                                </div>
+
+                                <!--Bank Details-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Bank Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <!--Account_Holder_Name__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Account_Holder_Name__c" 
+                                                data-id="accountFields"
+                                                required="true"
+                                                autocomplete="off"
+                                                name="Account_Holder_Name__c"
+                                                value={accountData.Account_Holder_Name__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Bank Account No-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Account_No__c" 
+                                                data-id="accountFields"
+                                                required="true"
+                                                autocomplete="off"
+                                                name="Account_No__c"
+                                                value={accountData.Account_No__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Bank_Name__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Bank_Name__c" 
+                                                data-id="accountFields"
+                                                required="true"
+                                                autocomplete="off"
+                                                name="Bank_Name__c"
+                                                value={accountData.Bank_Name__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--IFSC_Code-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="IFSC_Code__c" 
+                                                data-id="accountFields"
+                                                required="true"
+                                                autocomplete="off"
+                                                name="IFSC_Code__c"
+                                                value={accountData.IFSC_Code__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                         <!--Branch_Name__c-->
+                                         <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Branch_Name__c" 
+                                                data-id="accountFields"
+                                                required="true"
+                                                autocomplete="off"
+                                                name="Branch_Name__c"
+                                                value={accountData.Branch_Name__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Reference Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Reference Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <!--Reference_Contact_Name__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Reference_Contact_Name__c" 
+                                                data-id="accountFields"
+                                                autocomplete="off"
+                                                value={accountData.Reference_Contact_Name__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Reference_Contact_Mobile__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Reference_Contact_Mobile__c" 
+                                                data-id="accountFields"
+                                                autocomplete="off"
+                                                value={accountData.Reference_Contact_Mobile__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Reference_Email__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Reference_Email__c" 
+                                                data-id="accountFields"
+                                                autocomplete="off"
+                                                value={accountData.Reference_Email__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Reference_Address__c-->
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Reference_Address__c" 
+                                                data-id="accountFields"
+                                                autocomplete="off"
+                                                value={accountData.Reference_Address__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                      
+                            <!--Additional Information-->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Additional Information</span>
+                                </h3>
+                                <br />
+                                <div class="slds-grid slds-wrap">
+                                    <template if:true={showPrimaryfields}>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field 
+                                            data-id="accountFields"
+                                            field-name="Expected_Turn_over_PA__c"
+                                            required="true"
+                                            value={accountData.Expected_Turn_over_PA__c}
+                                            onchange={handleInputChangeChange}
+                                            variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                            field-name="Payment_Type__c" 
+                                             data-id="accountFields"
+                                            required={mandatepaymentInfo}
+                                            value={accountData.Payment_Type__c}
+                                            disabled={disablePaymentInfo}
+                                            onchange={handleInputChangeChange} 
+                                            variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                            field-name="Credit_Limit__c" 
+                                            required={creditFieldMandate}
+                                             data-id="accountFields"
+                                            value={accountData.Credit_Limit__c}
+                                            disabled={disablePaymentInfo}
+                                            onchange={handleInputChangeChange} 
+                                            variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    </template>
+                                    <template if:true={showSecoundaryfields}>
+                                        <!--High Margin-->
+                                        <template if:true={showHighMargin}>
+                                            <template if:true={showSecoundaryfields}>
+                                                <div class={accountCustomClass}>
+                                                    <lightning-input-field 
+                                                        field-name="High_Margin__c" 
+                                                        data-id="accountFields"
+                                                        value={accountData.High_Margin__c} 
+                                                        onchange={handleInputChangeChange}
+                                                        required="true"
+                                                        variant="label-stacked">
+                                                    </lightning-input-field>
+                                                </div>
+                                            </template>
+                                        </template>
+                                    </template>
+                                    <!--OwnerId-->
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field 
+                                        field-name="OwnerId" 
+                                        label="Created By"
+                                        value={accountData.OwnerId} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div> 
+                                    <!--Beat-->
+                                    <div class={accountCustomClass} style="padding-left:5px">
+                                        <div class="slds-m-right_xx-small slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                        <lightning-input
+                                                            label="Beat"
+                                                            data-index={index}
+                                                            type="search"
+                                                            value={selectedBeat} 
+                                                            data-id="accountFields"
+                                                            message-when-value-missing="Search Beat"
+                                                            read-only={isReadOnly}
+                                                            placeholder="Select Beat"
+                                                            class="readonly-bordered"
+                                                            onchange={handleBeatSearch}>
+                                                        </lightning-input> 
+                                                    </div>
+                                                    <template lwc:if={isShowBeats}>
+                                                        <div id='beat' class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                            <template for:each={searchedBeats} for:item="srch">
+                                                                <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                    <li role="presentation" class="slds-listbox__item">
+                                                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                    onclick={selectBeat} data-id={srch.Id} data-name={srch.Name}  data-index={index}
+                                                                    data-primarycustomer={srch.Primary_Customer__c}  data-substockiest={srch.Sub_Stockist__c}
+                                                                    data-primarycustomername={srch.Primary_Customer_Name__c}  data-substockiestname={srch.Sub_Stockiest_Name__c}
+                                                                        data-primarycustomertype={srch.Primary_Customer_Type__c}   data-ownername={srch.Owner_Name__c}
+                                                                         data-ownerid={srch.OwnerId}
+                                                                    >
+                                                                        <lightning-icon 
+                                                                            icon-name="standard:product_service_campaign_item" size="small">
+                                                                        </lightning-icon>
+                                                                        <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                        <span class="slds-media__body">
+                                                                        <span class="slds-truncate" title={srch.Name}>
+                                                                            <span>{srch.Name}</span>
+                                                                        </span>
+                                                                        </span>
+                                                                    </div>
+                                                                    </li>
+                                                                </ul>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                                    
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="On_Customer_Premises__c" 
+                                        data-id="accountFields"
+                                        value={accountData.On_Customer_Premises__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                               
+                                </div>
+                            </div>
+
+                            <!--Address Information-->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">
+                                        Address Information
+                                    </span>
+                                </h3>
+                                <br />
+                                <div class="slds-grid slds-wrap">
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="State__c" 
+                                        data-id="accountFields"
+                                        value={accountData.State__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="District__c" 
+                                        data-id="accountFields"
+                                        value={accountData.District__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="Door_No__c" 
+                                        data-id="accountFields"
+                                        value={accountData.Door_No__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="Building_Name__c" 
+                                        data-id="accountFields"
+                                        value={accountData.Building_Name__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="Land_Mark__c" 
+                                        data-id="accountFields"
+                                        value={accountData.Land_Mark__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="City_Town__c" 
+                                        data-id="accountFields"
+                                        required ="true"
+                                        value={accountData.City_Town__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
+                                        field-name="Pincode__c" 
+                                        required ="true"
+                                        data-id="accountFields"
+                                        value={accountData.Pincode__c} 
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field 
+                                        data-id="accountFields"
+                                        field-name="Street__c"
+                                        required ="true"
+                                        value={accountData.Street__c}
+                                        onchange={handleInputChangeChange}
+                                        variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!--Product Selection Screen -->
+                        <template if:true={showProductScreen}>
+                            <template for:each={productMappingList} for:item="pr" for:index="index">
+                                <div  key={pr.index}  class="slds-card border" style="margin-left:5px;margin-right:5px;margin-top:0px;margin-bottom:0px">
+                                    <template if:true={isPhone}>
+                                        <div class="slds-card__header" style="text-align:right">
+                                            <!--Delete-->
+                                            <lightning-button-icon 
+                                                icon-name="utility:delete"
+                                                class="slds-m-right_xx-small"
+                                                onclick={removeProductMappingRow} 
+                                                data-index={index}>
+                                            </lightning-button-icon>
+                                            <!--Clone-->
+                                            <lightning-button-icon 
+                                                icon-name="utility:copy"
+                                                class="slds-m-right_xx-small"
+                                                data-index={index}
+                                                onclick={cloneProductMappingRow}>
+                                            </lightning-button-icon>
+                                            <!--Add-->
+                                            <lightning-button-icon 
+                                                icon-name="utility:add"
+                                                onclick={addProductMappingRow}
+                                                data-index={index}>
+                                            </lightning-button-icon>
+                                        </div>
+                                    </template>
+
+                                    <div class="slds-card__body slds-card__body_inner" >
+                                        <div class="slds-grid slds-wrap">
+                                            <!--Executive-->
+                                            <div class={customClass}>
+                                                <div class="slds-m-right_xx-small slds-form-element">
+                                                    <div class="slds-form-element__control">
+                                                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                <lightning-input
+                                                                    label="Executive"
+                                                                    data-index={index}
+                                                                    type="search"
+                                                                    value={pr.Executive_Name__c} 
+                                                                    data-id="productMapping" 
+                                                                    read-only={pr.isExecutiveReadOnly}
+                                                                    class="readonly-bordered"
+                                                                    message-when-value-missing="Search Executive"
+                                                                    placeholder="Select Executive"
+                                                                    onchange={handleExectieSearch}
+                                                                    required="true">
+                                                                </lightning-input> 
+                                                            </div>
+                                                            <template lwc:if={pr.isShowExecutiveValues}>
+                                                                <div id={pr.index} class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                    <template for:each={searchedExecutives} for:item="srch">
+                                                                        <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                            <li role="presentation" class="slds-listbox__item">
+                                                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                            onclick={selectExective} data-id={srch.Id} data-name={srch.Name}  data-index={index}
+                                                                            data-territoryid={srch.Territory__c} data-territoryname={srch.Territory_Name__c}>
+                                                                                <lightning-icon 
+                                                                                    icon-name="standard:avatar" size="small">
+                                                                                </lightning-icon>
+                                                                                <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                                <span class="slds-media__body">
+                                                                                <span class="user-info" title={srch.Name}>
+                                                                                    <span>{srch.Name}</span>
+                                                                                     <span>{srch.Employee_Code__c}</span>
+                                                                                </span>
+                                                                                </span>
+                                                                            </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Secoundary Customer-->
+                                            <template if:true={showSecoundaryfields}>
+                                                <!--Primary Customer-->
+                                                <div class={customClass}>
+                                                    <div class="slds-m-right_xx-small slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                                <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                    <lightning-input
+                                                                        label="Primary Customer"
+                                                                        data-index={index}
+                                                                        type="search"
+                                                                        value={pr.Primary_Customer_Name__c} 
+                                                                        read-only={pr.isDistributorReadOnly}
+                                                                        class="readonly-bordered"
+                                                                        message-when-value-missing="Search Customer"
+                                                                        placeholder="Search Customer"
+                                                                        onchange={handlePrimaryCustomerSearch}
+                                                                        required="true">
+                                                                    </lightning-input> 
+                                                                </div>
+                                                                <template lwc:if={pr.isShowPrimaryCustomerValues}>
+                                                                    <div  class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                        <template for:each={serchedProductPrimaryCustomers} for:item="srch">
+                                                                            <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                                <li role="presentation" class="slds-listbox__item">
+                                                                                <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                                onclick={selectCustomer} data-id={pr.distributorIndex}
+                                                                                 data-name={srch.Name}  data-index={index} data-customerid={srch.Id}
+                                                                                 data-customertype={srch.Primary_Customer_Type__c}
+                                                                                 data-executive={pr.Exectuive__c}>
+                                                                                    <lightning-icon 
+                                                                                        icon-name="standard:account" size="small">
+                                                                                    </lightning-icon>
+                                                                                    <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                                    <span class="slds-media__body">
+                                                                                    <span class="user-info" title={srch.Name}>
+                                                                                        <span>{srch.Name}</span>
+                                                                                        <span>{srch.SAP_Customer_Code__c}</span>
+                                                                                    </span>
+                                                                                    </span>
+                                                                                </div>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </template>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--Sub Stockiest-->
+                                                <template if:false={isSubstockiest}>
+                                                    <div class={customClass}>
+                                                        <div class="slds-m-right_xx-small slds-form-element">
+                                                            <div class="slds-form-element__control">
+                                                                <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                        <lightning-input
+                                                                            label="Sub Stockiest"
+                                                                            data-index={index}
+                                                                            type="search"
+                                                                            value={pr.Sub_Stockiest_Name__c} 
+                                                                            disabled={pr.isSubstockiestDisabled}
+                                                                            read-only={pr.isSubStockiestReadOnly}
+                                                                            class="readonly-bordered"
+                                                                            message-when-value-missing="Search Sub Stockies"
+                                                                            placeholder="Search Sub Stockies"
+                                                                            onchange={handleSubstockiestSearch}>
+                                                                        </lightning-input> 
+                                                                    </div>
+                                                                    <template lwc:if={pr.isShowSubstockistValues}>
+                                                                        <div  class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                            <template for:each={searchedSubStockiests} for:item="srch">
+                                                                                <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                                    <li role="presentation" class="slds-listbox__item">
+                                                                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                                    onclick={selectSubStockiest} data-name={srch.Name} data-index={index} data-id={srch.Id}>
+                                                                                        <lightning-icon 
+                                                                                            icon-name="standard:account" size="small">
+                                                                                        </lightning-icon>
+                                                                                        <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                                        <span class="slds-media__body">
+                                                                                        <span class="user-info" title={srch.Name}>
+                                                                                            <span>{srch.Name}</span>
+                                                                                            <span>{srch.Customer_Code__c}</span>
+                                                                                        </span>
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    </li>
+                                                                                </ul>
+                                                                            </template>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                                
+                                            </template>
+                                            <!-- Primary Customer-->
+                                            <template if:true={showPrimaryfields}>
+                                                <!--Sales Channel-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Sales Channel"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Chanel__c"
+                                                        value={pr.Chanel__c}
+                                                        dropdown-alignment="auto"
+                                                        options={pr.productMappingchannelOptions}
+                                                        message-when-value-missing="Select Channel"
+                                                        placeholder="Select option"
+                                                        required="true"
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Territory-->
+                                                <div class={customClass}>
+                                                    <div class="slds-m-right_xx-small slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                                <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                    <lightning-input
+                                                                        label="Territory"
+                                                                        data-index={index}
+                                                                        type="search"
+                                                                        name="Area_Name__c"
+                                                                        value={pr.Area_Name__c} 
+                                                                        read-only={pr.isTerritoryReadOnly}
+                                                                        class="readonly-bordered"
+                                                                        data-id="productMapping" 
+                                                                        message-when-value-missing="Search Territory"
+                                                                        placeholder="Select Territory"
+                                                                        onchange={handleAreaSearch}
+                                                                        required="true">
+                                                                    </lightning-input> 
+                                                                </div>
+                                                                <template lwc:if={pr.isShowAreaValues}>
+                                                                    <div id={pr.index} class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                        <template for:each={searchedAreas} for:item="srch">
+                                                                            <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                                <li role="presentation" class="slds-listbox__item">
+                                                                                <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                                onclick={selectArea} data-id={srch.Id} data-name={srch.Name}  data-index={index}>
+                                                                                    <lightning-icon 
+                                                                                        icon-name="standard:product_service_campaign_item" size="small">
+                                                                                    </lightning-icon>
+                                                                                    <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                                    <span class="slds-media__body">
+                                                                                    <span class="slds-truncate" title={srch.Name}>
+                                                                                        <span>{srch.Name}</span>
+                                                                                    </span>
+                                                                                    </span>
+                                                                                </div>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </template>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--PDP Day-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="PDP Day"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="PDP_Day__c"
+                                                        value={pr.PDP_Day__c}
+                                                        dropdown-alignment="auto"
+                                                        options={pdpDayList}
+                                                        message-when-value-missing="Select PDP day"
+                                                        placeholder="Select option"
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Parent Deport-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                    label="Sales Organization"
+                                                    data-index={index}
+                                                    data-id="productMapping" 
+                                                    name="Parent_Depot__c"
+                                                    value={pr.Parent_Depot__c}
+                                                    dropdown-alignment="auto"
+                                                    options={ParentDeportOptions}
+                                                    message-when-value-missing="Select Sales Organization"
+                                                    placeholder="Select option"
+                                                    required="true"
+                                                    onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Child Deport-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Delivery Plant"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Child_Depot__c"
+                                                        value={pr.Child_Depot__c}
+                                                        dropdown-alignment="auto"
+                                                        options={pr.childDeportOptions}
+                                                        message-when-value-missing="Select Delivery Plant"
+                                                        placeholder="Select option"
+                                                        required="true"
+                                                        disabled={pr.disableChildDeprort}
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Sales Office-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Sales Office"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Sales_Office__c"
+                                                        value={pr.Sales_Office__c}
+                                                        dropdown-alignment="auto"
+                                                        options={salesOfficeList}
+                                                        message-when-value-missing="Select Sales Office"
+                                                        placeholder="Select option"
+                                                        required="true"
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Division-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Division"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Division__c"
+                                                        value={pr.Division__c}
+                                                        dropdown-alignment="auto"
+                                                        options={divisionList}
+                                                        message-when-value-missing="Select Division"
+                                                        placeholder="Select option"
+                                                        required="true"
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Order Type-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Order Type"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Order_Type__c"
+                                                        value={pr.Order_Type__c}
+                                                        dropdown-alignment="auto"
+                                                        options={orderTypeList}
+                                                        message-when-value-missing="Select Order Type"
+                                                        placeholder="Select option"
+                                                        required="true"
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Distribution Channel-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Distribution Channel"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Distribution_Channel__c"
+                                                        value={pr.Distribution_Channel__c}
+                                                        dropdown-alignment="auto"
+                                                        options={distributonChannelList}
+                                                        message-when-value-missing="Select Distribution Channel"
+                                                        placeholder="Select option"
+                                                        required="true"
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                             
+                                              
+                                                <!--Payment Term-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Payment Term"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Payment_Term__c"
+                                                        value={pr.Payment_Term__c}
+                                                        dropdown-alignment="auto"
+                                                        options={paymemtTermList}
+                                                        message-when-value-missing="Select Payment Term"
+                                                        placeholder="Select option"
+                                                        disabled={disablePaymentInfo}
+                                                        required={creditFieldMandate}
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Credit Description-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Credit Description"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Credit_Description__c"
+                                                        value={pr.Credit_Description__c}
+                                                        dropdown-alignment="auto"
+                                                        options={pr.creditDescriptions}
+                                                        message-when-value-missing="Select Credit Description"
+                                                        placeholder="Select option"
+                                                         disabled="true"
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+                                                <!--Inco Terms-->
+                                                <div class={customClass}>
+                                                    <lightning-combobox
+                                                        label="Inco Terms"
+                                                        data-index={index}
+                                                        data-id="productMapping" 
+                                                        name="Inco_Terms__c"
+                                                        value={pr.Inco_Terms__c}
+                                                        dropdown-alignment="auto"
+                                                        options={incotermList}
+                                                        message-when-value-missing="Select Inco Terms"
+                                                        placeholder="Select option"
+                                                        required={mandatepaymentInfo}
+                                                        disabled={disablePaymentInfo}
+                                                        onchange={handleInputProductMappingChange}>
+                                                    </lightning-combobox>
+                                                </div>
+
+                                                
+                                            </template>
+                                            <template if:true={isDesktop}>
+                                                <div class={buttoncustomClass} style="text-align: right;padding-top:25px">
+                                                    <!--Delete-->
+                                                    <lightning-button-icon 
+                                                        icon-name="utility:delete"
+                                                        onclick={removeProductMappingRow} 
+                                                        class="slds-m-right_xx-small"
+                                                        data-index={index}>
+                                                    </lightning-button-icon>
+                                                    <!--Clone-->
+                                                    <lightning-button-icon 
+                                                        icon-name="utility:copy"
+                                                        class="slds-m-right_xx-small"
+                                                        data-index={index}
+                                                        onclick={cloneProductMappingRow}>
+                                                    </lightning-button-icon>
+                                                    <!--Add-->
+                                                    <lightning-button-icon 
+                                                        icon-name="utility:add"
+                                                        onclick={addProductMappingRow}
+                                                        data-index={index}>
+                                                    </lightning-button-icon>
+                                                </div>
+                                            </template> 
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+
+                        <!-- Camera Screen -->
+                        <template if:true={showCameraScreen}>
+                            <c-customer-file-upload-lwc 
+                            unique-id={accountData.UniqueFileId__c} 
+                            child-component="true"
+                            customer-type={accountData.Customer_Type__c} 
+                            customer-premises={accountData.On_Customer_Premises__c} 
+                            record-id={userId}
+                            ></c-customer-file-upload-lwc >
+                        </template>
+
+                        <!-- CCN Verification Screen -->
+                        <template if:true={showVerificationScreen}>
+                            <template lwc:if={showSuccessScreen}>
+                                <div class="slds-text-align_center slds-p-around_medium">
+                                    <h2 class="slds-text-heading_large">🎉 Congratulations</h2>
+                                    <p>Your CCN Verification has been completed successfully!</p>
+                                    <div class="slds-p-around_medium">
+                                     
+                                        <lightning-icon icon-name="action:approval" size="large" variant="success"></lightning-icon>
+                                    </div>
+                                    <h3 class="slds-text-heading_medium">Thank you</h3>
+                                    <p>Please click on the <strong>Save</strong> button to complete the process.</p>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="slds-grid slds-grid_vertical slds-text-align_center" style="padding-bottom: 10px;">
+                                    <div class="slds-col">
+                                        <lightning-icon icon-name="standard:email" style="color: white;" alternative-text="Email" size="large" class="slds-icon-text-default">
+                                        </lightning-icon>
+                                    </div>
+                                    <div class="slds-col">
+                                       An <strong>Customer confirmation Number</strong> will be sent to the customer's primary mobile number.
+                                    </div>
+                                </div>
+                                <div class="slds-grid">
+                                    <div class="slds-size_1-of-1 slds-p-horizontal_xx-small">
+                                        <lightning-combobox
+                                            label="Primary Mobile Number"
+                                            name="selectedOtpOption"
+                                            value={selectedOtpOption}
+                                            options={otpSendOptions}
+                                            placeholder="Select Primary Phone Number"
+                                            required
+                                            onchange={handleOtpOptionChange}>
+                                        </lightning-combobox>
+                                    </div>
+                                </div>
+                            
+                                <div class="slds-grid">
+                                    <div class="slds-size_1-of-1 slds-p-horizontal_xx-small">
+                                        <lightning-input 
+                                            class="otp-input"
+                                            label="Enter CCN" 
+                                            data-id="otpField"
+                                            message-when-value-missing="Enter CCN"
+                                            required="true"
+                                            value={otpValue} 
+                                            disabled={otpInputDisabled}
+                                            onchange={handleOtpChange}>
+                                        </lightning-input>
+                                    </div>
+                                </div>
+                            
+                                <div class="slds-grid">
+                                    <div class="slds-size_1-of-1" style="text-align:center;padding-top:10px">
+                                        <template if:true={showResendOtp}>
+                                            <lightning-button 
+                                            variant="neutral" 
+                                            label='Resend CCN'
+                                            onclick={generateOTP}
+                                            style="padding-right: 10px;"
+                                            disabled={disabled}>
+                                            </lightning-button>
+                                        </template>
+                                        <lightning-button 
+                                            variant="brand" 
+                                            label={otpButtonLabel}
+                                            onclick={handleOtpButtonClick}>
+                                        </lightning-button>
+                            
+                                        <template if:true={disabled}>
+                                            <p style="padding-top:5px">Re-send CCN in {refreshCounter} seconds</p>
+                                        </template>
+                            
+                                    
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                    
+                </div>
+                <!--Footer-->
+                <template lwc:if={isDesktop}>
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="neutral" label={backbuttonlabel} disabled={isLoading} onclick={handlePrevious}></lightning-button>
+                        <lightning-button variant="brand" label={proceedbuttonlabel} disabled={isLoading} style="padding-left:10px" onclick={handleProceed}></lightning-button>
+                    </footer>
+                </template>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </lightning-record-edit-form>
+</template>

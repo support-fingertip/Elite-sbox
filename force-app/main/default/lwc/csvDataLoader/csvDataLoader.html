@@ -1,0 +1,67 @@
+<template>
+    <div class="slds-card__body slds-card__body_inner">
+        <!-- Object Dropdown -->
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2">
+                <lightning-combobox name="objectName" label="Object" value={objectName} options={objectOptions}
+                    onchange={handleObjectChange} required disabled={objectFieldDisabled}>
+                </lightning-combobox>
+            </div>
+        </div>
+
+        <!-- File Upload Section -->
+        <template if:true={objectName}>
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2">
+                    <input type="file" class="file" accept=".csv" onchange={handleUploadFinished} />
+                </div>
+            </div>
+        </template>
+        <div class="button-container">
+            <lightning-button label="Download Format" onclick={getCSVHeaders}> </lightning-button>&nbsp;
+            <lightning-button variant="success" label="Import Data" title="Import Data" onclick={handleImportClick}
+                disabled={disabledTrue}></lightning-button>&nbsp;
+            <!--   <lightning-button variant="destructive" label="Clean Data" title="Clean Data" onclick={cleanData}
+                disabled={disabledTrue}></lightning-button> &nbsp; -->
+            <lightning-button variant="destructive" label="Back" onclick={goBack}>
+            </lightning-button>&nbsp;
+        </div>
+
+        <!-- CSV Data Preview -->
+        <template if:true={csvObject}>
+            <div style="font-size: 15px; color: #8b0000;">
+                <b>{csvObject.line_count}</b> records found.
+            </div>
+
+            <!-- Make the table responsive on smaller screens -->
+            <div class="table-container">
+                <table class="slds-table slds-table_bordered slds-table_striped slds-table_fixed-layout records-table"
+                    style="border: 1px solid rgb(217, 219, 221);">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <template for:each={csvObject.headers} for:item="header">
+                                <th key={header.column_name} class="slds-truncate">{header.column_name}</th>
+                            </template>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={csvObject.lines} for:item="line">
+                            <tr key={line}>
+                                <template for:each={line} for:item="cell">
+                                    <td key={cell} class="slds-truncate">{cell}</td>
+                                </template>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+    </div>
+
+    <!-- Loading Spinner -->
+    <template if:true={spinner}>
+        <lightning-spinner class="spins" size="large" variant="brand" alternative-text="Loading">
+        </lightning-spinner>
+    </template>
+
+</template>

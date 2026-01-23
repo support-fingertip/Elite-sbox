@@ -1,0 +1,9 @@
+<template>
+  <template if:true={isPage1}>
+    <c-beat-form-page record-id={recordId} onnextpage={handleNextPage}></c-beat-form-page>
+  </template>
+
+  <template if:true={isPage2}>
+    <c-user-assignment-page record-id={recordId} edit-beat=true></c-user-assignment-page>
+  </template>
+</template>

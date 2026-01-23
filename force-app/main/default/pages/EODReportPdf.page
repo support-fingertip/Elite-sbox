@@ -1,0 +1,333 @@
+<apex:page standardController="User" extensions="EODReportPdfController" renderAs="pdf"  
+           showHeader="false" standardStylesheets="false"  
+           applyBodyTag="false" applyHtmlTag="false">
+    
+    <html>
+        <head>
+            <style type="text/css">
+                /* Page and Body styling */
+                @page {
+                size: A4 landscape;
+                margin: 1cm;
+                }
+                body {
+                font-family: Arial, sans-serif;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                }
+                .header, .footer {
+                text-align: center;
+                padding: 15px;
+                font-weight: bold;
+                }
+                .header {
+                background-color: #4A90E2;
+                color: white;
+                margin-bottom: 20px;
+                }
+                .footer {
+                font-size: 12px;
+                color: #666;
+                border-top: 1px solid #ccc;
+                }
+                .pagenumber:before {
+                content: counter(page);
+                }
+                
+                /* Company and Table Styles */
+                .company-name {
+                text-align: center;
+                background-color: #EFEFEF;
+                padding: 10px;
+                font-size: 18px;
+                color: #555;
+                border-radius: 5px;
+                margin-bottom: 20px;
+                }
+                .table {
+                width: 100%;
+                border-collapse: collapse;
+                page-break-inside: auto;
+                }
+                .table th, .table td {
+                border: 1px solid #ccc;
+                padding: 10px;
+                text-align: center;
+                font-size: 14px;
+                }
+                .table th {
+                color: black;
+                font-weight: bold;
+                }
+                  th {
+                background-color: #f0f0f0;
+                color: black;
+                font-weight: bold;
+                }
+                .table tr:nth-child(even) {
+                background-color: #f9f9f9;
+                }
+                .highlight-row {
+                font-weight: bold;
+                }
+                .data-cell {
+                font-size: 11px;
+                color: black;
+                }
+                thead {
+                display: table-header-group;
+                }
+                
+                tbody {
+                display: table-row-group;
+                }
+
+                tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+                }
+                
+
+            </style>
+        </head>
+        
+        <body>
+            <div style="font-size: 18px; font-weight:bold;  margin-bottom:0;text-align:center">   
+                <h3 style="margin: 0;">
+                    EOD Summary - {!ownerName}
+                </h3>
+            </div>
+            <!-- Productivity Summary -->
+            <div style="font-size:17px; margin-bottom:50px; text-align:left;"> 
+                <p><b><u>Productivity for the day (PJP &amp; Non PJP)</u></b></p>
+                <p><b>1.Total Calls (TC) :</b> {!totalCalls}  </p>
+                <p><b>2.Total Productive Calls (PC):</b> {!productiveCalls}</p>
+                <p><b>3.New Calls (NC) :</b> {!newCalls} </p>
+                <p><b>4.Total Sold Quantity (Kg) :</b> {!totalSoldQuantityforTodayInKgs}</p>
+                <p><b>5.Total Order (INR) :</b> {!totalOrderforToday} </p>
+                <br/>
+                
+                <p><b><u>NON PJP</u></b></p>
+                <p><b>1.Total Calls (TC) :</b> {!nonPJPCalls}  </p>
+                <p><b>2.Productive Calls (PC):</b> {!nonPJPProductiveCalls}</p>
+                <br/>
+                
+                <p><b><u>PJP</u></b></p>
+                <p><b>1.Assigned BEAT :</b> {!todaysBEAT}</p>
+                <p><b>2.Worked BEAT :</b> {!workedBEAT}</p>
+                <p><b>3.Beat Switch History :</b> {!beatSwitchHistory}</p>
+                <p><b>4.Total Outlets In Today's BEAT :</b> {!totalOutletsInTodaysBEAT}</p>
+                <p><b>5.Total Calls (TC) :</b> {!pjpCalls}</p>
+                <p><b>6.Productive Calls (PC) :</b> {!pjpProductiveCalls} </p>
+                <p><b>7.New Calls (NC) :</b> {!newCalls} </p>
+                <p><b>8.Total NOT Visited Outlets :</b> {!totalNOTVisitedOutlets}</p>
+            </div>
+            <!--Primar Order Details -->
+            <apex:outputPanel rendered="{!hasPrimaryOrders}">
+                <table style="border: none; margin-top:0;">
+                    <tr >
+                        <td><b><u>Today's Primary Order Details</u></b></td>
+                    </tr>
+                    <tr >
+                        <td>
+                            <!-- Detailed Information Table -->
+                            <table class="table" >
+                                <thead style="display: table-header-group;">
+                                    <tr>
+                                        <th style="width:4%">S. No.</th>
+                                        <th style="width:26%">Sku Name</th>
+                                        <th style="width:14%">Category</th>
+                                        <th style="width:14%">PJP Quantity (in Kg)</th> 
+                                        <th style="width:14%">NON PJP Quantity(in Kg)</th>
+                                        <th style="width:14%">Total Quantity (in Kg)</th>
+                                        <th style="width:14%">Total Amount (INR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="display: table-row-group;">
+                                    <apex:repeat value="{!primaryOItemList}" var="itm">
+                                        <tr>
+                                            <td class="data-cell">{!itm.index}</td>
+                                            <td class="data-cell">{!itm.skuName}</td>
+                                            <td class="data-cell">{!itm.category}</td>
+                                            <td class="data-cell">{!itm.pjpQuantity}</td>
+                                            <td class="data-cell">{!itm.nonPJPQuantity}</td>
+                                            <td class="data-cell">{!itm.totalQuantity}</td>
+                                            <td class="data-cell">{!itm.totalAmount}</td>
+                                        </tr>
+                                    </apex:repeat>
+                                    <tr >
+                                        
+                                        <td class="data-cell"></td>
+                                        <td class="data-cell">Total</td>
+                                        <td class="data-cell"></td>
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalPrimaryPjpQuantity != null, totalPrimaryPjpQuantity, 0)}" />
+                                        </td>
+                                          <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalPrimaryNonPjpQuantity != null, totalPrimaryNonPjpQuantity, 0)}" />
+                                        </td>
+                                          <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalPrimaryQuantity != null, totalPrimaryQuantity, 0)}" />
+                                        </td>
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalPrimaryAmount != null,totalPrimaryAmount, 0)}" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                  <br/>
+            </apex:outputPanel>
+            <!--Secondary Order Details -->
+            <apex:outputPanel rendered="{!hasSecondaryOrders}">
+                <table style="border: none; margin-top:0;">
+                     <tr > <td><b><u>Today's Secondary Order Details</u></b></td></tr> 
+                    <tr >
+                        <td>
+                            <!-- Detailed Information Table -->
+                            <table class="table" >
+                                <thead style="display: table-header-group;">
+                                    <tr>
+                                        <th style="width:4%">S.No.</th>
+                                        <th style="width:26%">Sku Name</th>
+                                        <th style="width:14%">Category</th>
+                                        <th style="width:14%">PJP Quantity (in Kg)</th> 
+                                        <th style="width:14%">NON PJP Quantity(in Kg)</th>
+                                        <th style="width:14%">Total Quantity (in Kg)</th>
+                                        <th style="width:14%">Total Amount (INR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="display: table-row-group;">
+                                    <apex:repeat value="{!secondaryOItemList}" var="itm">
+                                        <tr>
+                                            <td class="data-cell">{!itm.index}</td>
+                                            <td class="data-cell">{!itm.skuName}</td>
+                                            <td class="data-cell">{!itm.category}</td>
+                                            <td class="data-cell">{!itm.pjpQuantity}</td>
+                                            <td class="data-cell">{!itm.nonPJPQuantity}</td>
+                                            <td class="data-cell">{!itm.totalQuantity}</td>
+                                            <td class="data-cell">{!itm.totalAmount}</td>
+                                        </tr>
+                                    </apex:repeat>
+                                    <tr >
+                                        
+                                        <td class="data-cell"></td>
+                                        <td class="data-cell">Total</td>
+                                        <td class="data-cell"></td>
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalSecondaryPjpQuantity != null, totalSecondaryPjpQuantity, 0)}" />
+                                        </td>
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalSecondaryNonPjpQuantity != null, totalSecondaryNonPjpQuantity, 0)}" />
+                                        </td>
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalSecondaryQuantity != null, totalSecondaryQuantity, 0)}" />
+                                        </td>
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalSecondaryAmount != null,totalSecondaryAmount, 0)}" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                  <br/>
+            </apex:outputPanel>
+            <!--Collection Details-->
+            <apex:outputPanel rendered="{!hasCollections}">
+                <table style="border: none; margin-top:0;">
+                    <tr ><td><b><u>Today's Collection details</u></b></td></tr>  
+                    <tr >
+                        <td>
+                            <!-- Detailed Information Table -->
+                            <table class="table" >
+                                <thead style="display: table-header-group;">
+                                    <tr>
+                                        <th style="width:4%">S.No.</th>
+                                        <th style="width:48%">Transaction Mode</th>
+                                        <th style="width:48%">Amount (INR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="display: table-row-group;">
+                                    <apex:repeat value="{!collectionList}" var="itm">
+                                        <tr>
+                                            <td class="data-cell">{!itm.index}</td>
+                                            <td class="data-cell">{!itm.transactionMode}</td>
+                                            <td class="data-cell">{!itm.amount}</td>
+                                        </tr>
+                                    </apex:repeat>
+                                    <tr >
+                                        
+                                        <td class="data-cell"></td>
+                                        <td class="data-cell">Total</td>
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalCollectionAmount != null,totalCollectionAmount, 0)}" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                  <br/>
+            </apex:outputPanel>
+            <!--Order fulfilmemt Details -->
+            <apex:outputPanel rendered="{!hasorderfulfilments}">
+                <table style="border: none; margin-top:0;">
+                    <tr > <td><b><u>Today's Order Fulfilmemt details</u></b></td></tr>  
+                    <tr >
+                        <td>
+                            <!-- Detailed Information Table -->
+                            <table class="table" >
+                                <thead style="display: table-header-group;">
+                                    <tr>
+                                        <th style="width:4%">S.No.</th>
+                                        <th style="width:32%">SKU</th>
+                                        <th style="width:32%">Category</th>
+                                        <th style="width:32%">Total Quantity (in Kg)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="display: table-row-group;">
+                                    <apex:repeat value="{!orderfulfilmentList}" var="itm">
+                                        <tr>
+                                            <td class="data-cell">{!itm.index}</td>
+                                            <td class="data-cell">{!itm.skuName}</td>
+                                            <td class="data-cell">{!itm.category}</td>
+                                            <td class="data-cell">{!itm.totalQuantity}</td>
+                                        </tr>
+                                    </apex:repeat>
+                                    <tr >
+                                        
+                                        <td class="data-cell"></td>
+                                        <td class="data-cell">Total</td>
+                                        <td class="data-cell"></td>
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(totalOrderfulfilmemtQuantity != null, totalOrderfulfilmemtQuantity, 0)}" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                  <br/>
+            </apex:outputPanel>
+            
+
+            <div style="font-size:17px; margin-bottom:20px; text-align:left;"> 
+                <p><b>{!tomorrowBeatLabl}</b> {!tomorrowsBEAT}</p>
+                <p><b>{!totalOutletsinTomorrowsBEATlebel}</b> {!totalOutletsinTomorrowsBEAT}</p>
+                <p><b>3.Day Start Time :</b> {!attendanceTime}</p>
+                <p><b>4.First Call Time :</b> {!startCallTime}</p>
+                <p><b>5.End Call Time :</b> {!endCalTime}</p>
+                <p><b>6.EOD Time :</b> {!eodTime}</p>
+                <p><b>7.Total Distance Covered (In Km by System) :</b> {!totalDistanceCovered}</p>
+                <p><b>8.Total Distance Covered (In Km by Odometer) :</b> {!totalDistanceCoveredOdometer}</p>
+            </div>
+        </body>
+    </html>
+</apex:page>

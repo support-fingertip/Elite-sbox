@@ -1,0 +1,16 @@
+<template>
+    <template if:true={typeAttributes}>
+		<template for:each={typeAttributes.files} for:item="file">
+	<div key={file.id}>
+		<a href={file.downloadUrl} target="_blank" title={file.title}>
+			<lightning-icon icon-name="doctype:attachment" alternative-text="Attachment" size="x-small"></lightning-icon>
+			{file.title}
+		</a>
+	</div>
+	</template>
+
+    </template>
+    <template if:false={typeAttributes}>
+        <p>No Files</p>
+    </template>
+</template>

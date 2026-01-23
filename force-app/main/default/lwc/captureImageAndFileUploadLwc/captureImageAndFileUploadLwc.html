@@ -1,0 +1,63 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div style="overflow: hidden;">
+            <c-loading-screen size={loadingScreenSize} ></c-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <!--capture image-->
+        <template if:true={showCameraModal}>
+            <c-capture-image-lwc
+                record-id={recordId}
+                unique-id={uniqueId}
+                open-camera-value={isCameraOpen}
+                oncamerastopped={handleCameraStopped}
+                lwc:ref="captureImageCmp">
+            </c-capture-image-lwc>
+        </template>
+        <!--File Upload-->
+        <template if:false={showCameraModal}>
+            <div class="slds-text-align_center slds-box" style="margin-top:10px">
+                <template if:true={isDesktop}>
+                    <lightning-file-upload
+                        label=""
+                        record-id={recordId}
+                        multiple
+                        onuploadfinished={handleUploadFinished}>
+                    </lightning-file-upload>
+                </template>
+                <template if:true={isPhone}>
+                    <div class="icon-container" onclick={openCamera}>
+                        <lightning-icon icon-name="action:add_photo_video" size="small" class="icon"></lightning-icon>
+                        <div class="icon-label">Open Camera</div>
+                    </div>
+                </template>
+                <!--Uploaded Files-->
+                <template if:true={showUploadedFiles}>
+                    <table class="slds-table slds-table_bordered slds-table_fixed-layout slds-m-top_small slds-m-bottom_small">
+                        <tbody>
+                            <template for:each={uploadedFiles} for:item="file">
+                                <tr key={file.Id}>
+                                    <td class="slds-cell-wrap" width="80%">
+                                        <a href="javascript:void(0);" data-id={file.Id} onclick={previewFile}>
+                                            {file.Title}
+                                        </a>
+                                    </td>
+                                    <td width="20%">
+                                        <lightning-button-icon
+                                            icon-name="utility:delete"
+                                            data-id={file.Id}
+                                            onclick={deleteFile}
+                                            alternative-text="Delete"
+                                            title="Delete"
+                                        ></lightning-button-icon>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
+            </div>
+        </template>
+    </template>
+</template>

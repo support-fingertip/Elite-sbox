@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Effective_Man_Hours__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+AND(NOT(ISBLANK(Day_started_time__c)), NOT(ISBLANK( Last_Visit__r.Actual_Start_Time__c ))),
+TEXT(
+FLOOR((Last_Visit__r.Actual_Start_Time__c - Day_started_time__c) * 24)
+) &amp; &quot; hrs &quot; &amp;
+TEXT(
+ROUND(MOD((Last_Visit__r.Actual_Start_Time__c - Day_started_time__c) * 1440, 60), 0)
+) &amp; &quot; mins&quot;,
+NULL
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Effective Man Hours</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

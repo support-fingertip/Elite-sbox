@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Territoty_Mandatory</fullName>
+    <active>true</active>
+    <errorConditionFormula>Customer_Type__c == &apos;Primary Customer&apos;
+&amp;&amp;
+ISBLANK( Area__c )</errorConditionFormula>
+    <errorDisplayField>Area__c</errorDisplayField>
+    <errorMessage>Please Fill the Territory</errorMessage>
+</ValidationRule>

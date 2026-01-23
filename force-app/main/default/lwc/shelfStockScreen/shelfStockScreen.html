@@ -1,0 +1,266 @@
+<template>
+    <!-- When page is loading -->
+    <template lwc:if={isPageLoaded}>  
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+    
+    <!-- When page loaded -->
+    <template lwc:else>
+        <div class="home">
+            <div class="tasks"> 
+                <!--All Products-->
+                <template lwc:if={showAllProducts}>
+                    <template for:each={shelfStockData} for:item="rtn" for:index="index">
+                        <div  key={rtn.index}  class="slds-card border">
+                            <template if:true={isPhone}>
+                                <div class="slds-card__header" style="text-align:right">
+                                    <lightning-button-icon 
+                                    icon-name="utility:delete"
+                                    onclick={removeReturnRow} 
+                                    data-index={index}>
+                                    </lightning-button-icon>
+                                    <lightning-button-icon 
+                                        icon-name="utility:add"
+                                        onclick={addReturnRow}
+                                        data-index={index}>
+                                    </lightning-button-icon>
+                                </div>
+                            </template>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <div class="slds-grid slds-wrap">
+                                    <!--SKU Search-->
+                                    <div class={productcustomClass}>
+                                        <div class="slds-m-right_xx-small slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                        <lightning-input
+                                                            label="SKU"
+                                                            data-index={index}
+                                                            type="search"
+                                                            value={rtn.SKU_Name__c} 
+                                                            data-id="skufield" 
+                                                            message-when-value-missing="Search SKU"
+                                                            placeholder="Select SKU"
+                                                            onchange={handleSKUSearch}
+                                                            required="true">
+                                                        </lightning-input> 
+                                                    </div>
+                                                    <template lwc:if={rtn.isShowSKU}>
+                                                        <div id={rtn.index} class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                            <template for:each={searchedSkus} for:item="srch">
+                                                                <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                    <li role="presentation" class="slds-listbox__item">
+                                                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                    onclick={selectSKU} data-id={srch.Id} data-name={srch.Name}  data-index={index} data-uom={srch.UOM__c}>
+                                                                        <lightning-icon 
+                                                                            icon-name="standard:product_service_campaign_item" size="small">
+                                                                        </lightning-icon>
+                                                                        <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                        <span class="slds-media__body">
+                                                                        <span class="slds-truncate" title={srch.Name}>
+                                                                            <span>{srch.Name}</span>
+                                                                        </span>
+                                                                        </span>
+                                                                    </div>
+                                                                    </li>
+                                                                </ul>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Quanity-->
+                                    <div class={customClass}>
+                                        <lightning-input
+                                            label="Sales Quantity"
+                                            data-index={index}
+                                            type="number"
+                                            name="Sales_Quantity__c"
+                                            value={rtn.Sales_Quantity__c} 
+                                            data-id="returnFields" 
+                                            message-when-value-missing="Enter Quantity"
+                                            placeholder="Enter Quantity"
+                                            required="true"
+                                            onchange={handleInputChange}>
+                                        </lightning-input> 
+                                    </div>
+                                    <!--Stock Level-->
+                                    <div class={customClass}>
+                                        <lightning-input
+                                            label="Stock Level"
+                                            data-index={index}
+                                            type="text"
+                                            name="Stock_Level__c"
+                                            value={rtn.Stock_Level__c} 
+                                            data-id="returnFields" 
+                                            required="true"
+                                            message-when-value-missing="Enter Stock Level."
+                                            onchange={handleInputChange}>
+                                        </lightning-input> 
+                                    </div>
+                                     <!--Reason for Return-->
+                                    <div class={customClass}>
+                                        <lightning-input
+                                            label="Comments"
+                                            data-index={index}
+                                            data-id="returnFields" 
+                                            name="Comments__c"
+                                            value={rtn.Comments__c}
+                                            dropdown-alignment="auto"
+                                            message-when-value-missing="Enter Comments"
+                                             onchange={handleInputChange}>
+                                        </lightning-input>
+                                    </div>
+                                    <div class={customClass}>
+                                        <lightning-input
+                                            label="Compition Remarks"
+                                            data-index={index}
+                                            data-id="returnFields" 
+                                            name="Compition_Remarks__c"
+                                            value={rtn.Compition_Remarks__c}
+                                            dropdown-alignment="auto"
+                                            message-when-value-missing="Enter Compition Remarks"
+                                            
+                                            
+                                            onchange={handleInputChange}>
+                                        </lightning-input>
+                                    </div>
+                                
+
+                                    <template if:true={isDesktop}>
+                                        <div class={buttoncustomClass} style="text-align: right;padding-top:25px">
+                                            <lightning-button-icon 
+                                            icon-name="utility:delete"
+                                            onclick={removeReturnRow} 
+                                            data-index={index}>
+                                            </lightning-button-icon>
+                                            <lightning-button-icon 
+                                                icon-name="utility:add"
+                                                onclick={addReturnRow}
+                                                data-index={index}>
+                                            </lightning-button-icon>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <!-- Summary product -->
+                <template lwc:if={isSummaryProduct}>
+
+                    <div class="slds-text-align_center slds-box" style="margin:10px">
+                        <!-- Desktop File Upload -->
+                        <template if:true={isDesktop}>
+                            <lightning-file-upload
+                                label="Upload Files"
+                                accept=".jpg,.png,.jpeg"
+                                multiple
+                                onuploadfinished={handleUploadFinished}>
+                            </lightning-file-upload>
+                        </template>
+                
+                        <!-- Mobile Camera Icon -->
+                        <template if:false={isDesktop}>
+                            
+                                <c-capture-image-lwc
+                                record-id={userId}
+                                unique-id={uniqueId}
+                                open-camera-value={isCameraOpen}
+                                oncamerastopped={handleCameraStopped}
+                                lwc:ref="captureImageCmp">
+                            </c-capture-image-lwc>
+                            
+                        </template>
+                
+                        <!-- Uploaded Files -->
+                        <template if:true={uploadedDocIds}>
+                            <table class="slds-table slds-table_bordered slds-table_fixed-layout slds-m-top_small slds-m-bottom_small">
+                                <tbody>
+                                    <template for:each={uploadedDocIds} for:item="file">
+                                        <tr key={file.id}>
+                                            <td class="slds-cell-wrap" width="80%">
+                                                <a href="javascript:void(0);" data-id={file.id} onclick={previewFile}>
+                                                    {file.name}
+                                                </a>
+                                            </td>
+                                            <td width="20%">
+                                                
+                                                <lightning-button-icon
+                                                    icon-name="utility:delete"
+                                                    data-id={file.id}
+                                                    onclick={deleteFile}
+                                                    alternative-text="Delete"
+                                                    title="Delete"
+                                                ></lightning-button-icon>
+                                                
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                    </div>
+                    <div class="task-button pointer slds-m-top_x-small" onclick={save}>Save Shelf Stock </div>
+                    <lightning-card style="margin-top:10px;">
+                        <div style="margin:10px;">
+                            <div class="slds-grid slds-grid_align-spread slds-m-bottom_small" style="font-size: 15px;padding-left:5px;padding-right:5px">
+                                <div>
+                                    <b>Shelf Stock Items</b>
+                                </div>
+                            </div>
+                            
+                            <div class="custom-table-container">
+                            <table class="slds-table custom-scroll-table">
+                                <thead>
+                                    <tr>
+                                        <th class="sticky-col left-col">SKU</th>
+                                        <th class="sticky-col second-col">Sales Quantity</th>
+                                        <th>Stock Level</th>
+                                        <th>Comments</th>
+                                        <th>Compition Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={shelfStockData} for:item="item">
+                                        <tr key={item.SKU_Name__c}>
+                                            <td class="sticky-col left-col">{item.SKU_Name__c}</td>
+                                            <td class="sticky-col second-col">{item.Sales_Quantity__c}</td>
+                                            <td>{item.Stock_Level__c}</td>
+                                            <td>{item.Comments__c}</td>
+                                            <td>{item.Compition_Remarks__c}</td>
+                                        </tr>
+                                    </template>
+                                    <tr>
+                                        <td class="sticky-col left-col"><b>Total</b></td>
+                                        <td class="sticky-col second-col"><b>{totalSalesQuantity}</b></td>
+                                        <td><b>{totalSalesStock}</b></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </lightning-card>
+                </template>
+            </div>
+            <div class="screen-3-bottom-bar">
+                <div class="bottom-bar-item pointer" onclick={selectedProduct} data-name="SelectedItems">
+                    <!-- <i class="material-symbols-outlined" style="font-size: 16px;">all_out</i> -->
+                    All items
+                </div>
+                <div class="bottom-bar-item pointer" onclick={selectedProduct} data-name="Summary">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.33 6.624C12.4295 6.71145 12.4902 6.83481 12.4988 6.96698C12.5075 7.09916 12.4633 7.22936 12.376 7.329L8.876 11.329C8.83097 11.3806 8.77581 11.4224 8.71396 11.4518C8.6521 11.4812 8.58487 11.4976 8.51643 11.4999C8.44798 11.5023 8.37978 11.4905 8.31606 11.4654C8.25234 11.4403 8.19446 11.4024 8.146 11.354L6.146 9.354C6.09951 9.30751 6.06264 9.25232 6.03748 9.19158C6.01232 9.13084 5.99937 9.06574 5.99937 9C5.99937 8.93426 6.01232 8.86916 6.03748 8.80842C6.06264 8.74768 6.09951 8.69249 6.146 8.646C6.19249 8.59951 6.24768 8.56264 6.30842 8.53748C6.36916 8.51232 6.43426 8.49937 6.5 8.49937C6.56574 8.49937 6.63084 8.51232 6.69158 8.53748C6.75232 8.56264 6.80751 8.59951 6.854 8.646L8.476 10.268L11.624 6.671C11.7113 6.57137 11.8346 6.51046 11.9668 6.50165C12.099 6.49284 12.2302 6.53684 12.33 6.624ZM3 6C3 5.20435 3.31607 4.44129 3.87868 3.87868C4.44129 3.31607 5.20435 3 6 3H12C12.7956 3 13.5587 3.31607 14.1213 3.87868C14.6839 4.44129 15 5.20435 15 6V12C15 12.7956 14.6839 13.5587 14.1213 14.1213C13.5587 14.6839 12.7956 15 12 15H6C5.20435 15 4.44129 14.6839 3.87868 14.1213C3.31607 13.5587 3 12.7956 3 12V6ZM6 4C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V12C4 12.5304 4.21071 13.0391 4.58579 13.4142C4.96086 13.7893 5.46957 14 6 14H12C12.5304 14 13.0391 13.7893 13.4142 13.4142C13.7893 13.0391 14 12.5304 14 12V6C14 5.46957 13.7893 4.96086 13.4142 4.58579C13.0391 4.21071 12.5304 4 12 4H6ZM5.754 16C6.304 16.614 7.101 17 7.99 17H12.49C13.0809 17 13.6661 16.8836 14.2121 16.6575C14.758 16.4313 15.2541 16.0998 15.672 15.682C16.0898 15.2641 16.4213 14.768 16.6475 14.2221C16.8736 13.6761 16.99 13.0909 16.99 12.5V8C16.99 7.116 16.607 6.32 15.999 5.772V11C15.999 11.1 15.9957 11.1997 15.989 11.299V12.499C15.989 13.4273 15.6203 14.3175 14.9639 14.9739C14.3075 15.6303 13.4173 15.999 12.489 15.999H11.055L10.999 16H5.754Z" fill="white"/>
+                    </svg>   
+                    Summary
+                </div>
+            </div>
+        </div>
+    </template>
+
+</template>

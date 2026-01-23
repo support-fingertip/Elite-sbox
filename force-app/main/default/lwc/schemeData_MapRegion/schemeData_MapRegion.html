@@ -1,0 +1,79 @@
+<template>
+    <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading-01" class="slds-modal slds-fade-in-open">
+                    
+        <div class="slds-modal__container">
+            <lightning-button-icon class="slds-button slds-button_icon slds-modal__close" icon-name="utility:close" disabled={isDisable.allFields}  onclick={closePopup}>
+
+            </lightning-button-icon>
+            
+            <div class="slds-modal__header">
+                <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate" tabindex="-1">Map Region</h1>
+            </div>
+
+            <div class="slds-modal__content slds-p-around_medium customHeight" id="modal-content-id-1">
+                
+                <!-- When page is loading -->
+                <template lwc:if={isPageLoaded}> 
+                    <c-on-loading-screen></c-on-loading-screen>
+                </template>
+                <!-- When page loaded -->
+                <template lwc:else> 
+
+                    <lightning-input 
+                        type="search"
+                        label="Search"
+                        class="search-input" 
+                        autocomplete="off" 
+                        name="area"
+                        placeholder="Search...." 
+                        value={values.search} 
+                        onchange={handleSearch}
+                        disabled={isDisable.allFields}>
+                    </lightning-input>
+                    <template lwc:if={isCustomer}>
+                        <div  class="slds-grid slds-wrap">
+                            <div  class="slds-col slds-size_1-of-2 slds-p-around_small">
+                                <lightning-combobox 
+                                    label="Select Area" 
+                                    value={selectedArea} 
+                                    options={formattedAreaData} 
+                                    onchange={handleAreaChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div  class="slds-col slds-size_1-of-2 slds-p-around_small">
+                                <lightning-combobox 
+                                    label="Select Region" 
+                                    value={selectedRegion} 
+                                    options={formattedRegionData} 
+                                    onchange={handleRegionChange}>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+                    </template>
+                    <div  class="slds-grid slds-wrap">
+                    <template for:each={dataVal} for:item="dt" for:index="i">
+                        <div key={dt.id} class="slds-col slds-size_1-of-2">
+                        <lightning-input 
+                            type="checkbox"
+                            label={dt.name} 
+                            name="exclude" 
+                            checked={dt.isMapped}
+                            data-index={i}
+                            data-id={dt.id}
+                            data-mappingid={dt.mappingId}
+                            onchange={handleCheckBoxValue}
+                            disabled={isDisable.allFields}>
+                        </lightning-input>
+                        </div>
+                    </template>
+                    </div>
+                </template>
+            </div>
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" aria-label="Cancel and close" onclick={closePopup} disabled={isDisable.allFields}>Cancel</button>
+                <button class="slds-button slds-button_brand" onclick={saveMapping} disabled={isDisable.allFields} >Save</button>
+            </div>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+</template>

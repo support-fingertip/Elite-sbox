@@ -1,0 +1,21 @@
+<template>
+    <div class="custom-checkbox-container" onclick={handleClick}>
+        <!-- Hidden real checkbox (for form submission) -->
+        <input 
+            type="checkbox" 
+            id={inputId} 
+            checked={checked} 
+            disabled={disabled}
+            class="hidden-checkbox" 
+        />
+        
+        <!-- Custom-styled checkbox (what users see) -->
+        <span class="custom-checkbox" data-checked={checked}>
+            <!-- Checkmark (shown when checked) -->
+            <span class="checkmark" if:true={checked}></span>
+        </span>
+        
+        <!-- Label text -->
+        <label if:true={label} for={inputId}>{label}</label>
+    </div>
+</template>

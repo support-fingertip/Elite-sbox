@@ -1,0 +1,17 @@
+<aura:component implements="lightning:actionOverride,force:hasRecordId,force:hasSObjectName">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="heading" type="String"/>
+    <aura:attribute name="pageReference" type="Object"/>
+    <aura:handler name="change" value="{!v.pageReference}" action="{!c.onPageReferenceChange}" />
+    <aura:attribute name="isOrderTrue" type="boolean" default="false"/>
+    
+	<aura:if isTrue="{!v.isOrderTrue}">
+        <c:productScreen4 orderRecordId="{!v.recordId}"
+                          onClickAction = "{!c.onClickAction}"
+                          header="{!v.heading}"
+                          isOrderTrue = "{!v.isOrderTrue}"
+                          />
+    </aura:if>
+    
+</aura:component>

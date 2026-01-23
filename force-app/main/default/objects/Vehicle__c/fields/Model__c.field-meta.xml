@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Model__c</fullName>
+    <externalId>false</externalId>
+    <label>Model</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Eicher Pro 2049</fullName>
+                <default>false</default>
+                <label>Eicher Pro 2049</label>
+            </value>
+            <value>
+                <fullName>Eicher Pro 3015</fullName>
+                <default>false</default>
+                <label>Eicher Pro 3015</label>
+            </value>
+            <value>
+                <fullName>Eicher Pro 3019</fullName>
+                <default>false</default>
+                <label>Eicher Pro 3019</label>
+            </value>
+            <value>
+                <fullName>Eicher Pro 2110</fullName>
+                <default>false</default>
+                <label>Eicher Pro 2110</label>
+            </value>
+            <value>
+                <fullName>Eicher Pro 2059</fullName>
+                <default>false</default>
+                <label>Eicher Pro 2059</label>
+            </value>
+            <value>
+                <fullName>Eicher Pro 3018</fullName>
+                <default>false</default>
+                <label>Eicher Pro 3018</label>
+            </value>
+            <value>
+                <fullName>Eicher Pro 2095XP</fullName>
+                <default>false</default>
+                <label>Eicher Pro 2095XP</label>
+            </value>
+            <value>
+                <fullName>Tata Intra V10</fullName>
+                <default>false</default>
+                <label>Tata Intra V10</label>
+            </value>
+            <value>
+                <fullName>Tata 1512 LPT</fullName>
+                <default>false</default>
+                <label>Tata 1512 LPT</label>
+            </value>
+            <value>
+                <fullName>Tata 709g LPT</fullName>
+                <default>false</default>
+                <label>Tata 709g LPT</label>
+            </value>
+            <value>
+                <fullName>Tata Signa 5530.S</fullName>
+                <default>false</default>
+                <label>Tata Signa 5530.S</label>
+            </value>
+            <value>
+                <fullName>Tata Intra V20 Bi Fuel</fullName>
+                <default>false</default>
+                <label>Tata Intra V20 Bi Fuel</label>
+            </value>
+            <value>
+                <fullName>Ashok Leyland 5525-6x4</fullName>
+                <default>false</default>
+                <label>Ashok Leyland 5525-6x4</label>
+            </value>
+            <value>
+                <fullName>Ashok Leyland Partner 4 Tyre</fullName>
+                <default>false</default>
+                <label>Ashok Leyland Partner 4 Tyre</label>
+            </value>
+            <value>
+                <fullName>Ashok Leyland Partner 6 Tyre</fullName>
+                <default>false</default>
+                <label>Ashok Leyland Partner 6 Tyre</label>
+            </value>
+            <value>
+                <fullName>BharatBenz 2823C</fullName>
+                <default>false</default>
+                <label>BharatBenz 2823C</label>
+            </value>
+            <value>
+                <fullName>BharatBenz 1917R</fullName>
+                <default>false</default>
+                <label>BharatBenz 1917R</label>
+            </value>
+            <value>
+                <fullName>BharatBenz 1217C</fullName>
+                <default>false</default>
+                <label>BharatBenz 1217C</label>
+            </value>
+            <value>
+                <fullName>BharatBenz 4828R</fullName>
+                <default>false</default>
+                <label>BharatBenz 4828R</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

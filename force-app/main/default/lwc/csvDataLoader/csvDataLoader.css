@@ -1,0 +1,79 @@
+.custom-container{
+	color : black;
+}
+
+/* Apply padding to the grid */
+.slds-grid {
+    padding: 5px;
+     display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+/* Hide elements with the .responsiveHide class on smaller screens */
+@media (max-width: 700px) {
+    .responsiveHide {
+        display: none !important;
+    }
+}
+
+/* Hide the table on smaller screens (max-width: 800px) */
+@media (max-width: 800px) {
+    .records-table {
+        display: none;
+    }
+}
+
+/* Hide the tiles on larger screens (min-width: 800px) */
+@media (min-width: 800px) {
+    .records-tiles {
+        display: none;
+    }
+}
+
+.slds-col {
+    margin-bottom: 1rem; /* Add margin for spacing between buttons */
+}
+
+@media (max-width: 768px) {
+    .slds-grid {
+        justify-content: center;
+    }
+
+    .slds-col {
+        width: 100% !important; /* Stack buttons vertically on smaller screens */
+        text-align: center; /* Center the buttons */
+    }
+    /* Adjust the font size for mobile */
+    .slds-card__body_inner {
+        font-size: 12px;
+    }
+
+
+    .slds-media__body h2 {
+        font-size: 18px; /* Reduce header size for mobile */
+        text-align: center; /* Center the title on mobile */
+    }
+     .records-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .slds-table th, .slds-table td {
+        white-space: nowrap;
+    }
+    .button-container {
+        align-items: center; /* Center the buttons */
+        display: flex;
+        flex-wrap: wrap;
+    }
+}
+.slds-table {
+    width: 100%;
+}
+.button-container {
+    display: flex;
+    gap: 10px;
+    padding: 10px; 
+
+}

@@ -1,0 +1,191 @@
+<template>
+    <!-- Primary Order Form -->
+    <template if:true={ShowAll}>
+        <div style="padding:10px;">
+            <div class="order-head">
+                <h3 class="order-title">New Primary Order</h3>
+                <div class="order-filters">
+                    <button class="actionButton"
+                        onclick={handleNext}>Next</button>
+                    <button class="actionButton1"
+                        onclick={handleCancel}>Cancel</button>
+                </div>
+            </div>
+
+            <div class="contacts-table slds-p-around_medium">
+                <!-- Iterate over orderItems -->
+                <template for:each={orderItems} for:item="item"
+                    for:index="index">
+                    <div key={item.id} class="order-item-row">
+
+                        <!-- Product Search -->
+                        <div class="product-col" style="position: relative;">
+                            <lightning-input
+                                label="Product"
+                                type="search"
+                                value={item.productName}
+                                required
+                                data-index={index}
+                                onfocus={handleProductFocus}
+                                onchange={handleProductSearch}>
+                            </lightning-input>
+
+                            <template if:true={item.showSuggestions}>
+                                <div class="suggestion-box" role="listbox">
+                                    <ul
+                                        class="slds-listbox slds-listbox_vertical"
+                                        role="presentation">
+                                        <template
+                                            for:each={item.filteredProducts}
+                                            for:item="prod">
+                                            <li key={prod.value}
+                                                role="presentation"
+                                                class="slds-listbox__item">
+                                                <div
+                                                    class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                    role="option"
+                                                    onclick={selectProduct}
+                                                    data-index={index}
+                                                    data-id={prod.value}
+                                                    style="cursor: pointer;">
+                                                    <span
+                                                        class="slds-media__figure slds-listbox__option-icon">
+                                                        <lightning-icon
+                                                            icon-name="standard:product"
+                                                            size="small"
+                                                            alternative-text="Product"
+                                                            class="slds-icon slds-icon_small">
+                                                        </lightning-icon>
+                                                    </span>
+                                                    <span
+                                                        class="slds-media__body">
+                                                        <span
+                                                            class="slds-truncate"
+                                                            title={prod.label}>{prod.label}</span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="quantity-col">
+                            <lightning-input
+                                label="Quantity"
+                                type="number"
+                                min="0"
+                                value={item.quantity}
+                                data-index={index}
+                                required
+                                onchange={handleQuantityChange}>
+                            </lightning-input>
+                        </div>
+                         <!-- Unit Price -->
+                        <div class="unit-price-col">
+                            <lightning-input
+                                label="Unit Price"
+                                value={item.unitPrice}
+                                disabled>
+                            </lightning-input>
+                        </div>
+                        <!-- Tax Percent -->
+                        <div class="tax-percent-col">
+                            <lightning-input
+                                label="Tax %"
+                                type="number"
+                                value={item.taxpercent}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                        <!-- Tax Amount -->
+                        <div class="tax-amount-col">
+                            <lightning-input
+                                label="Tax Amount"
+                                value={item.taxAmount}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                       
+
+                        <!-- Amount -->
+                        <div class="amount-col">
+                            <lightning-input
+                                label="Total Amount"
+                                value={item.amount}
+                                disabled>
+                            </lightning-input>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="actions-col">
+                            <lightning-button-icon
+                                icon-name="utility:delete"
+                                alternative-text="Remove Row"
+                                data-index={index}
+                                onclick={removeRow}
+                                class="large-icon"
+                                variant="bare"
+                                title="Remove Row">
+                            </lightning-button-icon>
+
+                            <lightning-button-icon
+                                icon-name="utility:add"
+                                alternative-text="Add Row"
+                                onclick={addRow}
+                                class="large-icon"
+                                variant="bare"
+                                title="Add Row">
+                            </lightning-button-icon>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- Order Summary -->
+    <template if:true={showSummary}>
+        <h3 class="summary-heading">Order Summary</h3>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Rate(₹)</th>
+                    <th>Tax Percent(%)</th>
+                    <th>Tax Amount(₹)</th>
+                    <th>Total (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={summaryItems} for:item="item">
+                    <tr key={item.id}>
+                        <td>{item.name}</td>
+                        <td>{item.quantity}</td>
+                        <td>{item.priceFormatted}</td>
+                        <td>{item.taxpercent}%</td>
+                        <td>₹{item.taxAmount}</td>
+                        <td>{item.totalFormatted}</td>
+                    </tr>
+                </template>
+               
+            </tbody>
+             <tr class="grand-total-row">
+                    <td colspan="5">Grand Total</td>
+                    <td>{grandTotalFormatted}</td>
+                </tr>
+        </table>
+
+        <div class="btn-row">
+            <button class="btn-back-save " onclick={handleBack}>Back</button>
+            <button class="btn-back-save " onclick={handleSave}>Save Order</button>
+        </div>
+    </template>
+     <c-custom-toast auto-close-time="8000"></c-custom-toast>
+</template>

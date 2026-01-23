@@ -1,0 +1,92 @@
+<template>
+    <lightning-card>
+        <!-- Custom header -->
+        <div slot="title" class="slds-media slds-media_center slds-grid slds-grid_align-spread">
+            <div class="slds-media__figure">
+                <lightning-icon icon-name="custom:custom63" size="small" alternative-text="Order Items"></lightning-icon>
+            </div>
+            <div class="slds-media__body">
+                <span class="slds-text-heading_small">
+                    Transactions ({orderItemsCount})
+                </span>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <lightning-input 
+            type="search" 
+            label="Search Products" 
+            value={searchKey} 
+            onchange={handleSearch}
+            style="margin: 5px 10px;"
+        ></lightning-input>
+
+        <template lwc:if={isLoading}>
+            <c-loading-screen size="1"></c-loading-screen>
+        </template>
+        <template lwc:else>
+            <!-- Table -->
+            <template if:true={showOrderItems}>
+                <div class="table-container" style="margin:10px">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th class="minwidth">SKU</th>
+                                <th class="minwidth">Each Qty</th>
+                                <th class="minwidth">Case Qty</th>
+                                <th class="minwidth">Unit Price</th>
+                                <th class="minwidth">Tax %</th>
+                                <th class="minwidth">Non Taxable Amt</th>
+                                <th class="minwidth">Tax Amt</th>
+                                <th class="minwidth">Total Amt</th>
+                                <th class="minwidth">Order Net Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Group by Date -->
+                            <template for:each={groupedOrderItems} for:item="group">
+                                <!-- Date Header -->
+                                <tr key={group.date} >
+                                    <td colspan="1" style="font-weight:bold; background:#f4f6f9;">
+                                        {group.date}
+                                    </td>
+                                    <td colspan="8" style="font-weight:bold; background:#f4f6f9;">
+                            
+                                    </td>
+                                </tr>
+
+                                <!-- Rows for that Date -->
+                                <template for:each={group.items} for:item="row">
+                                    <tr key={row.Id}>
+                                        <td>
+                                            <a href={row.productUrl} target="_blank" style="color: blue; text-decoration: underline;">
+                                                {row.ProductName}
+                                            </a>
+                                        </td>
+                                        <td>{row.eachQuantity}</td>
+                                        <td>{row.CaseQuantity}</td>
+                                        <td>{row.UnitPrice}</td>
+                                        <td>{row.taxPercent} %</td>
+                                        <td>{row.AmountWithOutTax}</td>
+                                        <td>{row.taxAmount}</td>
+                                        <td>{row.totalAmount}</td>
+                                        <td>{row.NetWeight}</td>
+                                    </tr>
+                                </template>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- No Records -->
+            <template if:false={showOrderItems}>
+                <div class="slds-truncate" style="text-align:center">
+                    <span style="color:red;padding:10px;font-size:large">
+                        No records found!
+                    </span>
+                </div>
+            </template>
+        </template>
+    </lightning-card>
+</template>
