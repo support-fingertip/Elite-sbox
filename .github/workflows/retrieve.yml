@@ -1,19 +1,17 @@
-name: Changeonly Deploy to Salesforce
+name: Retrieve from Salesforce
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  retrieve:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       
       - name: Install Salesforce CLI
         run: |
@@ -25,32 +23,15 @@ jobs:
           echo "${{ secrets.SALESFORCE_AUTH_URL }}" > authfile.txt
           sf org login sfdx-url --sfdx-url-file authfile.txt --alias deployment-org --set-default
       
-      - name: Deploy changed metadata only
+      - name: Retrieve from Salesforce
         run: |
-          PREV="${{ github.event.before }}"
-          CURR="${{ github.sha }}"
+          sf project retrieve start --manifest manifest/package.xml --target-org deployment-org
       
-          echo "Previous commit: $PREV"
-          echo "Current commit:  $CURR"
-          
-          git fetch --all --prune
-          
-          if git cat-file -e "$PREV"^{commit}; then
-            echo "Previous commit exists. Using git diff."
-            CHANGED_FILES=$(git diff --name-only "$PREV" "$CURR" | grep '^force-app/' || true)
-          else
-            echo "Previous commit not found. Falling back to last commit."
-            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '^force-app/' || true)
-          fi
-      
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-          
-          if [ -z "$CHANGED_FILES" ]; then
-            echo "No Salesforce metadata changes found. Skipping deploy."
-          else
-            sf project deploy start \
-              --source-dir $CHANGED_FILES \
-              --target-org deployment-org \
-              --wait 30
-          fi
+      - name: Commit changes to GitHub
+        run: |
+          rm -f authfile.txt
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git diff --quiet && git diff --staged --quiet || git commit -m "Retrieved changes from Salesforce [skip ci]"
+          git push
