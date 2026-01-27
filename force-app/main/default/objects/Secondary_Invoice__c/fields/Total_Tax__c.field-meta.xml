@@ -3,10 +3,11 @@
     <fullName>Total_Tax__c</fullName>
     <externalId>false</externalId>
     <label>Total Tax</label>
-    <summarizedField>Secondary_Invoice_Item__c.Tax_Amount__c</summarizedField>
-    <summaryForeignKey>Secondary_Invoice_Item__c.Secondary_Invoice__c</summaryForeignKey>
-    <summaryOperation>sum</summaryOperation>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
-    <type>Summary</type>
+    <type>Number</type>
+    <unique>false</unique>
 </CustomField>

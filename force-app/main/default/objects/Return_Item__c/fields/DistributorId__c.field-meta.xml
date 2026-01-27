@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>DistributorId__c</fullName>
     <externalId>false</externalId>
-    <formula>IF( TEXT(Customer_Type__c) ==&apos;Primary Customer&apos;,CASESAFEID(Return__r.Customer__c), CASESAFEID(Return__r.Distributor__c))</formula>
+    <formula>IF( Customer_Type_formula__c ==&apos;Primary Customer&apos;,CASESAFEID(Return__r.Customer__c), CASESAFEID(Return__r.Distributor__c))</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <label>DistributorId</label>
     <required>false</required>

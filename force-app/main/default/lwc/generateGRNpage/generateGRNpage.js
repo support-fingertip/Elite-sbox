@@ -116,7 +116,7 @@ export default class GenerateGRNpage extends LightningElement {
             ) {
                 this.showToast(
                     'Error',
-                    `Received Quantity missing for item at row ${item.rowIndex}.`,
+                    `Received Saleable Or Non-Saleable Quantity missing for item at row ${item.rowIndex}.`,
                     'error'
                 );
                 return; // Stop further execution

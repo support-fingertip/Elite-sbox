@@ -6,7 +6,7 @@
     <referenceTo>Distributor_Stock__c</referenceTo>
     <relationshipLabel>Secondary Invoice Items</relationshipLabel>
     <relationshipName>Secondary_Invoice_Items</relationshipName>
-    <relationshipOrder>1</relationshipOrder>
+    <relationshipOrder>0</relationshipOrder>
     <reparentableMasterDetail>false</reparentableMasterDetail>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>

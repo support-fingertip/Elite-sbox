@@ -6,6 +6,7 @@ import saveSecondaryInvoice from '@salesforce/apex/DMSPortalLwc.saveSecondaryInv
 
 export default class DmsPortal extends LightningElement {
     @api selectedOrderIds;
+    @api selectedOrderId;
     @api selectedCustomerName;
     @api selectedCustomerId;
     @track orderList = [];
@@ -13,60 +14,44 @@ export default class DmsPortal extends LightningElement {
     @track invoiceItems = [];
     remarks = '';
     customerName = '';
+    isSubPartLoad = false;
     invoiceDate = new Date().toISOString().split('T')[0];
 
     // Replaced this.showInvoiceScreen with this.isGenerateInvoice
     isSubPartLoad = false;
 
     connectedCallback() {
+        console.log('ordrId --'+this.selectedOrderId);
         this.getorderItems()
     }
 
-
-
-
     getorderItems() {
-        getOrderItems({ orderIds: this.selectedOrderIds })
+        this.isSubPartLoad = true;
+
+        getOrderItems({ orderId: this.selectedOrderId })
             .then(data => {
-                const aggregatedMap = new Map();
 
-                data.forEach(item => {
-                    const key = item.ProductId;
-
-                    if (aggregatedMap.has(key)) {
-                        const existing = aggregatedMap.get(key);
-
-                        existing.Quantity += Number(item.Quantity);
-                        existing.TaxAmount += Number(item.TaxAmount);
-                        existing.TotalAmount += Number(item.TotalAmount);
-                        // Available qty should NOT be summed (same stock)
-                    } else {
-                        aggregatedMap.set(key, {
-                            ...item,
-                            Quantity: Number(item.Quantity),
-                            TaxAmount: Number(item.TaxAmount),
-                            TotalAmount: Number(item.TotalAmount),
-                            availableQuantity: Number(item.availableQuantity)
-                        });
-                    }
-                });
-
-                this.invoiceItems = Array.from(aggregatedMap.values()).map(item => ({
+                // Directly process items (no aggregation needed)
+                const invitems = data.map(item => ({
                     ...item,
-                    TaxAmount: item.TaxAmount.toFixed(2),
-                    TotalAmount: item.TotalAmount.toFixed(2)
+                    Quantity: Number(item.Quantity),
+                    TaxAmount: Number(item.TaxAmount).toFixed(2),
+                    TotalAmount: Number(item.TotalAmount).toFixed(2),
+                    availableQuantity: Number(item.availableQuantity)
                 }));
+
+                this.invoiceItems = this.addRowIndex(invitems);
 
                 this.customerName = this.invoiceItems[0]?.CustomerName || '';
                 this.isGenerateInvoice = true;
+                this.isSubPartLoad = false;
             })
             .catch(error => {
                 console.error('Error fetching order items:', error);
                 this.showToast('Error', 'Failed to load order items', 'error');
+                this.isSubPartLoad = false;
             });
     }
-
-
 
     handleQuantityChange(event) {
         const itemId = event.target.dataset.id;
@@ -82,7 +67,6 @@ export default class DmsPortal extends LightningElement {
                         "Invoice Qty can't be more than Available Qty.",
                         'error'
                     );
-                    return item;
                 }
 
                 //  Valid quantity → update values
@@ -98,9 +82,6 @@ export default class DmsPortal extends LightningElement {
         });
     }
 
-
-
-
     handleSave() {
         try {
             console.log('handleSave called');
@@ -112,28 +93,36 @@ export default class DmsPortal extends LightningElement {
             }
 
             const payload = [];
-
+            let totalQuantity = 0;
+            let totalTax = 0;
+            let grandTotal = 0;
             for (let item of this.invoiceItems) {
 
                 // Quantity validation
                 if (!item.Quantity || item.Quantity <= 0) {
                     this.showToast(
                         'Validation Error',
-                        'Please add a valid Quantity.',
+                        `Row ${item.rowIndex}: Please add a valid Quantity.`,
                         'error'
                     );
                     return;
                 }
 
-                //  Available Quantity validation
-                if (item.availableQuantity !== undefined && item.Quantity > item.availableQuantity) {
+                // Available Quantity validation
+                if (
+                    item.availableQuantity !== undefined &&
+                    item.Quantity > item.availableQuantity
+                ) {
                     this.showToast(
                         'Validation Error',
-                        `Invoice Qty for ${item.ProductName} can't be more than Available Qty (${item.availableQuantity}).`,
+                        `Row ${item.rowIndex} (${item.ProductName}): Invoice Qty can't be more than Available Qty (${item.availableQuantity}).`,
                         'error'
                     );
-                    return; //  Stop save
+                    return;
                 }
+                totalQuantity += Number(item.Quantity) || 0;
+                totalTax += Number(item.TaxAmount) || 0;
+                grandTotal += Number(item.TotalAmount) || 0;
 
                 payload.push({
                     sobjectType: 'Secondary_Invoice_Item__c',
@@ -143,8 +132,10 @@ export default class DmsPortal extends LightningElement {
                     Quantity__c: item.Quantity,
                     Unit_Price__c: item.UnitPrice,
                     Tax_Amount__c: item.TaxAmount,
+                    Tax_Percent__c : item.TaxPercent,
                     Order_Item__c: item.OrderItemId,
-                    Total_Amount__c: item.TotalAmount
+                    Total_Amount__c: item.TotalAmount,
+                    Order_Item__c : item.OrderItemId
                 });
             }
 
@@ -154,7 +145,11 @@ export default class DmsPortal extends LightningElement {
                 Invoice_Date__c: this.invoiceDate,
                 Customer_Name__c: this.selectedCustomerName,
                 Status__c: 'Raised',
-                Remarks__c : this.remarks
+                Remarks__c: this.remarks,
+                Order__c :  this.selectedOrderId,
+                Total_Tax__c: totalTax,
+                Grand_Total__c: grandTotal,
+                Total_Quantity__c: totalQuantity
             };
 
             if (!secondaryInvoicePayload.Store__c || !secondaryInvoicePayload.Invoice_Date__c) {
@@ -200,16 +195,23 @@ export default class DmsPortal extends LightningElement {
             );
         }
     }
-    onUpdateRemakrs(event)
-    {
+    onUpdateRemakrs(event) {
         var remarks = event.target.value;
         this.remarks = remarks;
     }
-    
 
     handleCancel() {
         // this.resetToOrderList();
         this.dispatchEvent(new CustomEvent('cancel'));
+    }
+
+    addRowIndex(data) {
+        return data.map((row, index) => {
+            return {
+                ...row,
+                rowIndex: index + 1
+            };
+        });
     }
 
     resetToOrderList() {

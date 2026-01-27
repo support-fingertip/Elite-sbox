@@ -1,7 +1,8 @@
-<apex:page controller="GTInvoiceController"
-           renderAs="pdf"
-           showHeader="false"
-           sidebar="false">
+<apex:page extensions="GTInvoiceController"
+           standardController="Secondary_Invoice__c" 
+           renderAs="pdf"  
+           showHeader="false" standardStylesheets="false"  
+           applyBodyTag="false" applyHtmlTag="false">
     
     <html>
         <head>
@@ -254,40 +255,37 @@
                 <!-- Company Header Section -->
                 <div class="company-header">
                     <div class="company-left">
-                        <strong>From - Sri Guru Krupa Agency</strong><br/>
-                        No1-892/25/271,Laxminarayana Nagar,Gulbarga,585103<br/>
-                        <strong>Phone:9448651786</strong><br/>
-                        <strong>Email Id:</strong>
+                        <strong>From - {!wrapper.distributorName}</strong><br/>
+                        {!wrapper.distributorAddress}<br/>
+                        <strong>Phone: {!wrapper.distributorPhone}</strong><br/>
+                        <strong>Email Id: {!wrapper.distributorEmail}</strong>
                     </div>
                     <div class="company-right">
                         <!--<span class="elite-logo">Elite</span><br/> -->
                         <div style="float: right; margin-top: -3px;">
                             <apex:image value="{!URLFOR($Resource.eliteLogo)}" style="width:40px; height:20px;"/>
                         </div>
-                        <strong>GSTIN NO. : 29ABXPR5933R1Z2</strong><br/>
+                        <strong>GSTIN NO. : {!wrapper.distributoGst}</strong><br/>
                         <strong>FSSAI NO. :</strong><br/><br/>
-                        <strong>Invoice No: 7</strong><br/>
-                        <strong>Invoice date : 25-10-2024</strong><br/>
-                        <strong>PO date: 00-00-0000</strong><br/>
-                        <strong>PO No:</strong>
+                        <strong>Invoice No:{!wrapper.invoiceNo}</strong><br/>
+                        <strong>Invoice date : {!wrapper.invoiceDate}</strong><br/>
+                        <strong>PO date: {!wrapper.poDate}</strong><br/>
+                        <strong>PO No: {!wrapper.poNo}</strong>
                     </div>
                 </div>
                 
                 <!-- Address Section -->
                 <div class="address-section">
                     <div class="address-left">
-                        <strong>To- 6961 , Basaveshwar k/s_TEST</strong><br/>
-                        <strong>belgangadar tasildar chouk</strong><br/>
-                        <strong>Gulbarga - 585103</strong><br/>
-                        <strong>KARNATAKA - 29</strong><br/>
-                        <strong>Phone: +919748254644</strong>
+                        <strong>To - {!wrapper.dealerName}</strong><br/>
+                        <strong>{!wrapper.dealerAddress}</strong><br/>
+                        <strong>Phone: {!wrapper.dealerPhone} </strong>
                     </div>
                     <div class="address-right">
-                        <strong>GSTIN NO. :</strong><br/>
+                        <strong>GSTIN NO. : {!wrapper.dealerGst}</strong><br/>
                         <strong>FSSAI NO. :</strong><br/>
-                        <strong>Salesman Name: Surya Prasad C</strong><br/>
-                        <strong>Naik_60058</strong><br/>
-                        <strong>Beat No.: Kib Mek Hill_117090_Sri</strong><br/><br/>
+                        <strong>Salesman Name: {!wrapper.dealerExecutiveName},{!wrapper.executiveCode}</strong><br/>
+                        <strong>Beat No.: {!wrapper.beatName}</strong><br/><br/>
                         <strong>Shipping/delivery address :</strong>
                     </div>
                 </div>
@@ -317,71 +315,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Row 1 -->
-                        <tr>
-                            <td>1</td>
-                            <td>SALLRSH</td>
-                            <td>11029800</td>
-                            <td class="text-left">Low Roasted<br/>Souji 1kg</td>
-                            <td>85</td>
-                            <td>3</td>
-                            <td>5</td>
-                            <td>65</td>
-                            <td>0</td>
-                            <td>67.46</td>
-                            <td>4182.34</td>
-                            <td>2.50</td>
-                            <td>104.56</td>
-                            <td>2.50</td>
-                            <td>104.56</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td class="text-right">4,391.46</td>
-                        </tr>
-                        
-                        <!-- Row 2 -->
-                        <tr>
-                            <td>2</td>
-                            <td>FEPYD003T</td>
-                            <td>19059010</td>
-                            <td class="text-left">Country Payasam<br/>Mix 300g</td>
-                            <td>95</td>
-                            <td>3</td>
-                            <td>11</td>
-                            <td>24.9</td>
-                            <td>0</td>
-                            <td>67.09</td>
-                            <td>5166.18</td>
-                            <td>9.00</td>
-                            <td>464.96</td>
-                            <td>9.00</td>
-                            <td>464.96</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td class="text-right">6,096.09</td>
-                        </tr>
-                        
-                        <!-- Row 3 -->
-                        <tr>
-                            <td>3</td>
-                            <td>FSALAC10T</td>
-                            <td>11010000</td>
-                            <td class="text-left">Whole Wheat<br/>Chakki Atta 10kg</td>
-                            <td>603</td>
-                            <td>35</td>
-                            <td>0</td>
-                            <td>700</td>
-                            <td>0</td>
-                            <td>448.66</td>
-                            <td>31406</td>
-                            <td>2.50</td>
-                            <td>785.15</td>
-                            <td>2.50</td>
-                            <td>785.15</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td class="text-right">32,976.30</td>
-                        </tr>
+                        <apex:repeat value="{!invoiceItemList}" var="itm">
+                            <tr>
+                                <td>{!itm.index}</td>
+                                <td>{!itm.skuCode}</td>
+                                <td>{!itm.hsnCode}</td>
+                                <td>{!itm.skuName}</td>
+                                <td>{!itm.mrp}</td>
+                                <td>{!itm.qtyinCases}</td>
+                                <td>{!itm.quantity}</td>
+                                <td>{!itm.qtyinKg}</td>
+                                <td>0</td>
+                                <td>{!itm.unitPrice}</td>
+                                <td>{!itm.taxableAmount}</td>
+                                
+                                <td>{!itm.cgstPecentage}</td>
+                                <td>{!itm.cgstAmount}</td>
+                                <td>{!itm.sgstPercenate}</td>
+                                <td>{!itm.sgstAmount}</td>
+                                <td>{!itm.igstPercenate}</td>
+                                <td>{!itm.igstAmount}</td>
+                                
+                                <td>
+                                    <apex:outputText value="{!IF(itm.totalAmount != null, itm.totalAmount, 0)}" />
+                                </td>
+                                
+                                
+                            </tr>
+                        </apex:repeat>
                         
                         <!-- Empty Rows for spacing -->
                         <tr>
@@ -489,19 +450,19 @@
                         <tr class="total-row">
                             <td colspan="4" class="text-left" style="padding-left: 10px;"><strong>Total</strong></td>
                             <td></td>
-                            <td><strong>41</strong></td>
-                            <td><strong>16</strong></td>
-                            <td><strong>789.90025</strong></td>
+                            <td><strong>{!totalQtyinCases}</strong></td>
+                            <td><strong>{!totalQuantity}</strong></td>
+                            <td><strong>{!totalQtyinkg}</strong></td>
                             <td><strong>0</strong></td>
                             <td></td>
-                            <td><strong>40754.52</strong></td>
+                            <td><strong>{!totalTaxableAmount}</strong></td>
                             <td></td>
-                            <td><strong>1354.66</strong></td>
+                            <td><strong>{!totalCgstAmount}</strong></td>
                             <td></td>
-                            <td><strong>1354.66</strong></td>
-                            <td><strong>0</strong></td>
+                            <td><strong>{!totalSgstAmount}</strong></td>
                             <td></td>
-                            <td class="text-right"><strong>43463.85</strong></td>
+                            <td><strong>{!totalIgstAmount}</strong></td>
+                            <td ><strong>{!totalAmount}</strong></td>
                         </tr>
                         
                         <!-- Summary Rows -->
@@ -515,7 +476,7 @@
                         </tr>
                         <tr class="summary-row">
                             <td colspan="17" class="text-left"><strong>Grand Total</strong></td>
-                            <td class="text-right"><strong>43463.85</strong></td>
+                            <td class="text-right"><strong>{!totalAmount}</strong></td>
                         </tr>
                         <tr class="summary-row">
                             <td colspan="17" class="text-left"><strong>Adjusted credit note amount is :</strong></td>
@@ -527,14 +488,14 @@
                         </tr>
                         <tr class="summary-row">
                             <td colspan="17" class="text-left"><strong>Net Total :</strong></td>
-                            <td class="text-right"><strong>43463.85</strong></td>
+                            <td class="text-right"><strong>{!totalAmount}</strong></td>
                         </tr>
                     </tbody>
                 </table>
                 
                 <!-- Amount in Words -->
                 <div class="amount-words">
-                    <strong>Amount In Words : Forty Three Thousand Four Hundred And Sixty Three Rupees &amp; Eighty Five Paise Only</strong>
+                    <strong>Amount In Words : {!finalAmtinWords}</strong>
                 </div>
                 
                 <!-- GST Details -->
@@ -543,14 +504,10 @@
                 </div>
                 <div class="gst-section">
                     <div class="gst-left">
-                        <strong>2.50% on Amt: 37367.76 is 35588.34 CGST: 889.71</strong><br/><br/>
-                        <strong>2.50% on Amt: 37367.76 is 35588.34 SGST: 889.71</strong>
+                        <strong>2.50% on Amt: {!totalAmount} is {!totalTaxableAmount} CGST: {!totalCgstAmount}</strong><br/><br/>
+                        <strong>2.50% on Amt: {!totalAmount} is {!totalTaxableAmount} SGST: {!totalSgstAmount}</strong>
                     </div>
                     <div class="gst-right">
-                        <strong>9.00% on Amt: 6096.09 is</strong><br/>
-                        <strong>5166.18 CGST: 464.96</strong><br/>
-                        <strong>9.00% on Amt: 6096.09 is</strong><br/>
-                        <strong>5166.18 SGST: 464.96</strong>
                     </div>
                 </div>
                 
@@ -572,8 +529,7 @@
                         with seal
                     </div>
                     <div class="signature-right">
-                        For Sri Guru Krupa<br/>
-                        Agency<br/><br/>
+                        For {!wrapper.distributorName}<br/>
                         Signature
                     </div>
                 </div>

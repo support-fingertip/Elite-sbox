@@ -25,11 +25,23 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
+                <field>Status__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
                 <field>Order__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Status__c</field>
+                <field>Total_Quantity__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Grand_Total__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Total_Tax__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>
@@ -40,18 +52,6 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Invoice_Date__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Readonly</behavior>
-                <field>Total_Tax__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Readonly</behavior>
-                <field>Grand_Total__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Readonly</behavior>
-                <field>Total_Quantity__c</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsTopToBottom</style>
@@ -99,16 +99,7 @@
         </platformActionListItems>
     </platformActionList>
     <relatedLists>
-        <excludeButtons>MassChangeOwner</excludeButtons>
-        <excludeButtons>New</excludeButtons>
         <fields>NAME</fields>
-        <fields>Product__c</fields>
-        <fields>Quantity__c</fields>
-        <fields>Tax_Percent__c</fields>
-        <fields>Tax_Amount__c</fields>
-        <fields>Unit_Price__c</fields>
-        <fields>Total_Amount__c</fields>
-        <fields>CREATED_DATE</fields>
         <relatedList>Secondary_Invoice_Item__c.Secondary_Invoice__c</relatedList>
     </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>

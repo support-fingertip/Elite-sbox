@@ -1,6 +1,8 @@
 <template>
     <template lwc:if={isPageLoaded}>
-        <c-on-loading-screen></c-on-loading-screen>
+        <div style="margin:40px">
+            <c-on-loading-screen></c-on-loading-screen>
+        </div>
     </template>
 
     <template lwc:else>
@@ -55,13 +57,14 @@
                     <!-- Table Header -->
                     <div class="slds-grid slds-gutters slds-p-around_small slds-theme_shade"
                         style="font-weight: bold; border-bottom: 2px solid #dddbda; align-items: center;">
+                        <div class="slds-col" style="flex: 0 0 5%; max-width: 5%; min-width: 0;">S/No.</div>
                         <div class="slds-col" style="flex: 0 0 25%; max-width: 25%; min-width: 0;">Product</div>
                         <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">Saleable Qty</div>
                         <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">Non-Saleable Qty</div>
                         <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">Unit Price</div>
-                        <div class="slds-col" style="flex: 0 0 10%; max-width: 12%; min-width: 0;">Amount</div>
+                        <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">Amount</div>
                         <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">UOM</div>
-                        <div class="slds-col" style="flex: 0 0 20%; max-width: 18%; min-width: 0;">Reason</div>
+                        <div class="slds-col" style="flex: 0 0 15%; max-width: 15%; min-width: 0;">Reason</div>
                         <div class="slds-col" style="flex: 0 0 5%; max-width: 5%; min-width: 0; text-align: right;">
                             Actions</div>
                     </div>
@@ -70,7 +73,10 @@
                     <template for:each={returnItems} for:item="item" for:index="index">
                         <div key={item.id} class="slds-grid slds-gutters slds-p-around_small slds-border_bottom"
                             style="align-items: center;">
-
+                            <!-- Saleable Quantity -->
+                            <div class="slds-col" style="flex: 0 0 5%; max-width: 5%; min-width: 0;">
+                                {item.rowIndex}
+                            </div>
                             <!-- Product Search -->
                             <div class="slds-col"
                                 style="flex: 0 0 25%; max-width: 25%; min-width: 0; position: relative;">
@@ -104,14 +110,14 @@
 
                             <!-- Saleable Quantity -->
                             <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">
-                                <lightning-input variant="label-hidden" type="number" value={item.quantity}
-                                    data-index={index} required onchange={handleQuantityChange} placeholder="Qty">
+                                <lightning-input variant="label-hidden" type="number" value={item.saleableQuantity}
+                                    data-index={index} required onchange={handleSalableQuantityChange} placeholder="Qty">
                                 </lightning-input>
                             </div>
                             <!--Non-Saleable Quantity -->
                             <div class="slds-col" style="flex: 0 0 10%; max-width: 10%; min-width: 0;">
-                                <lightning-input variant="label-hidden" type="number" value={item.quantity}
-                                    data-index={index} required onchange={handleQuantityChange} placeholder="Qty">
+                                <lightning-input variant="label-hidden" type="number" value={item.nonSaleableQuantity}
+                                    data-index={index} required onchange={handleNonSalableQuantityChange} placeholder="Qty">
                                 </lightning-input>
                             </div>
 
@@ -134,7 +140,7 @@
                             </div>
 
                             <!-- Reason -->
-                            <div class="slds-col" style="flex: 0 0 20%; max-width: 20%; min-width: 0; ">
+                            <div class="slds-col" style="flex: 0 0 15%; max-width: 15%; min-width: 0; ">
                                 <div style="width: 100%;">
                                     <lightning-combobox variant="label-hidden" value={item.reason} required
                                         options={resonForReturnOptions} data-index={index} onchange={handleReasonChange}

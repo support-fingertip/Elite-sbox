@@ -15,6 +15,7 @@ import GET_GRN_DATA from '@salesforce/apex/DMSPortalLwc.getGRNData';
 import DMSIcon from '@salesforce/resourceUrl/DMS_LOGO';
 import FORM_FACTOR from '@salesforce/client/formFactor';
 import { NavigationMixin } from 'lightning/navigation';
+import { CloseActionScreenEvent } from 'lightning/actions';
 import createPaymentWithItems from '@salesforce/apex/DMSPortalLwc.createPaymentWithItems';
 import getSecondaryOrders from '@salesforce/apex/DMSPortalLwc.getSecondaryOrders';
 import DMS_Offer1 from '@salesforce/resourceUrl/DMS_Offer1';
@@ -33,18 +34,20 @@ import getGRNItems from '@salesforce/apex/DMSPortalLwc.getGRNItems';
 import getSecondaryReturnItems from '@salesforce/apex/DMSPortalLwc.getSecondaryReturnItems';
 import getSecondaryInvoiceItems from '@salesforce/apex/DMSPortalLwc.getSecondaryInvoiceItems';
 import getOrderItems from '@salesforce/apex/DMSPortalLwc.getOrderItems';
+import getOrderlineItems from '@salesforce/apex/DMSPortalLwc.getOrderlineItems';
 import getInvoices from '@salesforce/apex/InvoiceController.getInvoices';
 import getPrimaryInvoices from '@salesforce/apex/InvoiceController.getPrimaryInvoices';
 import getUsers from '@salesforce/apex/DMSPortalLwc.getUsers';
 import getSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getSecondaryCustomers';
 import getInvoicePdfUrl from '@salesforce/apex/DMSPortalLwc.getInvoicePdfUrl';
-
+import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockAdjustments';
+import orgUrl from '@salesforce/label/c.orgUrl';
 const TAB_WIDTH = 135;     // realistic average width per tab
 const RESERVED_WIDTH = 250; // logo + profile + spacing
 
 export default class NavigationComponent extends LightningElement {
     //Varible related to tab Function
-    @track selectedTab  = 'Home';
+    @track selectedTab = 'Home';
     @track showMoreMenu = false;
     @track visibleTabCount = 0;
 
@@ -58,9 +61,9 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Claims', label: 'Claims' },
         { id: 'Stock', label: 'Stock' },
         { id: 'Secondary Orders', label: 'Secondary Orders' },
-        { id: 'Secondary Invoices', label: 'Secondary Invoices'},
-        { id: 'Secondary Returns', label: 'Secondary Returns'},
-        { id: 'Secondary Customers', label: 'Seondary Customers'},
+        { id: 'Secondary Invoices', label: 'Secondary Invoices' },
+        { id: 'Secondary Returns', label: 'Secondary Returns' },
+        { id: 'Secondary Customers', label: 'Seondary Customers' },
         { id: 'Users', label: 'Users' },
         { id: 'Stock Adjustment', label: 'Stock Adjustment' }
     ];
@@ -115,6 +118,7 @@ export default class NavigationComponent extends LightningElement {
     @track isSubPartLoad = false;
 
     selectedOrderIds = [];
+    selectedorderId;
     selectedCustomerName = [];
     selectedCustomerId = '';
 
@@ -187,8 +191,12 @@ export default class NavigationComponent extends LightningElement {
         toDate: '',
         orderType: '',
         isOrderDataExisted: false,
-        status: 'All',
-        statusVal: [],
+        status: 'Invoice Pending',
+        statusVal: [
+            { label: 'Invoice Pending', value: 'Invoice Pending' },
+            { label: 'Partially Invoiced', value: 'Partially Invoiced' },
+            { label: 'Fully Invoiced', value: 'Fully Invoiced' }
+        ],
         allordData: [],
         originalOrdData: []
     };
@@ -290,11 +298,21 @@ export default class NavigationComponent extends LightningElement {
         isDataExisted: false,
     };
 
+    @track stockAdjustmentFilter = {
+        fromDate: '',
+        srchVal: '',
+        toDate: '',
+        statusVal: [],
+        allStockAdjuments: [],
+        originalStockAdjustments: [],
+        isDataExisted: false,
+    };
+
     @track secoundaryCustomerFilter = {
         allSecondaryCustomers: [],
         originalSecondaryCustomers: [],
-        searchCustomer :'',
-        isshowData :false
+        searchCustomer: '',
+        isshowData: false
     };
 
     isSubPartLoad = false;
@@ -305,17 +323,17 @@ export default class NavigationComponent extends LightningElement {
     isPopupLoading = false;
     userList = [];
     allUsers = [];
-    searchKey ='';
+    searchKey = '';
     isShowSecondaryCustomers = false;
     invoiceIdToDownloadPdf = '';
-
+    isShowNewAdjustStock = false;
 
 
     /*Dynamic Tabs */
     get primaryTabs() {
         return this.allTabs.slice(0, this.visibleTabCount).map(tab => ({
             ...tab,
-            cssClass: this.selectedTab  === tab.id
+            cssClass: this.selectedTab === tab.id
                 ? 'nav-item selected'
                 : 'nav-item'
         }));
@@ -324,7 +342,7 @@ export default class NavigationComponent extends LightningElement {
     get overflowTabs() {
         return this.allTabs.slice(this.visibleTabCount).map(tab => ({
             ...tab,
-            cssClass: this.selectedTab  === tab.id
+            cssClass: this.selectedTab === tab.id
                 ? 'more-menu-item selected'
                 : 'more-menu-item'
         }));
@@ -351,13 +369,13 @@ export default class NavigationComponent extends LightningElement {
         }
 
         loadScript(this, XLSX)
-        .then(() => {
-            this.xlsxJsLibrary = window.XLSX;  // Make sure the XLSX object is available globally
-            console.log('XLSX library loaded successfully!');
-        })
-        .catch((error) => {
-            console.error('Error loading XLSX library', error);
-        });
+            .then(() => {
+                this.xlsxJsLibrary = window.XLSX;  // Make sure the XLSX object is available globally
+                console.log('XLSX library loaded successfully!');
+            })
+            .catch((error) => {
+                console.error('Error loading XLSX library', error);
+            });
     }
 
     disconnectedCallback() {
@@ -388,7 +406,7 @@ export default class NavigationComponent extends LightningElement {
     };
     selectTab(event) {
         const tabId = event.currentTarget.dataset.id;
-        this.selectedTab  = tabId;
+        this.selectedTab = tabId;
         this.showMoreMenu = false;
 
         const selectedIndex = this.allTabs.findIndex(tab => tab.id === tabId);
@@ -445,10 +463,11 @@ export default class NavigationComponent extends LightningElement {
         this.showusers = false;
         this.isShowSecondaryCustomers = false;
         this.showStockAdjustment = false;
+        this.isShowNewAdjustStock = false;
     }
- 
+
     selectedTabFunction() {
-        this.resetAllFlags();  
+        this.resetAllFlags();
 
         switch (this.selectedTab) {
 
@@ -512,7 +531,7 @@ export default class NavigationComponent extends LightningElement {
                 this.getSecoundaryReturnData();
                 break;
 
-            case 'users':
+            case 'Users':
                 this.showusers = true;
                 this.getUserData();
                 break;
@@ -523,11 +542,95 @@ export default class NavigationComponent extends LightningElement {
                 break;
             case 'Stock Adjustment':
                 this.showStockAdjustment = true;
+                this.getStockAdjustmentsWithFilter();
                 break;
 
             default:
                 break;
         }
+    }
+
+    /**Stock Adjustments */
+    getStockAdjustmentsWithFilter() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.stockAdjustmentFilter.fromDate = formatDate(firstDate);
+        this.stockAdjustmentFilter.toDate = formatDate(lastDate);
+        this.stockAdjustmentFilter.status = 'All';
+        this.stockAdjustmentData();
+    }
+
+    stockAdjustmentData() {
+        this.isSubPartLoad = true;
+        const { status, fromDate, toDate } = this.stockAdjustmentFilter;
+        getStockAdjustments({
+            frmDate: fromDate,
+            toDate: toDate,
+            status: status
+        })
+            .then(result => {
+                console.log('Data' + JSON.stringify(result.adjustmentTypes));
+                this.stockAdjustmentFilter.statusVal = result.adjustmentTypes;
+                this.stockAdjustmentFilter.allStockAdjuments = this.addRowIndex(result.stockAdjustmentList);
+                this.stockAdjustmentFilter.originalStockAdjustments = this.addRowIndex(result.stockAdjustmentList);
+                this.stockAdjustmentFilter.isDataExisted = this.stockAdjustmentFilter.allStockAdjuments.length != 0 ? true : false;
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+
+    handlestockAdjustmentChange(event) {
+        this.stockAdjustmentFilter[event.target.name] = event.target.value;
+        this.stockAdjustmentFilter.srchVal = '';
+        this.stockAdjustmentData();
+    }
+
+    handleStockAdjustmentSerch(event) {
+        const txt = event.target.value;
+        console.log('Searched Value: ' + txt);
+
+        // Create a shallow copy to trigger reactivity
+        this.stockAdjustmentFilter = { ...this.stockAdjustmentFilter, srchVal: txt };
+
+        if (txt.length > 0) {
+            const dataUpdate = this.stockAdjustmentFilter.originalStockAdjustments.filter(rec =>
+                (rec.productName && rec.productName.toLowerCase().includes(txt.toLowerCase()))
+            );
+            const indexedData = this.addRowIndex(dataUpdate);
+            this.stockAdjustmentFilter = {
+                ...this.stockAdjustmentFilter,
+                allStockAdjuments: indexedData,
+                isDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            const indexedData = this.addRowIndex(this.stockAdjustmentFilter.originalStockAdjustments);
+            this.stockAdjustmentFilter = {
+                ...this.stockAdjustmentFilter,
+                allStockAdjuments: indexedData,
+                isDataExisted: this.stockAdjustmentFilter.originalStockAdjustments.length !== 0 ? true : false
+            };
+        }
+    }
+
+    handlerNewStockAdjustmentClick() {
+        this.resetAllFlags();
+        this.isShowNewAdjustStock = true;
+    }
+
+    handleNewStockAdjustmentCancel() {
+        this.resetAllFlags();
+        this.showStockAdjustment = true;
+    }
+    handleStockAdjustmentCreation() {
+        this.resetAllFlags();
+        this.showStockAdjustment = true;
+        this.getStockAdjustmentsWithFilter();
     }
 
 
@@ -572,8 +675,8 @@ export default class NavigationComponent extends LightningElement {
                     Manager: u.Manager_Name__c
                 }));
 
-                this.allUsers = mappedUsers;        
-                this.userList = [...mappedUsers];     
+                this.allUsers = mappedUsers;
+                this.userList = [...mappedUsers];
 
                 this.isSubPartLoad = false;
             })
@@ -608,11 +711,11 @@ export default class NavigationComponent extends LightningElement {
 
         getSecondaryCustomers()
             .then(result => {
-                console.log('data'+JSON.stringify(result.customerData ))
+                console.log('data' + JSON.stringify(result.customerData))
                 this.secoundaryCustomerFilter.originalSecondaryCustomers = result.customerData || [];
                 this.secoundaryCustomerFilter.allSecondaryCustomers = result.customerData || [];
                 this.secoundaryCustomerFilter.isshowData =
-                result.customerData && result.customerData.length > 0;
+                    result.customerData && result.customerData.length > 0;
             })
             .catch(error => {
                 console.error('Error fetching secondary customers:', error);
@@ -660,7 +763,7 @@ export default class NavigationComponent extends LightningElement {
         const formatDate = (date) => date.toLocaleDateString('en-CA');
         this.ordFilter.fromDate = formatDate(firstDate);
         this.ordFilter.toDate = formatDate(lastDate);
-        this.ordFilter.status = 'All';
+        this.ordFilter.status = 'Invoice Pending';
         this.ordFilter.orderType = this.selectedTab == 'Secondary Orders' ? 'Dealer' : 'Distributor';
         this.OrderData();
     }
@@ -672,7 +775,7 @@ export default class NavigationComponent extends LightningElement {
         const formatDate = (date) => date.toLocaleDateString('en-CA');
         this.ordFilter.fromDate = formatDate(firstDate);
         this.ordFilter.toDate = formatDate(lastDate);
-        this.ordFilter.status = 'All';
+        this.ordFilter.status = 'Invoice Pending';
         this.ordFilter.orderType = 'Dealer';
         this.secoundaryOrderData();
     }
@@ -687,7 +790,6 @@ export default class NavigationComponent extends LightningElement {
         })
             .then(result => {
                 console.log('result.TotalOrderData' + result.TotalOrderData);
-                this.ordFilter.statusVal = result.statusOptions;
                 this.ordFilter.allordData = this.addRowIndex(result.TotalOrderData);
                 this.ordFilter.originalOrdData = this.addRowIndex(result.TotalOrderData);
                 this.ordFilter.isOrderDataExisted = this.ordFilter.allordData.length != 0 ? true : false;
@@ -721,7 +823,7 @@ export default class NavigationComponent extends LightningElement {
                     }
                 });
 
-                this.ordFilter.statusVal = result.statusOptions;
+                //this.ordFilter.statusVal = result.statusOptions;
                 this.ordFilter.allordData = this.addRowIndex(uniqueOrders);
                 this.ordFilter.originalOrdData = this.addRowIndex(uniqueOrders);
                 this.ordFilter.isOrderDataExisted = uniqueOrders.length !== 0;
@@ -732,6 +834,20 @@ export default class NavigationComponent extends LightningElement {
                 console.error('Error fetching orders: ', error);
                 this.isSubPartLoad = false;
             });
+    }
+    handleSecondaryOrderStatusChange(event) {
+        this.ordFilter.status = event.detail.value;
+        // Reapply filter logic based on the selected status
+        this.secoundaryOrderData();
+    }
+
+    get isdableSecondaryOrderbutton() {
+        return this.ordFilter?.status === 'Fully Invoiced';
+    }
+    get secondaryOrderButtonClass() {
+        return this.isdableSecondaryOrderbutton
+            ? 'actionButton disabledButton'
+            : 'actionButton';
     }
 
     // Handle filter changes
@@ -748,7 +864,7 @@ export default class NavigationComponent extends LightningElement {
         this.secoundaryOrderData();
     }
 
-   // Handle search
+    // Handle search
     handleOrdSerch(event) {
         const txt = event.target.value;
         console.log('Searched Value: ' + txt);
@@ -776,9 +892,10 @@ export default class NavigationComponent extends LightningElement {
                 }
             });
 
+
             this.ordFilter = {
                 ...this.ordFilter,
-                allordData: uniqueOrders,
+                allordData: indexedData,
                 isOrderDataExisted: uniqueOrders.length !== 0
             };
 
@@ -796,7 +913,6 @@ export default class NavigationComponent extends LightningElement {
             };
         }
     }
-
 
     addRowIndex(data) {
         return data.map((row, index) => {
@@ -826,8 +942,6 @@ export default class NavigationComponent extends LightningElement {
         this.calculateTotalTax();
     }
 
-
-
     handleSecondaryOrderNoClick(event) {
         const orderId = event.target.dataset.id;  // Get the Order ID
         const orderNo = event.target.textContent; // Get the Order Number
@@ -849,7 +963,7 @@ export default class NavigationComponent extends LightningElement {
         this.isSubPartLoad = true;
 
         // Fetch Secondary Order Items for the selected Secondary Order ID (pass it as an array)
-        getOrderItems({ orderIds: [orderId] })  // Pass orderId in an array to match the Apex method signature
+        getOrderlineItems({ orderId: orderId })  // Pass orderId in an array to match the Apex method signature
             .then(items => {
                 console.log('Loaded secondary order items:', JSON.stringify(items));
                 this.secondaryOrderItems = items.map(item => ({
@@ -861,6 +975,8 @@ export default class NavigationComponent extends LightningElement {
                     Tax_Percent__c: item.TaxPercent || 0,  // Tax Percent
                     Unit_price__c: item.UnitPrice || 0  // Unit Price
                 }));
+
+                this.secondaryOrderItems = this.addRowIndex(this.secondaryOrderItems);
 
                 this.showSecondaryOrderItems = true; // Show Order Items table
                 this.showSecondaryOrders = false; // Hide Secondary Orders table
@@ -886,13 +1002,9 @@ export default class NavigationComponent extends LightningElement {
     }
 
     get hasSecondaryOrderItems() {
-
         console.log(this.secondaryOrderItems.length > 0);
         return this.secondaryOrderItems.length > 0;
     }
-
-
-
 
 
     /** ---Invoice Data -----**/
@@ -914,23 +1026,23 @@ export default class NavigationComponent extends LightningElement {
             frmDate: fromDate,
             toDate: toDate
         })
-        .then(result => {
-            this.InvFilter.statusVal = result.statusOptions;
-            this.InvFilter.allInvData = this.addRowIndex(result.TotalInvoiceData);
-            this.InvFilter.originalInvData = this.addRowIndex(result.TotalInvoiceData);
-            this.InvFilter.isInvoiceDataExisted = result.TotalInvoiceData.length > 0;
-        
-            // Hide invoice items table on new load
-            this.showInvoiceItems = false;
-            this.invoiceItems = [];
-            this.selectedInvoiceId = null;
+            .then(result => {
+                this.InvFilter.statusVal = result.statusOptions;
+                this.InvFilter.allInvData = this.addRowIndex(result.TotalInvoiceData);
+                this.InvFilter.originalInvData = this.addRowIndex(result.TotalInvoiceData);
+                this.InvFilter.isInvoiceDataExisted = result.TotalInvoiceData.length > 0;
 
-            this.isSubPartLoad = false;
-        })
-        .catch(error => {
-            console.error(error);
-            this.isSubPartLoad = false;
-        });
+                // Hide invoice items table on new load
+                this.showInvoiceItems = false;
+                this.invoiceItems = [];
+                this.selectedInvoiceId = null;
+
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
     }
 
     handleInvChange(event) {
@@ -977,10 +1089,9 @@ export default class NavigationComponent extends LightningElement {
         this.showPrimaryInvoices = false;
 
         this.showInvoiceItems = true; // show loading if needed
-
         getInvoiceItems({ invoiceId })
             .then(items => {
-                this.invoiceItems = items;
+                this.invoiceItems = this.addRowIndex(items);
                 this.hasInvoiceItems = this.invoiceItems.length > 0;
                 this.showInvoiceItems = true;
                 this.isSubPartLoad = false;
@@ -1030,16 +1141,18 @@ export default class NavigationComponent extends LightningElement {
                 (rec.productName && rec.productName.toLowerCase().includes(txt.toLowerCase())) ||
                 (rec.primaryReturnNo && rec.primaryReturnNo.toLowerCase().includes(txt.toLowerCase()))
             );
+            const indexedData = this.addRowIndex(dataUpdate);
             this.primaryReturnFilter = {
                 ...this.primaryReturnFilter,
-                allPReturnData: dataUpdate,
+                allPReturnData: indexedData,
                 isDataExisted: dataUpdate.length !== 0
             };
         } else {
+            const indexedData = this.addRowIndex(this.primaryReturnFilter.originalPReturnata);
             // Reset to original data when search text is empty
             this.primaryReturnFilter = {
                 ...this.primaryReturnFilter,
-                allPReturnData: this.primaryReturnFilter.originalPReturnata,
+                allPReturnData: indexedData,
                 isDataExisted: this.primaryReturnFilter.originalPReturnata.length !== 0 ? true : false
             };
         }
@@ -1068,8 +1181,8 @@ export default class NavigationComponent extends LightningElement {
         getPrimaryReturns({ frmDate: fromDate, toDate })
             .then(results => {
                 console.log('Primary Returns loaded:', results);
-                this.primaryReturnFilter.allPReturnData = results;
-                this.primaryReturnFilter.originalPReturnata = results;
+                this.primaryReturnFilter.allPReturnData = this.addRowIndex(results);
+                this.primaryReturnFilter.originalPReturnata = this.addRowIndex(results);
                 this.primaryReturnFilter.isDataExisted = results.length > 0;
                 this.isSubPartLoad = false;
                 this.showPrimaryReturnItems = false;
@@ -1092,7 +1205,7 @@ export default class NavigationComponent extends LightningElement {
         getPrimaryReturnItems({ primaryReturnId: returnId })
             .then(items => {
                 console.log('Loaded primary return items:', items);
-                this.primaryReturnItems = items;
+                this.primaryReturnItems = this.addRowIndex(items);;
                 this.showPrimaryReturnItems = true;
                 this.isSubPartLoad = false;
                 this.showPrimaryReturn = false; // Hide returns list while showing items
@@ -1155,9 +1268,9 @@ export default class NavigationComponent extends LightningElement {
                 }));
 
                 // 3. Update state with modified data
-                this.primaryPaymentsFilter.allPaymentData = dataWithTotals;
+                this.primaryPaymentsFilter.allPaymentData = this.addRowIndex(dataWithTotals);
                 this.primaryPaymentsFilter.isDataExisted = dataWithTotals.length > 0;
-                this.primaryPaymentsFilter.originalPaymentData = dataWithTotals;
+                this.primaryPaymentsFilter.originalPaymentData = this.addRowIndex(dataWithTotals);
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -1181,10 +1294,10 @@ export default class NavigationComponent extends LightningElement {
                 (rec.paymenetNo && rec.paymenetNo.toLowerCase().includes(txt)) ||
                 (rec.invoiceNo && rec.invoiceNo.toLowerCase().includes(txt))
             );
-            this.primaryPaymentsFilter.allPaymentData = filtered;
+            this.primaryPaymentsFilter.allPaymentData = this.addRowIndex(filtered);
             this.primaryPaymentsFilter.isDataExisted = filtered.length > 0;
         } else {
-            this.primaryPaymentsFilter.allPaymentData = this.primaryPaymentsFilter.originalPaymentData;
+            this.primaryPaymentsFilter.allPaymentData = this.addRowIndex(this.primaryPaymentsFilter.originalPaymentData);
             this.primaryPaymentsFilter.isDataExisted = this.primaryPaymentsFilter.originalPaymentData.length > 0;
         }
     }
@@ -1207,7 +1320,7 @@ export default class NavigationComponent extends LightningElement {
                 //alert(JSON.stringify(receipt));
                 //alert(JSON.stringify(items));
                 this.selectedReceipt = receipt;
-                this.selectedReceiptItems = items;
+                this.selectedReceiptItems = this.addRowIndex(items);
                 this.hasReceiptItems = items.length > 0;
                 this.showReceiptItems = true;
                 this.isSubPartLoad = false;
@@ -1267,10 +1380,10 @@ export default class NavigationComponent extends LightningElement {
                 (grn.Name && grn.Name.toLowerCase().includes(txt)) ||
                 (grn.Invoice__c && grn.Invoice__c.toLowerCase().includes(txt))
             );
-            this.GRNFilter.allGRNList = filtered;
+            this.GRNFilter.allGRNList = this.addRowIndex(filtered);
             this.GRNFilter.isListDataExisted = filtered.length > 0;
         } else {
-            this.GRNFilter.allGRNList = this.GRNFilter.originalGRNList;
+            this.GRNFilter.allGRNList = this.addRowIndex(this.GRNFilter.originalGRNList);
             this.GRNFilter.isListDataExisted = this.GRNFilter.originalGRNList.length > 0;
         }
     }
@@ -1283,8 +1396,8 @@ export default class NavigationComponent extends LightningElement {
         // Ensure the dates are correctly formatted and passed to Apex
         getGRNList({ frmDate: fromDate, toDate })
             .then(result => {
-                this.GRNFilter.allGRNList = result;
-                this.GRNFilter.originalGRNList = result;
+                this.GRNFilter.allGRNList = this.addRowIndex(result);
+                this.GRNFilter.originalGRNList = this.addRowIndex(result);
                 this.GRNFilter.isListDataExisted = result.length > 0;
                 this.isSubPartLoad = false;
                 this.showGrnItems = false; // Hide GRN Items view
@@ -1313,7 +1426,7 @@ export default class NavigationComponent extends LightningElement {
         // Fetch GRN items based on selected GRN Id
         getGRNItems({ grnId: grnId })
             .then(items => {
-                this.GRNFilter.allGRNItems = items;
+                this.GRNFilter.allGRNItems = this.addRowIndex(items);
                 this.GRNFilter.isItemsDataExisted = items.length > 0;
                 this.showGrnItems = true;
                 this.showPrimaryGrn = false;
@@ -1361,10 +1474,10 @@ export default class NavigationComponent extends LightningElement {
         })
             .then(result => {
                 console.log('Data' + result.totalClaimData);
-                this.claimFilter.allClaimData = result.totalClaimData;
+                this.claimFilter.allClaimData = this.addRowIndex(result.totalClaimData);
                 this.claimFilter.statusVal = result.statusOptions;
                 this.claimFilter.isDataExisted = this.claimFilter.allClaimData.length != 0 ? true : false;
-                this.claimFilter.originalClaimData = result.totalClaimData;
+                this.claimFilter.originalClaimData = this.addRowIndex(result.totalClaimData);
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -1389,15 +1502,18 @@ export default class NavigationComponent extends LightningElement {
                 (rec.description && rec.description.toLowerCase().includes(txt.toLowerCase())) ||
                 (rec.claimName && rec.claimName.toLowerCase().includes(txt.toLowerCase()))
             );
+            const indexedData = this.addRowIndex(dataUpdate);
             this.claimFilter = {
                 ...this.claimFilter,
-                allClaimData: dataUpdate,
+                allClaimData: indexedData,
                 isDataExisted: dataUpdate.length !== 0
             };
         } else {
+
+            const indexedData = this.addRowIndex(this.claimFilter.originalClaimData);
             this.claimFilter = {
                 ...this.claimFilter,
-                allClaimData: this.claimFilter.originalClaimData,
+                allClaimData: indexedData,
                 isDataExisted: this.claimFilter.originalClaimData.length !== 0 ? true : false
             };
         }
@@ -1540,10 +1656,10 @@ export default class NavigationComponent extends LightningElement {
         })
             .then(result => {
                 console.log('Data' + result.totalSecoundaryInvoiceData);
-                this.secInvFilter.statusVal = result.statusOptions
-                this.secInvFilter.allSecInvData = result.totalSecoundaryInvoiceData;
+                this.secInvFilter.statusVal = result.statusOptions;
+                this.secInvFilter.allSecInvData = this.addRowIndex(result.totalSecoundaryInvoiceData);
                 this.secInvFilter.isDataExisted = this.secInvFilter.allSecInvData.length != 0 ? true : false;
-                this.secInvFilter.originalSecInvData = result.totalSecoundaryInvoiceData;
+                this.secInvFilter.originalSecInvData = this.addRowIndex(result.totalSecoundaryInvoiceData);
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -1568,15 +1684,17 @@ export default class NavigationComponent extends LightningElement {
                 (rec.accName && rec.accName.toLowerCase().includes(txt.toLowerCase())) ||
                 (rec.name && rec.name.toLowerCase().includes(txt.toLowerCase()))
             );
+            const indexedData = this.addRowIndex(dataUpdate);
             this.secInvFilter = {
                 ...this.secInvFilter,
-                allSecInvData: dataUpdate,
+                allSecInvData: indexedData,
                 isDataExisted: dataUpdate.length !== 0
             };
         } else {
+            const indexedData = this.addRowIndex(this.secInvFilter.originalSecInvData);
             this.secInvFilter = {
                 ...this.secInvFilter,
-                allSecInvData: this.secInvFilter.originalSecInvData,
+                allSecInvData: indexedData,
                 isDataExisted: this.secInvFilter.originalSecInvData.length !== 0 ? true : false
             };
         }
@@ -1621,6 +1739,8 @@ export default class NavigationComponent extends LightningElement {
                     Total_Amount__c: item.Total_Amount__c || 0
                 }));
 
+                this.secondaryInvoiceItems = this.addRowIndex(this.secondaryInvoiceItems);
+
                 this.hasSecondaryInvoiceItems = this.secondaryInvoiceItems.length > 0;
                 this.showSecondaryInvoiceItems = true;
                 console.log(this.showSecondaryInvoiceItems);
@@ -1659,16 +1779,15 @@ export default class NavigationComponent extends LightningElement {
 
     }
 
+
+
     downloadSecondaryInvoicePdf() {
-        getInvoicePdfUrl({ recordId: this.invoiceIdToDownloadPdf })
-            .then(url => {
-                // Open PDF in new tab (downloadable)
-                console.log('url'+url);
-                window.open(url, '_blank');
-            })
-            .catch(error => {
-                console.error('Error downloading PDF', error);
-            });
+        console.log('this.invoiceIdToDownloadPdf=='+this.invoiceIdToDownloadPdf);
+        // Build URL
+        const urlOpen = `${orgUrl}/GTInvoice?id=${this.invoiceIdToDownloadPdf}`;
+
+        window.open(urlOpen, "_blank");
+
     }
 
 
@@ -1698,15 +1817,17 @@ export default class NavigationComponent extends LightningElement {
                 (rec.productName && rec.productName.toLowerCase().includes(txt.toLowerCase())) ||
                 (rec.secoundaryReturnNo && rec.secoundaryReturnNo.toLowerCase().includes(txt.toLowerCase()))
             );
+            const indexedData = this.addRowIndex(dataUpdate);
             this.secoundaryReturnFilter = {
                 ...this.secoundaryReturnFilter,
-                allSReturnData: dataUpdate,
+                allSReturnData: indexedData,
                 isDataExisted: dataUpdate.length !== 0
             };
         } else {
+            const indexedData = this.addRowIndex(this.secoundaryReturnFilter.originalSReturnata);
             this.secoundaryReturnFilter = {
                 ...this.secoundaryReturnFilter,
-                allSReturnData: this.secoundaryReturnFilter.originalSReturnata,
+                allSReturnData: indexedData,
                 isDataExisted: this.secoundaryReturnFilter.originalSReturnata.length !== 0
             };
         }
@@ -1733,9 +1854,9 @@ export default class NavigationComponent extends LightningElement {
         })
             .then(result => {
                 console.log('Data' + result.totalSecoundaryReturnData);
-                this.secoundaryReturnFilter.allSReturnData = result.totalSecoundaryReturnData;
+                this.secoundaryReturnFilter.allSReturnData = this.addRowIndex(result.totalSecoundaryReturnData);
                 this.secoundaryReturnFilter.isDataExisted = this.secoundaryReturnFilter.allSReturnData.length != 0;
-                this.secoundaryReturnFilter.originalSReturnata = result.totalSecoundaryReturnData;
+                this.secoundaryReturnFilter.originalSReturnata = this.addRowIndex(result.totalSecoundaryReturnData);
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -1768,13 +1889,16 @@ export default class NavigationComponent extends LightningElement {
         getSecondaryReturnItems({ secondaryReturnId: returnId })
             .then(items => {
                 console.log('Loaded secondary return items:', JSON.stringify(items));
-                this.secondaryReturnItems = items.map(item => ({
+                this.secondaryReturnItems = items.map((item, index) => ({
+                    rowIndex: index + 1,
                     Id: item.Id,
                     SKU__r: item.SKU__r || { Name: 'N/A' },
                     Quantity__c: item.Quantity__c || 0,
                     Reason_For_Return__c: item.Reason_For_Return__c || 'N/A',
                     Unit_Price__c: item.Unit_Price__c || 0,
-                    UOM__c: item.UOM__c || 'N/A'
+                    UOM__c: item.UOM__c || 'N/A',
+                    Nonsaleable_Quantity__c: item.Nonsaleable_Quantity__c || 0,
+                    Saleable_Quantity__c: item.Saleable_Quantity__c || 0
                 }));
 
                 // Set the flag to check if items exist
@@ -2193,10 +2317,8 @@ export default class NavigationComponent extends LightningElement {
     handleSecondaryReturnCreated(event) {
         this.isNewSecondaryReturn = false;
         this.showSecoundaryReturn = true;
+        this.showToast('Success', 'Secondary Return saved successfully', 'success');
         this.getSecoundaryReturnData();
-
-
-
     }
 
     handleSecondaryReturnCancel() {
@@ -2214,37 +2336,52 @@ export default class NavigationComponent extends LightningElement {
     handleGenerateInvoice() {
         try {
             // Get all selected orders
-            const selectedOrders = this.ordFilter.allordData.filter(row => row.isSelected);
+            const selectedOrders = this.ordFilter.allordData.filter(
+                row => row.isSelected
+            );
 
+            // No order selected
             if (selectedOrders.length === 0) {
-                this.showToast('Error', 'Please select at least one order to generate an invoice.', 'error');
+                this.showToast(
+                    'Error',
+                    'Please select one order to generate an invoice.',
+                    'error'
+                );
                 return;
             }
 
-            // Get unique customer names from selected orders
-            const customerNames = [...new Set(selectedOrders.map(order => order.customerName))];
-            const customerIds = [...new Set(selectedOrders.map(order => order.customerId))];
-
-            // Check if all selected orders belong to the same customer
-            if (customerNames.length > 1) {
-                this.showToast('Error', 'You can only generate an invoice for orders from the same customer.', 'error');
+            // More than one order selected
+            if (selectedOrders.length > 1) {
+                this.showToast(
+                    'Validation Error',
+                    'Please select only one order to generate an invoice.',
+                    'error'
+                );
                 return;
             }
 
-            // Store selected order IDs and customer name
-            this.selectedOrderIds = selectedOrders.map(order => order.orderId);
-            this.selectedCustomerName = customerNames[0];
-            this.selectedCustomerId = customerIds[0];
+            // Exactly one order selected
+            const selectedOrder = selectedOrders[0];
 
+            // Store single order details
+            this.selectedorderId = selectedOrder.orderId;
+            this.selectedCustomerName = selectedOrder.customerName;
+            this.selectedCustomerId = selectedOrder.customerId;
+
+            console.log('Selected Order Id:', this.selectedorderId);
             console.log('Selected Customer Name:', this.selectedCustomerName);
 
-            // Hide order list and show invoice generation section
+            // Hide order list and show invoice section
             this.showSecondaryOrders = false;
             this.isGenerateInvoice = true;
 
         } catch (e) {
             console.error('handleGenerateInvoice error:', e);
-            this.showToast('Error', e.message || 'Unknown error', 'error');
+            this.showToast(
+                'Error',
+                e.message || 'Unknown error occurred',
+                'error'
+            );
         }
     }
 

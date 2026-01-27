@@ -4,7 +4,7 @@
     <deleteConstraint>SetNull</deleteConstraint>
     <externalId>false</externalId>
     <label>Order</label>
-    <referenceTo>Order</referenceTo>
+    <referenceTo>Order__c</referenceTo>
     <relationshipLabel>Secondary Invoices</relationshipLabel>
     <relationshipName>Secondary_Invoices</relationshipName>
     <required>false</required>

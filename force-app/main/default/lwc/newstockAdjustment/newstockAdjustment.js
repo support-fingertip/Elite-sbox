@@ -1,295 +1,238 @@
 import { LightningElement, track } from 'lwc';
-import getAllProducts from '@salesforce/apex/DMSPortalLwc.getAllProducts';
+import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockData';
 import saveSecondaryReturn from '@salesforce/apex/DMSPortalLwc.saveSecondaryReturn';
-import searchCustomers from '@salesforce/apex/DMSPortalLwc.searchCustomers';
-export default class NewstockAdjustment extends LightningElement {
-     @track returnItems = [];
-    @track productOptions = [];
-    @track notes = '';
-    @track customerSearch = '';
-    @track customerOptions = [];
-    @track filteredCustomers = [];
-    @track selectedCustomerId = '';
-    @track showCustomerSuggestions = false;
-    resonForReturnOptions = [];
-    uomOptions = [];
+import saveStockAdjustments from '@salesforce/apex/DMSPortalLwc.saveStockAdjustments';
+export default class NewStockAdjustment extends LightningElement {
 
-    returnReasonOptions = [
-        { label: 'Damaged', value: 'Damaged' },
-        { label: 'Expired', value: 'Expired' },
-        { label: 'Non-moving', value: 'Non-moving' }
-    ];
+    @track stockAdjustments = [];
+    adjustmentTypeOptions = [];
+    productsList = [];
+    distributorId;
 
-    @track totalQuantity = 0;
-    @track totalAmount = 0;
+    totalQuantity = 0;
+    totalAmount = 0;
     isPageLoaded = false;
 
     connectedCallback() {
+        this.isPageLoaded = true;
         this.addRow();
-        getAllProducts()
-        .then(result => {
-            this.resonForReturnOptions = result.resonForReturn;
-            this.uomOptions = result.uom;
-            this.productOptions = result.productsList.map(prod => ({
-                label: prod.Name,
-                value: prod.Id,
-                price: prod.List_Price__c,
-                uom: prod.UOM__c
-            }));
-        })
-        .catch(error => {
-            this.showToast('Error loading products', error.body.message, 'error');
-        });
+
+        getStockAdjustments()
+            .then(result => {
+                this.adjustmentTypeOptions = result.adjustmentTypes;
+                this.productsList = result.distributorStocks;
+                this.distributorId = result.distributorId;
+                this.isPageLoaded = false;
+            })
+            .catch(error => {
+                this.isPageLoaded = false;
+                this.showToast('Error', error.body?.message, 'error');
+            });
     }
 
     addRow() {
-        this.returnItems.push({
+        this.stockAdjustments.push({
             id: Date.now(),
+            rowIndex: this.stockAdjustments.length + 1,
             productId: '',
             productName: '',
+            adjustmentType: '',
+            availableQuantity: 0,
             quantity: 0,
+            reason: '',
             unitPrice: 0,
             amount: 0,
-            uom: '',
-            reason: '',
             showSuggestions: false,
-            filteredProducts: []
+            filteredProducts: [],
+            disableProductSelection: true
         });
-        this.returnItems = [...this.returnItems];
-        this.calculateTotals();
+        this.refreshIndexes();
     }
 
     removeRow(event) {
         const index = Number(event.currentTarget.dataset.index);
-        if (this.returnItems.length === 1) {
-            this.returnItems[0] = {
-                id: Date.now(),
-                productId: '',
-                productName: '',
-                quantity: 0,
-                unitPrice: 0,
-                amount: 0,
-                uom: '',
-                reason: '',
-                showSuggestions: false,
-                filteredProducts: []
-            };
-        } else {
-            this.returnItems.splice(index, 1);
+        if (this.stockAdjustments.length > 1) {
+            this.stockAdjustments.splice(index, 1);
         }
-        this.returnItems = [...this.returnItems];
+        this.refreshIndexes();
+    }
+
+    refreshIndexes() {
+        this.stockAdjustments = this.stockAdjustments.map((item, i) => ({
+            ...item,
+            rowIndex: i + 1
+        }));
         this.calculateTotals();
     }
 
-    handleProductFocus(event) {
-        const index = event.target.dataset.index;
-        this.returnItems[index].showSuggestions = false;
-        this.returnItems = [...this.returnItems];
+    handleAdjustmentTypeChange(event) {
+        const index = event.currentTarget.dataset.index;
+        var adjustmentvalue = event.detail.value;
+        this.stockAdjustments[index].adjustmentType = adjustmentvalue;
+        this.stockAdjustments[index].productName = '';
+        this.stockAdjustments[index].productId = '';
+        this.stockAdjustments[index].quantity = 0;
+        this.stockAdjustments[index].availablequantity = 0;
+
+        if (adjustmentvalue != '') {
+            this.stockAdjustments[index].disableProductSelection = false;
+        }
+        else {
+            this.stockAdjustments[index].disableProductSelection = true;
+        }
+        this.stockAdjustments = [...this.stockAdjustments];
     }
 
     handleProductSearch(event) {
-        const index = event.target.dataset.index;  // Get the index of the current row
-        const searchValue = event.target.value.toLowerCase();  // Get the search value
-        const item = this.returnItems[index];  // Get the current row item
-        item.productName = event.target.value;  // Update the product name
+        const index = event.currentTarget.dataset.index;
+        const searchKey = event.target.value.toLowerCase();
+        const item = this.stockAdjustments[index];
 
-        if (searchValue.length > 0) {
-            const filtered = this.productOptions.filter(prod =>
-                prod.label.toLowerCase().includes(searchValue)  // Filter products based on search input
+        item.productName = event.target.value;
+
+        if (searchKey) {
+            item.filteredProducts = this.productsList.filter(
+                p => p.Product_Name__c.toLowerCase().includes(searchKey)
             );
-            item.filteredProducts = filtered;
-            item.showSuggestions = filtered.length > 0;
+            item.showSuggestions = true;
         } else {
-            // If search is cleared (cross icon clicked), reset product-related fields
-            item.filteredProducts = [];
             item.showSuggestions = false;
-            item.productId = '';  // Clear the productId
-            item.productName = '';  // Clear the productName
-            item.unitPrice = 0;  // Reset unit price
-            item.uom = '';  // Reset UOM
-            item.amount = 0;  // Reset amount
+            item.filteredProducts = [];
         }
 
-        this.returnItems = [...this.returnItems];  // Re-render the list
-        this.calculateTotals();  // Recalculate totals after change
+        this.stockAdjustments = [...this.stockAdjustments];
     }
-
 
     selectProduct(event) {
         const index = event.currentTarget.dataset.index;
-        const selectedId = event.currentTarget.dataset.id;
-        const selectedProduct = this.productOptions.find(p => p.value === selectedId);
+        const productId = event.currentTarget.dataset.id;
+        const saleableQty = event.currentTarget.dataset.saleableqty || 0;
+        const nonSaleableQty = event.currentTarget.dataset.nonsaleableqty || 0;
 
-        const isDuplicate = this.returnItems.some((item, i) => i !== parseInt(index) && item.productId === selectedId);
-        if (isDuplicate) {
-            const productLabel = selectedProduct.label || 'Unknown Product'; // Fallback value
+        const product = this.productsList.find(p => p.Product__c === productId);
 
-            this.showToast('Error', 'Product "' + productLabel + '" already selected', 'error');
-            this.returnItems[index].productName = '';
-            this.returnItems[index].showSuggestions = false;
+        const duplicate = this.stockAdjustments.some(
+            (i, idx) => idx !== Number(index) && i.productId === productId
+        );
+        if (duplicate) {
+            this.showToast('Error', 'Product already selected', 'error');
             return;
         }
 
-        const item = this.returnItems[index];
-        item.productId = selectedId;
-        item.productName = selectedProduct.label;
-        item.unitPrice = selectedProduct.price;
-        item.uom = selectedProduct.uom;
-        item.amount = item.quantity * item.unitPrice;
+        const item = this.stockAdjustments[index];
+
+        item.productId = product.Product__c;
+        item.productName = product.Product_Name__c;
+        if (item.adjustmentType == 'Saleable to Non-Saleable Quantity') {
+            item.availablequantity = saleableQty;
+        }
+        else if (item.adjustmentType == 'Non-Saleable to Saleable Quantity' || item.adjustmentType == 'Written Off Quantity') {
+            item.availablequantity = nonSaleableQty;
+        }
         item.showSuggestions = false;
         item.filteredProducts = [];
-
-        this.returnItems = [...this.returnItems];
-        this.calculateTotals();
     }
 
     handleQuantityChange(event) {
         const index = event.currentTarget.dataset.index;
-        const qty = parseFloat(event.detail.value) || 0;
-        const item = this.returnItems[index];
+        const qty = Number(event.detail.value) || 0;
+
+        const item = this.stockAdjustments[index];
         item.quantity = qty;
         item.amount = qty * item.unitPrice;
-        this.returnItems = [...this.returnItems];
+
+        this.stockAdjustments = [...this.stockAdjustments];
         this.calculateTotals();
     }
 
     handleReasonChange(event) {
         const index = event.currentTarget.dataset.index;
-        this.returnItems[index].reason = event.detail.value;
+        this.stockAdjustments[index].reason = event.detail.value;
+        this.stockAdjustments = [...this.stockAdjustments];
     }
 
-    handleNotesChange(event) {
-        this.notes = event.target.value;
-    }
 
     calculateTotals() {
-        this.totalQuantity = this.returnItems.reduce((acc, item) => acc + (item.quantity || 0), 0);
-        this.totalAmount = this.returnItems.reduce((acc, item) => acc + (item.amount || 0), 0);
+        this.totalQuantity = this.stockAdjustments.reduce(
+            (sum, i) => sum + (i.quantity || 0), 0
+        );
+        this.totalAmount = this.stockAdjustments.reduce(
+            (sum, i) => sum + (i.amount || 0), 0
+        );
     }
-
-
-
-    handleCustomerFocus() {
-        this.showCustomerSuggestions = false;
-    }
-
-    handleCustomerSearch(event) {
-        this.customerSearch = event.target.value;
-        const searchVal = this.customerSearch?.trim();
-
-        // Reset if empty or cleared
-        if (!searchVal || searchVal.length < 2) {
-            this.filteredCustomers = [];
-            this.showCustomerSuggestions = false;
-            this.selectedCustomerId = '';
-            return;
-        }
-
-        // Call Apex search
-        searchCustomers({ searchKey: searchVal })
-            .then(result => {
-                this.filteredCustomers = result.map(acc => ({
-                    label: acc.Name,
-                    value: acc.Id
-                }));
-                this.customerOptions = this.filteredCustomers;
-                this.showCustomerSuggestions = this.filteredCustomers.length > 0;
-            })
-            .catch(error => {
-                console.error('Customer search error', error);
-                this.filteredCustomers = [];
-                this.showCustomerSuggestions = false;
-            });
-    }
-
-
-    selectCustomer(event) {
-        const selectedId = event.currentTarget.dataset.id;
-        const selected = this.customerOptions.find(acc => acc.value === selectedId);
-        this.customerSearch = selected.label;
-        this.selectedCustomerId = selected.value;
-        this.showCustomerSuggestions = false;
-    }
-
 
     handleSave() {
-
-        if (!this.selectedCustomerId) {
-            this.showToast('Validation Error', 'Please select a Secondary Customer.', 'error');
-            return;
-        }
         const payload = [];
         let validationPassed = true;
 
-        for (let item of this.returnItems) {
+        for (let item of this.stockAdjustments) {
             // Add this line to inspect the data
-
-
-
-
-
-
-            const missingProduct2 = this.returnItems.find(item => !item.productId);
-            if (missingProduct2) {
-                this.showToast('Validation Error', 'Please select a Product for all rows.', 'error');
+            if (!item.adjustmentType) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${item.rowIndex}: Please select Adjustment Type.`,
+                    'error'
+                );
+                return;
+            }
+            if (!item.productId) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${item.rowIndex}: Please select a Product.`,
+                    'error'
+                );
                 return;
             }
 
-            const missingProduct = this.returnItems.find(item => !item.quantity > 0);
-            if (missingProduct) {
-                this.showToast('Validation Error', 'Please select a valid Quantity for all rows.', 'error');
+            if (!item.quantity || item.quantity <= 0) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${item.rowIndex}: Please add a valid Quantity.`,
+                    'error'
+                );
                 return;
             }
-
-            const missingProduct3 = this.returnItems.find(item => !item.reason);
-            if (missingProduct3) {
-                this.showToast('Validation Error', 'Please select a Reason for all rows.', 'error');
+            if (item.quantity && item.quantity > 0 && item.availablequantity < item.quantity) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${item.rowIndex}: Entered Quantity is more than Available Quantity`,
+                    'error'
+                );
                 return;
             }
+ 
 
             payload.push({
-                sobjectType: 'Return_Item__c',
-                SKU__c: item.productId,
-                SKU_Name__c: item.productName,
+                sobjectType: 'Stock_Adjustment__c',
+                Distributor__c: this.distributorId,
+                Product__c: item.productId,
+                Product_Name__c :  item.productName,
                 Quantity__c: item.quantity,
-                Batch_Number__c :'',
-                Invoice_Number__c:'',
-                Reason_For_Return__c: item.reason,
-                UOM__c: item.uom,
-                Unit_Price__c: item.unitPrice,
-                Total_Amount__c:item.amount
+                Reason__c: item.reason,
+                Adjustment_Type__c: item.adjustmentType,
             });
         }
-
 
         if (!validationPassed) {
             return; // Skip further code execution if validation failed
         }
-        saveSecondaryReturn({
-            items: payload,
-            totalAmount: this.totalAmount,
-            totalQuantity: this.totalQuantity,
-            customerId: this.selectedCustomerId
+        saveStockAdjustments({
+            stockAdjustments: payload,
         })
             .then(() => {
-                this.showToast('Success', 'Secondary Return saved successfully', 'success');
-
+                this.isPageLoaded = false;
                 setTimeout(() => {
                     this.dispatchEvent(new CustomEvent('returncreated'));
-                    this.resetForm();
-                }, 1000);
+                }, 0);
             })
             .catch(error => {
                 this.showToast('Error', error.body?.message || error.message, 'error');
             });
     }
 
-
     handleCancel() {
         this.dispatchEvent(new CustomEvent('cancel'));
     }
-
-
 
     // Custom Toast method (to use c-custom-toast)
     showToast(title, message, variant) {
@@ -301,5 +244,4 @@ export default class NewstockAdjustment extends LightningElement {
             console.error('Custom Toast component not found!');
         }
     }
-
 }

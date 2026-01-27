@@ -84,7 +84,7 @@
 }
 
 .nav-items li.selected {
-    padding: 5px 12px;
+    padding: 5px 8px;
     border-radius: 10px;
     font-size: 16px;
     white-space: nowrap;
@@ -95,6 +95,7 @@
     background-color: var(--selected-bg-color);
     color: var(--selected-text-color);
 }
+
 
 
 
@@ -419,7 +420,11 @@ border: none;
 .contacts-table tr th:nth-child(7),
 .contacts-table tr th:nth-child(8),
 .contacts-table tr th:nth-child(9),
-.contacts-table tr th:nth-child(10)
+.contacts-table tr th:nth-child(10),
+.contacts-table tr th:nth-child(11),
+.contacts-table tr th:nth-child(12),
+.contacts-table tr th:nth-child(13),
+.contacts-table tr th:nth-child(14)
 {
 border-left: #fff 1px solid;
 }
@@ -472,6 +477,22 @@ color: white;
 border: none;
 /* padding: 8px; */
 width: 122px;
+border-radius: 4px;
+cursor: pointer;
+height: 33px;
+
+}
+.StockAdjustmentactionButton{
+
+display: inline;
+margin: 5px;
+float: right;
+font-size: 14.5px;
+background-color: #28a745;
+color: white;
+border: none;
+/* padding: 8px; */
+width: 200px;
 border-radius: 4px;
 cursor: pointer;
 height: 33px;

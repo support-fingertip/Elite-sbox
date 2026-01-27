@@ -28,19 +28,19 @@ export default class SecondaryReturns extends LightningElement {
     connectedCallback() {
         this.addRow();
         getAllProducts()
-        .then(result => {
-            this.resonForReturnOptions = result.resonForReturn;
-            this.uomOptions = result.uom;
-            this.productOptions = result.productsList.map(prod => ({
-                label: prod.Name,
-                value: prod.Id,
-                price: prod.List_Price__c,
-                uom: prod.UOM__c
-            }));
-        })
-        .catch(error => {
-            this.showToast('Error loading products', error.body.message, 'error');
-        });
+            .then(result => {
+                this.resonForReturnOptions = result.resonForReturn;
+                this.uomOptions = result.uom;
+                this.productOptions = result.productsList.map(prod => ({
+                    label: prod.Name,
+                    value: prod.Id,
+                    price: prod.List_Price__c,
+                    uom: prod.UOM__c
+                }));
+            })
+            .catch(error => {
+                this.showToast('Error loading products', error.body.message, 'error');
+            });
     }
 
     addRow() {
@@ -50,6 +50,7 @@ export default class SecondaryReturns extends LightningElement {
             productName: '',
             saleableQuantity: 0,
             nonSaleableQuantity: 0,
+            quantity: 0,
             unitPrice: 0,
             amount: 0,
             uom: '',
@@ -58,6 +59,7 @@ export default class SecondaryReturns extends LightningElement {
             filteredProducts: []
         });
         this.returnItems = [...this.returnItems];
+        this.updateRowIndex();
         this.calculateTotals();
     }
 
@@ -69,6 +71,8 @@ export default class SecondaryReturns extends LightningElement {
                 productId: '',
                 productName: '',
                 quantity: 0,
+                saleableQuantity: 0,
+                nonSaleableQuantity: 0,
                 unitPrice: 0,
                 amount: 0,
                 uom: '',
@@ -80,7 +84,15 @@ export default class SecondaryReturns extends LightningElement {
             this.returnItems.splice(index, 1);
         }
         this.returnItems = [...this.returnItems];
+        this.updateRowIndex();
         this.calculateTotals();
+    }
+
+    updateRowIndex() {
+        this.returnItems = this.returnItems.map((item, index) => ({
+            ...item,
+            rowIndex: index + 1
+        }));
     }
 
     handleProductFocus(event) {
@@ -145,12 +157,33 @@ export default class SecondaryReturns extends LightningElement {
         this.calculateTotals();
     }
 
-    handleQuantityChange(event) {
-        const index = event.currentTarget.dataset.index;
+    handleSalableQuantityChange(event) {
+        const index = Number(event.currentTarget.dataset.index);
         const qty = parseFloat(event.detail.value) || 0;
+
+        this.returnItems[index].saleableQuantity = qty;
+        this.recalculateQuantityAndAmount(index);
+    }
+    handleNonSalableQuantityChange(event) {
+        const index = Number(event.currentTarget.dataset.index);
+        const qty = parseFloat(event.detail.value) || 0;
+
+        this.returnItems[index].nonSaleableQuantity = qty;
+        this.recalculateQuantityAndAmount(index);
+    }
+
+
+    recalculateQuantityAndAmount(index) {
         const item = this.returnItems[index];
-        item.quantity = qty;
-        item.amount = qty * item.unitPrice;
+
+        const saleable = Number(item.saleableQuantity) || 0;
+        const nonSaleable = Number(item.nonSaleableQuantity) || 0;
+
+        const totalQty = saleable + nonSaleable;
+
+        item.quantity = totalQty;
+        item.amount = totalQty * (Number(item.unitPrice) || 0);
+
         this.returnItems = [...this.returnItems];
         this.calculateTotals();
     }
@@ -226,26 +259,29 @@ export default class SecondaryReturns extends LightningElement {
         for (let item of this.returnItems) {
             // Add this line to inspect the data
 
-
-
-
-
-
-            const missingProduct2 = this.returnItems.find(item => !item.productId);
-            if (missingProduct2) {
-                this.showToast('Validation Error', 'Please select a Product for all rows.', 'error');
+            if (!item.productId ) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${item.rowIndex}: Please select a Product.`,
+                    'error'
+                );
                 return;
             }
 
-            const missingProduct = this.returnItems.find(item => !item.quantity > 0);
-            if (missingProduct) {
-                this.showToast('Validation Error', 'Please select a valid Quantity for all rows.', 'error');
+            if (!item.quantity ||  item.quantity <= 0 ) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${item.rowIndex}: Please add a valid Salable Quantity Or Non-Salable Quantity.`,
+                    'error'
+                );
                 return;
             }
-
-            const missingProduct3 = this.returnItems.find(item => !item.reason);
-            if (missingProduct3) {
-                this.showToast('Validation Error', 'Please select a Reason for all rows.', 'error');
+            if (!item.reason) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${item.rowIndex}: Please select a Reason.`,
+                    'error'
+                );
                 return;
             }
 
@@ -254,12 +290,14 @@ export default class SecondaryReturns extends LightningElement {
                 SKU__c: item.productId,
                 SKU_Name__c: item.productName,
                 Quantity__c: item.quantity,
-                Batch_Number__c :'',
-                Invoice_Number__c:'',
+                Nonsaleable_Quantity__c: item.nonSaleableQuantity,
+                Saleable_Quantity__c: item.saleableQuantity,
+                Batch_Number__c: '',
+                Invoice_Number__c: '',
                 Reason_For_Return__c: item.reason,
                 UOM__c: item.uom,
                 Unit_Price__c: item.unitPrice,
-                Total_Amount__c:item.amount
+                Total_Amount__c: item.amount
             });
         }
 
@@ -267,6 +305,7 @@ export default class SecondaryReturns extends LightningElement {
         if (!validationPassed) {
             return; // Skip further code execution if validation failed
         }
+        this.isPageLoaded = true;
         saveSecondaryReturn({
             items: payload,
             totalAmount: this.totalAmount,
@@ -274,12 +313,10 @@ export default class SecondaryReturns extends LightningElement {
             customerId: this.selectedCustomerId
         })
             .then(() => {
-                this.showToast('Success', 'Secondary Return saved successfully', 'success');
-
+                this.isPageLoaded = false;
                 setTimeout(() => {
                     this.dispatchEvent(new CustomEvent('returncreated'));
-                    this.resetForm();
-                }, 1000);
+                }, 0);
             })
             .catch(error => {
                 this.showToast('Error', error.body?.message || error.message, 'error');

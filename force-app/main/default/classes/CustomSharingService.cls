@@ -562,7 +562,7 @@ public class CustomSharingService {
                 newBeat.Primary_Customer__c = newPrimaryId;
                 newBeat.Sub_Stockist__c = newSubStockiestId != null ? newSubStockiestId : oldBeat.Sub_Stockist__c;
                 newBeat.Order_Number__c = oldBeat.Order_Number__c;
-                newBeat.Active__c =  oldBeat.Active__c ;
+                newBeat.Active__c =  true ;
                 newBeat.Beat_Type__c =  oldBeat.Beat_Type__c;
                 newBeat.Old_Beat_Id_Back_End_Purpose__c = oldBeat.Id;//just for map creation
                 newBeat.OwnerId = oldBeat.OwnerId;
@@ -595,7 +595,7 @@ public class CustomSharingService {
                 newJb.Child_Beat__c = newBeatId;
                 newJb.Cloned_From_Customer_Deactivation__c = true;
                 newJb.Account__c = jb.Account__c;
-                newJb.Active__c = jb.Active__c;
+                newJb.Active__c = true;
                 newJb.Order_Number__c = jb.Order_Number__c;
                 junctionsToInsert.add(newJb);
             }

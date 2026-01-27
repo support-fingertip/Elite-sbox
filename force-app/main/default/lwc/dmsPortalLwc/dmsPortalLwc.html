@@ -36,13 +36,11 @@
             </div>
             <!--Home Page-->
             <template lwc:if={showHome}>
-
                 <div class="carousel-wrapper">
                     <div class="carousel">
                         <img src={currentImage} alt="carousel-img" class="carousel-img" />
                     </div>
                 </div>
-
             </template>
 
             <!--Primary Orders Tab -->
@@ -85,7 +83,7 @@
                             </thead>
                             <tbody>
                                 <template lwc:if={ordFilter.isOrderDataExisted}>
-                                    <template for:each={ordFilter.allordData} for:item="row" >
+                                    <template for:each={ordFilter.allordData} for:item="row">
                                         <tr key={row.orderId}>
                                             <td style="width:5%">{row.rowIndex}</td>
                                             <td onclick={openOrderItems} data-id={row.orderId}
@@ -179,13 +177,11 @@
             <template lwc:if={isNewOrder2}>
                 <c-primary-order2 oncancel={handleCancelPrimaryOrder2} onordercreated={handlePrimaryOrderCreated2}>
                 </c-primary-order2>
-
             </template>
 
             <template lwc:if={isNewOrder3}>
                 <c-primary-order3 oncancel={handlePrimaryOrderCancel3} onordercreated={handlePrimaryOrderCreated3}>
                 </c-primary-order3>
-
             </template>
 
             <!--Primary Invoice Tab -->
@@ -201,11 +197,11 @@
                         <div class="order-head">
 
                             <div class="order-filters">
-                                <button disabled={isdableGRNbutton}   class={grnButtonClass} 
+                                <button disabled={isdableGRNbutton}   class={grnButtonClass}
                                 style="margin-top:30px;" onclick={generateGRNpage}>Generate
                                     GRN</button>
 
-                               <!-- <button onclick={makePaymemt} disabled={isMakePaymentDisabled}
+                                <!-- <button onclick={makePaymemt} disabled={isMakePaymentDisabled}
                                     class={makePaymentButtonClass} style="margin-top:30px;" title={makePaymentTooltip}>
                                     Make Payment
                                 </button>-->
@@ -271,7 +267,7 @@
                                                 <c-custom-check-box checked={inv.isSelected}
                                                     onchange={handleRowSelection} name={inv.InvId}></c-custom-check-box>
                                             </td>
-                                            <td  style="width:5%;">{inv.rowIndex}</td>
+                                            <td style="width:5%;">{inv.rowIndex}</td>
                                             <!-- Clickable Invoice No -->
                                             <td style="cursor: pointer; color: blue; text-decoration: underline;width:15%;"
                                                 data-id={inv.InvId} onclick={handleInvoiceClick}>
@@ -301,54 +297,63 @@
             </template>
             <!-- Invoice Items Table - Shown only if invoice is selected -->
             <template lwc:if={showInvoiceItems}>
-                <div class="orders layouts" id="invoiceItemsLayout">
-                    <div class="order-head">
-                        <h3 class="order-title">Invoice Items for Invoice:
-                            {selectedInvoiceId}</h3>
-
-                        <div class="order-filters">
-                            <button class="actionButton" onclick={closePrimaryInvoiceItems}>Back to
-                                Invoices</button>
-                        </div>
+                <template lwc:if={isSubPartLoad}>
+                    <div class="no-scroll">
+                        <c-loading-screen></c-loading-screen>
                     </div>
+                </template>
+                <template lwc:else>
+                    <div class="orders layouts" id="invoiceItemsLayout">
+                        <div class="order-head">
+                            <h3 class="order-title">Invoice Items for Invoice:
+                                {selectedInvoiceId}</h3>
 
-                    <table class="contacts-table">
-                        <thead>
-                            <tr>
-                                <th>SKU Name</th>
-                                <th>Quantity</th>
-                                <th>Unit Price</th>
-                                <th>Tax Amount</th>
-                                <th>Total Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template lwc:if={hasInvoiceItems}>
-                                <template for:each={invoiceItems} for:item="item">
-                                    <tr key={item.Id}>
-                                        <td>{item.ItemName}</td>
-                                        <td>{item.Quantity}</td>
-                                        <td>{item.unitPrice}</td>
-                                        <td>{item.TaxAmount}</td>
-                                        <td>{item.TotalAmount}</td>
+                            <div class="order-filters">
+                                <button class="actionButton" onclick={closePrimaryInvoiceItems}>Back to
+                                    Invoices</button>
+                            </div>
+                        </div>
+
+                        <table class="contacts-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:5%">S/No.</th>
+                                    <th style="width:15%">SKU Name</th>
+                                    <th style="width:20%">Quantity</th>
+                                    <th style="width:20%">Unit Price</th>
+                                    <th style="width:20%">Tax Amount</th>
+                                    <th style="width:20%">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template lwc:if={hasInvoiceItems}>
+                                    <template for:each={invoiceItems} for:item="item">
+                                        <tr key={item.Id}>
+                                            <td style="width:5%">{item.rowIndex}</td>
+                                            <td style="width:15%">{item.ItemName}</td>
+                                            <td style="width:20%">{item.Quantity}</td>
+                                            <td style="width:20%">{item.unitPrice}</td>
+                                            <td style="width:20%">{item.TaxAmount}</td>
+                                            <td style="width:20%">{item.TotalAmount}</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                                <template lwc:else>
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="slds-truncate" style="text-align:center">
+                                                <span style="color:red;padding:10px;font-size:large">
+                                                    No invoice items found for this
+                                                    invoice!
+                                                </span>
+                                            </div>
+                                        </td>
                                     </tr>
                                 </template>
-                            </template>
-                            <template lwc:else>
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="slds-truncate" style="text-align:center">
-                                            <span style="color:red;padding:10px;font-size:large">
-                                                No invoice items found for this
-                                                invoice!
-                                            </span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
             </template>
 
             <!-- GRN Screen -->
@@ -391,23 +396,25 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-                                    <th>Return No.</th>
-                                    <th>Total Quantity</th>
-                                    <th>Total Amount</th>
-                                    <th>Date</th>
+                                    <th style="width:5%">S/No.</th>
+                                    <th style="width:15%">Return No.</th>
+                                    <th style="width:20%">Total Quantity</th>
+                                    <th style="width:20%">Total Amount</th>
+                                    <th style="width:20%">Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={primaryReturnFilter.isDataExisted}>
                                     <template for:each={primaryReturnFilter.allPReturnData} for:item="ret">
                                         <tr key={ret.primaryReturnId}>
-                                            <td style="cursor: pointer; color: blue; text-decoration: underline;"
+                                            <td style="width:5%">{ret.rowIndex}</td>
+                                            <td style="cursor: pointer; color: blue; text-decoration: underline;width:15%"
                                                 data-id={ret.primaryReturnId} onclick={handleReturnNoClick}>
                                                 {ret.primaryReturnNo}
                                             </td>
-                                            <td>{ret.totalQuantity}</td>
-                                            <td>{ret.totalAmount}</td>
-                                            <td>{ret.returnDate}</td>
+                                            <td style="width:20%">{ret.totalQuantity}</td>
+                                            <td style="width:20%">{ret.totalAmount}</td>
+                                            <td style="width:20%">{ret.returnDate}</td>
                                         </tr>
                                     </template>
                                 </template>
@@ -440,22 +447,24 @@
                     <table class="contacts-table">
                         <thead>
                             <tr>
-                                <th>SKU Name</th>
-                                <th>Quantity</th>
-                                <th>Unit Price</th>
-                                <th>Total Amount</th>
-                                <th>Reason</th>
+                                <th style="width:5%">S/No.</th>
+                                <th style="width:15%">SKU Name</th>
+                                <th style="width:20%">Quantity</th>
+                                <th style="width:20%">Unit Price</th>
+                                <th style="width:20%">Total Amount</th>
+                                <th style="width:20%">Reason</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template lwc:if={hasPrimaryReturnItems}>
                                 <template for:each={primaryReturnItems} for:item="item">
                                     <tr key={item.Id}>
-                                        <td>{item.SKU__r.Name}</td>
-                                        <td>{item.Quantity__c}</td>
-                                        <td>{item.Unit_Price__c}</td>
-                                        <td>{item.Total_Amount__c}</td>
-                                        <td>{item.Reason_For_Return__c}</td>
+                                        <td style="width:5%">{item.rowIndex}</td>
+                                        <td style="width:15%">{item.SKU__r.Name}</td>
+                                        <td style="width:20%">{item.Quantity__c}</td>
+                                        <td style="width:20%">{item.Unit_Price__c}</td>
+                                        <td style="width:20%">{item.Total_Amount__c}</td>
+                                        <td style="width:20%">{item.Reason_For_Return__c}</td>
                                     </tr>
                                 </template>
                             </template>
@@ -517,25 +526,24 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-
-                                    <th>Payment Receipt</th>
-
-                                    <th>Payment Date</th>
-                                    <th>Amount</th>
+                                    <th style="width:5%">S/No.</th>
+                                    <th style="width:35%">Payment Receipt</th>
+                                    <th style="width:30%">Payment Date</th>
+                                    <th style="width:30%">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={primaryPaymentsFilter.isDataExisted}>
                                     <template for:each={primaryPaymentsFilter.allPaymentData} for:item="row">
                                         <tr key={row.paymenetItemNo}>
-
+                                            <td style="width:5%">{row.rowIndex}</td>
                                             <td onclick={handlePaymentReceiptClick} data-id={row.paymenetId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                style="cursor: pointer; color: blue; text-decoration: underline;width:35%">
                                                 {row.paymenetNo}
                                             </td>
 
-                                            <td>{row.paymentDate}</td>
-                                            <td>{row.receiptTotalAmount}</td>
+                                            <td style="width:30%">{row.paymentDate}</td>
+                                            <td style="width:30%">{row.receiptTotalAmount}</td>
                                         </tr>
                                     </template>
                                 </template>
@@ -570,18 +578,20 @@
                     <table class="contacts-table">
                         <thead>
                             <tr>
-                                <th>Payment Receipt Item Name</th>
-                                <th>Invoice</th>
-                                <th>Amount</th>
+                                <th style="width:5%">S/No.</th>
+                                <th style="width:35%">Payment Receipt Item Name</th>
+                                <th style="width:30%">Invoice</th>
+                                <th style="width:30%">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template lwc:if={hasReceiptItems}>
                                 <template for:each={selectedReceiptItems} for:item="item">
                                     <tr key={item.Id}>
-                                        <td>{item.Name}</td>
-                                        <td>{item.Invoice_Number__c}</td>
-                                        <td>{item.Amount_Received__c}</td>
+                                        <td style="width:5%">{item.rowIndex}</td>
+                                        <td style="width:35%">{item.Name}</td>
+                                        <td style="width:30%">{item.Invoice_Number__c}</td>
+                                        <td style="width:30%">{item.Amount_Received__c}</td>
                                     </tr>
                                 </template>
                             </template>
@@ -628,22 +638,24 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-                                    <th>GRN Name</th>
-                                    <th>Invoice</th>
-                                    <th>GRN Date</th>
+                                    <th style="width:5%">S/No.</th>
+                                    <th style="width:35%">GRN Name</th>
+                                    <th style="width:30%">Invoice</th>
+                                    <th style="width:30%">GRN Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={GRNFilter.isListDataExisted}>
                                     <template for:each={GRNFilter.allGRNList} for:item="grn">
                                         <tr key={grn.Id}>
+                                            <td style="width:5%">{grn.rowIndex}</td>
                                             <td onclick={handleGrnNameClick} data-id={grn.Id}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                style="cursor: pointer; color: blue; text-decoration: underline;width:35%">
                                                 {grn.Name}
                                             </td>
-                                            <td>{grn.Invoice__r.Name}</td>
+                                            <td style="width:30%">{grn.Invoice__r.Name}</td>
                                             <!-- Display Invoice Name -->
-                                            <td>{grn.GRN_Date__c}</td>
+                                            <td style="width:30%">{grn.GRN_Date__c}</td>
                                         </tr>
                                     </template>
                                 </template>
@@ -675,24 +687,26 @@
                     <table class="contacts-table">
                         <thead>
                             <tr>
-                                <th>Goods Received Note Item Name</th>
-                                <th>Invoice Item</th>
-                                <th>Invoiced Quantity</th>
-                                <th>Product</th>
-                                <th>Received Saleable Quantity</th>
-                                <th>Received Non-Saleable Quantity</th>
+                                <th style="width:5%">S/No.</th>
+                                <th style="width:15%">GRN Item Name</th>
+                                <th style="width:15%">Invoice Item</th>
+                                <th style="width:15%">Invoiced Quantity</th>
+                                <th style="width:15%">Product</th>
+                                <th style="width:15%">Received Saleable Qty</th>
+                                <th style="width:15%">Received Non-Saleable Qty</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template lwc:if={GRNFilter.isItemsDataExisted}>
                                 <template for:each={GRNFilter.allGRNItems} for:item="item">
                                     <tr key={item.Id}>
-                                        <td>{item.Name}</td>
-                                        <td>{item.Invoice_Item__r.Name}</td>
-                                        <td>{item.Invoiced_Quantity__c}</td>
-                                        <td>{item.Product__r.Name}</td>
-                                        <td>{item.Received_Saleable_Quantity__c}</td>
-                                        <td>{item.Received_Nonsaleable_Quantity__c}</td>
+                                        <td style="width:5%">{item.rowIndex}</td>
+                                        <td style="width:15%">{item.Name}</td>
+                                        <td style="width:15%">{item.Invoice_Item__r.Name}</td>
+                                        <td style="width:15%">{item.Invoiced_Quantity__c}</td>
+                                        <td style="width:15%">{item.Product__r.Name}</td>
+                                        <td style="width:15%">{item.Received_Saleable_Quantity__c}</td>
+                                        <td style="width:15%">{item.Received_Nonsaleable_Quantity__c}</td>
                                     </tr>
                                 </template>
                             </template>
@@ -742,26 +756,28 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-                                    <th>Claim No.</th>
-                                    <th>Customer Name</th>
-                                    <th>Claim Amount</th>
-                                    <th>Status</th>
-                                    <th>Claim Date</th>
-                                    <th>Description</th>
+                                    <th style="width:5%">S/No.</th>
+                                    <th style="width:15%">Claim No.</th>
+                                    <th style="width:15%">Customer Name</th>
+                                    <th style="width:15%">Claim Amount</th>
+                                    <th style="width:15%">Status</th>
+                                    <th style="width:15%">Claim Date</th>
+                                    <th style="width:15%">Description</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={claimFilter.isDataExisted}>
                                     <template for:each={claimFilter.allClaimData} for:item="row">
                                         <tr key={row.claimName}>
-                                            <td>
+                                            <td style="width:5%"> {row.rowIndex}</td>
+                                            <td style="width:15%">
                                                 {row.claimName}
                                             </td>
-                                            <td>{row.customerName}</td>
-                                            <td>{row.claimAmount}</td>
-                                            <td>{row.status}</td>
-                                            <td>{row.claimDate}</td>
-                                            <td>{row.description}</td>
+                                            <td style="width:15%">{row.customerName}</td>
+                                            <td style="width:15%">{row.claimAmount}</td>
+                                            <td style="width:15%">{row.status}</td>
+                                            <td style="width:15%">{row.claimDate}</td>
+                                            <td style="width:15%">{row.description}</td>
                                         </tr>
                                     </template>
                                 </template>
@@ -784,11 +800,9 @@
 
             <!--Claim Screen-->
             <template lwc:if={isNewClaim}>
-
                 <c-claim invoice-ids={selectedInvoiceIds} invoice-items={selectedInvoiceItems}
                     oncancel={handleClaimCancel} onclaimcreated={handleClaimCreated}>
                 </c-claim>
-
             </template>
 
             <!--Stock Tab-->
@@ -805,7 +819,7 @@
 
                             <div class="order-filters">
                                 <lightning-input type="search" label="Search" class="custominputfieldSize"
-                                    placeholder="Item or Stock No." name="serchCust" variant="label-hidden"
+                                    placeholder="SKU Name" name="serchCust" variant="label-hidden"
                                     value={stockFilter.srchVal} onchange={handleStockSearch}>
                                 </lightning-input>
                             </div>
@@ -813,34 +827,38 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th>Stock No.</th>
-                                    <th>GRN Quantity</th>
-                                    <th>Secondary Inv Qty</th>
-                                    <th>Primary Rtn Qty</th>
-                                    <th>Secondary Rtn Qty</th>
-                                    <th>UOM</th>
-                                    <th>Available Qty</th>
+                                    <th style="width:15%">SKU</th>
+                                    <th style="width:7.22%">GRN Sal Qty</th>
+                                    <th style="width:7.22%">GRN Non-Sal Qty</th>
+                                    <th style="width:7.22%">Sec Inv Qty</th>
+                                    <th style="width:7.22%">Prim Rtn Qty</th>
+                                    <th style="width:7.22%">Sec Rtn Sal Qty</th>
+                                    <th style="width:7.22%">Sec Rtn Non-Sal Qty</th>
+                                    <th style="width:7.22%">Sal → Non-Sal Qty</th>
+                                    <th style="width:7.22%">Non-Sal → Sal Qty</th>
+                                    <th style="width:7.22%">WO Qty</th>
+                                    <th style="width:10%">Avail Sal Qty</th>
+                                    <th style="width:10%">Avail Non-Sal Qty</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={stockFilter.isDataExisted}>
                                     <template for:each={stockFilter.allStockData} for:item="row">
                                         <tr key={row.claimName}>
-                                            <td onclick={openRecord} data-id={row.productId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                            <td style="width:15%">
                                                 {row.productName}
                                             </td>
-                                            <td onclick={openRecord} data-id={row.stockId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
-                                                {row.stockName}
-                                            </td>
-                                            <td>{row.GRNQuantity}</td>
-                                            <td>{row.secoundryInvoiceQty}</td>
-                                            <td>{row.primaryReturnQty}</td>
-                                            <td>{row.secoundaryReturnQty}</td>
-                                            <td>EA</td>
-                                            <td>{row.availableQuantity}</td>
+                                            <td style="width:7.22%">{row.GRNSaleableQuantity}</td>
+                                            <td style="width:7.22%">{row.GRNNonSaleableQuantity}</td>
+                                            <td style="width:7.22%">{row.secoundryInvoiceQty}</td>
+                                            <td style="width:7.22%">{row.primaryReturnQty}</td>
+                                            <td style="width:7.22%">{row.SecondaryReturnSaleableQuantity}</td>
+                                            <td style="width:7.22%">{row.SecondaryReturnNonSaleableQuantity}</td>
+                                            <td style="width:7.22%">{row.salebletoNonSaleableQty}</td>
+                                            <td style="width:7.22%">{row.nonSaleabletoSaleableQty}</td>
+                                            <td style="width:7.22%">{row.writtenOffQty}</td>
+                                            <td style="width:10%">{row.availableSaleableQuantity}</td>
+                                            <td style="width:10%">{row.availableNonSaleableQuantity}</td>
                                         </tr>
                                     </template>
                                 </template>
@@ -953,9 +971,14 @@
                             <h3 class="order-title">Secondary Orders</h3>
 
                             <div class="order-filters">
-                                <button class="actionButton" style="margin-top: 27px;" onclick={handleGenerateInvoice}>
+                                <button style="margin-top: 27px;" disabled={isdableSecondaryOrderbutton}
+                                 class={secondaryOrderButtonClass}  onclick={handleGenerateInvoice}>
                                     Generate Invoice
                                 </button>
+                                <lightning-combobox name="statusFilter" label="Status" class="custominputfieldSize"
+                                    value={ordFilter.status} placeholder="Select Status" options={ordFilter.statusVal}
+                                    onchange={handleSecondaryOrderStatusChange}>
+                                </lightning-combobox>
                                 <lightning-input type="date" class="custominputfieldSize" label="From Date"
                                     name="fromDate" value={ordFilter.fromDate} onchange={handleSecOrdChange}>
                                 </lightning-input>
@@ -973,16 +996,16 @@
                             <thead>
                                 <tr>
                                     <th style="width:5%;">
-
                                         <c-custom-check-box type="checkbox" onchange={toggleSelectAll}
                                             checked={isAllSelected}></c-custom-check-box>
                                     </th>
-
+                                    <th style="width:5%;">S/No.</th>
                                     <th style="width:15%;">Order No.</th>
                                     <th style="width:20%;">Customer Name</th>
-                                    <th style="width:20%;">Total Amount</th>
-                                    <th style="width:20%;">Total Quantity</th>
-                                    <th style="width:20%;">Order Date</th>
+                                    <th style="width:15%;">Total Amount</th>
+                                    <th style="width:15%;">Order Quantity</th>
+                                    <th style="width:15%;">Invoiced Quantity</th>
+                                    <th style="width:15%;">Order Date</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -994,6 +1017,7 @@
                                                     onchange={handleCheckboxChange} checked={row.isSelected}>
                                                 </c-custom-check-box>
                                             </td>
+                                            <td style="width:5%;">{row.rowIndex}</td>
                                             <td onclick={handleSecondaryOrderNoClick} data-id={row.orderId}
                                                 style="cursor: pointer; color: blue; text-decoration: underline;width:15%">
                                                 {row.orderNo}
@@ -1001,9 +1025,10 @@
                                             <td style="width:20%;">
                                                 {row.customerName}
                                             </td>
-                                            <td style="width:20%;">{row.amount}</td>
-                                            <td style="width:20%;">{row.quantity}</td>
-                                            <td style="width:20%;">{row.orderDate}</td>
+                                            <td style="width:15%;">{row.amount}</td>
+                                            <td style="width:15%;">{row.quantity}</td>
+                                            <td style="width:15%;">{row.invoicedQuantity}</td>
+                                            <td style="width:15%;">{row.orderDate}</td>
                                         </tr>
                                     </template>
                                 </template>
@@ -1025,8 +1050,6 @@
 
             </template>
 
-
-
             <template lwc:if={showSecondaryOrderItems}>
                 <div class="orders layouts" id="secondaryOrderItemsLayout">
                     <div class="order-head">
@@ -1040,26 +1063,28 @@
                     <table class="contacts-table">
                         <thead>
                             <tr>
-                                <th>Product Name</th>
-                                <th>Quantity</th>
-                                <th>Unit Price (₹)</th>
+                                <th style="width:5%">S/No.</th>
+                                <th style="width:20%">Product Name</th>
+                                <th style="width:20%">Quantity</th>
+                                <th style="width:10%">Unit Price (₹)</th>
 
-                                <!-- <th>Tax Percent (%)</th> -->
-                                <th>Tax Amount (₹)</th>
-                                <th>Total Amount (₹)</th>
+                                <th style="width:10%">Tax  (%)</th> 
+                                <th style="width:15%">Tax Amount (₹)</th>
+                                <th style="width:20%">Total Amount (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template lwc:if={hasSecondaryOrderItems}>
                                 <template for:each={secondaryOrderItems} for:item="item">
                                     <tr key={item.Id}>
-                                        <td>{item.Product_Name__c}</td>
-                                        <td>{item.Quantity__c}</td>
-                                        <td>₹{item.Unit_price__c}</td>
+                                        <td style="width:5%">{item.rowIndex}</td>
+                                        <td style="width:20%">{item.Product_Name__c}</td>
+                                        <td style="width:20%">{item.Quantity__c}</td>
+                                        <td style="width:10%">₹{item.Unit_price__c}</td>
 
-                                        <!-- <td>{item.Tax_Percent__c}%</td> -->
-                                        <td>₹{item.Tax_Amount__c}</td>
-                                        <td>₹{item.Total_Amount__c}</td>
+                                        <td style="width:10%">{item.Tax_Percent__c}%</td>
+                                        <td style="width:15%">₹{item.Tax_Amount__c}</td>
+                                        <td style="width:20%">₹{item.Total_Amount__c}</td>
                                     </tr>
                                 </template>
                             </template>
@@ -1074,11 +1099,12 @@
                     </table>
                 </div>
             </template>
+
             <!--secondary order page-->
             <template lwc:if={isGenerateInvoice}>
-                <c-secondary-orders selected-order-ids={selectedOrderIds} selected-customer-id={selectedCustomerId}
-                    selected-customer-name={selectedCustomerName} onreturncreated={handleSecondaryorderCreated}
-                    oncancel={handleSecondaryOrderCancel}>
+                <c-secondary-orders selected-order-ids={selectedOrderIds} selected-order-id={selectedorderId}
+                    selected-customer-id={selectedCustomerId} selected-customer-name={selectedCustomerName}
+                    onreturncreated={handleSecondaryorderCreated} oncancel={handleSecondaryOrderCancel}>
                 </c-secondary-orders>
             </template>
 
@@ -1124,32 +1150,33 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-                                    <th style="width:15.83%;">Invoice No.</th>
-                                    <th style="width:15.83%;">Outlet</th>
-                                    <th style="width:15.83%;">Date</th>
-                                    <th style="width:15.83%;">Status</th>
-                                    <th style="width:15.83%;">Total Quantity</th>
-                                    <th style="width:15.83%;">Tax</th>
-                                    <th style="width:15.83%;">Total Amount</th>
-
+                                    <th style="width:5%;">S/No.</th>
+                                    <th style="width:15%;">Invoice No.</th>
+                                    <th style="width:20%;">Outlet</th>
+                                    <th style="width:10%;">Date</th>
+                                    <th style="width:10%;">Status</th>
+                                    <th style="width:10%;">Total Quantity</th>
+                                    <th style="width:10%;">Tax</th>
+                                    <th style="width:20%;">Total Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={secInvFilter.isDataExisted}>
                                     <template for:each={secInvFilter.allSecInvData} for:item="row">
                                         <tr key={row.InvId}>
+                                            <td style="width:5%;">{row.rowIndex}</td>
                                             <td onclick={handleSecondaryInvoiceNoClick} data-id={row.InvId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                style="cursor: pointer; color: blue; text-decoration: underline;width:15%;">
                                                 {row.name}
                                             </td>
-                                            <td>
+                                            <td style="width:20%;">
                                                 {row.accName}
                                             </td>
-                                            <td>{row.InvDate}</td>
-                                            <td>{row.Status}</td>
-                                            <td>{row.Quantity}</td>
-                                            <td>{row.tax}</td>
-                                            <td>{row.Amount}</td>
+                                            <td style="width:10%;">{row.InvDate}</td>
+                                            <td style="width:10%;">{row.Status}</td>
+                                            <td style="width:10%;">{row.Quantity}</td>
+                                            <td style="width:10%;">{row.tax}</td>
+                                            <td style="width:20%;">{row.Amount}</td>
                                         </tr>
                                     </template>
                                 </template>
@@ -1171,35 +1198,28 @@
 
             </template>
 
-            <!-- DataUploader-->
-            <template lwc:if={isNewDataUpload}>
-
-                <c-data-csv-loader oncancel={handleUploadCancel} ondatauploaded={handleUploadInvoices}>
-                </c-data-csv-loader>
-            </template>
-
             <!-- Show Secondary Invoice Items -->
             <template lwc:if={showSecondaryInvoiceItems}>
                 <div class="orders layouts" id="secondaryInvoiceItemsLayout">
                     <div class="order-head">
                         <h3 class="order-title">Secondary Invoice Items for Invoice: {selectedSecondaryInvoiceNo}</h3>
-                        <button class="actionButton" onclick={downloadSecondaryInvoicePdf}>Download</button>
-                        <button class="actionButton" onclick={closeSecondaryInvoiceItems}>Back to Invoices</button>
-
-
-
+                        <div class="order-filters">
+                            <button class="StockAdjustmentactionButton" onclick={downloadSecondaryInvoicePdf}>Download Invoice Pdf</button>
+                            <button class="actionButton" onclick={closeSecondaryInvoiceItems}>Back to Invoices</button>
+                        </div>
                     </div>
 
                     <!-- Secondary Invoice Items Table -->
                     <table class="contacts-table">
                         <thead>
                             <tr>
-                                <th>Product Name</th>
-                                <th>Quantity</th>
-                                <th>Unit Price (₹)</th>
-                                <th>Tax Percent </th>
-                                <th>Tax Amount (₹)</th>
-                                <th>Total Amount (₹)</th>
+                                <th style="width:5%">S/No.</th>
+                                <th style="width:15%">Product Name</th>
+                                <th style="width:15%">Quantity</th>
+                                <th style="width:15%">Unit Price (₹)</th>
+                                <th style="width:15%">Tax Percent </th>
+                                <th style="width:15%">Tax Amount (₹)</th>
+                                <th style="width:15%">Total Amount (₹)</th>
 
                             </tr>
                         </thead>
@@ -1208,12 +1228,13 @@
 
                                 <template for:each={secondaryInvoiceItems} for:item="item">
                                     <tr key={item.Id}>
-                                        <td>{item.Product__r.Name}</td>
-                                        <td>{item.Quantity__c}</td>
-                                        <td>₹{item.Unit_Price__c}</td>
-                                        <td>₹{item.Tax_Percent__c}</td>
-                                        <td>₹{item.Tax_Amount__c}</td>
-                                        <td>₹{item.Total_Amount__c}</td>
+                                        <td style="width:5%">{item.rowIndex}</td>
+                                        <td style="width:15%">{item.Product__r.Name}</td>
+                                        <td style="width:15%">{item.Quantity__c}</td>
+                                        <td style="width:15%">₹{item.Unit_Price__c}</td>
+                                        <td style="width:15%">{item.Tax_Percent__c}%</td>
+                                        <td style="width:15%">₹{item.Tax_Amount__c}</td>
+                                        <td style="width:15%">₹{item.Total_Amount__c}</td>
 
                                     </tr>
                                 </template>
@@ -1230,6 +1251,12 @@
                     </table>
                 </div>
 
+            </template>
+
+            <!-- DataUploader-->
+            <template lwc:if={isNewDataUpload}>
+                <c-data-csv-loader oncancel={handleUploadCancel} ondatauploaded={handleUploadInvoices}>
+                </c-data-csv-loader>
             </template>
 
             <!--Secondary Return Tab-->
@@ -1265,25 +1292,27 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-                                    <th>Secondary Return Name</th>
-                                    <th>Secondary Customer</th>
-                                    <th>Total Quantity</th>
-                                    <th>Total Amount</th>
-                                    <th>Return Date</th>
+                                    <th style="width:5%">S/No.</th>
+                                    <th style="width:20%">Return Name</th>
+                                    <th style="width:25%">Secondary Customer</th>
+                                    <th style="width:15%">Total Quantity</th>
+                                    <th style="width:20%">Total Amount</th>
+                                    <th style="width:15%">Return Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={secoundaryReturnFilter.isDataExisted}>
                                     <template for:each={secoundaryReturnFilter.allSReturnData} for:item="row">
                                         <tr key={row.secoundaryReturnNo}>
+                                            <td style="width:5%">{row.rowIndex}</td>
                                             <td onclick={handleSecondaryReturnNoClick} data-id={row.secoundaryReturnId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
+                                                style="cursor: pointer; color: blue; text-decoration: underline;width:20%">
                                                 {row.secoundaryReturnNo}
                                             </td>
-                                            <td>{row.secondaryCustomer}</td>
-                                            <td>{row.quantity}</td>
-                                            <td>{row.totalAmount}</td>
-                                            <td>{row.returnDate}</td>
+                                            <td style="width:25%">{row.secondaryCustomer}</td>
+                                            <td style="width:15%">{row.quantity}</td>
+                                            <td style="width:20%">{row.totalAmount}</td>
+                                            <td style="width:15%">{row.returnDate}</td>
                                         </tr>
                                     </template>
                                 </template>
@@ -1302,7 +1331,6 @@
                         </table>
                     </div>
                 </template>
-
             </template>
             <!-- Show Secondary Return Items -->
             <template lwc:if={showSecondaryReturnItems}>
@@ -1320,22 +1348,26 @@
                     <table class="contacts-table">
                         <thead>
                             <tr>
-                                <th>Product Name</th>
-                                <th>Quantity</th>
-                                <th>Return Reason</th>
-                                <th>Unit Price (₹)</th>
-                                <th>UOM</th>
+                                <th style="width:5%">S/No.</th>
+                                <th style="width:20%">Product Name</th>
+                                <th style="width:15%">Saleable Qty</th>
+                                <th style="width:15%">Non-Saleable Qty</th>
+                                <th style="width:20%">Return Reason</th>
+                                <th style="width:15%">Unit Price (₹)</th>
+                                <th style="width:10%">UOM</th>
                             </tr>
                         </thead>
                         <tbody>
                             <template lwc:if={hasSecondaryReturnItems}>
                                 <template for:each={secondaryReturnItems} for:item="item">
                                     <tr key={item.Id}>
-                                        <td>{item.SKU__r.Name}</td>
-                                        <td>{item.Quantity__c}</td>
-                                        <td>{item.Reason_For_Return__c}</td>
-                                        <td>₹{item.Unit_Price__c}</td>
-                                        <td>{item.UOM__c}</td>
+                                        <td style="width:5%">{item.rowIndex}</td>
+                                        <td style="width:20%">{item.SKU__r.Name}</td>
+                                        <td style="width:15%">{item.Saleable_Quantity__c}</td>
+                                        <td style="width:15%">{item.Nonsaleable_Quantity__c}</td>
+                                        <td style="width:20%">{item.Reason_For_Return__c}</td>
+                                        <td style="width:15%">₹{item.Unit_Price__c}</td>
+                                        <td style="width:10%">{item.UOM__c}</td>
                                     </tr>
                                 </template>
                             </template>
@@ -1556,10 +1588,84 @@
 
             <!--Stock Adjustment -->
             <template lwc:if={showStockAdjustment}>
+                <template lwc:if={isSubPartLoad}>
+                    <div class="no-scroll">
+                        <c-loading-screen></c-loading-screen>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="orders layouts" id="stockadjustmentdLayout">
+                        <h3 class="order-title">Stock Adjustments</h3>
+                        <div class="order-head">
+                            <div class="order-filters">
+                                <button class="StockAdjustmentactionButton" style="margin-top: 27px;"
+                                    onclick={handlerNewStockAdjustmentClick}>New
+                                    Stock Adjustment</button>
+                                <lightning-combobox name="status" label="Status" class="custominputfieldSize"
+                                    value={stockAdjustmentFilter.status} placeholder="Select Status"
+                                    options={stockAdjustmentFilter.statusVal} onchange={handlestockAdjustmentChange}>
+                                </lightning-combobox>
+                                <lightning-input type="date" class="custominputfieldSize" label="From Date"
+                                    name="fromDate" value={stockAdjustmentFilter.fromDate}
+                                    onchange={handlestockAdjustmentChange}>
+                                </lightning-input>
+                                <lightning-input type="date" class="custominputfieldSize" label="To Date" name="toDate"
+                                    value={stockAdjustmentFilter.toDate} onchange={handlestockAdjustmentChange}>
+                                </lightning-input>
+                                <lightning-input type="search" label="Search" class="custominputfieldSize"
+                                    placeholder="Search SKU Name" name="searchCust"
+                                    value={stockAdjustmentFilter.srchVal} onchange={handleStockAdjustmentSerch}>
+                                </lightning-input>
+                            </div>
+                        </div>
 
+                        <!-- Secondary Return Table -->
+                        <table class="contacts-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:5%">S/No.</th>
+                                    <th style="width:15%">Stock Adjustment No</th>
+                                    <th style="width:15%">SKU Name</th>
+                                    <th style="width:15%">Adjustment Type</th>
+                                    <th style="width:15%">Quantity</th>
+                                    <th style="width:10%">Date</th>
+                                    <th style="width:25%">Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template lwc:if={stockAdjustmentFilter.isDataExisted}>
+                                    <template for:each={stockAdjustmentFilter.allStockAdjuments} for:item="row">
+                                        <tr key={row.recordId}>
+                                            <td style="width:5%">{row.rowIndex}</td>
+                                            <td style="width:15%">{row.stockId} </td>
+                                            <td style="width:15%">{row.productName}</td>
+                                            <td style="width:15%">{row.AdjustmentType}</td>
+                                            <td style="width:15%">{row.quantity}</td>
+                                            <td style="width:10%">{row.stockDate}</td>
+                                            <td style="width:25%">{row.reason}</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                                <template lwc:else>
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="slds-truncate" style="text-align:center">
+                                                <span style="color:red;padding:10px;font-size:large">No
+                                                    records found!</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+
+                        </table>
+                    </div>
+                </template>
             </template>
-
-
+            <template lwc:if={isShowNewAdjustStock}>
+                <c-newstock-adjustment oncancel={handleNewStockAdjustmentCancel}
+                onreturncreated={handleStockAdjustmentCreation}></c-newstock-adjustment>
+            </template>
 
         </div>
     </div>
