@@ -643,14 +643,14 @@ public without sharing class DMSPortalLwc
         if (status == 'All' || status =='' || status == null) {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, Status__c, Store__r.Name,Total_Quantity__c,Grand_Total__c,
-                Total_Tax__c
-                FROM Secondary_Invoice__c WHERE Invoice_Date__c >= :frmDate  AND Invoice_Date__c <= :toDate AND Store__c =: accountId ORDER BY Name DESC
+                Total_Tax__c,  Customer__c,Customer__r.Name FROM Secondary_Invoice__c 
+                WHERE Invoice_Date__c >= :frmDate  AND Invoice_Date__c <= :toDate AND Store__c =: accountId ORDER BY Name DESC
             ];
         }
         else {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, Status__c,Store__r.Name,Total_Quantity__c,Grand_Total__c,
-                Total_Tax__c FROM Secondary_Invoice__c WHERE  Status__c = :status  AND Invoice_Date__c >= :frmDate 
+                Customer__c,Customer__r.Name,Total_Tax__c FROM Secondary_Invoice__c WHERE  Status__c = :status  AND Invoice_Date__c >= :frmDate 
                 AND Invoice_Date__c <= :toDate
                 AND Store__c =: accountId
                 ORDER BY Name DESC
@@ -666,8 +666,8 @@ public without sharing class DMSPortalLwc
             inD.name = i.Name;
             inD.InvId = i.Id;
             inD.InvDate = formattedOrdDate;
-            inD.accId = i.Store__c ;
-            inD.accName =  i.Store__r.Name ;
+            inD.accId = i.Customer__c ;
+            inD.accName = i.Customer__c != null ?  i.Customer__r.Name : '';
             inD.Amount = i.Grand_Total__c.setScale(2, RoundingMode.HALF_UP);
             inD.Status = i.Status__c;
             inD.tax = i.Total_Tax__c.setScale(2, RoundingMode.HALF_UP);

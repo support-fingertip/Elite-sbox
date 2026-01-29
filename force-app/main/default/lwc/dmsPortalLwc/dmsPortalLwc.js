@@ -763,7 +763,7 @@ export default class NavigationComponent extends LightningElement {
         const formatDate = (date) => date.toLocaleDateString('en-CA');
         this.ordFilter.fromDate = formatDate(firstDate);
         this.ordFilter.toDate = formatDate(lastDate);
-        this.ordFilter.status = 'Invoice Pending';
+        this.ordFilter.status = 'All';
         this.ordFilter.orderType = this.selectedTab == 'Secondary Orders' ? 'Dealer' : 'Distributor';
         this.OrderData();
     }

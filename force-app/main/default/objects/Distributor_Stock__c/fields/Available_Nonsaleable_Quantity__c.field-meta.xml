@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Available_Nonsaleable_Quantity__c</fullName>
     <externalId>false</externalId>
-    <formula>GRN_Nonsaleable_Quantity__c + Secondary_Return_Nonsaleable_Quantity__c - Primary_Return_Quantity__c -  Written_Off_Quantity__c -  Non_Saleable_to_Saleable_Quantity__c</formula>
+    <formula>GRN_Nonsaleable_Quantity__c + Secondary_Return_Nonsaleable_Quantity__c - Primary_Return_Quantity__c -  Written_Off_Quantity__c -  Non_Saleable_to_Saleable_Quantity__c +  Saleable_to_Non_Saleable_Quantity__c</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <label>Available Nonsaleable Quantity</label>
     <precision>18</precision>
