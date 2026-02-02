@@ -39,7 +39,8 @@ public with sharing class SecondaryCustomerController {
                     Primary_Customer__r.Name,Sub_Stockiest__r.Name
                     FROM Product_Mapping__c
                     WHERE Primary_Customer__c = :recordId
-                    WITH SECURITY_ENFORCED
+                    and is_Executive_Active__c = true
+                    WITH SECURITY_ENFORCED  limit 1000
                 ];
             } else {
                 fileName = acc.Name
@@ -53,7 +54,8 @@ public with sharing class SecondaryCustomerController {
                     Primary_Customer__r.Name,Sub_Stockiest__r.Name
                     FROM Product_Mapping__c
                     WHERE Sub_Stockiest__c = :recordId
-                    WITH SECURITY_ENFORCED
+                    and is_Executive_Active__c = true
+                    WITH SECURITY_ENFORCED limit 1000
                 ];
             }
         }
