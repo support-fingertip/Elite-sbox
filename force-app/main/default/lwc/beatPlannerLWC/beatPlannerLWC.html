@@ -39,10 +39,14 @@
                                         <div class="slds-col">
                                             <h4 class="nav-title menu-close" onclick={isStartEndDay}>{buttonName}</h4>
                                         </div>
+                                        <div class="slds-col">
+                                            <h4 class="nav-title menu-close" onclick={showVisitform}>New Visit</h4>
+                                        </div>
                                         <template lwc:if={isVisitCreate}>
                                             <div class="slds-col"> 
                                                 <h4 class="nav-title menu-close" onclick={switchBeat}>Switch Beat</h4>
                                             </div>
+                                          
                                         </template>
                                     </template>
                                     <template if:true={outletPage}>
@@ -406,6 +410,9 @@
             </div>
         </section>
         <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template if:true={isShowVisitForm}>
+        <c-visit-form onclose={closeModal}></c-visit-form>
     </template>
     
 </template>

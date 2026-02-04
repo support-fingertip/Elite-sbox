@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Product_Group__c</fullName>
+    <externalId>false</externalId>
+    <label>Product Group</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Cookies</fullName>
+                <default>false</default>
+                <label>Cookies</label>
+            </value>
+            <value>
+                <fullName>Traded Products</fullName>
+                <default>false</default>
+                <label>Traded Products</label>
+            </value>
+            <value>
+                <fullName>Cake</fullName>
+                <default>false</default>
+                <label>Cake</label>
+            </value>
+            <value>
+                <fullName>Millet</fullName>
+                <default>false</default>
+                <label>Millet</label>
+            </value>
+            <value>
+                <fullName>Milled Wheat Products</fullName>
+                <default>false</default>
+                <label>Milled Wheat Products</label>
+            </value>
+            <value>
+                <fullName>By Products-Wheat Milling</fullName>
+                <default>false</default>
+                <label>By Products-Wheat Milling</label>
+            </value>
+            <value>
+                <fullName>White Oats</fullName>
+                <default>false</default>
+                <label>White Oats</label>
+            </value>
+            <value>
+                <fullName>Bread</fullName>
+                <default>false</default>
+                <label>Bread</label>
+            </value>
+            <value>
+                <fullName>Bun</fullName>
+                <default>false</default>
+                <label>Bun</label>
+            </value>
+            <value>
+                <fullName>Mix</fullName>
+                <default>false</default>
+                <label>Mix</label>
+            </value>
+            <value>
+                <fullName>Flat Bread</fullName>
+                <default>false</default>
+                <label>Flat Bread</label>
+            </value>
+            <value>
+                <fullName>Flour</fullName>
+                <default>false</default>
+                <label>Flour</label>
+            </value>
+            <value>
+                <fullName>Puttupodi</fullName>
+                <default>false</default>
+                <label>Puttupodi</label>
+            </value>
+            <value>
+                <fullName>Rusk</fullName>
+                <default>false</default>
+                <label>Rusk</label>
+            </value>
+            <value>
+                <fullName>Whole Grain</fullName>
+                <default>false</default>
+                <label>Whole Grain</label>
+            </value>
+            <value>
+                <fullName>Rice</fullName>
+                <default>false</default>
+                <label>Rice</label>
+            </value>
+            <value>
+                <fullName>Whole Grain</fullName>
+                <default>false</default>
+                <label>Whole Grain</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

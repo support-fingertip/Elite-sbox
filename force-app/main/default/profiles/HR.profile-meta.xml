@@ -9850,6 +9850,76 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Address__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Competitor_Name__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Competitor_Product__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Competitor_Remarks__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Contact_Number__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Customer_Type__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.District__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.General_Remarks__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Pincode__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Primary_Customer__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Product_Group__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Product__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Secondary_Customer__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.State__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Visit__c.ASM_Employee_Code__c</field>
         <readable>true</readable>
@@ -11013,6 +11083,21 @@
         <layout>Vehicle__c-Vehicle Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
+        <layout>Visit_Form__c-New Customer</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Visit_Form__c-New Customer</layout>
+        <recordType>Visit_Form__c.New_Customer</recordType>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Visit_Form__c-Primary Customer</layout>
+        <recordType>Visit_Form__c.Primary_Customer</recordType>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Visit_Form__c-Secondary Customer</layout>
+        <recordType>Visit_Form__c.Secondary_Customer</recordType>
+    </layoutAssignments>
+    <layoutAssignments>
         <layout>Visit__c-Visit Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
@@ -11863,6 +11948,21 @@
         <apexPage>customMapViewVFP</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
+    <recordTypeVisibilities>
+        <default>false</default>
+        <recordType>Visit_Form__c.New_Customer</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
+        <default>true</default>
+        <recordType>Visit_Form__c.Primary_Customer</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
+        <default>false</default>
+        <recordType>Visit_Form__c.Secondary_Customer</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
     <tabVisibilities>
         <tab>Apex_Log__c</tab>
         <visibility>DefaultOn</visibility>
@@ -12149,6 +12249,10 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>User_Activity_Tracker</tab>
+        <visibility>DefaultOn</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Visit_Form__c</tab>
         <visibility>DefaultOn</visibility>
     </tabVisibilities>
     <tabVisibilities>

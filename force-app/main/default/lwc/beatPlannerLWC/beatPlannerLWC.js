@@ -111,6 +111,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
     isAllowedDevice = false;
     deviceRestictionMessage = '';
     currentLocationRequestId= '';
+    isShowVisitForm = false;
 
     //detect if LWC is running in mobile publisher
     isMobilePublisher = window.navigator.userAgent.indexOf('CommunityHybridContainer') > 0;
@@ -126,6 +127,14 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
         this.getDailyLogDetails();
         this.containerClass = this.isDesktop ? 'slds-modal__container ' : '';
         this.uniqueId = 'FILE-' + Date.now()+ '-' +this.userId + '-' + Math.random().toString(36).substring(2, 10);
+    }
+    closeModal()
+    {
+        this.isShowVisitForm = false;
+    }
+    showVisitform()
+    {
+        this.isShowVisitForm = true;
     }
 
     /**Start Day Popup */

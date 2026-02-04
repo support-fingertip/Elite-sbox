@@ -3,7 +3,7 @@
     <fullName>Discount__c</fullName>
     <defaultValue>0</defaultValue>
     <externalId>false</externalId>
-    <label>Flat Discount Per Box</label>
+    <label>Flat Discount</label>
     <precision>18</precision>
     <required>false</required>
     <scale>0</scale>

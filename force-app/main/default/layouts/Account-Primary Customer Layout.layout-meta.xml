@@ -495,6 +495,14 @@
         <fields>NAME</fields>
         <relatedList>Stock_Adjustment__c.Distributor__c</relatedList>
     </relatedLists>
+    <relatedLists>
+        <fields>NAME</fields>
+        <relatedList>Visit_Form__c.Primary_Customer__c</relatedList>
+    </relatedLists>
+    <relatedLists>
+        <fields>NAME</fields>
+        <relatedList>Visit_Form__c.Secondary_Customer__c</relatedList>
+    </relatedLists>
     <relatedObjects>ParentId</relatedObjects>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>

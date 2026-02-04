@@ -183,14 +183,12 @@
         <excludedStandardButtons>MassChangeOwner</excludedStandardButtons>
         <excludedStandardButtons>PrintableListView</excludedStandardButtons>
         <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
-        <searchResultsAdditionalFields>Target_Logic__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Description__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Applicable_for__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Scheme_Start_Date__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Scheme_End_Date__c</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>Scheme_Eligibility_Percentage__c</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>Credit_Percentage__c</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>Value__c</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>IsActive__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>CREATEDBY_USER</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>CREATED_DATE</searchResultsAdditionalFields>
     </searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>
