@@ -27,13 +27,16 @@ public without sharing class GTInvoiceController {
 
         Secondary_Invoice__c secInv = [
             SELECT Store__c,Name,Invoice_Date__c,Order__r.Order_Date__c,Order__r.Name,Order__c,Order__r.Owner_Name__c,
-            Order__r.Beat_Name__c,Customer__c,Order__r.Executive_Employee_Code__c FROM Secondary_Invoice__c
+            Order__r.Beat_Name__c,Customer__c,Order__r.Executive_Employee_Code__c,Delivery_remarks__c,Remarks__c
+            FROM Secondary_Invoice__c
             WHERE Id = :recid
             LIMIT 1
         ];
         wrapper.dealerExecutiveName = secInv.Order__c != null ? secInv.Order__r.Owner_Name__c :'';
         wrapper.beatName = secInv.Order__c != null ?  secInv.Order__r.Beat_Name__c : '';
         wrapper.executiveCode = secInv.Order__c != null ?  secInv.Order__r.Executive_Employee_Code__c : '';
+        wrapper.packingRemarks = secInv.Remarks__c != null ?  secInv.Remarks__c : '';
+        wrapper.delivaryRemarks =  secInv.Delivery_remarks__c != null ?  secInv.Delivery_remarks__c : ''; 
         
         Account distributor = [
             SELECT Name,
@@ -104,6 +107,7 @@ public without sharing class GTInvoiceController {
                                                             where Secondary_Invoice__c =:secInv.Id];
         
         invoiceItemList = new List<InvoiceItemWapper>();
+
         
         Decimal totalQuantityval = 0;
         Decimal totalAmountval = 0;
@@ -206,6 +210,8 @@ public without sharing class GTInvoiceController {
         public String dealerExecutiveName { get; set; } 
         public String executiveCode { get; set; } 
         public String beatName { get; set; } 
+        public String packingRemarks { get; set; } 
+        public String delivaryRemarks { get; set; } 
     }
     
     public class InvoiceItemWapper {

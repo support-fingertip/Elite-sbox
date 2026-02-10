@@ -312,6 +312,14 @@ export default class NavigationComponent extends LightningElement {
         allSecondaryCustomers: [],
         originalSecondaryCustomers: [],
         searchCustomer: '',
+        status :'All',
+        statusVal: [
+            { label: 'All', value: 'All' },
+            { label: 'Active', value: 'Active' },
+            { label: 'Activation Pending', value: 'Activation Pending' },
+            { label: 'Inactive', value: 'Inactive' },
+             { label: 'Dormant', value: 'Dormant' }
+        ],
         isshowData: false
     };
 
@@ -709,7 +717,9 @@ export default class NavigationComponent extends LightningElement {
     getCustomerData() {
         this.isSubPartLoad = true;
 
-        getSecondaryCustomers()
+        getSecondaryCustomers({
+            status: this.secoundaryCustomerFilter.status
+        })
             .then(result => {
                 console.log('data' + JSON.stringify(result.customerData))
                 this.secoundaryCustomerFilter.originalSecondaryCustomers = result.customerData || [];
@@ -723,6 +733,12 @@ export default class NavigationComponent extends LightningElement {
             .finally(() => {
                 this.isSubPartLoad = false;
             });
+    }
+
+    handleSecondaryCustomerStatusChange(event) {
+        this.secoundaryCustomerFilter.status = event.detail.value;
+        // Reapply filter logic based on the selected status
+        this.getCustomerData();
     }
 
     handleCustomerSearch(event) {
@@ -1051,29 +1067,49 @@ export default class NavigationComponent extends LightningElement {
         this.invoiceData();
     }
     handleInvSerch(event) {
-        const txt = event.target.value;
+
+        const txt = (event.target.value || '').trim();
         console.log('Searched Value: ' + txt);
 
-        // Create a shallow copy to trigger reactivity
+        // Trigger reactivity
         this.InvFilter = { ...this.InvFilter, srchVal: txt };
 
+        const sourceData = this.InvFilter.originalInvData || [];
+
         if (txt.length > 0) {
-            const dataUpdate = this.InvFilter.originalInvData.filter(rec =>
-                (rec.accName && rec.accName.toLowerCase().includes(txt.toLowerCase())) ||
-                (rec.name && rec.name.toLowerCase().includes(txt.toLowerCase()))
-            );
+
+            const searchKey = txt.toLowerCase();
+
+            const dataUpdate = sourceData.filter(rec => {
+
+                const acc = (rec.accName || '').toLowerCase();
+                const inv = (rec.invoiceNo || '').toLowerCase();
+                const ord = (rec.orderId || '').toLowerCase();
+
+                return (
+                    acc.includes(searchKey) ||
+                    inv.includes(searchKey) ||
+                    ord.includes(searchKey)
+                );
+            });
+
             const indexedData = this.addRowIndex(dataUpdate);
+
             this.InvFilter = {
                 ...this.InvFilter,
                 allInvData: indexedData,
-                isInvoiceDataExisted: dataUpdate.length !== 0
+                isInvoiceDataExisted: dataUpdate.length > 0
             };
+
         } else {
-            const indexedData = this.addRowIndex(this.InvFilter.originalInvData);
+
+            const indexedData =
+                this.addRowIndex(sourceData);
+
             this.InvFilter = {
                 ...this.InvFilter,
                 allInvData: indexedData,
-                isInvoiceDataExisted: this.InvFilter.originalInvData.length !== 0 ? true : false
+                isInvoiceDataExisted: sourceData.length > 0
             };
         }
     }

@@ -8605,6 +8605,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Invoice__c.Delivery_remarks__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice__c.Due_Date__c</field>
         <readable>false</readable>
@@ -12074,6 +12079,10 @@
     <tabVisibilities>
         <tab>Forecast_Period__c</tab>
         <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Goods_Received_Note__c</tab>
+        <visibility>DefaultOn</visibility>
     </tabVisibilities>
     <tabVisibilities>
         <tab>Holiday__c</tab>

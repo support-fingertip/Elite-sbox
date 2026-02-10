@@ -38,9 +38,9 @@ export default class GenerateGRNpage extends LightningElement {
                         productId: item.SKU__c,
                         productName: item.SKU__r?.Name,
                         quantity: item.Quantity__c,
-                        receivedSaleableQty: 0,
+                        receivedSaleableQty: item.Quantity__c,
                         receivedNonSaleableQty: 0,
-                        receivedQty: 0
+                        receivedQty: item.Quantity__c
                     })) || []
                 }));
                 this.isPageLoaded = false;
@@ -80,7 +80,9 @@ export default class GenerateGRNpage extends LightningElement {
         }
     }
 
+
     updateReceivedQty(invoiceId, index) {
+
         const invoice = this.invoiceItems.find(i => i.id === invoiceId);
         if (!invoice) return;
 
@@ -89,8 +91,22 @@ export default class GenerateGRNpage extends LightningElement {
         const saleable = parseFloat(line.receivedSaleableQty) || 0;
         const nonSaleable = parseFloat(line.receivedNonSaleableQty) || 0;
 
-        line.receivedQty = saleable + nonSaleable;
+        const totalReceived = saleable + nonSaleable;
+        // ===== ASSIGN ONLY IF VALID =====
+        line.receivedQty = totalReceived;
+        // ===== VALIDATION =====
+        if (totalReceived != parseFloat(line.quantity || 0)) {
+
+            this.showToast(
+                'Error',
+                'Total received quantity is not matching with invoiced quantity',
+                'error'
+            ); 
+         
+            return;
+        }
     }
+
 
 
 
@@ -122,6 +138,16 @@ export default class GenerateGRNpage extends LightningElement {
                 return; // Stop further execution
             }
 
+            if (Number(item.receivedQty || 0) !== Number(item.quantity || 0)) {
+                this.showToast(
+                    'Error',
+                    `Total received quantity is not matching with invoiced quantity for item at row ${item.rowIndex}.`,
+                    'error'
+                );
+                return; // Stop further execution
+            }
+
+
             // Add valid items to the payload
             payload.push({
                 sobjectType: 'Goods_Received_Note_Item__c',
@@ -143,7 +169,7 @@ export default class GenerateGRNpage extends LightningElement {
             return;
         }
 
-        this.loading = true;
+        this.isPageLoaded = true;
 
         createGRN({ invoiceId: invoiceId, items: payload })
             .then(() => {
@@ -155,7 +181,7 @@ export default class GenerateGRNpage extends LightningElement {
                             invoiceId: invoiceId
                         }
                     }));
-                    this.loading = false;
+                    this.isPageLoaded = false;
                 }, 1000);
             })
             .catch(error => {

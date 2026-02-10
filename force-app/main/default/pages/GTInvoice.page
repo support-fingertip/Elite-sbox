@@ -289,6 +289,17 @@
                         <strong>Shipping/delivery address :</strong>
                     </div>
                 </div>
+                <!-- Remards Section -->
+                <div class="address-section">
+                    <div class="address-left">
+                        <strong>Packing Remarks</strong><br/>
+                        {!wrapper.packingRemarks}
+                    </div>
+                    <div class="address-right">
+                        <strong>Delivary Remarks</strong><br/>
+                        {!wrapper.delivaryRemarks}
+                    </div>
+                </div>
                 
                 <!-- Data Table -->
                 <table class="data-table">

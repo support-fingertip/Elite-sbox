@@ -43,6 +43,10 @@
                 <behavior>Edit</behavior>
                 <field>Total_Tax__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Delivery_remarks__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

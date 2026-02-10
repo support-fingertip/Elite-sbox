@@ -13,6 +13,7 @@ export default class DmsPortal extends LightningElement {
     @track selectedOrders = [];
     @track invoiceItems = [];
     remarks = '';
+    delivaryRemakrs ='';
     customerName = '';
     isSubPartLoad = false;
     invoiceDate = new Date().toISOString().split('T')[0];
@@ -146,6 +147,7 @@ export default class DmsPortal extends LightningElement {
                 Customer_Name__c: this.selectedCustomerName,
                 Status__c: 'Raised',
                 Remarks__c: this.remarks,
+                Delivery_remarks__c: this.delivaryRemakrs,
                 Order__c :  this.selectedOrderId,
                 Total_Tax__c: totalTax,
                 Grand_Total__c: grandTotal,
@@ -160,18 +162,19 @@ export default class DmsPortal extends LightningElement {
                 );
                 return;
             }
-
+            this.isSubPartLoad = true;
             saveSecondaryInvoice({
                 invoices: [secondaryInvoicePayload],
                 items: payload
             })
                 .then(() => {
+                     this.isSubPartLoad = false;
                     this.showToast(
                         'Success',
                         'Secondary Invoice saved successfully.',
                         'success'
                     );
-
+                    
                     setTimeout(() => {
                         this.dispatchEvent(new CustomEvent('returncreated'));
                         this.resetForm();
@@ -198,6 +201,11 @@ export default class DmsPortal extends LightningElement {
     onUpdateRemakrs(event) {
         var remarks = event.target.value;
         this.remarks = remarks;
+    }
+
+    onUpdateDelivaryRemakrs(event) {
+        var delivaryRemakrs = event.target.value;
+        this.delivaryRemakrs = delivaryRemakrs;
     }
 
     handleCancel() {

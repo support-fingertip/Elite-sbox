@@ -199,7 +199,7 @@ public without sharing class DMSPortalLwc
         if (status == 'All') {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,GRN_Status__c
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
                 FROM Invoice__c
                 where Store__c =: accountId
                 AND Invoice_Date__c >= :frmDate
@@ -209,7 +209,7 @@ public without sharing class DMSPortalLwc
         } else if(status == 'GRN Pending'){
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
                 FROM Invoice__c
                 WHERE (GRN_Status__c = 'GRN Pending' OR GRN_Status__c ='')
                 AND Invoice_Date__c >= :frmDate
@@ -220,7 +220,7 @@ public without sharing class DMSPortalLwc
         }else if(status =='GRN Completed'){
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
                 FROM Invoice__c
                 WHERE (GRN_Status__c = 'GRN Completed')
                 AND Invoice_Date__c >= :frmDate
@@ -246,6 +246,8 @@ public without sharing class DMSPortalLwc
             inD.Status = i.Status__c;
             inD.tax = i.Total_Tax_Amount__c != null ?  i.Total_Tax_Amount__c : 0;
             inD.TotalQuantity = i.Total_Quantity__c != null ? i.Total_Quantity__c :0 ; 
+            inD.invoiceNo = i.Invoice_No__c != null ? i.Invoice_No__c: '';
+            inD.orderId = i.SF_Order__r != null ? i.SF_Order__r.Name : '';
             invDt.add(inD);
         }
         dt.TotalInvoiceData = invDt;
@@ -1670,7 +1672,7 @@ public without sharing class DMSPortalLwc
     
     
     @AuraEnabled(cacheable=true)
-    public static ReturnAccData getSecondaryCustomers() {
+    public static ReturnAccData getSecondaryCustomers(string status) {
         
         ReturnAccData rt = new ReturnAccData();
         
@@ -1716,25 +1718,31 @@ public without sharing class DMSPortalLwc
             outletToBeatNames.get(bt.Account__c).add(bt.Child_beat__r.Name);
         }
         
+        String query =
+            'SELECT Customer__c, ' +
+            'Secondary_Customer_Outlet_Id__c, ' +
+            'Secondary_Customer_Customer_Code__c, ' +
+            'Customer__r.Name, ' +
+            'Customer__r.State__c, ' +
+            'Customer__r.District__c, ' +
+            'Customer__r.Primary_Phone_Number__c, ' +
+            'Customer__r.Secondary_Customer_Type__c, ' +
+            'Primary_Customer__r.Name, ' +
+            'Customer__r.Secondary_Customer_Category__c, ' +
+            'Customer__r.Customer_Status__c, ' +
+            'Sub_Stockiest__r.Name ' +
+            'FROM Product_Mapping__c ' +
+            'WHERE Primary_Customer__c = :accountId ' +
+            'AND Is_Executive_Active__c = true ' +
+            'AND Customer__r.Customer_Status__c != null ';
         
-        // Get Product Mappings 
-        List<Product_Mapping__c> mappings = [
-            SELECT Customer__c,
-            Secondary_Customer_Outlet_Id__c,
-            Secondary_Customer_Customer_Code__c,
-            Customer__r.Name,
-            Customer__r.State__c,
-            Customer__r.District__c,
-            Customer__r.Primary_Phone_Number__c,
-            Customer__r.Secondary_Customer_Type__c,
-            Primary_Customer__r.Name,
-            Customer__r.Secondary_Customer_Category__c,
-            Customer__r.Customer_Status__c,
-            Sub_Stockiest__r.Name
-            FROM Product_Mapping__c
-            WHERE Primary_Customer__c = :accountId
-            AND Is_Executive_Active__c = true
-        ];
+        //Add status condition only when NOT “All”
+        if (status != 'All') {
+            query += ' AND Customer__r.Customer_Status__c = :status';
+        }
+        
+        List<Product_Mapping__c> mappings = Database.query(query);
+
         
         //Deduplication 
         Set<Id> processedCustomerIds = new Set<Id>();
@@ -2061,6 +2069,8 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public boolean isDisabled;
         @AuraEnabled public boolean selected = false;
         @AuraEnabled public Decimal TotalQuantity;  // <-- Add this line
+        @AuraEnabled public String invoiceNo;
+        @AuraEnabled public String orderId;
     }
     public class PReturnData {
         @AuraEnabled public String productName;

@@ -12,19 +12,24 @@
                 <!-- Customer Info Grid -->
                 <div class="slds-m-around_medium customer-info-grid">
                     <div class="slds-grid slds-wrap slds-gutters">
-                        <div class="slds-col slds-size_1-of-3">
+                        <div class="slds-col slds-size_1-of-4">
                             <lightning-input label="Customer Name" value={selectedCustomerName} disabled
                                 variant="label-stacked">
                             </lightning-input>
                         </div>
-                        <div class="slds-col slds-size_1-of-3">
+                        <div class="slds-col slds-size_1-of-4">
                             <lightning-input label="Invoice Date" value={invoiceDate} type="date" disabled
                                 variant="label-stacked">
                             </lightning-input>
                         </div>
-                        <div class="slds-col slds-size_1-of-3">
-                            <lightning-textarea label="Remarks" value={remarks} placeholder="Enter remarks"
+                        <div class="slds-col slds-size_1-of-4">
+                            <lightning-textarea label=" Packing remarks" value={remarks} placeholder="Enter Packing remarks"
                                 onchange={onUpdateRemakrs} variant="label-stacked">
+                            </lightning-textarea>
+                        </div>
+                        <div class="slds-col slds-size_1-of-4">
+                            <lightning-textarea label="Delivery remarks" value={delivaryRemakrs} placeholder="Enter Delivery remarks"
+                                onchange={onUpdateDelivaryRemakrs} variant="label-stacked">
                             </lightning-textarea>
                         </div>
                     </div>

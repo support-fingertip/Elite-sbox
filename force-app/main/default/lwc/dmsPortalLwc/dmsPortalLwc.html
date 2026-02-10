@@ -250,11 +250,13 @@
                                             checked={isAllSelected}></c-custom-check-box>
                                     </th>
                                     <th style="width:5%;">S.No.</th>
-                                    <th style="width:15%;">Invoice No.</th>
-                                    <th style="width:15%;">Invoice Date</th>
-                                    <th style="width:20%;">Total Quantity</th>
-                                    <th style="width:20%;">Tax Amount</th>
-                                    <th style="width:20%;">Total Amount</th>
+                                    <th style="width:15%;">SAP Inv No.</th>
+                                    <th style="width:10%;">SF Inv No.</th>
+                                    <th style="width:10%;">Order No.</th>
+                                    <th style="width:10%;">Invoice Date</th>
+                                    <th style="width:15%;">Total Qty</th>
+                                    <th style="width:15%;">Tax Amount</th>
+                                    <th style="width:15%;">Total Amount</th>
 
                                 </tr>
                             </thead>
@@ -271,12 +273,14 @@
                                             <!-- Clickable Invoice No -->
                                             <td style="cursor: pointer; color: blue; text-decoration: underline;width:15%;"
                                                 data-id={inv.InvId} onclick={handleInvoiceClick}>
-                                                {inv.name}
+                                                {inv.invoiceNo}
                                             </td>
-                                            <td style="width:15%;">{inv.InvDate}</td>
-                                            <td style="width:20%;">{inv.TotalQuantity}</td>
-                                            <td style="width:20%;">{inv.tax}</td>
-                                            <td style="width:20%;">{inv.Amount}</td>
+                                            <td style="width:10%;">{inv.name}</td>
+                                            <td style="width:10%;">{inv.orderId}</td>
+                                            <td style="width:10%;">{inv.InvDate}</td>
+                                            <td style="width:15%;">{inv.TotalQuantity}</td>
+                                            <td style="width:15%;">{inv.tax}</td>
+                                            <td style="width:15%;">{inv.Amount}</td>
 
                                         </tr>
                                     </template>
@@ -1468,6 +1472,10 @@
                             <h3 class="order-title">Secondary Customers</h3>
 
                             <div class="order-filters">
+                                <lightning-combobox name="statusFilter" label="Status" class="custominputfieldSize"
+                                    value={secoundaryCustomerFilter.status} placeholder="Select Status" options={secoundaryCustomerFilter.statusVal}
+                                    onchange={handleSecondaryCustomerStatusChange}>
+                                </lightning-combobox>
                                 <lightning-input type="search" label="Search Customer" placeholder="Name / Code / Phone"
                                     value={searchKey} onchange={handleCustomerSearch}>
                                 </lightning-input>
@@ -1478,15 +1486,16 @@
                             <thead>
                                 <tr>
                                     <th style="width:5%">S.No.</th>
-                                    <th style="width:25%">Customer Name</th>
+                                    <th style="width:15%">Customer Name</th>
                                     <th style="width:10%">Customer Code</th>
                                     <th style="width:10%">Customer Type</th>
+                                    <th style="width:10%">Customer Category</th>
                                     <th style="width:10%">Customer Status</th>
                                     <th style="width:10%">Primary Phone</th>
                                     <th style="width:10%">State</th>
                                     <th style="width:10%">District</th>
                                     <th style="width:10%">Beat Name</th>
-
+ 
                                 </tr>
                             </thead>
 
@@ -1496,9 +1505,10 @@
                                         for:item="cust">
                                         <tr key={cust.secondaryCustomerId}>
                                             <td style="width:5%">{cust.sNumber}</td>
-                                            <td style="width:25%">{cust.secondaryCustomerName}</td>
+                                            <td style="width:15%">{cust.secondaryCustomerName}</td>
                                             <td style="width:10%">{cust.secondaryCustomerCode}</td>
                                             <td style="width:10%">{cust.customerType}</td>
+                                            <td style="width:10%">{cust.customerCategory}</td>
                                             <td style="width:10%">{cust.status}</td>
                                             <td style="width:10%">{cust.primaryPhoneNumber}</td>
                                             <td style="width:10%">{cust.state}</td>
