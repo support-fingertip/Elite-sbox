@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Beat_Name__c</fullName>
+    <externalId>false</externalId>
+    <formula>Select_Executive__r.FirstName + &apos;&apos; +Select_Executive__r.LastName +&apos;/&apos;+ Month_Name__c +&apos;/&apos;+Text(Year__c)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Beat Name</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

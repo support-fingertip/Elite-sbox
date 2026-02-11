@@ -1,0 +1,125 @@
+<template>
+
+    <!-- When page is loading -->
+    <template lwc:if={isPageLoaded}>  
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+    
+    <!-- When page loaded -->
+    <template lwc:else>
+        <div class="home ">
+            <div class="tasks scroll-wrapper"> 
+
+                <template if:false={showSummary}>
+                    <!--Product Search-->
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning-input 
+                                type="search" 
+                                placeholder="Search SKU...." 
+                                onchange={onChangeProducts}
+                                class="fieldWidth"
+                                disabled={isFieldsDisabled}>
+                            </lightning-input>
+                        </div>
+                    </div>
+                    <!--Product header-->
+                    <template lwc:if={isProductDataExisted}>
+                        <div class="product-header-row" style="margin-top:10px">
+                            <div class="col sku-name">SKU</div>
+                            <div class="col uom">UOM</div>
+                            <div class="col quantity">Quantity</div>
+                        </div>
+                    </template>
+                </template>
+
+                <!--All Products-->
+                <template lwc:if={allProducts}>
+                    <template lwc:if={isProductDataExisted}>
+                        <template for:each={productData} for:item="item1" for:index="index1">
+                            <!--Product Categeory Name-->
+                            <div class="task-head slds-align_absolute-center" key={item1.id}>{item1.categoryName}</div>
+                            <!--Products-->
+                            <template if:true={item1.products} for:each={item1.products} for:item="item" for:index="index">
+                                <div class="product-data-row " key={item.Id}>
+                                    <!--Name-->
+                                    <div class="col sku-name">{item.name}</div>
+                                    <!--UOM-->
+                                    <div class="col uom">{item.uom}</div>
+                                    <!--Quanity-->
+                                    <div class="col quantity vertical-qty-control">
+                                        <div class="arrow-btn" onclick={incProd} data-id={index} data-index={index1}>
+                                            ▲
+                                        </div>
+                                        <input 
+                                            type="number" 
+                                            class="qty-input" 
+                                            value={item.value} 
+                                            data-index={index1} 
+                                            data-id={index} 
+                                            onchange={prodChange}
+                                        />
+                                        <div class="arrow-btn" onclick={decProd} data-id={index} data-index={index1}>
+                                            ▼
+                                        </div>
+                                    </div>
+                                </div>
+                            </template> 
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="slds-size_1-of-1" style="padding-top:60px; display: flex; justify-content: center; align-items: center; font-size: var(--lwc-fontSize9, 1.75rem); font-weight: 700; color: darkgrey;">
+                            Oops! No Data Found....
+                        </div>
+                    </template>
+                </template>
+            
+                <!-- Summary-->
+                <template lwc:if={showSummary}>
+                    <div class="task-button pointer slds-m-top_medium" onclick={saveStock}>Save Stock</div>
+                    <lightning-card style="margin-top:10px;">
+                        <div style="margin:10px;">
+                            <div class="slds-grid slds-grid_align-spread slds-m-bottom_small" style="font-size: 15px;padding-left:5px;padding-right:5px">
+                                <div>
+                                    <b>Stock Items</b>
+                                </div>
+                                <div>
+                                    <b>Total Quantity : </b> {totalQuantity}
+                                </div>
+                            </div>
+                            <div class="custom-table-container">
+                                <table class="slds-table custom-scroll-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50%;">SKU</th>
+                                            <th style="width: 25%;">Qty</th>
+                                            <th style="width: 25%;">UOM</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={stockSummary} for:item="item">
+                                            <tr key={item.Product__c}>
+                                                <td>{item.Product_Text__c}</td>
+                                                <td >{item.Quantity__c}</td>
+                                                <td>{item.UOM__c}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </lightning-card>
+                </template>
+            </div>
+            <div class="screen-3-bottom-bar">
+                <div class="bottom-bar-item pointer" onclick={showAllproducts}>
+                    All items
+                </div>
+                <div class="bottom-bar-item pointer" onclick={showSummaryProducts} data-name="Summary">
+                    Summary
+                </div>
+            </div>
+        </div>
+    </template>
+
+</template>

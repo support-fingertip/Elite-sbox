@@ -1,0 +1,176 @@
+/* Base styles */
+.orders {
+    z-index: 2;
+    top: 100px;
+    padding-bottom: 20px;
+    color: #000;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--root-bg-linear-gradient), var(--root-bg-image);
+}
+
+.order-title {
+    margin: 0 0 20px 0;
+    text-align: center;
+    font-size: 30px;
+    color: #02323e;
+    font-weight: bold;
+    width: 95%;
+}
+
+.order-head {
+    margin: 5px 0 20px 0;
+    width: 95%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.customer-info-grid {
+    flex: 1;
+}
+
+.order-filters {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.actionButton {
+    display: inline;
+    margin: 5px;
+    font-size: 14.5px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    width: 122px;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 33px;
+}
+
+.actionButton:hover {
+    background-color: #218838;
+}
+
+.actionButton1 {
+    display: inline;
+    margin: 5px;
+    font-size: 14.5px;
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+    width: 122px;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 33px;
+}
+
+.actionButton1:hover {
+    background-color: #f8f9fa;
+}
+
+/* Grid Container */
+.invoice-grid-container {
+    width: 95%;
+    background-color: #fff;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Grid Layout */
+.invoice-grid {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Grid Header */
+.grid-header {
+    display: grid;
+    grid-template-columns: 5% 1.5fr 1fr 1fr 1fr 0.8fr 1fr 1fr;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 12px 0;
+    border-bottom: 2px solid #ccc;
+}
+
+.grid-header .grid-cell {
+    padding: 8px 12px;
+    text-align: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.grid-header .grid-cell:last-child {
+    border-right: none;
+}
+
+/* Grid Rows */
+.grid-row {
+    display: grid;
+    grid-template-columns: 5% 1.5fr 1fr 1fr 1fr 0.8fr 1fr 1fr;
+    border-bottom: 1px solid #e5e5e5;
+    transition: background-color 0.2s;
+}
+
+.grid-row:hover {
+    background-color: #f8f9fa;
+}
+
+.grid-row:last-child {
+    border-bottom: none;
+}
+
+/* Grid Cells */
+.grid-cell {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+}
+
+.grid-cell:last-child {
+    border-right: none;
+}
+
+.grid-row .grid-cell {
+    font-size: 13px;
+}
+
+/* Input field styling within grid */
+.grid-cell lightning-input {
+    width: 100%;
+}
+
+.grid-cell lightning-input input {
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+
+    .grid-header,
+    .grid-row {
+        grid-template-columns: 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.7fr 0.8fr 0.8fr;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .invoice-grid-container {
+        overflow-x: auto;
+    }
+
+    .grid-header,
+    .grid-row {
+        min-width: 900px;
+    }
+}

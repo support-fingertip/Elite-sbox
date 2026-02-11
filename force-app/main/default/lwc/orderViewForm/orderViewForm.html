@@ -1,0 +1,87 @@
+<template>
+    <lightning-card>
+        <!-- Custom header -->
+        <div slot="title" class="slds-media slds-media_center slds-grid slds-grid_align-spread">
+            <div class="slds-media__figure">
+                <lightning-icon icon-name="custom:custom63" size="small" alternative-text="Order Items"></lightning-icon>
+            </div>
+            <div class="slds-media__body">
+                <span class="slds-text-heading_small">
+                    Order Items ({orderItemsCount})
+                </span>
+            </div>
+
+           
+        </div>
+
+
+        <!-- Table -->
+        <template if:true={orderItems}>
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th class="minwidth">Name</th>
+                            <th class="minwidth">Product</th>
+                            <th class="minwidth">Each Qty</th>
+                            <th class="minwidth">Case Qty</th>
+                            <th class="minwidth">Price</th>
+                            <th class="minwidth">Tax %</th>
+                            <th class="minwidth">Non Taxable Amt</th>
+                            <th class="minwidth">Tax Amt</th>
+                            <th class="minwidth">Total Amt</th>
+                            <th class="minwidth">Order Net Weight</th>
+                            <th class="minwidth">Delivered Each Qty</th>
+                            <th class="minwidth">Delivered Case Qty</th>
+                            <th class="minwidth">Delivered Net Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template lwc:if={orderItems}>
+                            <template for:each={orderItems} for:item="row">
+                                <tr key={row.Id}>
+                                    <!-- Name as clickable -->
+                                    <td>
+                                        <a href={row.recordUrl} target="_blank" style="color: blue; text-decoration: underline;">
+                                            {row.Name}
+                                        </a>
+                                    </td>
+                                    <!-- Product as clickable -->
+                                    <td>
+                                        <a href={row.productUrl} target="_blank" style="color: blue; text-decoration: underline;">
+                                            {row.ProductName}
+                                        </a>
+                                    </td>
+                                    <td>{row.eachQuantity}</td>
+                                    <td>{row.CaseQuantity}</td>
+                                    <td>{row.UnitPrice}</td>
+                                    <td>{row.taxPercent}</td>
+                                    <td>{row.AmountWithOutTax}</td>
+                                    <td>{row.taxAmount}</td>
+                                    <td>{row.totalAmount}</td>
+                                    <td>{row.NetWeight}</td>
+                                    <td>{row.DeliveredQty}</td>
+                                    <td>{row.DeliveredQtyInCases}</td>
+                                    <td>{row.DeliveredNetWeight}</td>
+                                </tr>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <tr>
+                                <td colspan="13">
+                                    <div class="slds-truncate" style="text-align:center">
+                                        <span style="color:red;padding:10px;font-size:large">
+                                            No records found!
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+     
+    </lightning-card>
+</template>

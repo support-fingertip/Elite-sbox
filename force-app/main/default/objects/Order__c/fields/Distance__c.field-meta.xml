@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Distance__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+    AND(
+        NOT(ISBLANK(Clock_In_Location__Latitude__s)),
+        NOT(ISBLANK(Clock_In_Location__Longitude__s)),
+        Clock_In_Location__Latitude__s &lt;&gt; 0,
+        Clock_In_Location__Longitude__s &lt;&gt; 0,
+        NOT(ISBLANK(Customer_Location__Latitude__s)),
+        NOT(ISBLANK(Customer_Location__Longitude__s)),
+        Customer_Location__Latitude__s &lt;&gt; 0,
+        Customer_Location__Longitude__s &lt;&gt; 0
+    ),
+    DISTANCE(
+        GEOLOCATION(Customer_Location__Latitude__s, Customer_Location__Longitude__s),
+        GEOLOCATION(Clock_In_Location__Latitude__s, Clock_In_Location__Longitude__s),
+        &apos;km&apos;
+    ),
+    0
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Distance</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

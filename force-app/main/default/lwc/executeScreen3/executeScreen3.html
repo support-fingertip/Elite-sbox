@@ -1,0 +1,976 @@
+<template>
+    <template lwc:if={isDesktopCheckoutPage}>
+        <div class="home">
+            <!-- When page is loading -->
+            <template lwc:if={isPageLoaded}>
+                <c-on-loading-screen></c-on-loading-screen>
+            </template>
+
+            <!-- When page loaded -->
+            <template lwc:else>
+                <div class="dropdowns">
+                    <template lwc:if={showExecuteScreen3}>
+                        <template lwc:if={isAcc}>
+                            <template if:false={isPromoter}>
+                                <template if:false={isstockCreated}>
+                                    <div class="dropdown">
+                                        <div style="text-align: center;padding:10px;color:rgb(249, 133, 1);font-size:12px">
+                                            <b>Reminder: Stock update is pending for this customer.</b>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- Summery -->
+                                <div class="dropdown">
+                                    <div class="dropdown-head">
+                                        <div class="dropdown-head-left"
+                                            onclick={toggleSummeryDropdown}>
+                                            <i
+                                                class="material-icons dropdown-head-nav-icon">
+                                                <lightning-icon
+                                                    icon-name="utility:chevronup"
+                                                    size="x-small"
+                                                    alternative-text
+                                                    class="chevron-icon-sum chevron-icon"></lightning-icon>
+                                            </i>
+                                            <h4
+                                                class="dropdown-head-title visitHeading">
+                                                <img src={summeryIcons.summery}
+                                                    width="15" height="15">
+                                                &nbsp;&nbsp;
+                                                Business Summary
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="dropdown-body-sum dropdown-body active">
+                                        <div class="dropdown-head-sum">
+                                            <div class="dashboard-container">
+                                                <div class="tile"
+                                                    onclick={openBusinesSummary}
+                                                    data-name="outstanding">
+                                                    <p
+                                                        class="title">Outstanding</p>
+                                                    <p class="amount">₹
+                                                        {businessSummery.totalOutStanding}</p>
+                                                </div>
+                                                <div class="tile"
+                                                    onclick={openBusinesSummary}
+                                                    data-name="order">
+                                                    <p class="title">Orders</p>
+                                                    <p class="amount">₹
+                                                        {businessSummery.totalOrderAmt}</p>
+                                                </div>
+                                                <div class="tile"
+                                                    onclick={openBusinesSummary}
+                                                    data-name="sales">
+                                                    <p class="title">Sales</p>
+                                                    <p class="amount">₹
+                                                        {businessSummery.totalSalesAmt}</p>
+                                                </div>
+                                                <div class="tile"
+                                                    onclick={openBusinesSummary}
+                                                    data-name="visit">
+                                                    <p class="title">Visits</p>
+                                                    <p
+                                                        class="amount">{businessSummery.AllVisit}</p>
+                                                </div>
+                                                <div class="tile"
+                                                    onclick={openBusinesSummary}
+                                                    data-name="return">
+                                                    <p class="title">Rtn Amt</p>
+                                                    <p
+                                                        class="amount">₹ {businessSummery.totalReturnAmount}</p>
+                                                </div>
+                                                <div class="tile"
+                                                    onclick={openBusinesSummary}
+                                                    data-name="return">
+                                                    <p class="title">Rtn Qty</p>
+                                                    <p
+                                                        class="amount">{businessSummery.totalReturnQty}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Order -->
+                                <div class="dropdown">
+                                    <div class="dropdown-head">
+                                        <div class="dropdown-head-left"
+                                            onclick={toggleOrderDropdown}>
+                                            <i
+                                                class="material-icons dropdown-head-nav-icon">
+                                                <lightning-icon
+                                                    icon-name="utility:chevronup"
+                                                    size="x-small"
+                                                    alternative-text
+                                                    class="chevron-icon-ord chevron-icon"></lightning-icon>
+                                            </i>
+                                            <h4
+                                                class="dropdown-head-title visitHeading">
+                                                <img src={summeryIcons.order}
+                                                    width="15"
+                                                    height="15"> &nbsp;&nbsp;
+                                                Orders
+                                            </h4>
+                                        </div>
+                                        <div class="dropdown-head-right">
+                                            <div class
+                                                onclick={openProductScreen}>
+                                                <lightning-icon
+                                                    icon-name="utility:forward"
+                                                    size="x-small"
+                                                    alternative-text
+                                                    class>
+                                                </lightning-icon>
+                                            </div>
+                                            <template lwc:if={visActionData.orderData}>
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="checkColor">
+                                                </lightning-icon>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-icon
+                                                    icon-name="utility:clock"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="cloclColor">
+                                                </lightning-icon>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-body-ord">
+                                        <div class="dropdown-head"
+                                            style="padding-bottom: 10px;">
+                                            <template lwc:if={visActionData.orderData}>
+                                                <table class="dropdown-table">
+                                                    <tbody>
+                                                        <tr>
+                                                            <template
+                                                                for:each={tableHeading.order}
+                                                                for:item="item"
+                                                                for:index="index">
+                                                                <th
+                                                                    class="slds-border_top "
+                                                                    style="width:30%"
+                                                                    key={item}><b>{item}</b></th>
+                                                            </template>
+                                                            <th class="slds-border_top" style="width:10%"><b>Download</b></th>
+                                                        </tr>
+                                                        <template
+                                                            for:each={visActionData.orderData}
+                                                            for:item="tar"
+                                                            for:index="index">
+                                                            <tr
+                                                                class="slds-border_top slds-border_bottom"
+                                                                key={tar.Id}>
+                                                                <td>{tar.Name}</td>
+                                                                <td>{tar.Total_Quantity__c}</td>
+                                                                <td>{tar.Grand_Total__c}</td>
+                                                              
+                                                                        
+                                                                <td>
+                                                                    <lightning-icon
+                                                                        icon-name="utility:download"
+                                                                        size="x-small"
+                                                                        alternative-text="Download"
+                                                                        class="downloadIcon"
+                                                                        data-id={tar.Id}
+                                                                        onclick={downloadOrderPdf}>
+                                                                    </lightning-icon>
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </template>
+                                            <template lwc:else>
+                                                <div
+                                                    class="slds-align_absolute-center">
+                                                    <b>Order not created
+                                                        yet.</b>
+                                                </div>
+                                            </template>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Primary customer related -->
+                                <template lwc:if={isPrimaryCustomer}>
+                                    <!-- Stocks -->
+                                    <div class="dropdown">
+                                        <div class="dropdown-head">
+                                            <div class="dropdown-head-left"
+                                                onclick={toggleStockDropdown}>
+                                                <i
+                                                    class="material-icons dropdown-head-nav-icon">
+                                                    <lightning-icon
+                                                        icon-name="utility:chevrondown"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class="chevron-icon-stk"></lightning-icon>
+                                                </i>
+                                                <h4
+                                                    class="dropdown-head-title visitHeading">
+                                                    <img
+                                                        src={summeryIcons.stock}
+                                                        width="15"
+                                                        height="15">
+                                                    &nbsp;&nbsp;
+                                                    Stocks
+                                                </h4>
+                                            </div>
+                                            <div class="dropdown-head-right">
+                                                <template lwc:if={isInProgress}>
+                                                    <div class
+                                                        onclick={openStockScreen}>
+                                                        <lightning-icon
+                                                            icon-name="utility:forward"
+                                                            size="x-small"
+                                                            alternative-text
+                                                            class>
+                                                        </lightning-icon>
+                                                    </div>
+                                                </template>
+                                                <template
+                                                    lwc:if={visActionData.Stock}>
+                                                    <lightning-icon
+                                                        icon-name="utility:check"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="checkColor">
+                                                    </lightning-icon>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-icon
+                                                        icon-name="utility:clock"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="cloclColor">
+                                                    </lightning-icon>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-body-stk ">
+                                            <div class="dropdown-head">
+                                                <template
+                                                    lwc:if={visActionData.Stock}>
+                                                    <table
+                                                        class="dropdown-table">
+                                                        <tbody>
+                                                            <tr>
+                                                                <template
+                                                                    for:each={tableHeading.stock}
+                                                                    for:item="item"
+                                                                    for:index="index">
+                                                                    <th
+                                                                        class="slds-border_top "
+                                                                        style="width: 25%;"
+                                                                        key={item}><b>{item}</b></th>
+                                                                </template>
+                                                            </tr>
+                                                            <template
+                                                                for:each={visActionData.Stock}
+                                                                for:item="tar"
+                                                                for:index="index">
+                                                                <tr
+                                                                    class="slds-border_top slds-border_bottom"
+                                                                    key={tar.Id}>
+                                                                    <!--<td>{tar.Product__r.Channel__c}</td>-->
+                                                                    <td>{tar.Product__r.Name}</td>
+                                                                    <td>{tar.Quantity__c}</td>
+                                                                    <td>{tar.UOM__c}</td>
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div
+                                                        class="slds-align_absolute-center">
+                                                        <b>Stocks not created
+                                                            yet.</b>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Competitor Analysis -->
+                                    <div class="dropdown">
+                                        <div class="dropdown-head">
+                                            <div class="dropdown-head-left"
+                                                onclick={toggleCompDropdown}>
+                                                <i
+                                                    class="material-icons dropdown-head-nav-icon">
+                                                    <lightning-icon
+                                                        icon-name="utility:chevrondown"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class="chevron-icon-comp"></lightning-icon>
+                                                </i>
+                                                <h4
+                                                    class="dropdown-head-title visitHeading">
+                                                    <img
+                                                        src={summeryIcons.Competitor}
+                                                        width="15" height="15">
+                                                    &nbsp;&nbsp;
+                                                    Competitor Analysis
+                                                </h4>
+                                            </div>
+                                            <div class="dropdown-head-right">
+                                                <template lwc:if={isInProgress}>
+                                                    <div class
+                                                        onclick={openCompetitorcreen}>
+                                                        <lightning-icon
+                                                            icon-name="utility:forward"
+                                                            size="x-small"
+                                                            alternative-text
+                                                            class>
+                                                        </lightning-icon>
+                                                    </div>
+                                                </template>
+
+                                                <template
+                                                    lwc:if={visActionData.Competition}>
+                                                    <lightning-icon
+                                                        icon-name="utility:check"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="checkColor">
+                                                    </lightning-icon>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-icon
+                                                        icon-name="utility:clock"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="cloclColor">
+                                                    </lightning-icon>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-body-cmp ">
+                                            <div class="dropdown-head">
+                                                <template
+                                                    lwc:if={visActionData.Competition}>
+                                                    <table
+                                                        class="dropdown-table">
+                                                        <tbody>
+                                                            <tr>
+                                                                <template
+                                                                    for:each={tableHeading.comptitor}
+                                                                    for:item="item"
+                                                                    for:index="index">
+                                                                    <th
+                                                                        class="slds-border_top "
+                                                                        key={item}><b>{item}</b></th>
+                                                                </template>
+                                                            </tr>
+                                                            <template
+                                                                for:each={visActionData.Competition}
+                                                                for:item="tar"
+                                                                for:index="index">
+                                                                <tr
+                                                                    class="slds-border_top slds-border_bottom"
+                                                                    key={tar.Id}>
+                                                                    <td>{tar.Product_Text__c}</td>
+                                                                    <td>{tar.Competitor_Name__c}</td>
+                                                                    <td>{tar.Display_boards__c}</td>
+                                                                    <td>{tar.Special_offer_going_on__c}</td>
+                                                                    <td>{tar.Remarks__c}</td>
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div
+                                                        class="slds-align_absolute-center">
+                                                        <b>Competitor not
+                                                            created
+                                                            yet.</b>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!--Returns-->
+                                <div class="dropdown">
+                                    <div class="dropdown-head">
+                                        <div class="dropdown-head-left"
+                                            onclick={toggleReturnDropdown}>
+                                            <i
+                                                class="material-icons dropdown-head-nav-icon">
+                                                <lightning-icon
+                                                    icon-name="utility:chevrondown"
+                                                    size="x-small"
+                                                    alternative-text
+                                                    class="chevron-icon-return"></lightning-icon>
+                                            </i>
+                                            <h4
+                                                class="dropdown-head-title visitHeading">
+                                                <img
+                                                    src={summeryIcons.returns}
+                                                    width="15" height="15">
+                                                &nbsp;&nbsp;
+                                                Returns
+                                            </h4>
+                                        </div>
+                                        <div class="dropdown-head-right">
+                                            <template lwc:if={isInProgress}>
+                                                <div class
+                                                    onclick={openReturnScreen}>
+                                                    <lightning-icon
+                                                        icon-name="utility:forward"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class>
+                                                    </lightning-icon>
+                                                </div>
+                                            </template>
+
+                                            <template
+                                                lwc:if={visActionData.returns}>
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="checkColor">
+                                                </lightning-icon>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-icon
+                                                    icon-name="utility:clock"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="cloclColor">
+                                                </lightning-icon>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-body-retuns ">
+                                        <div class="dropdown-head">
+                                            <template
+                                                lwc:if={visActionData.returns}>
+                                                <table
+                                                    class="dropdown-table">
+                                                    <tbody>
+                                                        <tr>
+                                                            <template
+                                                                for:each={tableHeading.returns}
+                                                                for:item="item"
+                                                                for:index="index">
+                                                                <th
+                                                                    class="slds-border_top"
+                                                                    style="width:30%"
+                                                                    key={item}><b>{item}</b></th>
+                                                            </template>
+                                                            <th class="slds-border_top" style="width:10%"><b>Download</b></th>
+                                                           
+                                                        </tr>
+                                                        <template
+                                                            for:each={visActionData.returns}
+                                                            for:item="tar"
+                                                            for:index="index">
+                                                            <tr
+                                                                class="slds-border_top slds-border_bottom"
+                                                                key={tar.Id}>
+                                                                <td>{tar.Name}</td>
+                                                                <td>{tar.Total_Quantity__c}</td>
+                                                                <td>{tar.Total_Amount__c}</td>
+                                                               
+                                                                <td>
+                                                                    <lightning-icon
+                                                                        icon-name="utility:download"
+                                                                        size="x-small"
+                                                                        alternative-text="Download"
+                                                                        class="downloadIcon"
+                                                                        data-id={tar.Id}
+                                                                        onclick={downloadReturnPdf}>
+                                                                    </lightning-icon>
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </template>
+                                            <template lwc:else>
+                                                <div
+                                                    class="slds-align_absolute-center">
+                                                    <b>Returns not created
+                                                        yet.</b>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Collections -->
+                                <div class="dropdown">
+                                    <div class="dropdown-head">
+                                        <div class="dropdown-head-left"
+                                            onclick={toggleCollectionsDropdown}>
+                                            <i
+                                                class="material-icons dropdown-head-nav-icon">
+                                                <lightning-icon
+                                                    icon-name="utility:chevrondown"
+                                                    size="x-small"
+                                                    alternative-text
+                                                    class="chevron-icon-pyt"></lightning-icon>
+                                            </i>
+                                            <h4
+                                                class="dropdown-head-title visitHeading">
+                                                <img src={summeryIcons.payment}
+                                                    width="15" height="15">
+                                                &nbsp;&nbsp;
+                                                Collections
+                                            </h4>
+                                        </div>
+                                        <div class="dropdown-head-right">
+                                            <template lwc:if={isInProgress}>
+                                                <div class
+                                                    onclick={openCollectionScreen}>
+                                                    <lightning-icon
+                                                        icon-name="utility:forward"
+                                                        size="xx-small"
+                                                        alternative-text
+                                                        class>
+                                                    </lightning-icon>
+                                                </div>
+                                            </template>
+
+                                            <template
+                                                lwc:if={visActionData.collections}>
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="checkColor">
+                                                </lightning-icon>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-icon
+                                                    icon-name="utility:clock"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="cloclColor">
+                                                </lightning-icon>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-body-pyt ">
+                                        <div class="dropdown-head">
+                                            <template
+                                                lwc:if={visActionData.collections}>
+                                                <table class="dropdown-table">
+                                                    <tbody>
+                                                        <tr>
+                                                            <!--Primary Customer-->
+                                                            <template
+                                                                if:true={isPrimaryCustomer}>
+                                                                <template
+                                                                    for:each={tableHeading.primaryCollections}
+                                                                    for:item="item"
+                                                                    for:index="index">
+                                                                    <th
+                                                                        class="slds-border_top "
+                                                                        key={item}><b>{item}</b></th>
+                                                                </template>
+                                                            </template>
+                                                            <!--Secoundary Customer-->
+                                                            <template
+                                                                if:false={isPrimaryCustomer}>
+                                                                <template
+                                                                    for:each={tableHeading.collections}
+                                                                    for:item="item"
+                                                                    for:index="index">
+                                                                    <th
+                                                                        class="slds-border_top "
+                                                                        key={item}><b>{item}</b></th>
+                                                                </template>
+                                                            </template>
+                                                        </tr>
+                                                        <template
+                                                            for:each={visActionData.collections}
+                                                            for:item="tar"
+                                                            for:index="index">
+                                                            <tr
+                                                                class="slds-border_top slds-border_bottom"
+                                                                key={tar.Name}>
+                                                                <template
+                                                                    if:true={isPrimaryCustomer}>
+                                                                    <td>{tar.Invoice_Number__c}</td>
+                                                                </template>
+                                                                <td>{tar.Mode_of_Payment__c}</td>
+                                                                <td>{tar.Amount_Received__c}</td>
+                                                                <td>{tar.UTR_Number__c}</td>
+                                                                <td>{tar.Remarks__c}</td>
+
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </template>
+                                            <template lwc:else>
+                                                <div
+                                                    class="slds-align_absolute-center">
+                                                    <b>Collections not created
+                                                        yet.</b>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--display Formats-->
+                                <div class="dropdown">
+                                    <div class="dropdown-head">
+                                        <div class="dropdown-head-left"
+                                            onclick={toggleDisplayFormatDropdown}>
+                                            <i
+                                                class="material-icons dropdown-head-nav-icon">
+                                                <lightning-icon
+                                                    icon-name="utility:chevrondown"
+                                                    size="x-small"
+                                                    alternative-text
+                                                    class="chevron-icon-Dis"></lightning-icon>
+                                            </i>
+                                            <h4
+                                                class="dropdown-head-title visitHeading">
+                                                <img src={summeryIcons.display}
+                                                    width="15" height="15">
+                                                &nbsp;&nbsp;
+                                                Display Formats
+                                            </h4>
+                                        </div>
+                                        <div class="dropdown-head-right">
+                                            <template lwc:if={isInProgress}>
+                                                <div class
+                                                    onclick={openDisplayFormatScreen}>
+                                                    <lightning-icon
+                                                        icon-name="utility:forward"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class>
+                                                    </lightning-icon>
+                                                </div>
+                                                <!-- <div class="circle" onclick={openPaymentScreen}>
+                    
+                                                <lightning-icon 
+                                                    icon-name="utility:play" 
+                                                    size="xx-small" 
+                                                    alternative-text=""
+                                                    class="invert-image playColor">
+                                                </lightning-icon>
+                                            </div>  -->
+                                            </template>
+
+                                            <template
+                                                lwc:if={visActionData.displayFormat}>
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="checkColor">
+                                                </lightning-icon>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-icon
+                                                    icon-name="utility:clock"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="cloclColor">
+                                                </lightning-icon>
+                                            </template>
+
+                                            <!-- <lightning-icon icon-name="utility:expand" size="x-small" alternative-text="Expand" ></lightning-icon> -->
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-body-Dis ">
+                                        <template
+                                            lwc:if={isdisplayDropdownOpen}>
+                                            <div class="dropdown-head">
+
+                                                <template
+                                                    lwc:if={visActionData.displayFormat}>
+                                                    <table
+                                                        class="dropdown-table">
+                                                        <tbody>
+                                                            <tr>
+                                                                <template
+                                                                    for:each={tableHeading.displayFormat}
+                                                                    for:item="item"
+                                                                    for:index="index">
+                                                                    <th
+                                                                        class="slds-border_top equal-column"
+                                                                        style="width:50%"
+                                                                        key={item}><b>{item}</b></th>
+                                                                </template>
+                                                            </tr>
+                                                            <template
+                                                                for:each={visActionData.displayFormat}
+                                                                for:item="tar"
+                                                                for:index="index">
+                                                                <tr
+                                                                    class="slds-border_top slds-border_bottom"
+                                                                    key={tar.Id}>
+                                                                    <td
+                                                                        class="equal-column"
+                                                                        style="width:50%">{tar.skuName__c}</td>
+                                                                    <td
+                                                                        class="equal-column"
+                                                                        style="width:50%">{tar.Display__c}</td>
+
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div
+                                                        class="slds-align_absolute-center">
+                                                        <b>display format not
+                                                            created
+                                                            yet.</b>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <template if:false={isPrimaryCustomer}>
+                                    <!--Order Fulfillments-->
+                                    <div class="dropdown">
+                                        <div class="dropdown-head">
+                                            <div class="dropdown-head-left"
+                                                onclick={toggleOrderFulfillmentsDropdown}>
+                                                <i
+                                                    class="material-icons dropdown-head-nav-icon">
+                                                    <lightning-icon
+                                                        icon-name="utility:chevrondown"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class="chevron-icon-ordFul"></lightning-icon>
+                                                </i>
+                                                <h4
+                                                    class="dropdown-head-title visitHeading">
+                                                    <img
+                                                        src={summeryIcons.orderfulfilment}
+                                                        width="15" height="15">
+                                                    &nbsp;&nbsp;
+                                                    Order Fulfillments
+                                                </h4>
+                                            </div>
+                                            <div class="dropdown-head-right">
+                                                
+                                                <div class
+                                                    onclick={openOrderFulfillmentsScreen}>
+                                                    <lightning-icon
+                                                        icon-name="utility:forward"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class>
+                                                    </lightning-icon>
+                                                </div>
+                                          
+                                                <template
+                                                    lwc:if={visActionData.orderfulfillments}>
+                                                    <lightning-icon
+                                                        icon-name="utility:check"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="checkColor">
+                                                    </lightning-icon>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-icon
+                                                        icon-name="utility:clock"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="cloclColor">
+                                                    </lightning-icon>
+                                                </template>
+
+                                                <!-- <lightning-icon icon-name="utility:expand" size="x-small" alternative-text="Expand" ></lightning-icon> -->
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-body-ordFul">
+                                            <template
+                                                lwc:if={isOrderFuldropdownOpen}>
+
+                                                <div class="dropdown-head">
+
+                                                    <template
+                                                        lwc:if={visActionData.orderfulfillments}>
+                                                        <table
+                                                            class="dropdown-table">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <template
+                                                                        for:each={tableHeading.orderfulfillments}
+                                                                        for:item="item"
+                                                                        for:index="index">
+                                                                        <th
+                                                                            class="slds-border_top equal-column"
+                                                                            style="width:33%"
+                                                                            key={item}><b>{item}</b></th>
+                                                                    </template>
+                                                                </tr>
+                                                                <template
+                                                                    for:each={visActionData.orderfulfillments}
+                                                                    for:item="tar"
+                                                                    for:index="index">
+                                                                    <tr
+                                                                        class="slds-border_top slds-border_bottom"
+                                                                        key={tar.Id}>
+                                                                        <td
+                                                                            class="equal-column"
+                                                                            style="width:33%">{tar.Name}</td>
+
+                                                                        <td
+                                                                            class="equal-column"
+                                                                            style="width:33%">{tar.Order_Fulfillment_Status__c}</td>
+                                                                        <td
+                                                                            class="equal-column"
+                                                                            style="width:33%">{tar.Order_Type__c}</td>
+                                                                    </tr>
+                                                                </template>
+                                                            </tbody>
+                                                        </table>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <div
+                                                            class="slds-align_absolute-center">
+                                                            <b>Order fulfillments not created yet.</b>
+                                                        </div>
+                                                    </template>
+                                                </div>
+
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:true={isPromoter}>
+                                <!--shelf stock-->
+                                <div class="dropdown">
+                                    <div class="dropdown-head">
+                                        <div class="dropdown-head-left"
+                                            onclick={toggleShelfStockDropdown}>
+                                            <i
+                                                class="material-icons dropdown-head-nav-icon">
+                                                <lightning-icon
+                                                    icon-name="utility:chevrondown"
+                                                    size="x-small"
+                                                    alternative-text
+                                                    class="chevron-icon-shelfstock"></lightning-icon>
+                                            </i>
+                                            <h4
+                                                class="dropdown-head-title visitHeading">
+                                                <img src={summeryIcons.returns}
+                                                    width="15" height="15">
+                                                &nbsp;&nbsp;
+                                                Shelf Stock
+                                            </h4>
+                                        </div>
+                                        <div class="dropdown-head-right">
+                                            <template lwc:if={isInProgress}>
+                                                <div class
+                                                    onclick={openShelfStockScreen}>
+                                                    <lightning-icon
+                                                        icon-name="utility:forward"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class>
+                                                    </lightning-icon>
+                                                </div>
+                                            </template>
+
+                                            <template
+                                                lwc:if={visActionData.ShelfStocks}>
+                                                <lightning-icon
+                                                    icon-name="utility:check"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="checkColor">
+                                                </lightning-icon>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-icon
+                                                    icon-name="utility:clock"
+                                                    size="small"
+                                                    alternative-text
+                                                    class="cloclColor">
+                                                </lightning-icon>
+                                            </template>
+
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-body-shelfstock">
+                                        <template
+                                            lwc:if={isShelfStockDropdownOpen}>
+                                            <div class="dropdown-head">
+                                                <template
+                                                    lwc:if={visActionData.ShelfStocks}>
+                                                    <table
+                                                        class="dropdown-table">
+                                                        <tbody>
+                                                            <tr>
+                                                                <template
+                                                                    for:each={tableHeading.ShelfStocks}
+                                                                    for:item="item"
+                                                                    for:index="index">
+                                                                    <th
+                                                                        class="slds-border_top"
+                                                                        style="width:20%"
+                                                                        key={item}><b>{item}</b></th>
+                                                                </template>
+                                                            </tr>
+                                                            <template
+                                                                for:each={visActionData.ShelfStocks}
+                                                                for:item="tar"
+                                                                for:index="index">
+                                                                <tr
+                                                                    class="slds-border_top slds-border_bottom"
+                                                                    key={tar.Id}>
+                                                                    <td>{tar.Name}</td>
+                                                                    <td>{tar.skuName__c}</td>
+                                                                    <td>{tar.Stock_Level__c}</td>
+                                                                    <td>{tar.Sales_Quantity__c}</td>
+
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div
+                                                        class="slds-align_absolute-center">
+                                                        <b>Shelf stocks not
+                                                            created
+                                                            yet.</b>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </template>
+    <template lwc:if={completeVisit}>
+        <c-create-visit-popup record-id={recordId} is-desktop={isDesktop}
+            onmyvisitclick={createNewVisit}  is-primary-customer={isPrimaryCustomer}
+            complete-visit={completeVisit}></c-create-visit-popup>
+    </template>
+    <template lwc:if={newvisitFormPoup}>
+        <!--<c-create-visit-form record-id={recordId} daily-log-id={currentLogId}
+            is-desktop={isDesktop} onclosemodal={handleCloseVisitFormPopup}
+            onleadcreated={handleCreateVisitFormPopup}></c-create-visit-form>-->
+    </template>
+</template>

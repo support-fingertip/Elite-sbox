@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Today_Created</fullName>
+    <columns>NAME</columns>
+    <columns>Target_Quantity_KG__c</columns>
+    <columns>Actual_Quantity_KG__c</columns>
+    <columns>Sales_Channel__c</columns>
+    <columns>Year__c</columns>
+    <columns>SKU__c</columns>
+    <columns>Customer__c</columns>
+    <columns>User__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>CREATED_DATE</field>
+        <operation>equals</operation>
+        <value>TODAY</value>
+    </filters>
+    <label>Today Created</label>
+</ListView>

@@ -1,0 +1,42 @@
+.upload-box {
+    --slds-c-file-selector-color-background: #ffffff;
+    --slds-c-file-selector-border-color: #d8dde6;
+    display: inline-block;
+    text-align: center;
+    border: 1px dashed #d8dde6;
+    padding: 1rem;
+    border-radius: 6px;
+    width: 100%;
+}
+
+h3 {
+    font-weight: 600;
+}
+.fullscreen-camera-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.icon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .icon {
+    width: 40px; 
+    height: 40px; 
+  }
+  .icon-label { 
+    margin-top: 0.1rem; 
+    font-size: 12px; 
+  }

@@ -1,0 +1,127 @@
+<template>
+    <div class="custom1">
+        <div class="screen-1">
+
+            <template lwc:if={isPageLoaded}>
+                <c-on-loading-screen></c-on-loading-screen>
+            </template>
+
+            <template lwc:else>
+                <div class="main-heading">
+                    <h1>{header}</h1>
+                </div>
+
+                <div class="container">
+                    <div class="header">
+                        <div class="input-group">
+                            <lightning-input label="Name" name="name" value={values.name} class="input-field" onchange={handleChangeValues}></lightning-input>
+                            <lightning-input type="date" label="Scheme Start Date" name="startDate" value={values.startDate} class="input-field" onchange={handleChangeValues}></lightning-input>
+                            <lightning-input type="date" label="Scheme End Date" name="endDate" value={values.endDate} class="input-field" onchange={handleChangeValues}></lightning-input>
+                            <lightning-textarea label="Description" name="Description" value={values.Description} class="input-field" onchange={handleChangeValues}></lightning-textarea>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <template lwc:if={isSaveButton}>
+                            <lightning-button label="Save" variant="brand" onclick={handleSave}></lightning-button>
+                        </template>
+                        <template lwc:else>
+                            <lightning-button label="Done" variant="brand" onclick={handleDone}></lightning-button>
+                            <lightning-button label="Previous" variant="brand" onclick={handlePrevious}></lightning-button>
+                        </template>
+                        <lightning-button label="Cancel" variant="brand" onclick={handleCancel}></lightning-button>
+                    </div>
+                </div>
+
+                <template lwc:if={isSubPartLoaded}>
+                    <c-on-loading-screen></c-on-loading-screen>
+                </template>
+
+                <template lwc:else>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Sales Channel</th>
+                                    <th>Scheme Type</th>
+                                    <th>Product</th>
+                                    <th>Free Qty (EA)</th>
+                                    <th>Sale Value (%)</th>
+                                    <th>Threshold Value (INR / EA)</th>
+                                    <th>Discount(/EA)</th>
+                                    <th>Min (EA)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={productsToShow} for:item="product" for:index="i">
+                                    <tr key={product.id}>
+                                        <td>
+                                            <lightning-combobox name="salesChannel" value={product.salesChannel} options={salesChannelOptions} data-index={i} onchange={handleProductVal} class="input-box"></lightning-combobox>
+                                        </td>
+                                        <td>
+                                            <lightning-combobox name="schemeType" value={product.schemeType} options={schemeTypeOptions} data-index={i} onchange={handleProductVal} class="input-box"></lightning-combobox>
+                                        </td>
+                                        <td>
+                                            <div class="search-wrapper">
+    <lightning-input type="search" name="searchValueDta" value={product.searchValueDta} class="input-box"
+        placeholder="Search Product" data-index={i} onchange={handleSearchPro} onblur={handleOnBlur}>
+    </lightning-input>
+
+    <template lwc:if={product.isValueSearched}>
+        <div class="product-search-dropdown">
+            <template for:each={product.showDataDropDown} for:item="srch">
+                <ul key={srch.Id} class="slds-listbox slds-listbox_vertical">
+                    <li class="slds-listbox__item">
+                        <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                            role="option" onclick={selectProName} data-id={srch.Id} data-name={srch.Name} data-index={i}>
+                            <lightning-icon icon-name="action:new_account" size="xx-small"></lightning-icon>
+                            &nbsp;&nbsp;
+                            <span class="slds-media__body">
+                                <span class="slds-truncate" title={srch.Name}>{srch.Name}</span>
+                            </span>
+                        </div>
+                    </li>
+                </ul>
+            </template>
+        </div>
+    </template>
+</div>
+                                        </td>
+                                        <td>
+                                            <lightning-input type="number" name="buyQuantity" value={product.buyQuantity} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isBuyQnt}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input type="number" name="SaleValue" value={product.SaleValue} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isBuyVal}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input type="number" name="PerKg" value={product.PerKg} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isOfferQnt}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input type="percent" name="Discount" value={product.Discount} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isDiscount}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input type="number" name="min" value={product.min} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isMin}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <div class="slds-button-group slds-m-top_small" role="group">
+                                                <lightning-button-icon icon-name="utility:new" class="slds-m-right_x-small" data-index={i} onclick={handleAddRow}></lightning-button-icon>
+                                                <lightning-button-icon 
+    icon-name="utility:copy" 
+    class="slds-m-right_x-small" 
+    data-index={i} 
+    onclick={handleCloneRow}>
+</lightning-button-icon>
+                                                <lightning-button-icon icon-name="utility:delete" data-index={i} onclick={handleRemoveRow}></lightning-button-icon>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>

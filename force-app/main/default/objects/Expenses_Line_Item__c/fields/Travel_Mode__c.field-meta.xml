@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Travel_Mode__c</fullName>
+    <externalId>false</externalId>
+    <label>Travel Mode</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Car</fullName>
+                <default>false</default>
+                <label>Car</label>
+            </value>
+            <value>
+                <fullName>Bike</fullName>
+                <default>false</default>
+                <label>Bike</label>
+            </value>
+            <value>
+                <fullName>Taxi</fullName>
+                <default>false</default>
+                <label>Taxi</label>
+            </value>
+            <value>
+                <fullName>Bus</fullName>
+                <default>false</default>
+                <label>Bus</label>
+            </value>
+            <value>
+                <fullName>Train</fullName>
+                <default>false</default>
+                <label>Train</label>
+            </value>
+            <value>
+                <fullName>Air - Economy</fullName>
+                <default>false</default>
+                <label>Air - Economy</label>
+            </value>
+            <value>
+                <fullName>Train - AC 1 Tier</fullName>
+                <default>false</default>
+                <label>Train - AC 1 Tier</label>
+            </value>
+            <value>
+                <fullName>Train - AC 2 Tier</fullName>
+                <default>false</default>
+                <label>Train - AC 2 Tier</label>
+            </value>
+            <value>
+                <fullName>Train - AC 3 Tier</fullName>
+                <default>false</default>
+                <label>Train - AC 3 Tier</label>
+            </value>
+            <value>
+                <fullName>Train - Sleeper</fullName>
+                <default>false</default>
+                <label>Train - Sleeper</label>
+            </value>
+            <value>
+                <fullName>AC Car</fullName>
+                <default>false</default>
+                <label>AC Car</label>
+            </value>
+            <value>
+                <fullName>AC Bus</fullName>
+                <default>false</default>
+                <label>AC Bus</label>
+            </value>
+            <value>
+                <fullName>Non-AC Bus</fullName>
+                <default>false</default>
+                <label>Non-AC Bus</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

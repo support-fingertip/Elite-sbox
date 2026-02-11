@@ -1,0 +1,91 @@
+<template>
+  
+     <!-- When page sub part is loading -->
+     <template lwc:if={isSubPartLoad}> 
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+    <!-- When page sub part loaded -->
+    <template lwc:else>
+        <template lwc:if={isDesktop}>
+            <lightning-card >
+            
+                <div class="month-year-header">
+                    {currentMonth} - {currentYear}
+                </div>
+            
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <span>Sun</span>
+                        <span>Mon</span>
+                        <span>Tue</span>
+                        <span>Wed</span>
+                        <span>Thu</span>
+                        <span>Fri</span>
+                        <span>Sat</span>
+                    </div>
+                    <div class="calendar-grid">
+
+                        <template for:each={calendarDays} for:item="day">
+                            <div key={day.formattedDate} class="calendar-cell">
+                                <template if:true={day.date}>
+                                    <div class="date-number">{day.dayNumber}</div>
+                        
+                                    <!-- Display visible records -->
+                                    <template for:each={day.visibleRecords} for:item="record">
+                                        <div key={record.Id} data-id={record.Id} class="record" onclick={openRecord}>
+                                            {record.Name}
+                                        </div>
+                                    </template>
+                        
+                                    <!-- Always keep this button at the bottom -->
+                                    <div class="more-button-container">
+                                        <template if:true={day.hasMore}>
+                                            <button class="more-btn" data-date={day.formattedDate} onclick={toggleMore}>
+                                                <template if:false={day.showAll}>More...</template>
+                                                <template if:true={day.showAll}>Show Less</template>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        
+                        
+                    </div>
+                </div>
+            </lightning-card>
+        </template>
+        <template lwc:if={isPhone}>
+            <lightning-card>
+                <div class="month-year-header">{currentMonth} - {currentYear}</div>
+                <div class="mobile-calendar">
+                    <template for:each={calendarDays} for:item="day">
+                        <template if:true={day.date}>
+                            <div key={day.formattedDate} class="mobile-day">
+                                <div class="mobile-day-header">
+                                    {day.dayName}, {day.dayNumber} {currentMonth}
+                                </div>
+                                <template for:each={day.visibleRecords} for:item="record">
+                                    <div key={record.Id} data-id={record.Id} class="record" onclick={openRecord}>
+                                        {record.Name}
+                                    </div>
+                                </template>
+                                <div class="more-button-container">
+                                    <template if:true={day.hasMore}>
+                                        <button class="more-btn" data-date={day.formattedDate} onclick={toggleMore}>
+                                            <template if:false={day.showAll}>More...</template>
+                                            <template if:true={day.showAll}>Show Less</template>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </lightning-card>
+            
+        </template>                                
+    </template>
+
+</template>

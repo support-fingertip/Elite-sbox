@@ -1,0 +1,56 @@
+<template>
+    <div class="slds-form-element">
+        <label class="slds-form-element__label"><small>{labelName}</small></label>
+        <div class="slds-combobox_container">
+            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus">
+                
+                <!-- Search Input -->
+                <lightning-input 
+                    value={searchInput} 
+                    onchange={onchangeSearchInput} 
+                    variant="label-hidden" 
+                    placeholder="Search..." 
+                    type="search">
+                </lightning-input>
+
+                <!-- Display Selected Pills -->
+                <div class="slds-pill-container">
+                    <template for:each={selectedItems} for:item="selectedItem">
+                        <lightning-pill key={selectedItem.value} label={selectedItem.label} 
+                            name={selectedItem.value} 
+                            data-item={selectedItem.value}
+                            onremove={handleRemoveRecord}>
+                            <lightning-icon icon-name={iconName} variant="circle" 
+                                alternative-text={selectedItem.label}>
+                            </lightning-icon>
+                        </lightning-pill>
+                    </template>
+                </div>
+
+                <!-- Search Results -->
+                <template if:true={filteredOptions.length}>
+                    <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid">
+                        <ul class="slds-listbox slds-listbox_vertical" role="listbox">
+                            <template for:each={filteredOptions} for:item="option">
+                                <li key={option.value} role="presentation" class="slds-listbox__item">
+                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain"
+                                        role="option" data-value={option.value} onclick={handleSelect}>
+                                        <span class="slds-media__body">
+                                            <span class="slds-truncate" title={option.label}>{option.label}</span>
+                                        </span>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </template>
+
+                <!-- No Records Found -->
+                <template if:true={isDisplayMessage}>
+                    <p class="slds-text-color_error slds-m-top_xx-small">No records found.</p>
+                </template>
+
+            </div>
+        </div>
+    </div>
+</template>

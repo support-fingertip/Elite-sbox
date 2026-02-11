@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Company_Address__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE(
+    TEXT(Sales_Organization__c),
+    &apos;1300&apos;,&apos;SIDCO Industrial Estate, P.O. Peringandoor, Athani, Thrissur - 680 581, Kerala, India.&apos;,
+    &apos;1500&apos;, &apos;Plot No. 21, SIPCOT Industrial Complex, Phase II, Hosur, Tamil Nadu.&apos;,
+    &apos;1100&apos;, &apos;Athani, Velappaya P. O Kerala Head Office &amp; Factory, No. 22- A, Development Plot, Peringandoor P. O, Thrissur-680581, Kerala, India&apos;,
+    &apos;SIDCO Industrial Estate, P.O. Peringandoor, Athani, Thrissur - 680 581, Kerala, India.&apos;  /* Default */
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Company Address</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

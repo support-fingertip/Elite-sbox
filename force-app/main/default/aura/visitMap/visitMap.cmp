@@ -1,0 +1,76 @@
+<aura:component controller="VisitMapController" 
+                implements="force:appHostable,force:hasRecordId,flexipage:availableForRecordHome,force:hasRecordId,force:appHostable,flexipage:availableForAllPageTypes"
+                access="global">
+    <!--extends="c:BaseComponent"  -->
+    
+    <aura:attribute name="startdate" type="Date" />
+    <aura:attribute name="users" type="object[]" />
+    <aura:attribute name="summaryCount" type="Object"/>
+    <aura:attribute name="getMeeting" type="object" />
+    <aura:attribute name="checkin" type="Boolean" default="false"/>
+    <aura:attribute name="CreateNewOpp" type="boolean" default="false"/>
+    <aura:attribute name="lstvisit" type="object[]" />
+    <aura:attribute name="allmeetings" type="object[]" />
+     <aura:attribute name="expecteddistace" type="Decimal" default="0"/>
+    <aura:attribute name="expenses" type="object[]" />
+    <aura:attribute name="dailyLog" type="object" />
+    <aura:attribute name="ClockInClockOutDay" type="object"/>
+   
+ <!-- map attributes -->
+    <aura:attribute name="lcHost" type="String" />    
+    <aura:attribute name="showMap" type="Boolean" default="false"/>
+    <aura:attribute name="mapData" type="Object[]"/>
+    <aura:attribute name="mapOptionsCenter" type="Object"/>
+     <aura:attribute name="mapOptions" type="Object" default='{"zoom": 12},{"mapTypeId": google.maps.MapTypeId.ROADMAP}' />
+      <aura:attribute name="showMapButton" type="boolean" default="true"/>
+    <aura:attribute name="vfHost" type="String" default="" />
+   
+    
+    <aura:handler name="change" value="{!v.startdate}" action="{!c.startdate}"></aura:handler>
+    <aura:handler name="change" value="{!v.users}" action="{!c.selectUsers}"></aura:handler> 
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"></aura:handler>
+    
+    
+     <aura:attribute name="gmapPoints" type="String" default="[]"/>
+     <aura:attribute name="refreshMap" type="boolean" default="true"/>
+    <aura:attribute name="selectedItem" type="Object"/>   
+       
+       
+      
+        <aura:attribute name="recordId" type="ID" />
+       
+       
+        <aura:attribute name="loadMap" type="Boolean" default="false" />
+     
+        
+        <div aura:id="visitMnager" class="slds-grid slds-wrap slds-grid_pull-padded-x-small">
+            
+
+            <aura:if isTrue="{!v.showMap}">
+                <div class="slds-size_1-of-1 slds-medium-size_8-of-12 slds-p-horizontal_x-small tm-mob-map">
+                    <div class="slds-card slds-card--bordered slds-p-around--medium">
+                        <aura:if isTrue="{!v.mapData.length > 0}">
+                            <aura:if isTrue="{!v.refreshMap}">
+                               <!-- ​🔴 CHECK-OUT<BR/>
+                                ​🟠 PLANNED<BR/>
+                                ​🟡 INCOMPLETED<BR/>
+                                ​🟢 COMPLETED<BR/>
+                                ​🔵 CHECK-IN <BR/><BR/>-->
+                                <iframe aura:id="vfFrame" frameborder="0" src="{! '/apex/GoogleMap?lcHost=' + v.lcHost}" width="100%" height="434"/>
+                                <aura:set attribute="else"> 
+                                    <iframe aura:id="vfFrame" frameborder="0"  src="{! '/apex/GoogleMap?lcHost=' + v.lcHost}" width="100%" height="434"/> 
+                                </aura:set>
+                            </aura:if>
+                            <aura:set attribute="else">
+                                <div class="no-map">
+                                    No Visits completed or in progress.
+                                </div>
+                            </aura:set>
+                        </aura:if>
+                    </div>
+                </div>
+            </aura:if>
+    </div>     
+    <lightning:spinner aura:id="timeSpinner" class="slds-hide"/>
+    
+</aura:component>

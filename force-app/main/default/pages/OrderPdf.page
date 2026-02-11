@@ -1,0 +1,277 @@
+<apex:page standardController="Order__c" extensions="OrderPdfController" renderAs="pdf"  
+           showHeader="false" standardStylesheets="false"  
+           applyBodyTag="false" applyHtmlTag="false">
+    
+    <html>
+        <head>
+            <style type="text/css">
+                /* Page and Body styling */
+                @page {
+                size: A4 landscape;
+                margin: 1cm;
+                }
+                body {
+                font-family: Arial, sans-serif;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                }
+                .header, .footer {
+                text-align: center;
+                padding: 15px;
+                font-weight: bold;
+                }
+                .header {
+                background-color: #4A90E2;
+                color: white;
+                margin-bottom: 20px;
+                }
+                .footer {
+                font-size: 12px;
+                color: #666;
+                border-top: 1px solid #ccc;
+                }
+                .pagenumber:before {
+                content: counter(page);
+                }
+                
+                /* Company and Table Styles */
+                .company-name {
+                text-align: center;
+                background-color: #EFEFEF;
+                padding: 10px;
+                font-size: 18px;
+                color: #555;
+                border-radius: 5px;
+                margin-bottom: 20px;
+                }
+                .table {
+                width: 100%;
+                border-collapse: collapse;
+                page-break-inside: auto;
+                }
+                .table th, .table td {
+                border: 1px solid #ccc;
+                padding: 10px;
+                text-align: center;
+                font-size: 14px;
+                }
+                .table th {
+                color: black;
+                font-weight: bold;
+                }
+                  th {
+                background-color: #f0f0f0;
+                color: black;
+                font-weight: bold;
+                }
+                .table tr:nth-child(even) {
+                background-color: #f9f9f9;
+                }
+                .highlight-row {
+                font-weight: bold;
+                }
+                .data-cell {
+                font-size: 11px;
+                color: black;
+                }
+                thead {
+                display: table-header-group;
+                }
+                
+                tbody {
+                display: table-row-group;
+                }
+
+                tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+                }
+                
+
+            </style>
+        </head>
+        
+        <body>
+            <div style="font-size: 18px; font-weight:bold;  margin-bottom:0;text-align:center">   
+                <h3 style="margin: 0;">
+                    Order
+                </h3>
+            </div>
+            <table style="border: none; margin-top:0;">
+                <tr >
+                    <td>
+                        <!--Header-->
+                        
+                        <table width="100%" style="table-layout: fixed; border-collapse: separate;margin-top:0; border: 1px solid #ccc;" styleClass="alldatatables">
+                            <tr>
+                                <td style="width:20% ">
+                                    <apex:image value="{!URLFOR($Resource.eliteLogo)}" style="width:70%; height:25%;padding-top:0px"/>
+                                </td>
+                                <td style="width:80%;vertical-align:top;padding-bottom:5px;padding-left:180px"> 
+                                    
+                                    <div style="font-size: 18px; font-weight: bold; color: #000;">
+                                        <h3>{!companyName}</h3>
+                                    </div>
+                                    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="text-align:center;vertical-align:top; font-weight: normal;font-size: 13px;padding-bottom:5px ">
+                                    {!companyAddress}
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td colspan="2" style="text-align:center; vertical-align:top; font-weight: normal; font-size: 13px;padding-bottom:10px">
+                                    <apex:image value="{!URLFOR($Resource.Email_Logo)}" alt="Email" style="width:15px; height:10px;" /> 
+                                    &nbsp;&nbsp;customercare@eliteindia.com &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <apex:image value="{!URLFOR($Resource.Phone_Logo)}" alt="Phone" style="width:15px; height:10px;" />
+                                    &nbsp;&nbsp; 1800 425 4305
+                                </td>
+                            </tr>
+                            
+                        </table>
+                        
+                        <!--Address-->
+                        
+                        <table  width="100%" style="table-layout: fixed;border-collapse: separate;border-spacing: 0; margin-top:0px; border: 1px solid #ccc;"
+                               styleClass="alldatatables">
+                            <tr>
+                                <td  style="text-align:left; vertical-align:top; font-weight: bold; font-size: 11px;">
+                                    
+                                    <div style="margin-left:10px;margin-top:5px;margin-bottom:5px;">   
+                                            Customer Name : {!customerName}
+                                    </div>
+                                    <div style="margin-left:10px;margin-bottom:5px;">   
+                                        Order No : {!orderNo}
+                                    </div>
+                                    <div style="margin-left:10px;margin-bottom:5px;">   
+                                        Delivery To : {!deliveredTo}
+                                    </div>
+                                    
+                                </td>
+                                <td  style="text-align:right; vertical-align:bottom; font-weight: bold; font-size: 11px;">
+                                    <div style="margin-bottom:5px;padding-right:10px">
+                                        Date: {!orderDate}
+                                    </div>
+                                     <div style="margin-bottom:5px;padding-right:10px">
+                                        Expected Delivery Date: {!expectedDelivaryDate}
+                                    </div>
+                                </td>
+                            </tr> 
+                        </table>
+                        
+                        <!-- Detailed Information Table -->
+                     
+                        <table class="table" >
+                            <thead style="display: table-header-group;">
+                                <tr>
+                                    <th style="width:4%">S. No.</th>
+                                    <th style="width:36%">Sku Name</th>
+                                    <th style="width:10%">Quantity</th> 
+                                    <th style="width:10%">Price</th>
+                                    <th style="width:10%">GST %</th>
+                                    <th style="width:10%">GST Amount</th>
+                                    <th style="width:10%">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody style="display: table-row-group;">
+                                <apex:repeat value="{!oItemList}" var="itm">
+                                    <tr>
+                                        <td class="data-cell">{!itm.index}</td>
+                                        <td class="data-cell">{!itm.skuName}</td>
+                                        <td class="data-cell">{!itm.quantity}</td>
+                                        <td class="data-cell">{!itm.unitPrice}</td>
+                                        <td class="data-cell">{!itm.taxpercent}</td>
+                                        <td class="data-cell">{!itm.taxAmount}</td>
+
+                                        <td class="data-cell">
+                                            <apex:outputText value="{!IF(itm.totalAmount != null, itm.totalAmount, 0)}" />
+                                        </td>
+                                        
+                                        
+                                    </tr>
+                                </apex:repeat>
+                                <tr >
+                                    
+                                    <td class="data-cell"></td>
+                                    <td class="data-cell">Total</td>
+                                    <td class="data-cell">
+                                        <apex:outputText value="{!IF(totalQuantity != null, totalQuantity, 0)}" />
+                                    </td>
+                                    <td class="data-cell"></td>
+                                    <td class="data-cell"></td>
+                                    <td class="data-cell"></td>
+                                    <td class="data-cell">
+                                        <apex:outputText value="{!IF(totalAmount != null,totalAmount, 0)}" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <!--Amount In Words-->  
+                        
+                        <table width="100%" style="table-layout: fixed; border-collapse: separate;margin-top:0;border: 1px solid #ccc;" styleClass="alldatatables">
+                            <tr>
+                                <td style="width:100%;text-align:left;vertical-align:top;padding-bottom:10px "> 
+                                    <div style="font-size: 12px; font-weight: bold; color: #000;padding-top:3px;padding-bottom:3px;">
+                                        Total Amount in Words :
+                                        <span style="word-wrap: break-word;font-size: 12px; font-weight: bold; color: #000;">
+                                            {!IF(finalAmtinWords!=null,finalAmtinWords,'')}
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        
+                        
+                        <table width="100%" style="table-layout: fixed; border-collapse: separate;margin-top:0;border: 1px solid #ccc" styleClass="alldatatables">
+                            <tr>
+                                
+                                <td style="width:70%;text-align:left;vertical-align:top;padding-bottom:5px;padding-left:5px;padding-top:5px; "> 
+                                    <div style="font-size: 12px; font-weight: bold; color: #000;padding-bottom:5px">
+                                        Authorize status: Authorized
+                                    </div>
+                                </td>
+                                <td style="width:30%;text-align:left;vertical-align:top;padding-bottom:5px;padding-left:5px "> 
+                                    <div style="font-size: 12px; font-weight: bold; color: #000;padding-bottom:5px">
+                                        {!companyName}
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                
+                                <td style="width:70%;text-align:left;vertical-align:top;padding-bottom:5px;padding-left:5px;padding-top:5px;"> 
+                                    <div style="font-size: 12px; font-weight: bold; color: #000;padding-bottom:5px;">
+                                        Order Created By : {!ownerName}
+                                    </div>
+                                </td>
+                                <td style="width:30%;text-align:left;vertical-align:bottom;padding-bottom:5px "> 
+                                    <div style="font-size: 12px; font-weight: bold; color: #000;padding-bottom:5px">
+                                        Authorised Signatory
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                        </table>
+                        
+                        
+                        
+                        
+                    </td>
+                </tr>
+            </table>
+            <div style="font-size: 12px; font-weight:bold;  margin-top:10px;text-align:center">   
+                <h3>
+                    This is a Computer Generated Order
+                </h3>
+                
+            </div>
+            
+           
+            
+        </body>
+    </html>
+</apex:page>

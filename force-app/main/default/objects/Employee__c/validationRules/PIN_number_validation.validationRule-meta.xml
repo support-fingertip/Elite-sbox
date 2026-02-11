@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>PIN_number_validation</fullName>
+    <active>false</active>
+    <errorConditionFormula>AND(
+    NOT(ISBLANK(Pincode__c)),
+    OR(
+        NOT(ISNUMBER(Pincode__c)),
+        LEN(Pincode__c) &lt;&gt; 6
+    )
+)</errorConditionFormula>
+    <errorDisplayField>Pincode__c</errorDisplayField>
+    <errorMessage>Please Enter Valid Pin Code</errorMessage>
+</ValidationRule>

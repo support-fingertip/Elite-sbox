@@ -1,0 +1,234 @@
+<template>
+    <!-- When page is loading -->
+    <template lwc:if={isPageLoaded}>  
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+    
+    <!-- When page loaded -->
+    <template lwc:else>
+        <div class="home">
+            <div class="tasks"> 
+                <!--All Products-->
+                <template lwc:if={showAllProducts}>
+
+                    <!--Collection Items-->
+                    <template for:each={collectionItems} for:item="cItem" for:index="index">
+                        <div  key={cItem.index}  class="slds-card border">
+                            <template if:true={isPrimaryCustomer}>
+                                <div class="slds-card__header" style="text-align:left">
+                                    <div class="outlet-title">
+                                        <span class="icon-wrapper">
+                                            <img src={googleIcons.invoices} class="custom-icon" width="20" height="20" />
+                                        </span>
+                                        &nbsp;
+                                        <template lwc:if={cItem.isAdwanceAmount}>
+                                            <b> Advance Amount</b>
+                                        </template>
+                                        <template lwc:else>
+                                            <b>{cItem.Invoice_Number__c} ({cItem.Invoice_Date__c})</b>
+                                        </template>
+                                 
+                                    </div>
+                                </div>
+                            </template>
+                            <template if:false={isPrimaryCustomer}>
+                                <template if:true={isPhone}>
+                                    <div class="slds-card__header" style="text-align:right">
+                                        <lightning-button-icon 
+                                        icon-name="utility:delete"
+                                        onclick={removeRow} 
+                                        data-index={index}>
+                                        </lightning-button-icon>
+                                        <lightning-button-icon 
+                                            icon-name="utility:add"
+                                            onclick={addRow}
+                                            data-index={index}>
+                                        </lightning-button-icon>
+                                    </div>
+                                </template>
+                            </template>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <div class="slds-grid slds-wrap"> 
+                                    <!--Primary Customer Fields-->
+                                    <template if:true={isPrimaryCustomer}>
+                                        <template if:false={cItem.isAdwanceAmount}>
+                                            <div class={cItem.customClass}>
+                                                <lightning-input
+                                                    label="Outstanding Amount"
+                                                    data-index={index}
+                                                    type="text"
+                                                    name="Outstanding_Amount__c"
+                                                    value={cItem.Outstanding_Amount__c} 
+                                                    disabled="true"
+                                                    onchange={handleInputChange}>
+                                                </lightning-input> 
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <!--Amount_Received__c-->
+                                    <div class={cItem.customClass}>
+                                        <lightning-input
+                                            label="Received Amount"
+                                            data-index={index}
+                                            type="number"
+                                            name="Amount_Received__c"
+                                             min="0"
+                                            value={cItem.Amount_Received__c} 
+                                            data-id="collectionFields" 
+                                            message-when-value-missing="Enter Received Amount"
+                                            required={isAmountRequired}
+                                            onchange={handleInputChange}>
+                                        </lightning-input> 
+                                    </div>
+                                    <!--Mode_of_Payment__c-->
+                                    <div class={cItem.customClass}>
+                                        <lightning-combobox
+                                            label="Mode of Payment"
+                                            data-index={index}
+                                            data-id="collectionFields" 
+                                            name="Mode_of_Payment__c"
+                                            value={cItem.Mode_of_Payment__c}
+                                            dropdown-alignment="auto"
+                                            options={modeOfPaymentOptions}
+                                            message-when-value-missing="Select Mode of Payment"
+                                            placeholder="Select Option"
+                                            required={cItem.isrequired}
+                                            onchange={handleInputChange}>
+                                        </lightning-combobox>
+                                    </div>
+                                    <!--UTR_Number__c-->
+                                    <div class={cItem.customClass}>
+                                        <lightning-input
+                                            label="UTR Number"
+                                            data-index={index}
+                                            type="text"
+                                            name="UTR_Number__c"
+                                            value={cItem.UTR_Number__c} 
+                                            data-id="collectionFields" 
+                                            required={cItem.isUTRNumberRequired}
+                                            message-when-value-missing="Enter UTR No."
+                                            placeholder="Enter UTR No."
+                                            onchange={handleInputChange}>
+                                        </lightning-input> 
+                                    </div>
+                                    <!--Remarks__c-->
+                                    <div class={cItem.customClass}>
+                                        <lightning-textarea
+                                            label="Remarks"
+                                            data-index={index}
+                                            name="Remarks__c"
+                                            value={cItem.Remarks__c}
+                                            data-id="collectionFields"
+                                            required={cItem.isrequired}
+                                            message-when-value-missing="Enter Remarks"
+                                            placeholder="Enter Remarks"
+                                            onchange={handleInputChange}>
+                                        </lightning-textarea>
+                    
+                                    </div>
+                                    <template if:false={isPrimaryCustomer}>
+                                        <template if:true={isDesktop}>
+                                            <div class={buttoncustomClass} style="text-align: right;padding-top:23px">
+                                                <lightning-button-icon 
+                                                icon-name="utility:delete"
+                                                onclick={removeRow} 
+                                                data-index={index}>
+                                                </lightning-button-icon>
+                                                <lightning-button-icon 
+                                                    icon-name="utility:add"
+                                                    onclick={addRow}
+                                                    data-index={index}>
+                                                </lightning-button-icon>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <!-- Summary Items-->
+                <template lwc:if={isSummaryProduct}>
+                    <div class="task-button pointer slds-m-top_x-small" onclick={save}>Save Collection </div>
+                    <lightning-card style="margin-top:10px;">
+                        <div style="margin:10px;">
+                            <div class="slds-grid slds-grid_align-spread slds-m-bottom_small" style="font-size: 15px;padding-left:5px;padding-right:5px">
+                                <div>
+                                    <b>Collection Items</b>
+                                </div>
+                                <div>
+                                    <b>Total Amount : </b> {totalAmount}
+                                </div>
+                            </div>
+                            
+                            <div class="custom-table-container">
+                            <table class="slds-table custom-scroll-table">
+                                <thead>
+                                    <tr>
+                                        <!--Primary Customer-->
+                                        <template lwc:if={isPrimaryCustomer}>
+                                            <th>Invoice No.</th>
+                                            <th>Received Amount</th>
+                                            <th>Outstanding Amount</th>
+                                            <th>Invoice Date</th>
+                                            <th>Mode of Payment</th>
+                                            <th>UTR Number</th>
+                                            <th>Remarks</th>
+                                          
+                                        </template>
+                                        <!--Secoundary Customer-->
+                                        <template lwc:else>
+                                            <th >Mode of Payment</th>
+                                            <th >Received Amount</th>
+                                            <th>UTR Number</th>
+                                            <th>Remarks</th>
+                                        </template>
+                                    
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={summarycollectionItems} for:item="item">
+                                        <tr key={item.index}>
+                                            <!--Primary Customer-->
+                                            <template lwc:if={isPrimaryCustomer}>
+                                                <td >{item.Invoice_Number__c}</td>
+                                                <td >{item.Amount_Received__c}</td>
+                                                <td>{item.Outstanding_Amount__c}</td>
+                                                <td>{item.Invoice_Date__c}</td>
+                                                <td>{item.Mode_of_Payment__c}</td>
+                                                <td>{item.UTR_Number__c}</td>
+                                                <td>{item.Remarks__c}</td>
+                                            </template>
+                                            <!--Secoundary Customer-->
+                                            <template lwc:else>
+                                                <td >{item.Mode_of_Payment__c}</td>
+                                                <td >{item.Amount_Received__c}</td>
+                                                <td>{item.UTR_Number__c}</td>
+                                                <td>{item.Remarks__c}</td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            </div>
+                        
+                            <c-file-upload-l-w-c unique-id={uniqueId} record-id={userId}></c-file-upload-l-w-c>
+                        </div>
+                    </lightning-card>
+                </template>
+            </div>
+            <div class="screen-3-bottom-bar">
+                <div class="bottom-bar-item pointer" onclick={summaryCollections} data-name="SelectedItems">
+                    All items
+                </div>
+                <div class="bottom-bar-item pointer" onclick={summaryCollections} data-name="Summary">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.33 6.624C12.4295 6.71145 12.4902 6.83481 12.4988 6.96698C12.5075 7.09916 12.4633 7.22936 12.376 7.329L8.876 11.329C8.83097 11.3806 8.77581 11.4224 8.71396 11.4518C8.6521 11.4812 8.58487 11.4976 8.51643 11.4999C8.44798 11.5023 8.37978 11.4905 8.31606 11.4654C8.25234 11.4403 8.19446 11.4024 8.146 11.354L6.146 9.354C6.09951 9.30751 6.06264 9.25232 6.03748 9.19158C6.01232 9.13084 5.99937 9.06574 5.99937 9C5.99937 8.93426 6.01232 8.86916 6.03748 8.80842C6.06264 8.74768 6.09951 8.69249 6.146 8.646C6.19249 8.59951 6.24768 8.56264 6.30842 8.53748C6.36916 8.51232 6.43426 8.49937 6.5 8.49937C6.56574 8.49937 6.63084 8.51232 6.69158 8.53748C6.75232 8.56264 6.80751 8.59951 6.854 8.646L8.476 10.268L11.624 6.671C11.7113 6.57137 11.8346 6.51046 11.9668 6.50165C12.099 6.49284 12.2302 6.53684 12.33 6.624ZM3 6C3 5.20435 3.31607 4.44129 3.87868 3.87868C4.44129 3.31607 5.20435 3 6 3H12C12.7956 3 13.5587 3.31607 14.1213 3.87868C14.6839 4.44129 15 5.20435 15 6V12C15 12.7956 14.6839 13.5587 14.1213 14.1213C13.5587 14.6839 12.7956 15 12 15H6C5.20435 15 4.44129 14.6839 3.87868 14.1213C3.31607 13.5587 3 12.7956 3 12V6ZM6 4C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V12C4 12.5304 4.21071 13.0391 4.58579 13.4142C4.96086 13.7893 5.46957 14 6 14H12C12.5304 14 13.0391 13.7893 13.4142 13.4142C13.7893 13.0391 14 12.5304 14 12V6C14 5.46957 13.7893 4.96086 13.4142 4.58579C13.0391 4.21071 12.5304 4 12 4H6ZM5.754 16C6.304 16.614 7.101 17 7.99 17H12.49C13.0809 17 13.6661 16.8836 14.2121 16.6575C14.758 16.4313 15.2541 16.0998 15.672 15.682C16.0898 15.2641 16.4213 14.768 16.6475 14.2221C16.8736 13.6761 16.99 13.0909 16.99 12.5V8C16.99 7.116 16.607 6.32 15.999 5.772V11C15.999 11.1 15.9957 11.1997 15.989 11.299V12.499C15.989 13.4273 15.6203 14.3175 14.9639 14.9739C14.3075 15.6303 13.4173 15.999 12.489 15.999H11.055L10.999 16H5.754Z" fill="white"/>
+                    </svg>   
+                    Summary
+                </div>
+            </div>
+        </div>
+    </template>
+
+</template>

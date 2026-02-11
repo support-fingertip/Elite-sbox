@@ -1,0 +1,137 @@
+<template>
+    <div class="custom1">
+        <div class={customHeaderClass}> 
+            <template lwc:if={isPageLoaded}>
+                <c-on-loading-screen></c-on-loading-screen>
+            </template>
+            <template lwc:else>
+                <!--Header-->
+                <div class="navbar">
+                    <template lwc:if={OrderItemScreen}>
+                        <!--Back Icon-->
+                        <i class="material-icons screen-bar-nav-icon" onclick={goBackScreen}>
+                        <lightning-icon  icon-name="utility:back" size="small" alternative-text="Back" class=""></lightning-icon>
+                        </i>
+                    </template>
+                    <template lwc:else>
+                        <!--Refresh Icon-->
+                        <i class="material-icons screen-bar-nav-icon" onclick={refreshData}>
+                        <lightning-icon  icon-name="utility:refresh" size="small" alternative-text="refresh" class=""></lightning-icon>
+                        </i>
+                    </template>
+
+                    <!--Header Name-->
+                    <span class="header slds-align_absolute-center">
+                        {header}
+                    </span>
+                </div>
+                 <div class="route">
+                <template lwc:if={orderFilfilmemtScreem}>
+                    <!-- Search + Date Filter -->
+                    <div class="slds-grid slds-wrap">
+                        <div class={customClass}>
+                            <lightning-input type="search"
+                                            label="Search Orders"
+                                            placeholder="Search by Order, Customer, Executive"
+                                            value={searchKey}
+                                            onchange={handleSearchChange}>
+                            </lightning-input>
+                        </div>
+                        <div class={customClass}>
+                            <lightning-input type="date"
+                                            label="Filter by Date"
+                                            value={filterDate}
+                                            onchange={handleDateChange}>
+                            </lightning-input>
+                        </div>
+                    </div>
+                    <template lwc:if={hasOrders}>
+                        <template for:each={orders} for:item="order" for:index="index">
+                            <div class="route-outlets" key={order.orderId}>
+                                <div class="borderLine slds-m-top_small">
+                                    <div class="route-outlet">
+                                        <div class="route-left">
+                                            <div class="outlet-title">
+                                                <span class="icon-wrapper">
+                                                    <img src={googleIcons.order}
+                                                        class="custom-icon" width="20"
+                                                        height="20" />
+                                                </span>
+                                                &nbsp;
+                                                <b>{order.orderName}</b>&nbsp;&nbsp;
+
+                                            </div>
+                                            <div class="outlet-title"
+                                                style="padding-left:14px">
+                                                &nbsp;&nbsp; Customer Name :
+                                               {order.accountName}
+                                            </div>
+                                            <div class="outlet-title"
+                                                style="padding-left:14px">
+                                                &nbsp;&nbsp; Customer Code :
+                                                 {order.customerCode}
+                                            </div>
+                                            <div class="outlet-title"
+                                                style="padding-left:14px">
+                                                &nbsp;&nbsp; Outlet Id :
+                                                 {order.outletId}
+                                            </div>
+                                            <div class="outlet-title"
+                                                style="padding-left:14px">
+                                                &nbsp;&nbsp; Status:
+                                                 {order.orderFulfillmentStatus}
+                                            </div>
+                                            <div class="outlet-title"
+                                                style="padding-left:14px">
+                                                &nbsp;&nbsp; Order Date :
+                                                { order.orderDate}
+                                            </div>
+                                            <div class="outlet-title"
+                                                style="padding-left:14px">
+                                                &nbsp;&nbsp; Amount : 
+                                                 ₹{order.grandTotal}
+                                            </div>
+                                            <div class="outlet-title"
+                                                style="padding-left:14px">
+                                                &nbsp;&nbsp; Executive Name :
+                                                 {order.executiveName} ({order.executiveEmployeeCode})
+                                            </div>
+                                        </div>
+
+                                        <div class="outlet-icon">
+                                            <div onclick={handleShowItems}
+                                                data-id={order.orderId} data-ordername={order.orderName}
+                                                data-accountname={order.accountName} onscreen4={handleOrderScreen} >
+                                                <img src={googleIcons.forward}
+                                                    width="20" height="20">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:true={hasMoreData}>
+                            <div class="slds-align_absolute-center slds-m-around_medium">
+                                <lightning-button label="Load More Orders" onclick={handleLoadMore}></lightning-button>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="borderLine slds-m-top_small">
+                                <div class="middle">
+                                    <h2><b>No Orders Found</b></h2>
+                                </div>
+                            </div>
+                    </template>
+                </template>
+                <template lwc:if={OrderItemScreen}>
+                    <c-oder-line-item-screen onscreen4={handleOrderScreen} 
+                        order-id={currentOrderId} is-desktop={isDesktop}>
+                    </c-oder-line-item-screen>
+                </template>
+                 </div>
+
+            </template>
+        </div>
+    </div>
+</template>

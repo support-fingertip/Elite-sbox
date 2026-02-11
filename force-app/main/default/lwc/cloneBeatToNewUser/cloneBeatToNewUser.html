@@ -1,0 +1,23 @@
+<template>
+    <lightning-card title="Clone Beat" icon-name="standard:account">
+        <div class="slds-p-around_medium">
+            <!-- Prefill the original Beat Name -->
+            <lightning-input label="New Beat Name" value={clonedBeatName}
+                onchange={handleClonedBeatNameChange}></lightning-input>
+
+            <!-- Lookup field for active users -->
+            <lightning-input label="Username" value={searchQuery} onchange={handleSearchQueryChange}
+                placeholder="Search Active Users..."></lightning-input>
+
+            <!-- User lookup results -->
+            <template if:true={filteredUsers.length}>
+                <lightning-combobox label="Select User" options={filteredUsers} value={selectedUserId}
+                    onchange={handleUserSelection}
+                    class="slds-box slds-box_xx-small slds-m-top_small"></lightning-combobox>
+            </template>
+
+            <!-- Button to initiate cloning -->
+            <lightning-button class="clone-button" label="Clone Beat" onclick={handleClone}></lightning-button>
+        </div>
+    </lightning-card>
+</template>

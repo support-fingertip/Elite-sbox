@@ -1,0 +1,111 @@
+/* .profile-container {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar {
+    cursor: pointer;
+    padding-left:5px;
+}
+
+.dropdown {
+    position: absolute;
+    right: 0;
+    z-index: 2000;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    margin-top: 8px;
+}
+
+.arrow-up {
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    min-width: 140px;
+}
+
+.menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-top: 1px solid #f0f0f0;
+}
+
+.menu-item:first-child {
+    border-top: none;
+}
+
+.menu-item:hover {
+    background-color: #f4f6f9;
+}
+
+.username {
+    font-weight: bold;
+    cursor: pointer;
+} */
+
+
+/* Profile container and avatar */
+
+
+
+
+
+
+
+/* Profile Button and Avatar */
+.profile-container {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar {
+    cursor: pointer;
+    
+    padding-top:15px;
+}
+
+/* Sidebar styles */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Overlay to darken the background */
+    z-index: 999; /* Ensure the overlay is above everything */
+}
+
+.sidebar-content {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 250px; /* Sidebar width */
+    height: 100%;
+    background-color: #ffffff;
+    padding: 20px;
+    z-index: 1000;
+    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.username {
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+lightning-button {
+    width: 100%;
+}

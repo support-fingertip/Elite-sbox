@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Product_Type__c</fullName>
+    <externalId>false</externalId>
+    <label>Product Type</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Finished Goods</fullName>
+                <default>true</default>
+                <label>Finished Goods</label>
+            </value>
+            <value>
+                <fullName>Trading</fullName>
+                <default>false</default>
+                <label>Trading</label>
+            </value>
+            <value>
+                <fullName>0</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>0</label>
+            </value>
+            <value>
+                <fullName>4 X 1</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>4 X 1</label>
+            </value>
+            <value>
+                <fullName>Asset</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Asset</label>
+            </value>
+            <value>
+                <fullName>Bar</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Bar</label>
+            </value>
+            <value>
+                <fullName>Bar Slice</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Bar Slice</label>
+            </value>
+            <value>
+                <fullName>Broken Rice</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Broken Rice</label>
+            </value>
+            <value>
+                <fullName>Capital Items</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Capital Items</label>
+            </value>
+            <value>
+                <fullName>Chakki Atta</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Chakki Atta</label>
+            </value>
+            <value>
+                <fullName>Consumables</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Consumables</label>
+            </value>
+            <value>
+                <fullName>Crumb</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Crumb</label>
+            </value>
+            <value>
+                <fullName>Cup</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Cup</label>
+            </value>
+            <value>
+                <fullName>Cup 4 X 1</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Cup 4 X 1</label>
+            </value>
+            <value>
+                <fullName>Cup 6 X 1</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Cup 6 X 1</label>
+            </value>
+            <value>
+                <fullName>Cup Single</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Cup Single</label>
+            </value>
+            <value>
+                <fullName>Duplex</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Duplex</label>
+            </value>
+            <value>
+                <fullName>Finished Components</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Finished Components</label>
+            </value>
+            <value>
+                <fullName>Fuel</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Fuel</label>
+            </value>
+            <value>
+                <fullName>Gift Items</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Gift Items</label>
+            </value>
+            <value>
+                <fullName>Jar</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Jar</label>
+            </value>
+            <value>
+                <fullName>Jaya</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Jaya</label>
+            </value>
+            <value>
+                <fullName>Kuruva</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Kuruva</label>
+            </value>
+            <value>
+                <fullName>License export</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>License export</label>
+            </value>
+            <value>
+                <fullName>Loss</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Loss</label>
+            </value>
+            <value>
+                <fullName>Maintenance Items</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Maintenance Items</label>
+            </value>
+            <value>
+                <fullName>Mill Atta</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Mill Atta</label>
+            </value>
+            <value>
+                <fullName>Multigrain</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Multigrain</label>
+            </value>
+            <value>
+                <fullName>Non Inventory Item</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Non Inventory Item</label>
+            </value>
+            <value>
+                <fullName>Oblong</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Oblong</label>
+            </value>
+            <value>
+                <fullName>Others</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Others</label>
+            </value>
+            <value>
+                <fullName>Packing Material</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Packing Material</label>
+            </value>
+            <value>
+                <fullName>Ponni</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Ponni</label>
+            </value>
+            <value>
+                <fullName>Pouch</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Pouch</label>
+            </value>
+            <value>
+                <fullName>Purchase Items</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Purchase Items</label>
+            </value>
+            <value>
+                <fullName>Raw Material</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Raw Material</label>
+            </value>
+            <value>
+                <fullName>Rect</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Rect</label>
+            </value>
+            <value>
+                <fullName>Rect. Slice</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Rect. Slice</label>
+            </value>
+            <value>
+                <fullName>Round</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Round</label>
+            </value>
+            <value>
+                <fullName>Scrap</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Scrap</label>
+            </value>
+            <value>
+                <fullName>Semi - Finished Goods</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Semi - Finished Goods</label>
+            </value>
+            <value>
+                <fullName>Single</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Single</label>
+            </value>
+            <value>
+                <fullName>Single Slice</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Single Slice</label>
+            </value>
+            <value>
+                <fullName>Spare Parts</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Spare Parts</label>
+            </value>
+            <value>
+                <fullName>Surekha</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Surekha</label>
+            </value>
+            <value>
+                <fullName>Tin</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Tin</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

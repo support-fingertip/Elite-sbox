@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Mandate_Reporting_Manager</fullName>
+    <active>false</active>
+    <errorConditionFormula>ISBLANK(Reporting_Manager__c) &amp;&amp;
+TEXT(Profile__c) &lt;&gt; &apos;System Administrator&apos; &amp;&amp;
+TEXT(Profile__c) &lt;&gt; &apos;Admin&apos;</errorConditionFormula>
+    <errorDisplayField>Reporting_Manager__c</errorDisplayField>
+    <errorMessage>Please select reporting manager</errorMessage>
+</ValidationRule>

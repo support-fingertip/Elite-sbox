@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Designation__c</fullName>
+    <externalId>false</externalId>
+    <label>Designation</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Van Sale Representative</fullName>
+                <default>false</default>
+                <label>Van Sale Representative</label>
+            </value>
+            <value>
+                <fullName>Delivery Boy</fullName>
+                <default>false</default>
+                <label>Delivery Boy</label>
+            </value>
+            <value>
+                <fullName>Merchandiser</fullName>
+                <default>false</default>
+                <label>Merchandiser</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

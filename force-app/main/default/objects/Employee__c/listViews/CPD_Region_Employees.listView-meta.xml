@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>CPD_Region_Employees</fullName>
+    <columns>NAME</columns>
+    <columns>Mail_Id__c</columns>
+    <columns>User_Name__c</columns>
+    <columns>Role__c</columns>
+    <columns>Profile__c</columns>
+    <columns>Employee_Code__c</columns>
+    <columns>RSM__c</columns>
+    <columns>ASM_TSM__c</columns>
+    <columns>Reporting_Manager__c</columns>
+    <columns>User__c</columns>
+    <columns>Region__c</columns>
+    <columns>Area__c</columns>
+    <columns>Territory__c</columns>
+    <columns>Active__c</columns>
+    <columns>CREATED_DATE</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>User_Created__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <filters>
+        <field>Active__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <filters>
+        <field>Region__c</field>
+        <operation>equals</operation>
+        <value>Ker_CPD,Ker_CPD_North,CPD</value>
+    </filters>
+    <label>CPD Region Employees</label>
+</ListView>

@@ -1,0 +1,313 @@
+.orders {
+  width: 100%;
+  max-width: 900px;
+  margin: 20px auto;
+  font-family: 'Inter', sans-serif;
+}
+
+.order-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #02323e;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.order-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding:10px;
+}
+
+.order-filters {
+  display: flex;
+  gap: 10px;
+}
+
+
+
+ .actionButton{
+
+    display: inline;
+    margin: 5px;
+    float: right;
+    font-size: 14.5px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    /* padding: 8px; */
+    width: 122px;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 33px;
+    
+}
+.actionButton1{
+    display: inline;
+    margin: 5px;
+    float: right;
+    font-size: 14.5px;
+    background-color: white;
+    color: black;
+    border: none;
+    /* padding: 8px; */
+    width: 122px;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 33px;
+
+}
+
+
+
+
+.contacts-table {
+  width: calc(100% - 40px);  /* full width minus left & right margin */
+  margin: 0 20px;             /* 20px margin left and right */
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+   padding: 1rem 1rem 300px 1rem;
+}
+.order-item-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid #d8dde6;
+  padding: 0.75rem 0;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+  padding:10px;
+}
+
+.order-item-row:hover {
+  background-color: #e0f2ff;
+  
+}
+
+/* Equal width columns */
+.product-col {
+  flex-basis: 40%;
+  max-width: 40%;
+  position: relative;
+}
+
+.quantity-col,
+.unit-price-col,
+.amount-col {
+  flex-basis: 20%;
+  max-width: 20%;
+}
+
+/* Actions column */
+.actions-col {
+  width: 80px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.8rem;
+}
+
+.actions-col lightning-button-icon .slds-button__icon {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 22px !important;
+}
+
+/* Inputs styling */
+.product-col lightning-input input,
+.quantity-col lightning-input input,
+.unit-price-col lightning-input input,
+.amount-col lightning-input input {
+  font-size: 1rem;
+  height: 36px;
+  padding: 0.4rem 0.75rem;
+}
+
+/* Suggestion box */
+.suggestion-box {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 180px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #d8dde6;
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+/* Summary table */
+
+.summary-heading {
+  text-align: start;
+  font-size: 1.4rem;
+  color: #070707;
+  margin-top: 40px;
+  font-weight: 500;
+  margin-bottom: 30px;
+  margin-left:10px;
+}
+
+
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+
+
+}
+
+.btn {
+  background-color: #007bff;
+  color: #fff;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  z-index: 100;
+
+  transition: background-color 0.2s ease;
+}
+
+.btn-back-save {
+  background-color: #007bff;
+  color: #fff;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+
+
+  transition: background-color 0.2s ease;
+}
+
+
+
+
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+.summary-heading {
+  text-align: center;
+  font-size: 1.7rem;
+  color: #070707;
+  margin-top: 10px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  margin-left:10px;
+}
+
+/* Container for the table, ensuring it's positioned correctly */
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 1rem;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  display: block; /* Ensures it can be scrollable */
+}
+
+/* Thead - Keep it fixed and styled */
+.summary-table thead {
+  background-color: #f0f6ff;
+  color: #333;
+  font-weight: 600;
+  display: table; /* Ensure it behaves like a table row */
+  width: 100%;
+  table-layout: fixed;  /* Prevents columns from resizing */
+}
+
+/* Tbody - Allow scrolling */
+.summary-table tbody {
+  display: block;
+  max-height: 300px; /* Adjust this to your desired height */
+  overflow-y: auto;  /* Enable vertical scrolling */
+  width: 100%;
+}
+
+/* For tbody, make sure the rows align properly */
+.summary-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Style table header cells */
+.summary-table th,
+.summary-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+/* Fix for the headers to make sure they stay on top when scrolling */
+.summary-table th {
+  background-color: #f0f6ff;
+  color: #333;
+  font-weight: 600;
+  position: sticky; /* Make the header sticky */
+  top: 0; /* Stick the header at the top */
+  z-index: 2; /* Ensure the header stays above the content */
+}
+.grand-total-row {
+  font-weight: bold;
+  background-color: #e6f0ff;
+}
+
+
+
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive */
+
+@media (max-width: 720px) {
+  .order-item-row {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .product-col,
+  .quantity-col,
+  .unit-price-col,
+  .amount-col,
+  .actions-col {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .actions-col {
+    justify-content: flex-start;
+  }
+
+  .btn-row {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}

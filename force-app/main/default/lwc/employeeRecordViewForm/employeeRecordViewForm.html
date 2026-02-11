@@ -1,0 +1,392 @@
+<template>
+        <!-- When page is loading -->
+    <template lwc:if={isLoading}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+    <template lwc:else>
+        <lightning-record-view-form record-id={employeerecordId} object-api-name={objectApiName}>
+            <lightning-layout multiple-rows>
+                <!-- Employee Information -->
+                <lightning-layout-item size="12" style="margin-top:10px;margin-bottom:10px">
+                    <h3 class="slds-section__title slds-theme_shade">
+                        <span class="slds-truncate slds-p-horizontal_small" title="Employee Information">Employee Information</span>
+                    </h3>
+                </lightning-layout-item>
+                <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                    <lightning-output-field field-name="Name"></lightning-output-field>
+                    <hr class="slds-m-vertical_xxx-small" />
+                </lightning-layout-item>
+                <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                    <lightning-output-field field-name="Role_Name__c"></lightning-output-field>
+                    <hr class="slds-m-vertical_xxx-small" />
+                </lightning-layout-item>
+                <template if:false ={isEmployeeFound}>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Email"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Username"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Sales_Channel__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                </template>
+
+                <template if:true ={isEmployeeFound}>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Profile__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Mail_Id__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="User_Name__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Reporting_Manager__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Aadhar_Number__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Primary_Phone_Number__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                        <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="User__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Is_Active__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="User_Is_Active__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="User_Id__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+              
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="User_Record_Id__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    
+                    <!-- Employment Information -->
+                    <lightning-layout-item size="12" style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Employment Information">Employment Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="User_Type__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={mandateReplacedFor}>
+                        <lightning-output-field field-name="Replaced_For_Name__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Payroll__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={mandateContractType}>
+                        <lightning-output-field field-name="Contract_Type__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:else>
+                        <lightning-output-field field-name="Payroll_Type__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Employee_Code__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" if:false={mandateContractType}>
+                        <lightning-output-field field-name="Vendor_Code__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Band__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Shift_Time__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Headquarter__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={showEditFields}>
+                        <lightning-output-field field-name="Relieving_date__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Designation__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowDistrictInCharge}>
+                        <lightning-output-field field-name="District_In_charge__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Relieving_date__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                
+                    <!-- Product Mapping & Work Location Information -->
+                    <lightning-layout-item size="12" style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Product Mapping & Work Location Information">Product Mapping & Work Location Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Sales_Channel__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Category__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+            
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowRegion}>
+                        <lightning-output-field field-name="Region__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowArea}>
+                        <lightning-output-field field-name="Area__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Alternate_Sales_Channel__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowTerritory}>
+                        <lightning-output-field field-name="Territory_Name__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+
+                    <!-- Secondary Customer Approval Information -->
+                    <lightning-layout-item size="12" style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Secondary Customer Approval Information">Secondary Customer Approval Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Secondary_Customer_Approver_1__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Secondary_Customer_Approver_2__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                
+
+                    <!-- Primary Customer Approval Information -->
+                    <lightning-layout-item size="12" lwc:if={isShowAllSections} style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Primary Customer Approval Information">Primary Customer Approval Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="Primary_Customer_Approver_1__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="Primary_Customer_Approver_2__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="Primary_Customer_Approver_3_CD__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+
+                    <!-- Employee Approval Information -->
+                    <lightning-layout-item size="12" lwc:if={isShowAllSections} style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Employee Approval Information">Employee Approval Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="ASM_TSM__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="RSM__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="Employee_Approver_3_HR__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                
+                    <!-- PJP Approval Information -->
+                    <lightning-layout-item size="12" lwc:if={isShowAllSections}  style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="PJP Approval Information">PJP Approval Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="PJP_Approver_1__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+            
+
+                    <!-- Expense Approval Information -->
+                    <lightning-layout-item size="12" lwc:if={isShowAllSections}  style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Expense Approval Information">Expense Approval Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="Expense_Approver_1__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small" lwc:if={isShowAllSections}>
+                        <lightning-output-field field-name="Expense_Approver_2_Finance_Department__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                
+                    <!-- Pay Information -->
+                    <lightning-layout-item size="12"  style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Pay Information">Pay Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Basic_Pay__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Gross_Salary__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                
+                
+                    <!-- Additional Information -->
+                    <lightning-layout-item size="12" style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Additional Information">Additional Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    <template lwc:if={isAdmin} >
+                        <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                            <lightning-output-field field-name="Expense_Start_Date__c"></lightning-output-field>
+                            <hr class="slds-m-vertical_xxx-small" />
+                        </lightning-layout-item>
+                        <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                            <lightning-output-field field-name="Expense_End_Date__c"></lightning-output-field>
+                            <hr class="slds-m-vertical_xxx-small" />
+                        </lightning-layout-item>
+                        <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                            <lightning-output-field field-name="Expense_Back_Day_Entry_Limit__c"></lightning-output-field>
+                            <hr class="slds-m-vertical_xxx-small" />
+                        </lightning-layout-item>
+                        <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                            <lightning-output-field field-name="Employee_Remarks__c"></lightning-output-field>
+                            <hr class="slds-m-vertical_xxx-small" />
+                        </lightning-layout-item>
+                    </template>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Minimum_Order_value__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="PAN__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Secondary_Phone_Number__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="DOB__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="DOJ__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Is_Employee_Replaced__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Employee_Replaced_With_Name__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <template lwc:if={mandateContractType} >
+                        <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                            <lightning-output-field field-name="Approval_Status__c"></lightning-output-field>
+                            <hr class="slds-m-vertical_xxx-small" />
+                        </lightning-layout-item>
+                    </template>
+                    <!-- Employee Personal Address Information -->
+                    <lightning-layout-item size="12" style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Employee Personal Address Information">Employee Personal Address Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="State__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="District__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Pincode__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="Street__c"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+
+                    <!-- Employee Personal Address Information -->
+                    <lightning-layout-item size="12" style="margin-top:10px;margin-bottom:10px">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="System Information">System Information</span>
+                        </h3>
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="CreatedById"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="CreatedDate"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="LastModifiedById"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+                    <lightning-layout-item size={size} class="slds-p-horizontal_small">
+                        <lightning-output-field field-name="LastModifiedDate"></lightning-output-field>
+                        <hr class="slds-m-vertical_xxx-small" />
+                    </lightning-layout-item>
+               </template>
+           
+            </lightning-layout>
+        </lightning-record-view-form>
+    </template>
+</template>

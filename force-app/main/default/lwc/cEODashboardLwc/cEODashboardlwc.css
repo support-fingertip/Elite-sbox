@@ -1,0 +1,67 @@
+.dashboard-wrapper {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* Filter box */
+.filters-section {
+    background: #f3f6fb;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filters-left {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.refresh-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* Cards grid */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 20px;
+}
+
+/* Card */
+.card-box {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 140px;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.card-value {
+    font-size: 32px;
+    text-align: right;
+    font-weight: 700;
+    color: #0070d2;
+}

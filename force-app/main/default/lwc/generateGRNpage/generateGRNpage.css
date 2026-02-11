@@ -1,0 +1,180 @@
+/* Main Layout */
+.orders {
+    z-index: 2;
+    top: 100px;
+    padding-bottom: 20px;
+    color: #000;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--root-bg-linear-gradient), var(--root-bg-image);
+}
+
+.order-head {
+    margin: 20px 0;
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-title {
+    margin: 0;
+    text-align: left;
+    font-size: 30px;
+    color: #02323e;
+    font-weight: bold;
+}
+
+.order-filters {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Action Buttons */
+.actionButton {
+    display: inline;
+    margin: 5px;
+    float: right;
+    font-size: 14.5px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    width: 122px;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 33px;
+}
+
+.actionButton:hover {
+    background-color: #218838;
+}
+
+.actionButton1 {
+    display: inline;
+    margin: 5px;
+    float: right;
+    font-size: 14.5px;
+    background-color: white;
+    color: black;
+    border: 1px solid #d8dde6;
+    width: 122px;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 33px;
+}
+
+.actionButton1:hover {
+    background-color: #f3f3f3;
+}
+
+/* Table Container */
+.contacts-table {
+    width: 90%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    overflow: hidden;
+    background-color: #fff;
+    padding: 20px;
+}
+
+/* Invoice Section */
+.invoice-section {
+    margin-bottom: 30px;
+}
+
+.invoice-section:last-child {
+    margin-bottom: 0;
+}
+
+.outlet-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 15px;
+    padding-left: 5px;
+}
+
+.custom-icon {
+    max-width: auto;
+}
+
+/* Grid Table Styles */
+.grid-container {
+    overflow-x: auto;
+}
+
+.grn-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+}
+
+.grn-table thead {
+    border-bottom: 2px solid #d8dde6;
+}
+
+.grn-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: #02323e;
+    border-bottom: 2px solid #d8dde6;
+}
+
+.grn-table tbody tr {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.grn-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.grn-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.grn-table td {
+    padding: 8px 15px;
+    vertical-align: middle;
+}
+
+/* Lightning Input Customization */
+.grn-table lightning-input {
+    width: 100%;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .order-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .order-filters {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .contacts-table {
+        width: 95%;
+        padding: 10px;
+    }
+    
+    .grid-container {
+        overflow-x: scroll;
+    }
+    
+    .grn-table {
+        min-width: 600px;
+    }
+}

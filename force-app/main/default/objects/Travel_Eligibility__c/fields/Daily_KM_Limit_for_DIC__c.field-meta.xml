@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Daily_KM_Limit_for_DIC__c</fullName>
+    <externalId>false</externalId>
+    <inlineHelpText>Daily KM Limit for District-In-Charge</inlineHelpText>
+    <label>Daily KM Limit for DIC</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

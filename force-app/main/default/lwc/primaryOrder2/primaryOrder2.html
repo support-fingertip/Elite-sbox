@@ -1,0 +1,125 @@
+<template>
+ 
+   <template if:false={showSummary}>
+    <div >
+      <div class="headerContainer">
+        <div class="headerRow">
+          <h3 class="order-title">New Primary Order</h3>
+          <div class="filterContainer">
+            <div class="combobox">
+              <lightning-combobox
+                name="categoryFilter"
+                label="Select Category"
+                options={categoryOptions}
+                value={selectedCategory}
+                onchange={handleCategoryChange}
+                placeholder="Choose category">
+              </lightning-combobox>
+            </div>
+
+            <div class="order-filters">
+              <button class="actionButton"
+                onclick={handleReview} style="margin-top: 25px;">Review Order
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skeleton Loading for the Table -->
+    <template if:true={isLoading}>
+      <div class="slds-skeleton slds-skeleton_text-long slds-size_1-of-1"></div>
+      <div class="slds-skeleton slds-skeleton_container"></div>
+      <div class="slds-skeleton slds-skeleton_table"></div>
+    </template>
+
+    <!-- Main Table Content -->
+    <div class="main">
+      <div class="scroll-container ">
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
+          <thead>
+            <tr>
+              <th colspan="2" style="font-size: 1rem;">Products/Size</th>
+              <template for:each={sizes} for:item="size">
+                <th style="font-size: 1rem;" key={size} scope="col"  >{size}</th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <template for:each={filteredProducts} for:item="product">
+              <tr key={product.id}>
+                <th colspan="2" scope="row" class="product-name">{product.name}</th>
+                <template for:each={product.sizesData} for:item="sizeData">
+                  <td key={sizeData.size}>
+<!-- In primaryOrder2.html - replace lightning-input with: -->
+<input
+    type="number"
+    min="0"
+    data-id={product.id}
+    data-size={sizeData.size}
+    value={sizeData.quantity}
+    onchange={handleQuantityChange}
+    onblur={handleInputBlur}
+    class="custom-quantity-input"
+/>
+                    <div class="rate">₹{sizeData.priceFormatted}</div>
+                  </td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+   </template>
+
+   <!-- Skeleton for Order Summary -->
+   <template if:true={isLoading}>
+      <div class="slds-skeleton slds-skeleton_table"></div>
+   </template>
+
+   <!-- Order Summary -->
+   <template if:true={showSummary}>
+    <h4 class="summary-heading">Order Summary</h4>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Size</th>
+          <th>Quantity</th>
+          <th>Rate (₹)</th>
+          <th>Tax %</th> <!-- New -->
+          <th>Tax Amount (₹)</th> <!-- New -->
+          <th>Total (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <template for:each={summaryItems} for:item="item">
+          <tr key={item.key}>
+            <td>{item.product}</td>
+            <td>{item.size}</td>
+            <td>{item.quantity}</td>
+            <td>₹{item.rateFormatted}</td> <!-- New -->
+            <td>{item.taxPercent}</td> <!-- New -->
+            <td>₹{item.taxAmount}</td> <!-- New -->
+            <td>₹{item.subtotalFormatted}</td>
+          </tr>
+        </template>
+       
+      </tbody>
+       <tr class="grand-total-row">
+          <td colspan="6">Grand Total</td>
+          <td>₹{grandTotalFormatted}</td>
+        </tr>
+    </table>
+
+    <div class="btn-row">
+      <button class="btn-back-save " style="margin:auto;" onclick={handleBack}>Back</button>
+      <button class="btn-back-save " style="margin:auto;" onclick={handleSave}>Save Order</button>
+    </div>
+
+
+   </template>
+     <c-custom-toast auto-close-time="8000"></c-custom-toast>
+</template>

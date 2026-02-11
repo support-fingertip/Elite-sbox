@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Flavors__c</fullName>
+    <externalId>false</externalId>
+    <label>Flavors</label>
+    <required>false</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>0</fullName>
+                <default>false</default>
+                <label>0</label>
+            </value>
+            <value>
+                <fullName>Flavors</fullName>
+                <default>false</default>
+                <label>Flavors</label>
+            </value>
+            <value>
+                <fullName>CHOCOLATE</fullName>
+                <default>false</default>
+                <label>CHOCOLATE</label>
+            </value>
+            <value>
+                <fullName>VANILLA</fullName>
+                <default>false</default>
+                <label>VANILLA</label>
+            </value>
+            <value>
+                <fullName>BUTTERSCOTCH</fullName>
+                <default>false</default>
+                <label>BUTTERSCOTCH</label>
+            </value>
+            <value>
+                <fullName>FRUIT SALAD</fullName>
+                <default>false</default>
+                <label>FRUIT SALAD</label>
+            </value>
+            <value>
+                <fullName>Thiramisu</fullName>
+                <default>false</default>
+                <label>Thiramisu</label>
+            </value>
+            <value>
+                <fullName>BONBON</fullName>
+                <default>false</default>
+                <label>BONBON</label>
+            </value>
+            <value>
+                <fullName>STRAWBERRY</fullName>
+                <default>false</default>
+                <label>STRAWBERRY</label>
+            </value>
+            <value>
+                <fullName>Lemon</fullName>
+                <default>false</default>
+                <label>Lemon</label>
+            </value>
+            <value>
+                <fullName>BON BON</fullName>
+                <default>false</default>
+                <label>BON BON</label>
+            </value>
+            <value>
+                <fullName>TIRAMISU</fullName>
+                <default>false</default>
+                <label>TIRAMISU</label>
+            </value>
+            <value>
+                <fullName>DREAM CAKE</fullName>
+                <default>false</default>
+                <label>DREAM CAKE</label>
+            </value>
+            <value>
+                <fullName>COTTON CANDY</fullName>
+                <default>false</default>
+                <label>COTTON CANDY</label>
+            </value>
+            <value>
+                <fullName>RED VELVET</fullName>
+                <default>false</default>
+                <label>RED VELVET</label>
+            </value>
+            <value>
+                <fullName>BLACK CURRANT</fullName>
+                <default>false</default>
+                <label>BLACK CURRANT</label>
+            </value>
+            <value>
+                <fullName>PISTA</fullName>
+                <default>false</default>
+                <label>PISTA</label>
+            </value>
+            <value>
+                <fullName>BUTTERSCOTCH With Caramel Balls</fullName>
+                <default>false</default>
+                <label>BUTTERSCOTCH With Caramel Balls</label>
+            </value>
+            <value>
+                <fullName>Vanila</fullName>
+                <default>false</default>
+                <label>Vanila</label>
+            </value>
+            <value>
+                <fullName>SPANISH DELIGHT</fullName>
+                <default>false</default>
+                <label>SPANISH DELIGHT</label>
+            </value>
+            <value>
+                <fullName>butterscotch choclate</fullName>
+                <default>false</default>
+                <label>butterscotch choclate</label>
+            </value>
+            <value>
+                <fullName>Vanila Delight</fullName>
+                <default>false</default>
+                <label>Vanila Delight</label>
+            </value>
+            <value>
+                <fullName>DISCOUNT</fullName>
+                <default>false</default>
+                <label>DISCOUNT</label>
+            </value>
+            <value>
+                <fullName>KULFI</fullName>
+                <default>false</default>
+                <label>KULFI</label>
+            </value>
+            <value>
+                <fullName>Tender Coconut Water</fullName>
+                <default>false</default>
+                <label>Tender Coconut Water</label>
+            </value>
+            <value>
+                <fullName>JACKFRUIT</fullName>
+                <default>false</default>
+                <label>JACKFRUIT</label>
+            </value>
+            <value>
+                <fullName>COOKIES &amp; CREAM</fullName>
+                <default>false</default>
+                <label>COOKIES &amp; CREAM</label>
+            </value>
+            <value>
+                <fullName>VANILLA CHOCLATE</fullName>
+                <default>false</default>
+                <label>VANILLA CHOCLATE</label>
+            </value>
+            <value>
+                <fullName>CARAMEL LATTE</fullName>
+                <default>false</default>
+                <label>CARAMEL LATTE</label>
+            </value>
+            <value>
+                <fullName>Ice Cream Sandwich</fullName>
+                <default>false</default>
+                <label>Ice Cream Sandwich</label>
+            </value>
+            <value>
+                <fullName>Put Ice cream</fullName>
+                <default>false</default>
+                <label>Put Ice cream</label>
+            </value>
+            <value>
+                <fullName>BLUEBERRY</fullName>
+                <default>false</default>
+                <label>BLUEBERRY</label>
+            </value>
+            <value>
+                <fullName>CHOCLATE</fullName>
+                <default>false</default>
+                <label>CHOCLATE</label>
+            </value>
+            <value>
+                <fullName>TENDER COCUNUT</fullName>
+                <default>false</default>
+                <label>TENDER COCUNUT</label>
+            </value>
+            <value>
+                <fullName>Queen</fullName>
+                <default>false</default>
+                <label>Queen</label>
+            </value>
+            <value>
+                <fullName>MANGO</fullName>
+                <default>false</default>
+                <label>MANGO</label>
+            </value>
+            <value>
+                <fullName>APRICOT</fullName>
+                <default>false</default>
+                <label>APRICOT</label>
+            </value>
+            <value>
+                <fullName>SITAPHAL</fullName>
+                <default>false</default>
+                <label>SITAPHAL</label>
+            </value>
+            <value>
+                <fullName>PINEAPPLE</fullName>
+                <default>false</default>
+                <label>PINEAPPLE</label>
+            </value>
+            <value>
+                <fullName>COFFE</fullName>
+                <default>false</default>
+                <label>COFFE</label>
+            </value>
+            <value>
+                <fullName>CHIKKOOS</fullName>
+                <default>false</default>
+                <label>CHIKKOOS</label>
+            </value>
+            <value>
+                <fullName>KIWI</fullName>
+                <default>false</default>
+                <label>KIWI</label>
+            </value>
+            <value>
+                <fullName>COCONUT</fullName>
+                <default>false</default>
+                <label>COCONUT</label>
+            </value>
+            <value>
+                <fullName>FIG &amp; HONEY</fullName>
+                <default>false</default>
+                <label>FIG &amp; HONEY</label>
+            </value>
+            <value>
+                <fullName>JACK FRUIT</fullName>
+                <default>false</default>
+                <label>JACK FRUIT</label>
+            </value>
+            <value>
+                <fullName>KESAR BADAM PISTA</fullName>
+                <default>false</default>
+                <label>KESAR BADAM PISTA</label>
+            </value>
+            <value>
+                <fullName>ORANGE</fullName>
+                <default>false</default>
+                <label>ORANGE</label>
+            </value>
+            <value>
+                <fullName>PASSION FRUIT</fullName>
+                <default>false</default>
+                <label>PASSION FRUIT</label>
+            </value>
+            <value>
+                <fullName>VANILLA - CHOCOLATE</fullName>
+                <default>false</default>
+                <label>VANILLA - CHOCOLATE</label>
+            </value>
+            <value>
+                <fullName>VANILLA - STRABERRY</fullName>
+                <default>false</default>
+                <label>VANILLA - STRABERRY</label>
+            </value>
+            <value>
+                <fullName>STRAWBERRY IN STRAWBERRY</fullName>
+                <default>false</default>
+                <label>STRAWBERRY IN STRAWBERRY</label>
+            </value>
+            <value>
+                <fullName>BLACK CURRENT</fullName>
+                <default>false</default>
+                <label>BLACK CURRENT</label>
+            </value>
+            <value>
+                <fullName>KID</fullName>
+                <default>false</default>
+                <label>KID</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

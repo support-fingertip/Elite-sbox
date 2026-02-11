@@ -1,0 +1,402 @@
+<template>
+    <!-- When page sub part is loading -->
+    <template lwc:if={isSubPartLoad}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+    <!-- When page sub part loaded -->
+    <template lwc:else>
+        <!--Veiw From-->
+        <template if:true={viewScreen}>
+            <div class="slds-p-vertical_small">
+                <!--Buttons-->
+                <div class="dropdown">
+                    <template if:false={isUserDeactivated}>
+                        <template lwc:if={assignCustomers}>
+                            <div class="task-head-button">
+                                <div class="task-button pointer" data-name="Add" onclick={handleAssignButtonClick}>
+                                    Add / Remove Assignments
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+                <!--View Form-->
+                <template lwc:if={showItems}>
+                    <div class="route">
+                        <lightning-input 
+                            type="search" 
+                            placeholder="Search by Customer Name, Outlet Id, or Customer Code"
+                            value={searchKey} 
+                            onchange={handleSearch}
+                            class="slds-input_bare slds-border_none textField">
+                        </lightning-input>
+                        <template for:each={dataViewItems} for:item="item" for:index="index">
+                            <div class="competiton-body" key={item.Id}>
+                                <div class="borderLine">
+                                    <div  class="route-outlet" >
+                                        <div class="route-left" data-id={item.Id}>
+                                            <div class="outlet-row">
+                                                <span class="outlet-label"> <b>{item.displayIndex})</b> Customer Name</span>
+                                                <span>:</span>
+                                                <span class="outlet-value">{item.customerName}</span>
+                                            </div>
+                                            <div class="outlet-row">
+                                                <span class="outlet-label">Customer Type</span>
+                                                <span>:</span>
+                                                <span class="outlet-value">{item.customerType}</span>
+                                            </div>
+                                            <div class="outlet-row">
+                                                <span class="outlet-label">Customer Code</span>
+                                                <span>:</span>
+                                                <span class="outlet-value">{item.customerCode}</span>
+                                            </div>
+                                            <div class="outlet-row">
+                                                <span class="outlet-label">OutletId</span>
+                                                <span>:</span>
+                                                <span class="outlet-value">{item.outletId}</span> 
+                                            </div>
+                                            <div class="outlet-row">
+                                                <span class="outlet-label">Primary Customer</span>
+                                                <span>:</span>
+                                                <span class="outlet-value">{item.primaryCustomerName}</span>
+                                            </div>
+                                            <template lwc:if={item.isUnderSubStockiest}>
+                                                <div class="outlet-row">
+                                                    <span class="outlet-label">Sub Stockiest</span>
+                                                    <span>:</span>
+                                                    <span class="outlet-value">{item.parentSubstockiestName}</span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template> 
+                    </div>
+                </template>
+                <template lwc:else>
+                    <template if:true={isUserDeactivated}>
+                        <div style="text-align: center;padding-top:30px">
+                            <b>Secondary customer assignments not found. This employee is currently deactivated.
+                                    Please contact your administrator to activate the employee.</b>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </template>
+        <!--Add/Edit Form-->
+        <template if:true={editScreen}>
+          
+            <!--Header-->
+            <div class="slds-p-vertical_small">
+                <!--Desktop-->
+                <template lwc:if={isDesktop}>
+                    <div class="slds-grid slds-align_absolute-center slds-wrap">
+                        <!-- Left side Filters in a row -->
+                        <div class="slds-col slds-grow">
+                            <div class="slds-grid slds-gutters slds-wrap">
+                                <!--Primary Customer-->
+                                <div class="slds-col slds-size_1-of-5">
+                                    <lightning-combobox
+                                        label="Primary Customer"
+                                        value={selectedPrimaryCustomer}
+                                        options={primaryCustomerOptions}
+                                        dropdown-alignment="auto"
+                                        onchange={handlePrimaryCustomerChange}>
+                                    </lightning-combobox>
+                                </div>
+                                <!--Sub stockiest-->
+                                <template lwc:if={isSuperStockiest}>
+                                    <div class="slds-col slds-size_1-of-5">
+                                        <lightning-combobox
+                                            label="Sub Stockiest"
+                                            value={selectedSubStockiest}
+                                            options={relatedSubStockiestOptions}
+                                            dropdown-alignment="auto"
+                                            onchange={handleSubstockiestCustomerChange}>
+                                        </lightning-combobox>
+                                    </div>
+                                </template>
+                                <!--Search-->
+                                <div class="slds-col slds-size_1-of-5">
+                                    <lightning-input 
+                                        type="search" 
+                                        label="Search" 
+                                        placeholder="Search Customer..." 
+                                        value={searchedSecoundaryCustomer} 
+                                        onchange={searchCustomers} 
+                                        class="slds-input_bare slds-border_none textField">
+                                    </lightning-input>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Buttons -->
+                        <div class="slds-col slds-no-flex slds-m-left_small">
+                            <lightning-button
+                                variant="neutral"
+                                style="margin-top:10px"
+                                label="Cancel"
+                                onclick={handlecancel}
+                                class="slds-m-right_x-small">
+                            </lightning-button>
+                            <lightning-button
+                                variant="brand"
+                                style="margin-top:10px"
+                                label="Next"
+                                onclick={previewCustomers}>
+                            </lightning-button>
+                        </div>
+                    </div>
+                </template>
+                <!--Mobile View-->
+                <template lwc:else>
+                    <!--Primary Customer-->
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning-combobox
+                            label="Primary Customer"
+                            value={selectedPrimaryCustomer}
+                            options={primaryCustomerOptions}
+                            dropdown-alignment="auto"
+                            onchange={handlePrimaryCustomerChange}>
+                        </lightning-combobox>
+                    </div>
+                    <!-- Sub Stociest -->
+                    <template lwc:if={isSuperStockiest}> 
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning-combobox
+                                label="Sub Stockiest"
+                                value={selectedSubStockiest}
+                                options={relatedSubStockiestOptions}
+                                dropdown-alignment="auto"
+                                onchange={handleSubstockiestCustomerChange}>
+                            </lightning-combobox>
+                        </div>
+                    </template>
+                    <!-- Customer Search-->
+                    <div class="slds-col slds-size_1-of-1" >
+                        <lightning-input 
+                            type="search" 
+                            label="Search" 
+                            placeholder="Search Customer..." 
+                            value={searchedSecoundaryCustomer} 
+                            onchange={searchCustomers} 
+                            class="slds-input_bare slds-border_none textField">
+                        </lightning-input>
+                    </div>
+                    <!--Buttons-->
+                    <div class="slds-col slds-size_1-of-1" style="padding-top:10px;text-align:right">
+                        <lightning-button
+                                variant="neutral"
+                                label="Cancel"
+                                onclick={handlecancel}
+                                class="slds-m-right_x-small">
+                        </lightning-button>
+                        <lightning-button
+                            variant="brand"
+                            label="Next"
+                            onclick={previewCustomers}>
+                        </lightning-button>
+                    </div>
+                </template>
+            </div>
+
+            <!--Body-->
+            <template lwc:if={showCustomers}>
+                <lightning-card>
+                    <div class="table-container">
+                        <template lwc:if={isDesktop}>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th onclick={sortByName}>Name &#x25B2;</th>
+                                        <th>Customer Type</th>
+                                        <th>Customer Bussiness Type</th>
+                                        <th>Primary Customer</th>
+                                        <th>Sub Stockiest</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={relatedScustomers} for:item="store" for:index="i">
+                                        <tr key={store.compositekey}>
+                                            <td>{store.customerName}
+                                                <template if:true={store.customerCode}> ({store.customerCode})</template>
+                                            </td>
+                                            <td>{store.customerType}</td>
+                                            <td>{store.customerBussinessType}</td>
+                                            <td>{store.primaryCustomerName}</td>
+                                            <td>{store.parentSubstockiestName}</td>
+                                            <td>
+                                                <template lwc:if={store.isSelected}>
+                                                    <div onclick={removeData} data-compositekey={store.compositekey}>
+                                                        <lightning-button-icon icon-name="utility:delete" alternative-text="Remove"></lightning-button-icon>
+                                                    </div>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div onclick={addData} data-compositekey={store.compositekey}>
+                                                        <lightning-button-icon icon-name="utility:add" alternative-text="Add"></lightning-button-icon>
+                                                    </div>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template lwc:else>
+                            <template for:each={relatedScustomers} for:item="store" for:index="i">
+                                <div class="store-card" key={store.compositekey}>
+                                    <div class="store-header">
+                                        <span class="store-name">{store.customerName}
+                                              <template if:true={store.customerCode}> ({store.customerCode})</template>
+                                        </span>
+                                    </div>
+                                    <div class="store-details">
+                                        <p><strong>customerType : </strong> {store.customerType}</p>
+                                        <p><strong>customerBussinessType : </strong> {store.customerBussinessType}</p>
+                                        <p><strong>Primary Customer : </strong> {store.primaryCustomerName}</p>
+                                        <template lwc:if={store.isUnderSubStockiest}>
+                                            <p><strong>Sub Stockiest : </strong> {store.parentSubstockiestName}</p>
+                                        </template>
+                                    </div>
+                                    <div class="store-action">
+                                        <template lwc:if={store.isSelected}>
+                                            <div onclick={removeData} data-compositekey={store.compositekey}>
+                                                <lightning-button-icon icon-name="utility:delete" alternative-text="Remove"></lightning-button-icon>
+                                            </div>
+                                        </template>
+                                        <template lwc:else>
+                                            <div onclick={addData} data-compositekey={store.compositekey}>
+                                                <lightning-button-icon icon-name="utility:add" alternative-text="Add"></lightning-button-icon>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </lightning-card>
+            </template>
+            <template lwc:else>
+                <div class="slds-size_1-of-1" style="height:100px; display: flex; justify-content: center; align-items: center; font-size: var(--lwc-fontSize9, 1.75rem); font-weight: 700; color: darkgrey;">
+                    No Data Found !!....
+                </div>
+            </template>
+        </template>
+
+        <!--Preivew Customers-->
+        <template if:true={showPreview}>
+            <!--Header-->
+            <div class="slds-p-vertical_small">
+                <!--Desktop-->
+                <template lwc:if={isDesktop}>
+                    <div class="slds-grid slds-align_absolute-center slds-wrap">
+                        <!-- Left side Filters in a row -->
+                        <div class="slds-col slds-grow">
+                            <div class="slds-grid slds-gutters slds-wrap">
+                                <div class="slds-col slds-size_1-of-2 store-name">
+                                    <b>Customers Preview </b>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Buttons -->
+                        <div class="slds-col slds-no-flex slds-m-left_small">
+                            <lightning-button
+                                variant="neutral"
+                                style="margin-top:10px"
+                                label="Back"
+                                onclick={handleback}
+                                class="slds-m-right_x-small">
+                            </lightning-button>
+                            <lightning-button
+                                variant="brand"
+                                style="margin-top:10px"
+                                label="Save"
+                                onclick={handlesave}>
+                            </lightning-button>
+                        </div>
+                    </div>
+                </template>
+                <!--Mobile View-->
+                <template lwc:else>
+                    <div style="text-align: center;" class="store-name">
+                        <div style="display: inline-block;">
+                            <b>Customers Preview</b>
+                            <div style="height: 2px; background-color: #d8dde6; margin-top: 4px;"></div>
+                        </div>
+                    </div>
+                    <!--Buttons-->
+                    <div style="padding-top:25px;text-align:right">
+                        <lightning-button
+                                variant="neutral"
+                                label="Back"
+                                onclick={handleback}
+                                class="slds-m-right_x-small">
+                        </lightning-button>
+                        <lightning-button
+                            variant="brand"
+                            label="Save"
+                            onclick={handlesave}>
+                        </lightning-button>
+                    </div>
+                </template>
+            </div>
+            <!--Body-->
+            <lightning-card>
+                <div class="table-container">
+                    <template lwc:if={isPreviewDataExisted}>
+                        <template lwc:if={isDesktop}>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th onclick={sortByPreviewCustomerName}>Name</th>
+                                        <th>Customer Type</th>
+                                        <th>Customer Bussiness Type</th>
+                                        <th>Primary Customer </th>
+                                        <th>Sub Stockiest</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={previewCustomerList} for:item="store" for:index="i">
+                                        <tr key={store.compositekey}>
+                                            <td>{store.customerName}</td>
+                                            <td>{store.customerType}</td>
+                                            <td>{store.customerBussinessType}</td>
+                                            <td>{store.primaryCustomerName}</td>
+                                            <td>{store.parentSubstockiestName}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template lwc:else>
+                            <template for:each={previewCustomerList} for:item="store" for:index="i">
+                                <div class="store-card" key={store.compositekey}>
+                                    <div class="store-header">
+                                        <span class="store-name">{store.customerName}</span>
+                                    </div>
+                                    <div class="store-details">
+                                        <p><strong>Customer Type : </strong> {store.customerType}</p>
+                                        <p><strong>Customer Bussiness Type : </strong> {store.customerBussinessType}</p>
+                                        <p><strong>Primary Customer : </strong> {store.primaryCustomerName}</p>
+                                        <template lwc:if={store.isUnderSubStockiest}>
+                                            <p><strong>Sub Stockiest : </strong> {store.parentSubstockiestName}</p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="slds-size_1-of-1" style="height:100px; display: flex; justify-content: center; align-items: center; font-size: var(--lwc-fontSize9, 1.75rem); font-weight: 700; color: darkgrey;">
+                            No Data Found !!....
+                        </div>
+                    </template>
+                </div>
+            </lightning-card>
+        </template>
+
+    </template>
+</template>

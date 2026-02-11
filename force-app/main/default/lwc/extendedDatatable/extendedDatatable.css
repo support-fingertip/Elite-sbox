@@ -1,0 +1,15 @@
+.highlight-row {
+    background-color: #e3f7d4 !important; /* light green */
+    font-weight: bold; /* This will not work for text inside cells, but adds intent */
+}
+
+/* This targets the actual row cell elements to set the background */
+/* The .highlight-row is applied to the tr (row) element */
+.highlight-row > td {
+    background-color: #e3f7d4 !important; /* light green */
+}
+
+/* If you want the row to remain highlighted even when selected, you might need: */
+.slds-is-selected.highlight-row > td {
+    background-color: #e3f7d4 !important; 
+}

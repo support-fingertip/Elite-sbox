@@ -1,0 +1,64 @@
+<template>
+    <lightning-card title={label}>
+        <!-- Download icon in the card header -->
+        <div slot="actions">
+            <lightning-button-icon
+                icon-name="utility:download"
+                variant="border-filled"
+                alternative-text="Download CSV"
+                title="Download CSV"
+                onclick={downloadCSV}
+                disabled={showNoRecords}
+            ></lightning-button-icon>
+        </div>
+        <template lwc:if={isLoading}>
+            <c-loading-screen size="1"></c-loading-screen>
+        </template>
+        <template lwc:else>
+            <div class="slds-p-around_small">
+                <template if:true={filteredData.length}>
+                    <p>
+                    <strong>Sub Stockiest : {subStockiestCount}</strong>
+                    </p>
+                    <p>
+                    <strong>Outlets : {secondaryCustomerCount}</strong>
+                    </p>
+                </template>
+
+
+                <lightning-input 
+                    type="search" 
+                    label="Search Customers" 
+                    value={searchKey} 
+                    onchange={handleSearch}
+                    style="margin-bottom: 5px;"
+                ></lightning-input>
+
+                <template if:true={filteredData.length}>
+
+                    <!-- Scrollable content box -->
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #d8dde6; padding: 0.5rem;">
+                        <template for:each={filteredData} for:item="item">
+                            <div key={item.secondaryCustomerId} class="slds-box slds-m-bottom_x-small">
+                                <p>
+                                    <strong>Secondary Customer:</strong>
+                                    <a href="javascript:void(0);" data-id={item.secondaryCustomerId} onclick={navigateToCustomer}> {item.secondaryCustomerName}</a>
+                                </p>
+                                <p><strong>Outlet ID : </strong> {item.secondaryCustomerOutletId}</p>
+                                <p><strong>Customer Code : </strong> {item.secondaryCustomerCode}</p>
+                                <p><strong>Executive Name : </strong> {item.executiveName}</p>
+                                <p><strong>Executive Code : </strong> {item.executiveCode}</p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <template if:true={showNoRecords}>
+                    <div class="slds-align_absolute-center slds-text-color_weak slds-text-heading_small">
+                        No matching records found.
+                    </div>
+                </template>
+            </div>
+        </template>
+    </lightning-card>
+</template>

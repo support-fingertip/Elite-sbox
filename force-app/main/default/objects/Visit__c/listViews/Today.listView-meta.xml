@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Today</fullName>
+    <columns>NAME</columns>
+    <columns>Account1__c</columns>
+    <columns>Approval_Status__c</columns>
+    <columns>Status__c</columns>
+    <columns>Planned_Start_Time__c</columns>
+    <columns>Actual_Start_Time__c</columns>
+    <columns>Actual_End_Time__c</columns>
+    <columns>Daily_Log__c</columns>
+    <columns>Location_Type__c</columns>
+    <columns>Visit_Output__c</columns>
+    <columns>CREATED_DATE</columns>
+    <columns>Distance_Salesforce__c</columns>
+    <columns>Distance__c</columns>
+    <columns>Owner_Name__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Planned_Start_Time__c</field>
+        <operation>equals</operation>
+        <value>TODAY</value>
+    </filters>
+    <label>Today</label>
+</ListView>

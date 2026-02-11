@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Gift_Type__c</fullName>
+    <externalId>false</externalId>
+    <label>Gift Type</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Keychains</fullName>
+                <default>false</default>
+                <label>Keychains</label>
+            </value>
+            <value>
+                <fullName>Tshirts</fullName>
+                <default>false</default>
+                <label>Tshirts</label>
+            </value>
+            <value>
+                <fullName>Bags</fullName>
+                <default>false</default>
+                <label>Bags</label>
+            </value>
+            <value>
+                <fullName>Mugs</fullName>
+                <default>false</default>
+                <label>Mugs</label>
+            </value>
+            <value>
+                <fullName>Pens</fullName>
+                <default>false</default>
+                <label>Pens</label>
+            </value>
+            <value>
+                <fullName>Dairy</fullName>
+                <default>false</default>
+                <label>Dairy</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,98 @@
+<template>
+    <template lwc:if={isPageLoaded}>
+        <div style="margin:30px">
+             <c-on-loading-screen></c-on-loading-screen>
+        </div>
+       
+    </template>
+
+    <template lwc:else>
+        <div class="orders layouts" id="GRNLayout">
+            <div class="order-head">
+                <h3 class="order-title">Goods Received Note</h3>
+
+                <div class="order-filters">
+                    <button class="actionButton" onclick={handleSave}>Save GRN</button>
+                    <button onclick={handleCancel} class="slds-m-left_small actionButton1">Cancel</button>
+                </div>
+            </div>
+
+            <div class="contacts-table">
+                <template if:true={invoiceItems}>
+                    <template for:each={invoiceItems} for:item="invoice">
+                        <div key={invoice.id} class="invoice-section">
+                            <div class="outlet-title">
+                                <span class="icon-wrapper">
+                                    <img src={googleIcons.order} class="custom-icon" width="20" height="20" />
+                                </span>
+                                &nbsp;
+                                <b>{invoice.invoiceNo}</b>
+                            </div>
+                            
+                            <!-- Grid Table -->
+                            <div class="grid-container">
+                                <table class="grn-table">
+                                    <thead>
+                                        <tr>
+                                            <th>S.No.</th>
+                                            <th>Product</th>
+                                            <th>Invoiced Qty</th>
+                                            <th>Received Saleable Qty</th>
+                                            <th>Received Non-Saleable Qty</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={invoice.lineItems} for:item="item" for:index="index">
+                                            <tr key={item.id}>
+                                                <td>
+                                                   {item.rowIndex}
+                                                </td>
+                                                <td>
+                                                    <lightning-input
+                                                        value={item.productName}
+                                                        disabled
+                                                        variant="label-hidden">
+                                                    </lightning-input>
+                                                </td>
+                                                <td>
+                                                    <lightning-input
+                                                        value={item.quantity}
+                                                        disabled
+                                                        variant="label-hidden">
+                                                    </lightning-input>
+                                                </td>
+                                                <td>
+                                                    <lightning-input
+                                                        type="number"
+                                                        value={item.receivedSaleableQty}
+                                                        data-invoice={invoice.id}
+                                                        data-index={index}
+                                                        onchange={handleReceivedSaleableQtyChange}
+                                                        variant="label-hidden">
+                                                    </lightning-input>
+                                                </td>
+                                                <td>
+                                                    <lightning-input
+                                                        type="number"
+                                                        value={item.receivedNonSaleableQty}
+                                                        data-invoice={invoice.id}
+                                                        data-index={index}
+                                                        onchange={handleReceivedNonSaleableQtyChange}
+                                                        variant="label-hidden">
+                                                    </lightning-input>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+
+        </div>
+    </template>
+  
+    <c-custom-toast auto-close-time="8000"></c-custom-toast>
+</template>

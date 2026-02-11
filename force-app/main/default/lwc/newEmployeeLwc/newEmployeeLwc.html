@@ -1,0 +1,941 @@
+<template>
+    <lightning-record-edit-form object-api-name="Employee__c"  record-id={recordId} >
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-2" class="slds-modal slds-fade-in-open">
+            <div class={containerClass}>
+                <!-- Modal/Popup Header -->
+                <header class="slds-modal__header">
+                    <div class="slds-grid slds-gutters">
+                        <template if:false={isDesktop}>
+                            <div class="slds-col  slds-clearfix">
+                                <div class="slds-float_right">
+                                    <lightning-button variant="base" label="Cancel" onclick={cancel} class="slds-m-left_xx-small"></lightning-button>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="slds-col slds-align_absolute-center">
+                            <h1 id="modal-heading-02" class="slds-modal__title slds-hyphenate small-modal-title" tabindex="-1">{title}</h1>
+                        </div>
+                    
+                        <template if:false={isDesktop}>
+                            <div class="slds-col  slds-clearfix">
+                                <div class="slds-float_left">
+                                    <template lwc:if={editaccess}>
+                                        <lightning-button variant="base" label="Save" class="slds-m-left_xx-small" onclick={handleButtonClick}></lightning-button>
+                                    </template>
+                                    <template lwc:else>
+                                        <div style="padding-right:10px">
+
+                                        </div>
+                                    </template>
+
+                                </div>
+                            </div>
+                        </template>
+                       
+                    </div>
+                </header>
+                <!--Body-->
+                <div class="slds-modal__content slds-p-around_medium paddingbottom" id="modal-content-id-1">
+                    <template lwc:if={isLoading}>
+                        <c-loading-screen></c-loading-screen>
+                    </template>
+                     <template lwc:else>
+                        <template lwc:if={editaccess}>
+                            
+                            <!--Employee Information-->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Employee Information</span>
+                                </h3>
+                                <br />
+                                <div class="slds-grid slds-wrap">
+                                    <!--Name-->
+                                    <div class={customClass}>
+                                        <lightning-input-field
+                                            field-name="Name" 
+                                            data-id="employeeFields"
+                                            value={employee.Name}
+                                            onchange={handleInputChangeChange}
+                                            required="true"
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--Role-->
+                                    <div class={customClass}   style="padding-left:5px">
+                                        <div class="slds-m-right_xx-small slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                        <lightning-input
+                                                            label="Role"
+                                                            type="search"
+                                                            read-only={isRoleReadOnly}
+                                                            class="readonly-bordered"
+                                                            message-when-value-missing="Select Role"
+                                                            placeholder="Search Roles"
+                                                            value={employee.Role__c}
+                                                            onchange={handleRoleSearch}>
+                                                        </lightning-input> 
+                                                    </div>
+                                                    <template lwc:if={isShowRoles}>
+                                                        <div id="distributro" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                            <template for:each={searchedRoleList} for:item="srch" >
+                                                                <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                    <li role="presentation" class="slds-listbox__item">
+                                                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                    onclick={selectRole} data-id={srch.Id} data-name={srch.Name}  >
+                                                                        <lightning-icon 
+                                                                            icon-name="standard:avatar" size="small">
+                                                                        </lightning-icon>
+                                                                        <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                        <span class="slds-media__body">
+                                                                        <span class="slds-truncate" title={srch.Name}>
+                                                                            <span>{srch.Name}</span>
+                                                                        </span>
+                                                                        </span>
+                                                                    </div>
+                                                                    </li>
+                                                                </ul>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Profile__c-->
+                                    <div class={customClass} >
+                                        <lightning-combobox
+                                            label="Permission Type"
+                                            data-id="employeeFields"
+                                            name="Profile__c"
+                                            value={employee.Profile__c}
+                                            options={profileOptions}
+                                            dropdown-alignment="auto"
+                                            placeholder="--None--"
+                                            required = "true"
+                                            variant="label-stacked"
+                                            onchange={handleProfileChange}>
+                                        </lightning-combobox>
+                                    </div>
+                                    <!--Mail_Id__c-->
+                                    <div class={customClass}>
+                                        <lightning-input-field
+                                            field-name="Mail_Id__c" 
+                                            required="true"
+                                            data-id="employeeFields"
+                                            value={employee.Mail_Id__c}
+                                            variant="label-stacked"
+                                            onchange={handleInputChangeChange}>
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--User_Name__c-->
+                                    <div class={customClass}>
+                                        <lightning-input-field
+                                            field-name="User_Name__c" 
+                                            required="true"
+                                            value={employee.User_Name__c}
+                                            data-id="employeeFields"
+                                            onchange={handleInputChangeChange}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--Reporting Manager-->
+                                    <div class={customClass}   style="padding-left:5px">
+                                        <div class="slds-m-right_xx-small slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                        <lightning-input
+                                                            label="Reporting Manager"
+                                                            data-id="employeeFields"
+                                                            type="search"
+                                                            read-only={isReportingManagerReadonly}
+                                                            class="readonly-bordered"
+                                                            message-when-value-missing="Select Reporting Manager"
+                                                            placeholder="Search Reporting Manager"
+                                                            value={employee.Reporting_Manager_Name__c}
+                                                            disabled={isReptingManagerDisabled}
+                                                            onchange={handleReportingManagerSearch}
+                                                            required={reportingmanagerRequired}>
+                                                        </lightning-input> 
+                                                    </div>
+                                                    <template lwc:if={isShowReportingManager}>
+                                                        <div id="reportingManager" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                            <template for:each={searchedReportingMagers} for:item="srch" for:index="index">
+                                                                <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                    <li role="presentation" class="slds-listbox__item">
+                                                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                    onclick={selectReprotingManager} data-id={srch.Id} data-name={srch.Name}  data-index={index} >
+                                                                        <lightning-icon 
+                                                                            icon-name="standard:avatar" size="small">
+                                                                        </lightning-icon>
+                                                                        <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                        <span class="slds-media__body">
+                                                                            <span class="user-info" title={srch.Name}>
+                                                                                <span>{srch.Name}</span>
+                                                                                <span>{srch.Employee_Code__c}</span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </div>
+                                                                    </li>
+                                                                </ul>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Aadhar_Number__c-->
+                                    <div class={customClass}>
+                                        <lightning-input-field
+                                            field-name="Aadhar_Number__c" 
+                                            data-id="employeeFields"
+                                            required={aadharNumberMandate}
+                                            onchange={handleInputChangeChange}
+                                            value={employee.Aadhar_Number__c}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!--Primary_Phone_Number__c-->
+                                    <div class={customClass}>
+                                        <lightning-input-field
+                                            data-id="employeeFields"
+                                            field-name="Primary_Phone_Number__c" 
+                                            required="true"
+                                            onchange={handleInputChangeChange}
+                                            value={employee.Primary_Phone_Number__c}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                </div>
+                            </div>
+                            <template if:false={isAdminProfile}>
+                                <!--Employment Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Employment Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <!--User_Type__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="User_Type__c" 
+                                                value={employee.User_Type__c}
+                                                data-id="employeeFields"
+                                                onchange={handleInputChangeChange}
+                                                required="true"
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Replaced_For__c-->
+                                        <template if:true={mandateReplacedFor}>
+                                            <div class={customClass}   style="padding-left:5px">
+                                                <div class="slds-m-right_xx-small slds-form-element">
+                                                    <div class="slds-form-element__control">
+                                                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                                <lightning-input
+                                                                    label="Replaced For"
+                                                                    data-id="employeeFields"
+                                                                    type="search"
+                                                                    read-only={isReplaceForReadOnly}
+                                                                    class="readonly-bordered"
+                                                                    message-when-value-missing="Select Replaced For"
+                                                                    placeholder="Search Replaced For"
+                                                                    value={employee.Replaced_For_Name__c}
+                                                                    disabled={isCloningCompleted}
+                                                                    onchange={handleReplacedForSearch}
+                                                                    required="true">
+                                                                </lightning-input> 
+                                                            </div>
+                                                            <template lwc:if={isshowReplaceFor}>
+                                                                <div id="replacedFor" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                    <template for:each={searchedReplacedForEmployees} for:item="srch">
+                                                                        <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                            <li role="presentation" class="slds-listbox__item">
+                                                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                            onclick={selectReplacedFor} data-id={srch.Id} data-name={srch.Name}  data-index={index}
+                                                                               >
+                                                                                <lightning-icon 
+                                                                                    icon-name="standard:avatar" size="small">
+                                                                                </lightning-icon>
+                                                                                <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                                <span class="slds-media__body">
+                                                                                <span class="slds-truncate" title={srch.Name}>
+                                                                                    <span>{srch.Name}</span><br/>
+                                                                                    <span>{srch.Employee_Code__c}</span>
+                                                                                </span>
+                                                                                </span>
+                                                                            </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <!--Payroll__c-->
+                                        <div class={customClass} style="padding-right:5px;padding-left:5px">
+                                            <lightning-combobox
+                                                id="Payroll"
+                                                label="Payroll"
+                                                data-id="employeeFields"
+                                                name="Payroll__c"
+                                                value={employee.Payroll__c}
+                                                options={payrollList}
+                                                dropdown-alignment="auto"
+                                                placeholder="--None--"
+                                                required="true"
+                                                onchange={handleCustomInputChange}>
+                                            </lightning-combobox>
+                                        </div>
+                                        <!--Contract_Type__c-->
+                                        <template if:true={mandateContractType}>
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    field-name="Contract_Type__c" 
+                                                    value={employee.Contract_Type__c}
+                                                    data-id="employeeFields"
+                                                    onchange={handleInputChangeChange}
+                                                    required={mandateContractType}
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                        </template>
+                                         <!--Employee_Id__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Employee_Code__c" 
+                                                value={employee.Employee_Code__c}
+                                                data-id="employeeFields"
+                                                onchange={handleInputChangeChange}
+                                                required={isEmployeeCodeMandate}
+                                                disabled={disableEmployeeCode}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    
+                                        <template if:false={mandateContractType}>
+                                            <!--Payroll Type-->
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    field-name="Payroll_Type__c" 
+                                                    value={employee.Payroll_Type__c}
+                                                    onchange={handleInputChangeChange}
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                           
+                                            <!--Vendor_Code__c-->
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    required="true"
+                                                    data-id="employeeFields"
+                                                    onchange={handleInputChangeChange}
+                                                    value={employee.Vendor_Code__c}
+                                                    field-name="Vendor_Code__c" 
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                        </template>
+                                    
+                                        <!--Band__c-->
+                                        <div class={customClass}>
+                                        <lightning-input-field
+                                            field-name="Band__c" 
+                                            onchange={handleInputChangeChange}
+                                            value={employee.Band__c}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                        </div>
+                                        <!--Shift_Time__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Shift_Time__c"
+                                                onchange={handleInputChangeChange}
+                                                value={employee.Shift_Time__c}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Headquarter__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Headquarter__c" 
+                                                onchange={handleInputChangeChange}
+                                                value={employee.Headquarter__c}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Relieving_date__c-->
+                                        <template if:true={showEditFieds}>
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    field-name="Relieving_date__c" 
+                                                    onchange={handleInputChangeChange}
+                                                    value={employee.Relieving_date__c}
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                        </template>
+                                        <!--Designation__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Designation__c"
+                                                onchange={handleInputChangeChange} 
+                                                value={employee.Designation__c}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--District_In_charge__c-->
+                                        <template if:true={isShowDistctInchage}>
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    field-name="District_In_charge__c" 
+                                                    onchange={handleInputChangeChange}
+                                                    value={employee.District_In_charge__c}
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                            <!--Product Mapping Information and Work location information-->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Product Mapping & Work Location Information</span>
+                                </h3>
+                                <br />
+                                <div class="slds-grid slds-wrap">
+                                    <!--Sales_Channel__c-->
+                                    <div class={customClass}>
+                                        <lightning-input-field
+                                            field-name="Sales_Channel__c" 
+                                            value={employee.Sales_Channel__c}
+                                            data-id="employeeFields"
+                                            onchange={handleInputChangeChange}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={customClass}>
+                                        <lightning-input-field
+                                            field-name="Alternate_Sales_Channel__c" 
+                                            value={employee.Alternate_Sales_Channel__c}
+                                            data-id="employeeFields"
+                                            onchange={handleInputChangeChange}
+                                            variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <!-- Dependent Picklist with dynamic Category options -->
+                                    <div class={customClass} style="padding-left: 5px;">
+                                        <lightning-combobox
+                                            name="Category__c"
+                                            label="Category"
+                                            value={employee.Category__c}
+                                            options={categoryOptions}
+                                            onchange={handleCustomInputChange}>
+                                        </lightning-combobox>
+                                    </div>
+                                    <!--Region__c-->
+                                    <template if:true={isShowRegion}>
+                                        <div class={customClass}>
+                                            <lightning-combobox
+                                                label="Region"
+                                                data-id="employeeFields"
+                                                name="Region__c"
+                                                value={employee.Region__c}
+                                                options={regionOptions}
+                                                dropdown-alignment="auto"
+                                                placeholder="--None--"
+                                                required={isRegionRequired}
+                                                disabled={isRegionDisabled}
+                                                variant="label-stacked"
+                                                onchange={handleCustomInputChange}>
+                                            </lightning-combobox>
+                                        </div>
+                                    </template>
+                                    <!--Area-->
+                                    <template if:true={isShowArea}>
+                                        <div class={customClass}>
+                                            <lightning-combobox
+                                                label="Area"
+                                                data-id="employeeFields"
+                                                name="Area__c"
+                                                value={employee.Area__c}
+                                                options={areaOptions}
+                                                dropdown-alignment="auto"
+                                                placeholder="--None--"
+                                                required={isAreaRequired}
+                                                disabled={isAreaDisabled}
+                                                variant="label-stacked"
+                                                onchange={handleCustomInputChange}>
+                                            </lightning-combobox>
+                                        </div>
+                                    </template>
+                                    <!--Working District-->
+                                    <!--
+                                    <template if:true={isShowDistrict}>
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Working_District__c" 
+                                                value={employee.Working_District__c}
+                                                disabled={isDistrictDisabled}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    </template>-->
+                                    <!--Territory__c-->
+                                    <template if:true={isShowTerritory}>
+                                        <div class={customClass}   style="padding-left:5px">
+                                            <div class="slds-m-right_xx-small slds-form-element">
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                            <lightning-input
+                                                                label="Territory"
+                                                                data-id="employeeFields"
+                                                                type="search"
+                                                                disabled={isTerritoryDisabled}
+                                                                read-only={isTerritoryReadOnly}
+                                                                class="readonly-bordered"
+                                                                message-when-value-missing="Select Territory"
+                                                                placeholder="Search Territory"
+                                                                value={employee.Territory_Name__c}
+                                                                onchange={handleTerritorySearch}
+                                                                required={isTerritoryRequired}>
+                                                            </lightning-input> 
+                                                        </div>
+                                                        <template lwc:if={isShowSearchedTerritory}>
+                                                            <div id="teritory" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                <template for:each={searchedTerritory} for:item="srch" for:index="index1">
+                                                                    <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                        <li role="presentation" class="slds-listbox__item">
+                                                                        <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" 
+                                                                        onclick={selectTerritory} data-id={srch.Id} data-name={srch.Name}  data-index={index1}
+                                                                       >
+                                                                            <lightning-icon 
+                                                                                icon-name="standard:avatar" size="small">
+                                                                            </lightning-icon>
+                                                                            <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                            <span class="slds-media__body">
+                                                                            <span class="slds-truncate" title={srch.Name}>
+                                                                                <span>{srch.Name}</span><br/>
+                                                                            </span>
+                                                                            </span>
+                                                                        </div>
+                                                                        </li>
+                                                                    </ul>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                             <template if:false={isAdminProfile}>
+                                <!-- Secondary Customer Approval Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Secondary Customer Approval Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <!--Secondary_Customer_Approver_1__c-->
+                                        <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                            <c-user-lookup-lwc
+                                                label="Secondary Customer Approver L1"
+                                                field-name="Secondary_Customer_Approver_1__c"
+                                                user-list={userList}
+                                                selected-user-id={employee.Secondary_Customer_Approver_1__c}
+                                                selected-user-name={employee.Secondary_Customer_Approver_1_Name}
+                                                heirachy-numner={selectedProfileHirachyNumber}
+                                                onuserselected={handleApproverSelection}>
+                                            </c-user-lookup-lwc>
+                                        </div> 
+                                        <!--Secondary_Customer_Approver_2__c-->
+                                        <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                            <c-user-lookup-lwc
+                                                label="Secondary Customer Approver L2"
+                                                field-name="Secondary_Customer_Approver_2__c"
+                                                user-list={userList}
+                                                selected-user-id={employee.Secondary_Customer_Approver_2__c}
+                                                selected-user-name={employee.Secondary_Customer_Approver_2_Name}
+                                                heirachy-numner={selectedProfileHirachyNumber}
+                                                onuserselected={handleApproverSelection}>
+                                            </c-user-lookup-lwc>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template lwc:if={isShowAllSections}>
+                                <!-- Primary Customer Approval Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Primary Customer Approval Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <template if:false={isAdminProfile}>
+                                            <!--Customer_Approver_1__c-->
+                                            <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                                <c-user-lookup-lwc
+                                                    label="Primary Customer Approver L1"
+                                                    field-name="Primary_Customer_Approver_1__c"
+                                                    user-list={userList}
+                                                    selected-user-id={employee.Primary_Customer_Approver_1__c}
+                                                    selected-user-name={employee.Primary_Customer_Approver_1_Name}
+                                                    heirachy-numner={selectedProfileHirachyNumber}
+                                                    onuserselected={handleApproverSelection}>
+                                                </c-user-lookup-lwc>
+                                            </div> 
+                                            <!--Primary_Customer_Approver_2__c-->
+                                            <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                                <c-user-lookup-lwc
+                                                    label="Primary Customer Approver L2"
+                                                    field-name="Primary_Customer_Approver_2__c"
+                                                    user-list={userList}
+                                                    selected-user-id={employee.Primary_Customer_Approver_2__c}
+                                                    selected-user-name={employee.Primary_Customer_Approver_2_Name}
+                                                    heirachy-numner={selectedProfileHirachyNumber}
+                                                    onuserselected={handleApproverSelection}>
+                                                </c-user-lookup-lwc>
+                                            </div>
+                                        </template>
+                                        <!--Primary_Customer_Approver_3_CD__c-->
+                                        <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                            <c-user-lookup-lwc
+                                                label="Primary Customer Approver L3 (Credit)"
+                                                field-name="Primary_Customer_Approver_3_CD__c"
+                                                user-list={userList}
+                                                profile-name="Credit Department"
+                                                selected-user-id={employee.Primary_Customer_Approver_3_CD__c}
+                                                selected-user-name={employee.Primary_Customer_Approver_3_CD_Name}
+                                                heirachy-numner={selectedProfileHirachyNumber}
+                                                onuserselected={handleApproverSelection}>
+                                            </c-user-lookup-lwc>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Employee Approval Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Employee Approval Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <template if:false={isAdminProfile}>
+                                            <!--ASM_TSM__c-->
+                                            <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                                <c-user-lookup-lwc
+                                                    label="Employee Approver L1"
+                                                    field-name="ASM_TSM__c"
+                                                    user-list={userList}
+                                                    selected-user-id={employee.ASM_TSM__c}
+                                                    selected-user-name={employee.ASM_TSM_Name}
+                                                    heirachy-numner={selectedProfileHirachyNumber}
+                                                    onuserselected={handleApproverSelection}>
+                                                </c-user-lookup-lwc>
+                                            </div> 
+                                            <!--RSM__c-->
+                                            <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                                <c-user-lookup-lwc
+                                                    label="Employee Approver L2"
+                                                    field-name="RSM__c"
+                                                    user-list={userList}
+                                                    selected-user-id={employee.RSM__c}
+                                                    selected-user-name={employee.RSM_Name}
+                                                    heirachy-numner={selectedProfileHirachyNumber}
+                                                    onuserselected={handleApproverSelection}>
+                                                </c-user-lookup-lwc>
+                                            </div>
+                                        </template>
+                                        <!--Employee_Approver_3_HR__c-->
+                                        <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                            <c-user-lookup-lwc
+                                                label="Employee Approver L3 (HR)"
+                                                field-name="Employee_Approver_3_HR__c"
+                                                user-list={userList}
+                                                profile-name="HR"
+                                                selected-user-id={employee.Employee_Approver_3_HR__c}
+                                                selected-user-name={employee.Employee_Approver_3_HR_Name}
+                                                heirachy-numner={selectedProfileHirachyNumber}
+                                                onuserselected={handleApproverSelection}>
+                                            </c-user-lookup-lwc>
+                                        </div>
+                                    </div>
+                                </div>
+                                <template if:false={isAdminProfile}>
+                                    <!--PJP Approval Information-->
+                                    <div class="slds-section slds-is-open">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small" title="Section Title">PJP Approval Information</span>
+                                        </h3>
+                                        <br />
+                                        <div class="slds-grid slds-wrap">
+                                            <!--PJP_Approver_1__c-->
+                                            <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                                <c-user-lookup-lwc
+                                                    label="PJP Approver"
+                                                    field-name="PJP_Approver_1__c"
+                                                    user-list={userList}
+                                                    selected-user-id={employee.PJP_Approver_1__c}
+                                                    selected-user-name={employee.PJP_Approver_1_Name}
+                                                    heirachy-numner={selectedProfileHirachyNumber}
+                                                    onuserselected={handleApproverSelection}>
+                                                </c-user-lookup-lwc>
+                                            </div> 
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <!--Expense Approval Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Expense Approval Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <template if:false={isAdminProfile}>
+                                            <!--Expense_Approver_1__c-->
+                                            <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                            <c-user-lookup-lwc
+                                                    label="Expense Approver L1"
+                                                    field-name="Expense_Approver_1__c"
+                                                    user-list={userList}
+                                                    selected-user-id={employee.Expense_Approver_1__c}
+                                                    selected-user-name={employee.Expense_Approver_1_Name}
+                                                    heirachy-numner={selectedProfileHirachyNumber}
+                                                    onuserselected={handleApproverSelection}>
+                                                </c-user-lookup-lwc>
+                                            </div> 
+                                        </template>
+                                        <!--Expense_Approver_2_Finance_Department__c-->
+                                        <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                            <c-user-lookup-lwc
+                                                label="Expense Approver L2 (Finance)"
+                                                field-name="Expense_Approver_2_Finance_Department__c"
+                                                user-list={userList}
+                                                selected-user-id={employee.Expense_Approver_2_Finance_Department__c}
+                                                selected-user-name={employee.Expense_Approver_2_Finance_Department_Name}
+                                                heirachy-numner={selectedProfileHirachyNumber}
+                                                onuserselected={handleApproverSelection}>
+                                            </c-user-lookup-lwc>
+                                        </div> 
+                                    </div>
+                                </div>
+                            </template>
+                            <template if:false={isAdminProfile}>
+                                <!--Pay Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Pay Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <!--Basic_Pay__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Basic_Pay__c" 
+                                                value={employee.Basic_Pay__c} 
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                
+                                        <!--Gross_Salary__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Gross_Salary__c" 
+                                                value={employee.Gross_Salary__c} 
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        
+                                    
+                                    </div>
+                                </div>
+                                <!--Additional Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Additional Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <template lwc:if={iscurrentUserAdmin}>
+                                            <!--Expense_Start_Date__c-->
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    field-name="Expense_Start_Date__c" 
+                                                    value={employee.Expense_Start_Date__c} 
+                                                    onchange={handleInputChangeChange}
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                            <!--Expense_End_Date__c-->
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    field-name="Expense_End_Date__c" 
+                                                    value={employee.Expense_End_Date__c} 
+                                                    onchange={handleInputChangeChange}
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                            <!--Expense_Back_Day_Entry_Limit__c-->
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    field-name="Expense_Back_Day_Entry_Limit__c" 
+                                                    value={employee.Expense_Back_Day_Entry_Limit__c} 
+                                                    onchange={handleInputChangeChange}
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                            <!--Employee_Remarks__c-->
+                                            <div class={customClass}>
+                                                <lightning-input-field
+                                                    field-name="Employee_Remarks__c" 
+                                                    value={employee.Employee_Remarks__c} 
+                                                    onchange={handleInputChangeChange}
+                                                    variant="label-stacked">
+                                                </lightning-input-field>
+                                            </div>
+                                        </template>
+                                        <!--Minimum_Order_value__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Minimum_Order_value__c" 
+                                                value={employee.Minimum_Order_value__c} 
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--PAN__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="PAN__c" 
+                                                value={employee.PAN__c} 
+                                                onchange={handleInputChangeChange}
+                                                data-id="panNumber"
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Secondary_Phone_Number__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                data-id="secondaryPhoneNumber"
+                                                value={employee.Secondary_Phone_Number__c} 
+                                                onchange={handleInputChangeChange}
+                                                field-name="Secondary_Phone_Number__c" 
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    
+                                        <!--DOB__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="DOB__c" 
+                                                value={employee.DOB__c} 
+                                                data-id="employeeFields"
+                                                required="true"
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--DOJ__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="DOJ__c" 
+                                                value={employee.DOJ__c} 
+                                                data-id="employeeFields"
+                                                required="true"
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Address Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Employee Personal Address Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <!--State__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="State__c" 
+                                                value={employee.State__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--District__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="District__c" 
+                                                onchange={handleInputChangeChange}
+                                                value={employee.District__c}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Pincode__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Pincode__c" 
+                                                value={employee.Pincode__c}
+                                                onchange={handleInputChangeChange}
+                                                data-id="pincode"
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                        <!--Street__c-->
+                                        <div class={customClass}>
+                                            <lightning-input-field
+                                                field-name="Street__c" 
+                                                value={employee.Street__c}
+                                                onchange={handleInputChangeChange}
+                                                variant="label-stacked">
+                                            </lightning-input-field>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                    
+                        </template>
+                        <template lwc:else>
+                            <div class="message-text">
+                                {message}
+                            </div>
+                        </template>
+                    </template>
+                </div>
+                <!--Footer-->
+                <template lwc:if={isDesktop}>
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="neutral" label="Cancel" onclick={cancel}></lightning-button>
+                        <template lwc:if={editaccess}>
+                                <lightning-button 
+                                variant="brand" 
+                                label="Save" 
+                                onclick={handleButtonClick} 
+                                style="padding-left:10px">
+                                </lightning-button>
+                        </template>
+                    </footer>
+                </template>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </lightning-record-edit-form>
+</template>

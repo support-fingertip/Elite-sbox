@@ -1,0 +1,84 @@
+/* accountCalendarPlanner.css */
+.slds-grid {
+    min-height: 600px;
+}
+
+.accounts-container {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.account-item {
+    padding: 0.5rem;
+    background: #f3f3f3;
+    border-radius: 4px;
+    cursor: grab;
+    border: 1px solid #dddbda;
+}
+
+.account-item:hover {
+    background: #e8e8e8;
+}
+
+.calendar-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.calendar {
+    width: 100%;
+}
+
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #f3f3f3;
+    font-weight: bold;
+    text-align: center;
+}
+
+.calendar-header-day {
+    padding: 0.5rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-gap: 1px;
+    background: #dddbda;
+}
+
+.calendar-day {
+    min-height: 100px;
+    background: white;
+    padding: 0.5rem;
+    position: relative;
+}
+
+.calendar-date {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.calendar-event {
+    background: #e8f4ff;
+    padding: 0.25rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calendar-day.empty {
+    background: #f9f9f9;
+}

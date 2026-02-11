@@ -1,0 +1,111 @@
+<template>
+
+    <div class="screen-1 "> 
+        <div class="outlets">
+            <!-- When page is loading -->
+    <template lwc:if={isPageLoaded}>
+        <c-on-loading-screen></c-on-loading-screen>
+    </template>
+
+        <!-- When page loaded -->
+        <template lwc:else>
+            <div class="route"> 
+
+                <template for:each={businessSummary} for:item="itm1" for:index="index1">
+                    <div class="dropdown-head" key={itm1}>
+                        <div class="dropdown-head-left" >
+                            <h4 class="dropdown-head-title visitHeading">
+                                <img src={summeryIcons.summery} width="15" height="15" > &nbsp;&nbsp;
+                                {itm1.date}
+                            </h4>
+                        </div>
+                    </div>
+
+                    <template for:each={itm1.details} for:item="itm2" for:index="index2">
+                        <template lwc:if={outstanding}>
+                            <div class="expenses-details" key={itm2}>
+                                <div class="expenses-col">
+                                    <div class="expenses-col-1">{itm2.invNo}</div>
+                                    <div class="expenses-col-2">{itm2.invAmt}</div>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:if={order}>
+                            <div class="expenses-details header-row" key={itm2}>
+                                <div class="expenses-col">
+                                    <div class="expenses-col-1"><strong>Order No</strong></div>
+                                    <div class="expenses-col-1"><strong>Order Date</strong></div>
+                                    <div class="expenses-col-1"><strong>Order For</strong></div>
+                                   <div class="expenses-col-1"><strong>Total Amount</strong></div>
+                                </div>
+                            </div>
+                            <div class="expenses-details" key={itm2}>
+                                <div class="expenses-col">
+                                    <div class="expenses-col-1">{itm2.OrdNo}</div>
+                                    <div class="expenses-col-1">{itm2.OrdDate}</div>
+                                    <div class="expenses-col-1">{itm2.OrderType}</div>
+                                    <div class="expenses-col-2">{itm2.OrdAmt}</div>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:if={sales}>
+                            <div class="expenses-details" key={itm2}>
+                                <div class="expenses-col">
+                                    <div class="expenses-col-1">{itm2.salesInvoice}</div>
+                                    <div class="expenses-col-2">{itm2.Amount}</div>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:if={visit}>
+                            <div class="expenses-details header-row" key={itm2}>
+                                <div class="expenses-col">
+                                    <div class="expenses-col-1"><strong>Executive Name</strong></div>
+                                    <div class="expenses-col-1"><strong>Status</strong></div>
+                                    <!--<div class="expenses-col-1"><strong>Visit Duration</strong></div>-->
+                                    <div class="expenses-col-1"><strong>Location Type</strong></div>
+                                    <div class="expenses-col-1"><strong>Total Orders</strong></div>
+                                </div>
+                            </div>
+                            <div class="expenses-details" key={itm2}>
+                                <div class="expenses-col" >
+                                    <div class="expenses-col-1">{itm2.ExeName}</div>
+                                    <div class="expenses-col-1">{itm2.Status}</div>
+                                   <!--<template lwc:if={itm2.VisitDuration}>
+                                        <div class="expenses-col-1">{itm2.VisitDuration}</div>
+                                        
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="expenses-col-1"> --</div>
+                                       
+                                    </template>--> 
+                                   <div class="expenses-col-1">{itm2.LocationType}</div>
+                                    <div class="expenses-col-1">{itm2.TotalOrd}</div>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:if={rtn}>
+                            <div class="expenses-details header-row" key={itm2}>
+                                <div class="expenses-col">
+                                    <div class="expenses-col-1"><strong>Return No</strong></div>
+                                    <div class="expenses-col-1"><strong>customer Name</strong></div>
+                                    <div class="expenses-col-1"><strong>Total Qty</strong></div>
+                                   <div class="expenses-col-1"><strong>Total Amt</strong></div>
+                                </div>
+                            </div>
+                            <div class="expenses-details" key={itm2}>
+                                <div class="expenses-col">
+                                    <div class="expenses-col-1">{itm2.returnName}</div>
+                                    <div class="expenses-col-1">{itm2.customerName}</div>
+                                    <div class="expenses-col-1">{itm2.quantity}</div>
+                                    <div class="expenses-col-2">{itm2.amount}</div>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    
+                </template>
+            </div>
+        </template>
+        </div>
+    </div>
+</template>

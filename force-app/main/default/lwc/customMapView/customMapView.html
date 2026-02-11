@@ -1,0 +1,123 @@
+<template>
+    <lightning-card>
+        <!-- Custom Header -->
+        <div class="header">
+   <!--         <lightning-icon 
+                icon-name="standard:location" 
+                alternative-text="Location"
+                size="small"
+                class="header-icon">
+            </lightning-icon> -->
+            <h1 class="header-title">User Map</h1>
+        </div>
+
+        <div class="slds-p-around_medium">
+            <!-- Date picker title="Visit Route Checker" -->
+                
+
+        <!-- Date Input and Update Button -->
+        <div class="date-section">
+            <label for="dateInput" class="date-label">For Date</label>
+            <lightning-input 
+                id="dateInput"
+                type="date" 
+                variant="label-hidden"
+                value={selectedDate}
+                onchange={handleDateChange}
+                class="date-input">
+            </lightning-input>
+            <lightning-button 
+                label="Update" 
+                variant="brand"
+                onclick={loadVisits}
+                disabled={loading}
+                class="update-btn">
+            </lightning-button>
+        </div>
+
+            <!-- Legend Section -->
+             <template  if:true={visitData}>
+            <div class="legend slds-m-top_large">
+              
+                 <div class="legend-column">
+                    <div class="legend-item">
+                        <span></span> User Name : {visitData.userName}
+                    </div>
+                    <div class="legend-item">
+                        <span></span> Total Outlet Visited : {visitData.totalCall}
+                    </div>
+
+             <!--        <div class="legend-item">
+                        <span></span> Total Unique Outlet Visited :
+                    </div> -->
+                    
+                </div>
+                <div class="legend-column">
+                    <div class="legend-item">
+                        <span></span> Total Distance : {visitData.distance} 
+                    </div>
+                    <div class="legend-item">
+                        <span></span> Total Geo Outlet Visited : {visitData.totalGeo}
+                    </div>
+                  
+                </div>
+            
+
+
+                <div class="legend-column">
+                    <div class="legend-item">
+                        <span class="color-box attendance"></span> Attendance
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box pjp-productive"></span> PJP Productive ({visitData.totpjpProd})
+                    </div>
+                     <div class="legend-item">
+                        <span class="color-box non-pjp-productive"></span> Non PJP Productive ({visitData.nonPJPPro})
+                    </div>
+                <!--    <div class="legend-item">
+                        <span class="color-box pjp-non-productive"></span> PJP Non Productive ({visitData.nonpjpProd})
+                    </div>
+                   
+                    <div class="legend-item">
+                        <span class="color-box eod"></span> EOD
+                    </div> -->
+                </div>
+
+                <div class="legend-column">
+                 
+                       <div class="legend-item">
+                        <span class="color-box new-outlet"></span> New OUTLET Added ({visitData.newOut})
+                    </div> 
+                     <div class="legend-item">
+                        <span class="color-box pjp-non-productive"></span> PJP Non Productive ({visitData.nonpjpProd})
+                    </div>
+                      <div class="legend-item">
+                        <span class="color-box eod"></span> EOD
+                    </div>
+             <!--       <div class="legend-item">
+                        <span class="color-box non-pjp-non-productive"></span> Non PJP Non Productive (0)
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box activity"></span> Activity (0)
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box location-tracking"></span> Location Tracking (0)
+                    </div> -->
+                </div>
+           
+            </div>
+             </template>
+        </div>
+
+        <!-- VF Page iframe -->
+            <template if:true={loadMap}>
+        <iframe
+            src={vfUrl}
+            width="100%"
+            height="600"
+            style="border:none;"
+            onload={handleIframeLoad}>
+        </iframe>
+        </template>
+    </lightning-card>
+</template>

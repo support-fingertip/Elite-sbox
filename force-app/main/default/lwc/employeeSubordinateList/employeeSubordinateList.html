@@ -1,0 +1,32 @@
+<template>
+    <lightning-card title="Subordinates">
+        <template if:true={visibleUsers}>
+            <div class="slds-p-around_small">
+                <template for:each={visibleUsers} for:item="user">
+                    <div key={user.Id} class="slds-box slds-m-bottom_x-small">
+                        <p>
+                            <strong>Name:</strong>
+                            <a href="javascript:void(0);" data-id={user.Id} onclick={navigateToEmployee}> {user.Name}</a>
+                        </p>
+                        <p><strong>Employee Code:</strong> {user.Employee_Code__c}</p>
+                        <p><strong>Permission Type:</strong> {user.Profile__c}</p>
+                        <p><strong>Designation:</strong> {user.Designation__c}</p>
+                        <p><strong>Sales Channel:</strong> {user.Sales_Channel__c}</p>
+                    </div>
+                </template>
+                <template if:false={hasUsers}>
+                    <div class="slds-size_1-of-1" style="display: flex; justify-content: center; align-items: center; font-size: var(--lwc-fontSize9, 1.75rem); font-weight: 700; color: darkgrey;">
+                         No subordinates found.
+                    </div>
+                </template>
+
+                <template if:true={showToggle}>
+                    <div class="slds-text-align_center slds-m-top_small">
+                        <lightning-button variant="base" label={toggleLabel} onclick={toggleView}></lightning-button>
+                    </div>
+                </template>
+            </div>
+        </template>
+     
+    </lightning-card>
+</template>

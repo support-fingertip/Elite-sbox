@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Mobile_Number_10_Digit</fullName>
+    <active>true</active>
+    <errorConditionFormula>NOT(AND(LEN( Contact_Number__c ) = 10,ISNUMBER(Contact_Number__c )) || LEN(Contact_Number__c ) = 0)</errorConditionFormula>
+    <errorDisplayField>Contact_Number__c</errorDisplayField>
+    <errorMessage>Please Enter Valid Mobile Number</errorMessage>
+</ValidationRule>

@@ -1,0 +1,49 @@
+<template> 
+    <div class = "camerahome  ">
+      <div class="camera-wrapper  CameraTask slds-align_absolute-center"> 
+        <div class="icon-container slds-m-top_x-small  " if:true={showStartButton} onclick={CheckCameraPermission}><!--initCamera-->
+          <lightning-icon icon-name="action:add_photo_video" size="small" class="icon"></lightning-icon>
+          <div class="icon-label slds-align_absolute-center">{buttonLable}</div>
+        </div>
+        
+        <template if:true={showCaptureButton}>
+          <div class="icon-container slds-m-top_x-small " onclick={closeOpenedCamera}>
+            <lightning-icon icon-name="action:remove" size="small" class="icon"></lightning-icon>
+            <div class="icon-label slds-align_absolute-center">Stop Camera</div>
+          </div>
+          <div class="icon-container slds-m-top_x-small" onclick={captureImage}>
+            <lightning-icon icon-name="action:add_photo_video" size="small" class="icon"></lightning-icon>
+            <div class="icon-label slds-align_absolute-center">Capture Image</div>
+          </div>
+          <div class="icon-container slds-m-top_x-small" onclick={toggleCamera}> 
+            <lightning-icon icon-name="action:refresh" size="small" class="icon"></lightning-icon>
+            <div class="icon-label slds-align_absolute-center">Switch Camera</div>
+          </div>
+        </template>
+        
+        <template if:true={showSaveButton}>
+          <div class="icon-container" onclick={saveImage}>
+            <lightning-icon icon-name="action:upload" size="small" class="icon"></lightning-icon>
+            <div class="icon-label slds-align_absolute-center">Upload Image</div>
+              <template if:true={showSpinner}>
+              <div class="spinner-overlay">
+                  <lightning-spinner alternative-text="Uploading" variant="brand" size="large"></lightning-spinner>
+              </div>
+              </template>
+          </div>
+        </template>
+        
+      </div>
+    </div>
+      
+    
+    <div class="CameraTask slds-m-top_small">
+      <div class="slds-grid slds-gutters camera-container slds-align_absolute-center">
+        <div class="slds-col">
+          <canvas class="slds-hide canvas"></canvas>
+          <img src="" class="slds-hide imageElement" alt="captured image"/>
+          <video class="videoElement" autoplay></video>
+        </div>
+      </div>
+    </div>
+  </template>

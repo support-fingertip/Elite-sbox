@@ -1,0 +1,56 @@
+<template>
+    <div class="dashboard-wrapper">
+
+        <!-- Filter Section -->
+        <div class="filters-section">
+            <div class="filter-row">
+
+                <div class="filters-left">
+                    <lightning-input type="date" label="From Date" value={fromDate}></lightning-input>
+                    <lightning-input type="date" label="To Date" value={toDate}></lightning-input>
+
+                    <lightning-combobox 
+                        label="Sales Channel"
+                        value={salesChannel}
+                        options={salesChannelOptions}>
+                    </lightning-combobox>
+
+                    <lightning-combobox 
+                        label="RSM"
+                        value={rsm}
+                        options={rsmOptions}>
+                    </lightning-combobox>
+
+                    <lightning-combobox 
+                        label="ASM"
+                        value={asm}
+                        options={asmOptions}>
+                    </lightning-combobox>
+                </div>
+
+                <div class="refresh-right">
+                    <lightning-button
+                        label="Refresh"
+                        icon-name="utility:refresh"
+                        variant="brand"
+                        onclick={handleRefresh}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="cards-container">
+            <template for:each={cards} for:item="card">
+                <div class="card-box" key={card.id}>
+                    <div class="card-header">
+                        <lightning-icon icon-name="standard:dashboard" size="x-small"></lightning-icon>
+                        <span>{card.title}</span>
+                    </div>
+                    <div class="card-value">{card.value}</div>
+                </div>
+            </template>
+        </div>
+
+    </div>
+</template>

@@ -1,0 +1,66 @@
+<template>
+    <div class="container">
+        <!-- Filters Section -->
+        <div class="filters">
+            <lightning-input 
+                type="date" 
+                label="Date" 
+                name="fromDate" 
+                value={mapFilter.fromDate}
+                onchange={handleFilterChange}>
+            </lightning-input>
+            <!-- <lightning-input 
+                type="date" 
+                label="To Date" 
+                name="toDate" 
+                value={mapFilter.toDate}
+                onchange={handleFilterChange}>
+            </lightning-input> -->
+        </div>
+
+        <div class="content">
+            <!-- Map Section -->
+            <div class="map-container">
+                <template if:true={vfPageUrl}>
+                    <iframe src={vfPageUrl} width="100%" height="600px" onload={handleIframeLoad}></iframe>
+                </template>
+            </div>
+
+            <!-- Legend & Stats Section -->
+            <div class="info-panel">
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="color-box yellow"></span> PJP Visits
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box beige"></span> Non PJP Visits
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box green"></span> PJP Productive Visits
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box blue"></span> Non PJP Productive Visits
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box cyan"></span> New Stores
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box orange"></span> Office Location
+                    </div>
+                    <!-- <div class="legend-item">
+                        <span class="color-box purple"></span> Travel
+                    </div> -->
+                </div>
+
+                <!-- Statistics -->
+                <div class="stats">
+                    <p><strong>Total KM:</strong> {totalValData.kmTravel}</p>
+                    <!-- <p><strong>Market Hours:</strong> 100</p> -->
+                    <p><strong>Working Hours:</strong> {totalValData.workingHrs}</p>
+                    <p><strong>Expense:</strong> {totalValData.exTotalAmt}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

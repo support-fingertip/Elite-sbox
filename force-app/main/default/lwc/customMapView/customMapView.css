@@ -1,0 +1,84 @@
+.map-frame {
+    width: 100%;
+    height: 520px;
+    border: none;
+}
+.legend {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.legend-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.color-box {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+
+/* Define colors for each category */
+.attendance { background-color: red; }
+.pjp-productive { background-color: green; }
+.pjp-non-productive { background-color: purple; }
+.new-outlet { background-color: #008080; }
+.eod { background-color: gray; }
+
+.non-pjp-productive { background-color: #ffff00; }
+.non-pjp-non-productive { background-color: navy; }
+.activity { background-color: lightblue; }
+.location-tracking { background-color: orange; }
+.user-map-container {
+    font-family: "Salesforce Sans", Arial, sans-serif;
+    padding: 1rem;
+    background: #ffffff;
+}
+
+.header-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #16325c;
+}
+
+.date-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+}
+
+.date-label {
+    font-size: 0.95rem;
+    color: #16325c;
+}
+
+.date-input {
+    max-width: 180px;
+}
+
+.update-btn {
+    --slds-c-button-brand-color-background: #1589ee;
+    --slds-c-button-brand-color-border: #1589ee;
+}
+
+.summary-section {
+    margin-bottom: 1rem;
+    background: #f3f6f9;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}

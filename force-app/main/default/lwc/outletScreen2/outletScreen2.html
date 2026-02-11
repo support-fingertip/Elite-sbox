@@ -1,0 +1,349 @@
+<template>
+    
+    <template lwc:if={isDesktopCheckoutPage}>
+        <div class="outlets">
+            <!-- When page is loading -->
+            <template lwc:if={isPageLoaded}>
+                <c-on-loading-screen></c-on-loading-screen>
+            </template>
+            <!-- When page loaded -->
+            <template lwc:else>
+                <div class="route"> 
+                    <!--Search Bar-->
+                    <div class="route-filters">
+                        <lightning-input 
+                            type="search" 
+                            placeholder="Search Customer...."
+                            value={searchVisit} 
+                            onchange={onChangeVisit}
+                            class="slds-input_bare slds-border_none textField">
+                        </lightning-input>
+                    </div>
+                    <template if:false={isShowStartVisit}>
+                        <template  for:each={VisitData} for:item="item" for:index="index">
+                            <div class="route-outlets" key={item.id}>
+                                <div class="borderLine slds-m-top_small">
+                                    <div  class="route-outlet ">
+                                        <div class="route-left">
+                                            <div class="outlet-title">
+                                                <span class="icon-wrapper">
+                                                    <img src={googleIcons.account} class="custom-icon" width="20" height="20" />
+                                                </span>&nbsp;
+                                                <div class="beat-name-wrapper">                   
+                                                <b>{item.accountName}</b>
+                                                 </div> &nbsp;&nbsp;
+                                                    <span class="icon-margin-bottom">
+                                                        <template lwc:if={item.showMenuPlanned}>
+                                                            <lightning-icon 
+                                                                icon-name="utility:work_order_type" 
+                                                                size="x-small" 
+                                                                alternative-text="" 
+                                                                class="planned-icon"
+                                                                data-id={item.id}
+                                                                data-index={index}>
+                                                            </lightning-icon>
+                                                        </template>
+                                                        <template lwc:if={item.showMenuMissed}>
+                                                            <lightning-icon 
+                                                                icon-name="utility:close" 
+                                                                size="x-small" 
+                                                                alternative-text="" 
+                                                                class="missed-icon"
+                                                                data-id={item.id}
+                                                                data-index={index}>
+                                                            </lightning-icon>
+                                                        </template>
+                                                        <template lwc:if={item.showMenuCompleted}>
+                                                            <lightning-icon 
+                                                                icon-name="utility:check" 
+                                                                size="x-small" 
+                                                                alternative-text="" 
+                                                                class="completed-icon"
+                                                                data-id={item.id}
+                                                                data-index={index}>
+                                                            </lightning-icon>
+                                                        </template>
+                                                        <template lwc:if={item.showMenuInProgress}>
+                                                            <lightning-icon 
+                                                                icon-name="utility:clock" 
+                                                                size="x-small" 
+                                                                alternative-text=""
+                                                                class="cloclColor">
+                                                            </lightning-icon>
+                                                        </template>
+                                                    </span>
+                                               
+                                            </div>
+                                            <div  class="outlet-title" style="padding-left:14px"> &nbsp;&nbsp; 
+                                                Status : {item.status}  &nbsp;&nbsp;
+                                                <span class="icon-margin-bottom">
+                                                    <template if:false={item.showMenuMissed}>
+                                                        <template if:false={item.showMenuPlanned}>
+                                                            <template lwc:if={item.inLocation}>
+                                                                <lightning-icon 
+                                                                    icon-name="utility:checkin" 
+                                                                    size="x-small" 
+                                                                    alternative-text=""
+                                                                    class="completed-icon">
+                                                                </lightning-icon>
+                                                            </template>
+                                                            <template lwc:else >
+                                                                <lightning-icon 
+                                                                    icon-name="utility:checkin" 
+                                                                    size="x-small" 
+                                                                    alternative-text=""
+                                                                    class="missed-icon">
+                                                                </lightning-icon>
+                                                            </template>
+                                                        </template>
+                                                    </template>
+                                                </span>
+                                            </div>
+                                            <div class="outlet-title" style="padding-left:14px"> &nbsp;&nbsp; Visit For : {item.visitTypes} </div>
+                                            <template if:true={item.customerLocationLattitude}>
+                                            <div class="outlet-title" style="padding-left:14px"> &nbsp;&nbsp; Lattitude : {item.customerLocationLattitude} </div>
+                                            <div class="outlet-title" style="padding-left:14px"> &nbsp;&nbsp; Longitude : {item.customerLocationLongitude}  </div>
+                                            </template>
+                                        
+                                        </div>        
+                                        <template if:true={isDayStarted}>                                     
+                                            <div class="outlet-icon" >
+                                                <template lwc:if={item.showMenuPlanned}> 
+                                                    <template if:false={isProgressVisit}>
+                                                        <div class="icon-container">
+                                                            <div onclick={handleOnclickMenu} data-id={item.id} data-index={index} data-name="Execute_StartCall" >
+                                                                <img src={googleIcons.play}   width="20" height="20" > 
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                                <template if:false={item.showMenuPlanned}>
+                                                    <div class="icon-container">
+                                                        <div onclick={handleOnclickMenu} data-id={item.id} data-index={index} data-name="Execute">
+                                                            <img src={googleIcons.forward}   width="20" height="20" > 
+                                                        </div>
+                                                    </div>
+                                                </template>
+
+                                                <div onclick={openMenu} tabindex="0" data-id={item.id} data-index={index}>
+                                                    <lightning-icon 
+                                                                icon-name="utility:threedots_vertical" 
+                                                                size="x-small" 
+                                                                alternative-text="" 
+                                                                class="chevron-icon-ex"
+                                                                data-id={item.id}
+                                                                data-index={index}></lightning-icon>
+                                                    <!-- Popup menu -->
+                                                    <template lwc:if={item.openPopup}>
+                                                        <div class="popup" >
+                                                            <ul>
+                                                                <li onclick={handleOnclickMenu} data-name="OpenStore" data-id={item.id} data-index={index}>
+                                                                    <i class="material-symbols-outlined">
+                                                                        <lightning-icon 
+                                                                            icon-name="utility:record_update" 
+                                                                            size="x-small" 
+                                                                            alternative-text="Complete"
+                                                                            class="invert-image" >
+                                                                        </lightning-icon>
+                                                                    </i>
+                                                                    Store
+                                                                </li>
+                                                                <li onclick={handleOnclickMenu} data-name="NavigateToMap" data-id={item.id} data-index={index} data-latitude={item.customerLocationLattitude} data-longitude={item.customerLocationLongitude}>
+                                                                    <i class="material-symbols-outlined">
+                                                                        <lightning-icon 
+                                                                            icon-name="utility:location" 
+                                                                            size="x-small" 
+                                                                            alternative-text="Complete"
+                                                                            class="invert-image" >
+                                                                        </lightning-icon>
+                                                                    </i>
+                                                                    Go To Map
+                                                                </li>
+                                                                <template if:true={item.showMenuInProgress}>
+                                                                    <li onclick={handleOnclickMenu} data-name="EndCall" data-id={item.id} data-index={index}>
+                                                                        <i class="material-symbols-outlined">
+                                                                            <lightning-icon 
+                                                                                icon-name="utility:success" 
+                                                                                size="x-small" 
+                                                                                alternative-text="Complete"
+                                                                                class="invert-image" >
+                                                                            </lightning-icon>
+                                                                        </i>
+                                                                        Complete
+                                                                    </li>
+                                                                </template>
+                                                               <!--- <template lwc:if={item.showMenuPlanned}>                
+                                                                    <li onclick={handleOnclickMenu} data-name="Reshedule" data-id={item.id} data-index={index}>
+                                                                        <i class="material-symbols-outlined">
+                                                                            <lightning-icon 
+                                                                                icon-name="utility:shift_scheduling_operation" 
+                                                                                size="x-small" 
+                                                                                alternative-text="Reschedule"
+                                                                                class="invert-image" >
+                                                                            </lightning-icon>
+                                                                        </i>
+                                                                        Reschedule
+                                                                    </li>
+                                                                </template>-->
+                                                                <template lwc:if={item.showMenu}>
+                                                                    <template  lwc:if={item.showMenuCompleted}>
+                                                                        <li onclick={handleOnclickMenu} data-name="Navigate" data-id={item.id} data-index={index}>
+                                                                            <i class="material-symbols-outlined">
+                                                                                <lightning-icon 
+                                                                                    icon-name="utility:location" 
+                                                                                    size="x-small" 
+                                                                                    alternative-text="Navigate"
+                                                                                    class="invert-image" >
+                                                                                </lightning-icon>
+                                                                            </i>
+                                                                            Navigate
+                                                                        </li>
+                                                                    </template>
+                                                                </template>
+                                                            </ul>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>  
+                                        </template>                                  
+                                    </div>
+                                        
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </template> 
+    
+    <!--To Complete the visit-->
+    <template lwc:if={openVisit}>
+        <c-create-visit-popup
+            record-id={currentVisitId}
+            is-desktop={isDesktop}
+            is-primary-customer={currentvisitCustomerType}
+            current-visit-data={currentVisitData}
+            onmyvisitclick={createNewVisit}
+            complete-visit={completeVisit}
+            reshedule={Reshedule}
+            new-visit-create={newVisit}>
+        </c-create-visit-popup>
+    </template>
+
+    <!--Start Visit Popup-->
+    <template lwc:if={isShowStartVisit}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class={containerClass}>
+                <!--Close Icon-->
+                <template lwc:if={isDesktop}>
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={closeVisitpopup}>
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                </template>
+
+                <!--Header-->
+                <div class="slds-modal__header">
+                    <div class="slds-grid slds-gutters slds-grid_align-center slds-grid_vertical-align-center">
+                        <template if:false={isDesktop}>
+                            <div class="slds-col  slds-clearfix mobile-button">
+                                <div class="slds-float_right">
+                                    <lightning-button variant="base" label="Cancel" disabled={isDisabled} onclick={closeVisitpopup} class="slds-m-left_x-small"></lightning-button>
+                                </div>
+                            </div>
+                        </template>
+    
+                        <div class="slds-col slds-align_absolute-center mobile-header">
+                            <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate" tabindex="-1">Start Visit</h1>
+                        </div>
+
+                        <template if:false={isDesktop}>
+                            <div class="slds-col  slds-clearfix mobile-button">
+                                <div class="slds-float_left">
+                                    <lightning-button variant="base" label={startVisitButtonLabel} disabled={isDisabled}  onclick={startVisit} class="slds-m-left_x-small"></lightning-button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!--Body-->
+                <div class="slds-modal__content slds-p-around_medium visitPopup" id="modal-content-id-2">
+                    <!-- Spinner -->
+                    <template lwc:if={isLoading}>
+                        <div style="overflow: hidden;">
+                            <c-loading-screen size={loadingScreenSize} ></c-loading-screen>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <!--capture image-->
+                        <template if:true={showCameraModal}>
+                            <c-capture-image-lwc
+                                record-id={userId}
+                                unique-id={uniqueId}
+                                open-camera-value={isCameraOpen}
+                                oncamerastopped={handleCameraStopped}
+                                lwc:ref="captureImageCmp">
+                            </c-capture-image-lwc>
+                        </template>
+                        <!--File Upload-->
+                        <template if:false={showCameraModal}>
+                            <div class="slds-text-align_center slds-box" style="margin-top:10px">
+                                <template if:true={isDesktop}>
+                                    <lightning-file-upload
+                                        label="Upload Store Image"
+                                        record-id={currentVisitId}
+                                        multiple
+                                        onuploadfinished={handleUploadFinished}>
+                                    </lightning-file-upload>
+                                </template>
+                                <template if:true={isPhone}>
+                                    <div class="photoicon-container" onclick={openCamera}>
+                                        <lightning-icon icon-name="action:add_photo_video" size="small" class="photoicon"></lightning-icon>
+                                        <div class="photoicon-label">Open Camera</div>
+                                    </div>
+                                </template>
+                                <!--Uploaded Files-->
+                                <template if:true={showUploadedFiles}>
+                                    <table class="slds-table slds-table_bordered slds-table_fixed-layout slds-m-top_small slds-m-bottom_small">
+                                        <tbody>
+                                            <template for:each={uploadedFiles} for:item="file">
+                                                <tr key={file.Id}>
+                                                    <td class="slds-cell-wrap" width="80%">
+                                                        <a href="javascript:void(0);" data-id={file.Id} onclick={previewFile}>
+                                                            {file.Title}
+                                                        </a>
+                                                    </td>
+                                                    <td width="20%">
+                                                        <lightning-button-icon
+                                                            icon-name="utility:delete"
+                                                            data-id={file.Id}
+                                                            onclick={deleteFile}
+                                                            alternative-text="Delete"
+                                                            title="Delete"
+                                                        ></lightning-button-icon>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <!-- Footer for visit poup -->
+                <template lwc:if={isDesktop}>
+                    <div class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" aria-label="Cancel and close" onclick={closeVisitpopup} disabled={isDisabled}>Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick={startVisit} disabled={isDisabled} >{startVisitButtonLabel}</button>
+                    </div>
+                </template>
+
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </template>
+</template>

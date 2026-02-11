@@ -1,0 +1,188 @@
+<template>
+    <div class="tiles-background-card">
+        <template lwc:if={isLoading}>
+            <c-loading-screen></c-loading-screen>
+        </template>
+        <template lwc:else>
+            <!-- FILTER BAR WITH TITLE -->
+            <div class="filters-section">
+                <div class="filter-header-row">
+
+                    <!-- LEFT TITLE -->
+                    <div class="filter-title">
+                        <lightning-icon icon-name="custom:custom63" size="small"></lightning-icon>
+                        <span class="title-text">CEO Dashboard (Outlets)</span>
+                    </div>
+
+                    <!-- RIGHT REFRESH BUTTON -->
+                    <div class="refresh-right">
+                        <lightning-button
+                            label="Refresh"
+                            icon-name="utility:refresh"
+                            variant="brand"
+                            onclick={handleRefresh}>
+                        </lightning-button>
+                    </div>
+                </div>
+
+                <!-- FILTER INPUTS -->
+                <div class="filter-row">
+                    <div class="filters-left">
+                        <lightning-combobox
+                            name="dateRange"
+                            label="Date Range"
+                            value={selectedRange}
+                            options={rangeOptions}
+                            onchange={handleRangeChange}>
+                        </lightning-combobox>
+                        <template lwc:if={isCustomSelected}>
+                            <lightning-input type="date" label="From Date" value={fromDate} onchange={handleFromDateChange}></lightning-input>
+                            <lightning-input type="date" label="To Date" value={toDate} onchange={handleToDateChange}></lightning-input>
+                        </template>
+                        <lightning-combobox 
+                            label="Sales Channel"
+                            value={salesChannel}
+                            options={salesChannelOptions}
+                            onchange={handleSalesChannelChange}>
+                        </lightning-combobox>
+
+                        <lightning-combobox 
+                            label="RSM"
+                            value={rsm}
+                            options={rsmOptions}
+                            onchange={handleRSMChange}>
+                        </lightning-combobox>
+
+                        <lightning-combobox 
+                            label="ASM"
+                            value={asm}
+                            options={asmOptions}
+                            onchange={handleAMSChange}>
+                        </lightning-combobox>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 1 : 2 CARDS -->
+            <div class="card-row">
+                <template for:each={row1} for:item="card">
+                    <div class="card-box" key={card.id}>
+                        <div class="card-header">
+                            <span>{card.title}</span>
+                        </div>
+                        <div class="card-value">
+                            {card.value}
+                            <template lwc:if={card.isPercent}>
+                                %
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- ROW 2 : 3 CARDS -->
+            <div class="card-row">
+                <template for:each={row2} for:item="card">
+                    <div class="card-box" key={card.id}>
+                        <div class="card-header">
+                            <span>{card.title}</span>
+                        </div>
+                        <div class="card-value">
+                            {card.value}
+                            <template lwc:if={card.isPercent}>
+                                %
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- ROW 3 : 3 CARDS -->
+            <div class="card-row">
+                <template for:each={row3} for:item="card">
+                    <div class="card-box" key={card.id}>
+                        <div class="card-header">                    
+                            <span>{card.title}</span>
+                        </div>
+                        <div class="card-value">
+                            {card.value}
+                            <template lwc:if={card.isPercent}>
+                                %
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- ROW 4 : 4 CARDS -->
+            <div class="card-row">
+                <template for:each={row4} for:item="card">
+                    <div class="card-box" key={card.id}>
+                        <div class="card-header">                    
+                            <span>{card.title}</span>
+                        </div>
+                        <div class="card-value">
+                            {card.value}
+                            <template lwc:if={card.isPercent}>
+                                %
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- ROW 5 : 5 CARDS -->
+            <div class="card-row">
+                <template for:each={row5} for:item="card">
+                    <div class="card-box" key={card.id}>
+                        <div class="card-header">                    
+                            <span>{card.title}</span>
+                        </div>
+                        <div class="card-value">
+                            {card.value}
+                            <template lwc:if={card.isPercent}>
+                                %
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- ROW 6 : 6 CARDS -->
+            <div class="card-row">
+                <template for:each={row6} for:item="card">
+                    <div class="card-box" key={card.id}>
+                        <div class="card-header">                    
+                            <span>{card.title}</span>
+                        </div>
+                        <div class="card-value">
+                            {card.value}
+                            <template lwc:if={card.isPercent}>
+                                %
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            
+            <!-- ROW 7 : 2 CARDS
+            <div class="card-row">
+                <template for:each={row7} for:item="card">
+                    <div class="card-box" key={card.id}>
+                        <div class="card-header">
+                            <span>{card.title}</span>
+                        </div>
+                        <div class="card-value">
+                            {card.value}
+                            <template lwc:if={card.isPercent}>
+                                %
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>-->
+        </template>
+
+    </div>
+</template>

@@ -1,0 +1,256 @@
+<template>
+    <div class="outlets">
+        <!-- When page is loading -->
+        <template lwc:if={isLoading}>
+            <c-on-loading-screen></c-on-loading-screen>
+        </template>
+        <!--once Page Loaded-->
+        <template lwc:else>
+            <div class="dropdown">
+                <div class="dropdown-head">
+                    <div class="dropdown-head-left">
+                        <h4 class="dropdown-head-title">Display Format Details</h4>
+                    </div>
+                </div>
+                <div class="task-head-button">
+                    <div class="task-button pointer" data-name="Add" onclick={handleOnclickMenu}>Add Display Format</div>
+                </div>
+
+                <template lwc:if={formatDataExisted}>
+                    <div class="route">
+                        <template for:each={formatData} for:item="item" for:index="index">
+                            <div class="competiton-body" key={item.id}>
+                                <div class="borderLine">
+                                    <div  class="route-outlet" >
+                                        <div class="route-left " data-id={item.id}>
+                                            <div class="outlet-row">
+                                                <span class="outlet-label">SKU Name</span>
+                                                <span>:</span>
+                                                <span class="outlet-value">{item.skuName}</span>
+                                            </div>
+                                            <div class="outlet-row">
+                                                <span class="outlet-label">Display</span>
+                                                <span>:</span>
+                                                <span class="outlet-value">{item.displayValue}</span>
+                                            </div>
+                                      
+                                        </div>
+                                        
+                                        <!--More-->
+                                        <div class="right"  >
+                                            <svg class="outlet-icon" width="24" data-id={item.id} data-index={index}  onclick={openMenu} height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 5.92C12.2546 5.92 12.4988 5.81886 12.6789 5.63882C12.8589 5.45879 12.96 5.21461 12.96 4.96C12.96 4.70539 12.8589 4.46121 12.6789 4.28118C12.4988 4.10114 12.2546 4 12 4C11.7454 4 11.5013 4.10114 11.3212 4.28118C11.1412 4.46121 11.04 4.70539 11.04 4.96C11.04 5.21461 11.1412 5.45879 11.3212 5.63882C11.5013 5.81886 11.7454 5.92 12 5.92ZM12 12.96C12.2546 12.96 12.4988 12.8589 12.6789 12.6788C12.8589 12.4988 12.96 12.2546 12.96 12C12.96 11.7454 12.8589 11.5012 12.6789 11.3212C12.4988 11.1411 12.2546 11.04 12 11.04C11.7454 11.04 11.5013 11.1411 11.3212 11.3212C11.1412 11.5012 11.04 11.7454 11.04 12C11.04 12.2546 11.1412 12.4988 11.3212 12.6788C11.5013 12.8589 11.7454 12.96 12 12.96ZM12 20C12.2546 20 12.4988 19.8989 12.6789 19.7188C12.8589 19.5388 12.96 19.2946 12.96 19.04C12.96 18.7854 12.8589 18.5412 12.6789 18.3612C12.4988 18.1811 12.2546 18.08 12 18.08C11.7454 18.08 11.5013 18.1811 11.3212 18.3612C11.1412 18.5412 11.04 18.7854 11.04 19.04C11.04 19.2946 11.1412 19.5388 11.3212 19.7188C11.5013 19.8989 11.7454 20 12 20Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            <!-- Popup menu -->
+                                            <template lwc:if={item.openPopup}>
+                                                <div class="popup" id={index}>
+                                                    <ul>
+                                                        <li onclick={handleOnclickMenu} data-name="Add" data-id={item.id} data-index={index}>
+                                                            <i class="material-symbols-outlined">
+                                                                <lightning-icon 
+                                                                        icon-name="utility:add" 
+                                                                        size="x-small" 
+                                                                        alternative-text="Add"
+                                                                        class="invert-image" 
+                                                                        ></lightning-icon>
+                                                            </i>
+                                                            Add
+                                                        </li>
+                                                        <li onclick={handleOnclickMenu} data-name="Edit" data-id={item.id} data-index={index}>
+                                                            <i class="material-icons">
+                                                                <lightning-icon 
+                                                                                icon-name="utility:edit" 
+                                                                                size="x-small" 
+                                                                                alternative-text="Edit"
+                                                                                class="invert-image"
+                                                                                >
+                                                                </lightning-icon>
+                                                            </i>
+                                                            Edit
+                                                        </li > 
+                                               
+                                                    </ul>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template> 
+                    </div>
+                </template>
+            </div>
+            <!-- Edit/Add Comeptition Popup -->
+            <template if:true={isModalOpen}>
+                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                    <div class={containerClass}>
+                        <template lwc:if={isDesktop}>
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={closeModal}>
+                                <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                        </template>
+                        <!-- Modal/Popup Header -->
+                        <header class="slds-modal__header">
+                            <div class="slds-grid slds-gutters">
+                             
+                                <template if:false={isDesktop}>
+                                    <div class="slds-col  slds-clearfix">
+                                        <div class="slds-float_right">
+                                            <lightning-button variant="base" label="Cancel"  onclick={closeModal} class="slds-m-left_x-small"></lightning-button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div class="slds-col slds-align_absolute-center mobile-header">
+                                    <h1 id="modal-heading-02" class="slds-modal__title slds-hyphenate small-modal-title" tabindex="-1">{modalTitle}</h1>
+                                </div>
+                                <template if:false={isDesktop}>
+                                    <div class="slds-col  slds-clearfix">
+                                        <div class="slds-float_left">
+                                            <lightning-button variant="base" label="Save"   onclick={saveDisplayFormat} class="slds-m-left_x-small"></lightning-button>
+                                        </div>
+                                    </div>
+                                </template>
+                           
+                            </div>
+                        </header>
+
+                        <!-- Modal Body -->
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <!-- Spinner -->
+                            <template lwc:if={isPopLoading}>
+                                <div style="overflow: hidden;">
+                                    <c-loading-screen size={loadingScreenSize} ></c-loading-screen>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="slds-grid slds-wrap slds-grid_pull-padded-x-small"> 
+                                    <template if:false={showCameraModal}>
+                                        <!-- Expected Amount -->
+                                        <div class="slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div class="slds-m-right_xx-small slds-form-element">
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                            <lightning-input
+                                                                label="SKU"
+                                                                type="search"
+                                                                value={sku} 
+                                                                data-id="displayformatfields"
+                                                                placeholder="Search SKU"
+                                                                onchange={handleSKUSearch}
+                                                                required="true">
+                                                            </lightning-input> 
+                                                        </div>
+                                                        <template lwc:if={isSKUValueSearched}>
+                                                            <div id="listbox-id-12" class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" aria-label="Placeholder for Dropdown Items" tabindex="0" aria-busy="false">
+                                                                <template for:each={searchedSKUData} for:item="srch">
+                                                                    <ul key={srch.Id} class="slds-listbox slds-listbox_vertical" role="presentation" >
+                                                                        <li role="presentation" class="slds-listbox__item">
+                                                                        <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" onclick={selectSKU} data-id={srch.Id} data-name={srch.Name}>
+                                                                            <lightning-icon 
+                                                                                icon-name="standard:product_service_campaign_item" size="small">
+                                                                            </lightning-icon>
+                                                                            <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                                                            <span class="slds-media__body">
+                                                                            <span class="slds-truncate" title={srch.Name}>
+                                                                                <span>{srch.Name}</span>
+                                                                            </span>
+                                                                            </span>
+                                                                        </div>
+                                                                        </li>
+                                                                    </ul>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--Display Value-->
+                                        <div class="slds-size_1-of-1 slds-p-horizontal_small">
+                                            <lightning-input 
+                                                label="Display Value" 
+                                                value={displayValue} 
+                                                data-id="displayformatfields"
+                                                onchange={handleInputChange}
+                                                required="true">
+                                            </lightning-input>
+                                        </div>
+                                    </template>
+                                    <div class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                        <!--capture image-->
+                                        <template if:true={showCameraModal}>
+                                            <c-capture-image-lwc
+                                                record-id={userId}
+                                                unique-id={uniqueId}
+                                                open-camera-value={isCameraOpen}
+                                                oncamerastopped={handleCameraStopped}
+                                                lwc:ref="captureImageCmp">
+                                            </c-capture-image-lwc>
+                                        </template>
+                                        
+                                        <!--File Upload-->
+                                        <template if:false={showCameraModal}>
+                                            <div class="slds-text-align_center slds-box" style="margin-top:10px">
+                                                <template if:true={isDesktop}>
+                                                    <lightning-file-upload
+                                                        label=""
+                                                        record-id={userId}
+                                                        multiple
+                                                        onuploadfinished={handleUploadFinished}>
+                                                    </lightning-file-upload>
+                                                </template>
+                                                <template if:false={isDesktop}>
+                                                    <div class="icon-container" onclick={openCamera}>
+                                                        <lightning-icon icon-name="action:add_photo_video" size="small" class="icon"></lightning-icon>
+                                                        <div class="icon-label">Open Camera</div>
+                                                    </div>
+                                                </template>
+                                                <!--Uploaded Files-->
+                                                <template if:true={showUploadedFiles}>
+                                                    <table class="slds-table slds-table_bordered slds-table_fixed-layout slds-m-top_small slds-m-bottom_small">
+                                                        <tbody>
+                                                            <template for:each={uploadedFiles} for:item="file">
+                                                                <tr key={file.Id}>
+                                                                    <td class="slds-cell-wrap" width="80%">
+                                                                        <a href="javascript:void(0);" data-id={file.Id} onclick={previewFile}>
+                                                                            {file.Title}
+                                                                        </a>
+                                                                    </td>
+                                                                    <td width="20%">
+                                                                        <lightning-button-icon
+                                                                            icon-name="utility:delete"
+                                                                            data-id={file.Id}
+                                                                            onclick={deleteFile}
+                                                                            alternative-text="Delete"
+                                                                            title="Delete"
+                                                                        ></lightning-button-icon>
+                                                                    </td>
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <template lwc:if={isDesktop}>
+                            <footer class="slds-modal__footer">
+                                <button class="slds-button slds-button_neutral" onclick={closeModal}>Cancel</button>
+                                <button class="slds-button slds-button_brand" onclick={saveDisplayFormat}>Save</button>
+                            </footer>
+                        </template>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+
+        </template>
+    </div>
+</template>

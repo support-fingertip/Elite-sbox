@@ -1,0 +1,314 @@
+.outlets{
+    width: 100%;
+}
+@media only screen and (max-width: 768px) {
+    .slds-modal__header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #ffffff;
+    }
+}
+
+.route{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+}
+.route-filters{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.dropdown{
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 5px;
+    overflow: visible;
+}
+.dropdown-head{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f6f8fa;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.readonly-bordered {
+  --slds-c-input-shadow: 0 0 0 0.45px black;
+  --slds-c-input-color-background: #ffffff;
+  --slds-c-input-color-border: #d8dde6;
+  --slds-c-input-radius-border: 0.25rem;
+}
+.dropdown-head-left{
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.dropdown-head-nav-icon{
+    padding: 5px;
+}
+.dropdown-head-title{
+    font-size: 14px;
+    font-weight: 550;
+    color: #545454;
+}
+.dropdown-body-ord{
+    transition:  0.4s ease-in;
+    max-height: auto; 
+    overflow: hidden;
+}
+.dropdown-body-ord.deactive {
+    max-height: 0;
+    transition: max-height 0.4s ease-in-out;
+}
+.dropdown-body-ord.active {
+    max-height: auto; /* Adjust based on your content */
+    transition: max-height 0.4s ease-in-out;
+}
+.order{
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+.task-head-button{
+    background-color: #f6f8fa;
+    padding: 10px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 0px 20px 10px 20px;
+}
+.task-button{
+    padding: 5px 8px;
+    background-color: #e8e8e8;
+    color: #2f5597;
+    border-radius: 15px;
+    font-weight: 550;
+    width: 100%;
+    text-align: center;
+}
+.pointer{
+    cursor: pointer;
+}
+.competiton-body{
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    position: relative;
+}
+.borderLine{
+    border-bottom: #c3c3c3 1px solid;
+}
+.route-outlet{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 8px;
+    padding-bottom: 10px;
+}
+.route{
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+}
+.outlet-icon{
+    cursor: pointer;
+}
+
+.route-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.outlet-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px; /* Space between items */
+}
+
+.outlet-label {
+    min-width: 130px; /* Adjust width based on content */
+    text-align: left;
+}
+
+
+.outlet-value {
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: calc(100% - 100px); /* Ensures comment text doesn’t overflow */
+    white-space: normal;
+    word-break: break-word;
+}
+
+/**More Pop Up **/
+.invert-image {
+    filter: brightness(0) invert(1);
+}
+.popup {
+    /* display: none; */
+    position: absolute; 
+    width: 130px;
+    font-size: 14px;
+    background-color: #2f5597;
+    color: #fff;
+    min-width: auto;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 4px 12px;
+    z-index: 20;
+    border-radius: 5px;
+    right:20px;
+}
+.popup ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.popup li {
+    padding: 5px 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+}
+.popup li i{
+    font-size: 16px;
+}
+.popup li:hover {
+    overflow: hidden;
+    border-radius: 5px;
+    background-color:rgb(31, 56, 100)
+}
+
+/* Modal Containers**/
+.slds-modal__container {
+    overflow: hidden;
+    width: 40rem;
+    max-width: 100%;
+}
+@media (max-width: 768px) {
+    .slds-modal__container {
+        width: 90%; 
+        margin: 0 auto;
+        border-radius: 0.5rem; 
+    }
+}
+.slds-modal__header {
+    justify-content: space-between;
+}
+@media (max-width: 768px) {
+.small-modal-title {
+    font-size: 18px; 
+    font-weight: bold;
+}
+.slds-modal__content {
+    min-height: 100vh;
+    overflow-y: auto;   /* make body scrollable */
+-webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+}
+}
+.slds-modal__content {
+    padding: 1rem;
+}
+.centeralign{
+    text-align: center;
+}
+.slds-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+
+.popup-row {
+    display: grid;
+    grid-template-columns: 150px auto 1fr;
+    align-items: flex-start;
+    gap: 10%;
+}
+@media (max-width: 768px) {
+    .popup-row {
+        display: grid;
+        grid-template-columns: 150px auto 1fr;
+        align-items: flex-start;
+        gap: 15px;
+    }
+}
+
+.popup-label {
+    min-width: 160px;
+    text-align: left; /* Aligns label text to the right */
+}
+
+.popup-value {
+   
+    text-align: left; /* Ensures value is left-aligned */
+    word-wrap: break-word; /* Breaks long words if necessary */
+    overflow-wrap: break-word; /* Ensures long words wrap */
+    white-space: normal; /* Allows text to wrap naturally */
+    word-break: normal; /* Prevents breaking individual letters */
+}
+
+.popup-row span:nth-child(2) {
+    text-align: center; /* Centers the separator (:) */
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-content {
+    overflow: hidden;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px; /* Adjust width if needed */
+    text-align: center; /* Centers the title and button */
+    flex-direction: column;
+    align-items: center; /* Ensures all elements are centered */
+}
+.popup-content h3 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+.close-btn {
+    background: #006aff;
+    color: white;
+    border: none;
+    padding: 6px 13px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

@@ -1,0 +1,47 @@
+<template>
+    <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            
+            <!-- Close Button -->
+            <!-- <button class="slds-button slds-button_icon slds-modal__close" onclick={handleClose}>
+                <lightning-icon icon-name="utility:close" alternative-text="Close" size="large"></lightning-icon>
+            </button> -->
+
+            <!-- Modal Header -->
+            <div class="slds-modal__header">
+                <h1 id="modal-heading" class="slds-modal__title slds-hyphenate">New Beat</h1>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content">
+                <lightning-layout multiple-rows>
+                    <lightning-layout-item size="12">
+                        <h2 class="slds-text-heading_small slds-p-bottom_small">Information</h2>
+                    </lightning-layout-item>
+
+                    <!-- Visit Date -->
+                    <lightning-layout-item size="6" class="slds-p-around_x-small">
+                        <!-- <lightning-input type="date" label="Visit Date" name="Visit_Date__c" value={junDta.Visit_Date__c} onchange={changeValue}></lightning-input> -->
+                        <lightning-input type="date" label="Visit Date" name="Visit_Date__c" value={junDta.Date__c} onchange={changeValue}></lightning-input>
+                        <template lwc:if={dateError}>
+                            <div class="slds-text-color_error slds-p-top_xx-small">{dateErrorMessage}</div>
+                        </template>
+                    </lightning-layout-item>
+
+                    <!-- Owner -->
+                    <lightning-layout-item size="6" class="slds-p-around_x-small">
+                        <lightning-input type="text" label="Owner" value={selectedUser.user} disabled></lightning-input>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" onclick={handleClose} disabled={isButton}>Cancel</button>
+                <button class="slds-button slds-button_neutral" onclick={handleSaveNew} disabled={isButton}>Save & New</button>
+                <button class="slds-button slds-button_brand" onclick={handleSave} disabled={isButton}>Save</button>
+            </div>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

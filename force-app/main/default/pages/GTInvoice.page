@@ -1,0 +1,551 @@
+<apex:page extensions="GTInvoiceController"
+           standardController="Secondary_Invoice__c" 
+           renderAs="pdf"  
+           showHeader="false" standardStylesheets="false"  
+           applyBodyTag="false" applyHtmlTag="false">
+    
+    <html>
+        <head>
+            <style type="text/css">
+                /* Page Setup */
+                @page {
+                    size: A4 portrait;
+                    margin: 0.3cm;
+                }
+                
+                /* Body Styling */
+                body {
+                    font-family: Arial, sans-serif;
+                    color: #000;
+                    margin: 0;
+                    padding: 0;
+                    font-size: 16px;
+                }
+                
+                /* Main Container */
+                .main-container {
+                    border: 1px solid #000;
+                    padding: 0;
+                }
+                
+                /* Invoice Title */
+                .invoice-header {
+                    text-align: center;
+                    font-weight: bold;
+                    font-size: 12px;
+                    padding: 5px;
+                    border-bottom: 1px solid #000;
+                    position: relative;
+                }
+                
+                .original-copy {
+                    position: absolute;
+                    right: 10px;
+                    top: 5px;
+                    font-size: 9px;
+                }
+                
+                /* Company Header Section */
+                .company-header {
+                    display: table;
+                    width: 100%;
+                    border-bottom: 1px solid #000;
+                }
+                
+                .company-left {
+                    display: table-cell;
+                    width: 50%;
+                    padding: 8px;
+                    vertical-align: top;
+                    border-right: 1px solid #000;
+                    font-size: 8px;
+                    line-height: 1.4;
+                }
+                
+                .company-right {
+                    display: table-cell;
+                    width: 50%;
+                    padding: 8px;
+                    vertical-align: top;
+                    font-size: 8px;
+                    line-height: 1.4;
+                }
+                
+                .elite-logo {
+                    float: right;
+                    background-color: #ff0000;
+                    color: white;
+                    padding: 3px 10px;
+                    font-weight: bold;
+                    font-size: 10px;
+                    margin-top: -5px;
+                }
+                
+                /* Address Section */
+                .address-section {
+                    display: table;
+                    width: 100%;
+                    border-bottom: 1px solid #000;
+                }
+                
+                .address-left {
+                    display: table-cell;
+                    width: 50%;
+                    padding: 8px;
+                    vertical-align: top;
+                    border-right: 1px solid #000;
+                    font-size: 8px;
+                    line-height: 1.4;
+                }
+                
+                .address-right {
+                    display: table-cell;
+                    width: 50%;
+                    padding: 8px;
+                    vertical-align: top;
+                    font-size: 8px;
+                    line-height: 1.4;
+                }
+                
+                /* Shipping Address */
+                .shipping-address {
+                    padding: 5px 8px;
+                    font-size: 8px;
+                    border-bottom: 1px solid #000;
+                    font-weight: bold;
+                }
+                
+                /* Data Table */
+                .data-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    page-break-inside: auto;
+                }
+                
+                .data-table thead {
+                    display: table-header-group;
+                }
+                
+                .data-table tbody {
+                    display: table-row-group;
+                }
+                
+                .data-table th {
+                    border: 1px solid #000;
+                    padding: 3px 2px;
+                    text-align: center;
+                    font-size: 7px;
+                    font-weight: bold;
+                    vertical-align: middle;
+                    line-height: 1.2;
+                }
+                
+                .data-table td {
+                    border: 1px solid #000;
+                    padding: 3px 2px;
+                    text-align: center;
+                    font-size: 7px;
+                    vertical-align: middle;
+                }
+                
+                .data-table tr {
+                    page-break-inside: avoid;
+                    page-break-after: auto;
+                }
+                
+                .text-left {
+                    text-align: left !important;
+                    padding-left: 3px !important;
+                }
+                
+                .text-right {
+                    text-align: right !important;
+                    padding-right: 3px !important;
+                }
+                
+                /* Total Rows */
+                .total-row td {
+                    font-weight: bold;
+                    background-color: #f5f5f5;
+                }
+                
+                .summary-row td {
+                    font-weight: normal;
+                    text-align: left !important;
+                    padding-left: 5px !important;
+                }
+                
+                /* Bottom Sections */
+                .amount-words {
+                    padding: 8px;
+                    font-size: 8px;
+                    font-weight: bold;
+                    border-bottom: 1px solid #000;
+                    line-height: 1.3;
+                }
+                
+                .gst-section {
+                    display: table;
+                    width: 100%;
+                    border-bottom: 1px solid #000;
+                }
+                
+                .gst-left {
+                    display: table-cell;
+                    width: 50%;
+                    padding: 8px;
+                    vertical-align: top;
+                    border-right: 1px solid #000;
+                    font-size: 7px;
+                    line-height: 1.4;
+                }
+                
+                .gst-right {
+                    display: table-cell;
+                    width: 50%;
+                    padding: 8px;
+                    vertical-align: top;
+                    font-size: 7px;
+                    line-height: 1.4;
+                }
+                
+                .declaration-section {
+                    padding: 8px;
+                    font-size: 7px;
+                    line-height: 1.4;
+                    border-bottom: 1px solid #000;
+                }
+                
+                .signature-section {
+                    display: table;
+                    width: 100%;
+                }
+                
+                .signature-left {
+                    display: table-cell;
+                    width: 50%;
+                    padding: 30px 8px 8px 8px;
+                    vertical-align: bottom;
+                    border-right: 1px solid #000;
+                    font-size: 8px;
+                    font-weight: bold;
+                }
+                
+                .signature-right {
+                    display: table-cell;
+                    width: 50%;
+                    padding: 30px 8px 8px 8px;
+                    vertical-align: bottom;
+                    text-align: right;
+                    font-size: 8px;
+                    font-weight: bold;
+                }
+                
+            </style>
+        </head>
+        
+        <body>
+            <div class="main-container">
+                <!-- Invoice Title -->
+                <div class="invoice-header">
+                    TAX INVOICE
+                    <span class="original-copy">ORIGINAL COPY</span>
+                </div>
+                
+                <!-- Company Header Section -->
+                <div class="company-header">
+                    <div class="company-left">
+                        <strong>From - {!wrapper.distributorName}</strong><br/>
+                        {!wrapper.distributorAddress}<br/>
+                        <strong>Phone: {!wrapper.distributorPhone}</strong><br/>
+                        <strong>Email Id: {!wrapper.distributorEmail}</strong>
+                    </div>
+                    <div class="company-right">
+                        <!--<span class="elite-logo">Elite</span><br/> -->
+                        <div style="float: right; margin-top: -3px;">
+                            <apex:image value="{!URLFOR($Resource.eliteLogo)}" style="width:40px; height:20px;"/>
+                        </div>
+                        <strong>GSTIN NO. : {!wrapper.distributoGst}</strong><br/>
+                        <strong>FSSAI NO. :</strong><br/><br/>
+                        <strong>Invoice No:{!wrapper.invoiceNo}</strong><br/>
+                        <strong>Invoice date : {!wrapper.invoiceDate}</strong><br/>
+                        <strong>PO date: {!wrapper.poDate}</strong><br/>
+                        <strong>PO No: {!wrapper.poNo}</strong>
+                    </div>
+                </div>
+                
+                <!-- Address Section -->
+                <div class="address-section">
+                    <div class="address-left">
+                        <strong>To - {!wrapper.dealerName}</strong><br/>
+                        <strong>{!wrapper.dealerAddress}</strong><br/>
+                        <strong>Phone: {!wrapper.dealerPhone} </strong>
+                    </div>
+                    <div class="address-right">
+                        <strong>GSTIN NO. : {!wrapper.dealerGst}</strong><br/>
+                        <strong>FSSAI NO. :</strong><br/>
+                        <strong>Salesman Name: {!wrapper.dealerExecutiveName},{!wrapper.executiveCode}</strong><br/>
+                        <strong>Beat No.: {!wrapper.beatName}</strong><br/><br/>
+                        <strong>Shipping/delivery address :</strong>
+                    </div>
+                </div>
+                <!-- Remards Section -->
+                <div class="address-section">
+                    <div class="address-left">
+                        <strong>Packing Remarks</strong><br/>
+                        {!wrapper.packingRemarks}
+                    </div>
+                    <div class="address-right">
+                        <strong>Delivary Remarks</strong><br/>
+                        {!wrapper.delivaryRemarks}
+                    </div>
+                </div>
+                
+                <!-- Data Table -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 2%;">Sl<br/>No</th>
+                            <th style="width: 6%;">SkuCode</th>
+                            <th style="width: 6%;">HsnCode</th>
+                            <th style="width: 12%;">Title</th>
+                            <th style="width: 4%;">MRP</th>
+                            <th style="width: 4%;">Qty<br/>in<br/>cases</th>
+                            <th style="width: 4%;">Qty<br/>in<br/>units</th>
+                            <th style="width: 6%;">Quantity<br/>in<br/>Kgs/Gms</th>
+                            <th style="width: 4%;">Free</th>
+                            <th style="width: 4%;">Rate</th>
+                            <th style="width: 6%;">Taxable<br/>amount</th>
+                            <th style="width: 4%;">CGST<br/>%</th>
+                            <th style="width: 6%;">CGST<br/>Amount</th>
+                            <th style="width: 4%;">SGST<br/>%</th>
+                            <th style="width: 6%;">SGST<br/>Amount</th>
+                            <th style="width: 4%;">IGST<br/>%</th>
+                            <th style="width: 6%;">IGST<br/>Amount</th>
+                            <th style="width: 6%;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!invoiceItemList}" var="itm">
+                            <tr>
+                                <td>{!itm.index}</td>
+                                <td>{!itm.skuCode}</td>
+                                <td>{!itm.hsnCode}</td>
+                                <td>{!itm.skuName}</td>
+                                <td>{!itm.mrp}</td>
+                                <td>{!itm.qtyinCases}</td>
+                                <td>{!itm.quantity}</td>
+                                <td>{!itm.qtyinKg}</td>
+                                <td>0</td>
+                                <td>{!itm.unitPrice}</td>
+                                <td>{!itm.taxableAmount}</td>
+                                
+                                <td>{!itm.cgstPecentage}</td>
+                                <td>{!itm.cgstAmount}</td>
+                                <td>{!itm.sgstPercenate}</td>
+                                <td>{!itm.sgstAmount}</td>
+                                <td>{!itm.igstPercenate}</td>
+                                <td>{!itm.igstAmount}</td>
+                                
+                                <td>
+                                    <apex:outputText value="{!IF(itm.totalAmount != null, itm.totalAmount, 0)}" />
+                                </td>
+                                
+                                
+                            </tr>
+                        </apex:repeat>
+                        
+                        <!-- Empty Rows for spacing -->
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        
+                        <!-- Total Row -->
+                        <tr class="total-row">
+                            <td colspan="4" class="text-left" style="padding-left: 10px;"><strong>Total</strong></td>
+                            <td></td>
+                            <td><strong>{!totalQtyinCases}</strong></td>
+                            <td><strong>{!totalQuantity}</strong></td>
+                            <td><strong>{!totalQtyinkg}</strong></td>
+                            <td><strong>0</strong></td>
+                            <td></td>
+                            <td><strong>{!totalTaxableAmount}</strong></td>
+                            <td></td>
+                            <td><strong>{!totalCgstAmount}</strong></td>
+                            <td></td>
+                            <td><strong>{!totalSgstAmount}</strong></td>
+                            <td></td>
+                            <td><strong>{!totalIgstAmount}</strong></td>
+                            <td ><strong>{!totalAmount}</strong></td>
+                        </tr>
+                        
+                        <!-- Summary Rows -->
+                        <tr class="summary-row">
+                            <td colspan="17" class="text-left"><strong>Variable Discount</strong></td>
+                            <td class="text-right"><strong>-0</strong></td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td colspan="17" class="text-left"><strong>r/off</strong></td>
+                            <td class="text-right"><strong>-0</strong></td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td colspan="17" class="text-left"><strong>Grand Total</strong></td>
+                            <td class="text-right"><strong>{!totalAmount}</strong></td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td colspan="17" class="text-left"><strong>Adjusted credit note amount is :</strong></td>
+                            <td class="text-right"><strong>0</strong></td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td colspan="17" class="text-left"><strong>TCS( 0% ) :</strong></td>
+                            <td class="text-right"><strong>0</strong></td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td colspan="17" class="text-left"><strong>Net Total :</strong></td>
+                            <td class="text-right"><strong>{!totalAmount}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Amount in Words -->
+                <div class="amount-words">
+                    <strong>Amount In Words : {!finalAmtinWords}</strong>
+                </div>
+                
+                <!-- GST Details -->
+                <div style="padding: 8px; font-size: 7px; font-weight: bold; border-bottom: 1px solid #000;">
+                    GST Details :
+                </div>
+                <div class="gst-section">
+                    <div class="gst-left">
+                        <strong>2.50% on Amt: {!totalAmount} is {!totalTaxableAmount} CGST: {!totalCgstAmount}</strong><br/><br/>
+                        <strong>2.50% on Amt: {!totalAmount} is {!totalTaxableAmount} SGST: {!totalSgstAmount}</strong>
+                    </div>
+                    <div class="gst-right">
+                    </div>
+                </div>
+                
+                <!-- Declaration and Bank Details -->
+                <div class="declaration-section">
+                    <strong>Declaration :</strong><br/>
+                    <strong>Payment mode - cash</strong><br/><br/>
+                    <strong>Bank Details-</strong><br/>
+                    <strong>Bank Beneficiary Name -</strong><br/>
+                    <strong>Account No. -</strong><br/>
+                    <strong>Account Type -</strong><br/>
+                    <strong>IFSC Code -</strong>
+                </div>
+                
+                <!-- Signature Section -->
+                <div class="signature-section">
+                    <div class="signature-left">
+                        Customer sign<br/>
+                        with seal
+                    </div>
+                    <div class="signature-right">
+                        For {!wrapper.distributorName}<br/>
+                        Signature
+                    </div>
+                </div>
+            </div>
+            
+        </body>
+    </html>
+</apex:page>

@@ -1,0 +1,30 @@
+<aura:component controller="EmployeeeController"
+                implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" 
+                access="global">    
+    
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="resultMessage" type="String" />
+    <aura:attribute name="isProcessing" type="Boolean" default="false" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" /> 
+
+    <div style="{!$Browser.formFactor == 'DESKTOP' ? 'text-align:center;padding:30px' : 'text-align:center; padding-top:40vh; padding-left:30px; padding-right:30px;overflow:hidden'}" >
+        <aura:if isTrue="{!v.isProcessing}">
+            <div style="padding-top:50px">
+                <b>Please Wait Processing....</b>
+            </div>
+            <aura:set attribute="else">
+                <p style="font-size:18px;">
+                    Are you sure you want to proceed with transferring Primary Customers, Secondary Customers, Beats, and PJPs?
+                </p>
+                
+                <div style="padding-top:25px;">
+                    <lightning:button variant="brand" label="No I Don't" title="Cancel" onclick="{!c.closeModel}" />
+                    <lightning:button variant="destructive" label="Transfer" onclick="{!c.transfer}" />
+                </div>
+            </aura:set>
+        </aura:if>
+
+        <lightning:formattedText value="{!v.resultMessage}" />
+    </div>
+</aura:component>
