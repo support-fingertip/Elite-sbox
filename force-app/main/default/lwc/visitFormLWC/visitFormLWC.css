@@ -1,0 +1,413 @@
+/* PAGE */
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    min-height: 100vh;
+}
+
+
+.page-container {
+
+    position: relative;
+
+    width: calc(100% + 48px);
+
+    height: 100%;
+    min-height: calc(100vh - 60px);
+
+    margin-left: -24px;
+    margin-right: -24px;
+
+    margin-top: -12px;
+    margin-bottom: -12px;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+}
+
+
+
+
+/* MAIN CARD */
+
+.main-card {
+
+    width: 100%;
+    height: 100%;
+
+    max-width: none;   /* remove width restriction */
+
+    margin: 0;         /* remove centering */
+
+    background: rgba(255,255,255,0.96);
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,0.18),
+        0 5px 15px rgba(0,0,0,0.08);
+
+    animation: fadeInUp 0.4s ease;
+
+    display: flex;
+    flex-direction: column;
+
+}
+
+
+
+/* HEADER */
+
+.header {
+
+    background: linear-gradient(135deg,#2563eb,#3b82f6,#60a5fa);
+
+    padding: 20px 25px;
+
+    border-radius: 16px 16px 0 0;
+
+}
+
+.header-left {
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+}
+
+.header-main-icon {
+
+    --slds-c-icon-color-foreground-default: white;
+
+}
+
+.header-title {
+
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+
+}
+
+.header-subtitle {
+
+    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+
+}
+
+
+/* BODY */
+
+.body {
+
+    padding: 24px;
+
+}
+
+
+/* SECTION */
+
+.section {
+
+    margin-bottom: 25px;
+
+}
+
+.section-title {
+
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1e293b;
+
+}
+
+
+/* LIST CARD */
+
+.list-card {
+
+    padding: 6px;
+
+}
+
+
+/* LIST ROW */
+
+.list-row {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 16px 18px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    position: relative;
+
+    transition: all 0.25s ease;
+
+}
+
+
+/* LEFT SIDE */
+
+.row-left {
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+}
+
+.left-icon {
+
+    --slds-c-icon-color-foreground-default: #3b82f6;
+
+}
+
+
+/* TEXT */
+
+.item-title {
+
+    font-size: 14px;
+    font-weight: 600;
+
+}
+
+.item-subtitle {
+
+    font-size: 12px;
+    color: #64748b;
+
+}
+
+
+/* RIGHT ICON */
+
+.right-icon {
+
+    --slds-c-icon-color-foreground-default: #94a3b8;
+
+    transition: 0.25s;
+
+}
+
+
+/* HOVER EFFECT */
+
+.list-row:hover {
+
+    background: white;
+
+    transform: translateY(-5px) scale(1.01);
+
+    box-shadow:
+        0 15px 30px rgba(37,99,235,0.18),
+        0 5px 15px rgba(0,0,0,0.1);
+
+}
+
+
+/* LEFT BLUE BAR */
+
+.list-row::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 10%;
+    bottom: 10%;
+
+    width: 4px;
+
+    background: linear-gradient(#2563eb,#60a5fa);
+
+    border-radius: 4px;
+
+    opacity: 0;
+
+    transition: 0.25s;
+
+}
+
+.list-row:hover::before {
+
+    opacity: 1;
+
+}
+
+
+/* ICON ANIMATION */
+
+.list-row:hover .right-icon {
+
+    transform: translateX(6px);
+
+    --slds-c-icon-color-foreground-default: #2563eb;
+
+}
+
+
+/* CLICK EFFECT */
+
+.list-row:active {
+
+    transform: scale(0.98);
+
+}
+
+
+/* ANIMATION */
+
+@keyframes fadeInUp {
+
+    from {
+
+        opacity: 0;
+        transform: translateY(20px);
+
+    }
+
+    to {
+
+        opacity: 1;
+        transform: translateY(0);
+
+    }
+
+}
+/* BACK HEADER */
+
+.back-header {
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 16px 20px;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    background: linear-gradient(
+        135deg,
+        #f8fafc,
+        #ffffff
+    );
+
+    border-radius: 16px 16px 0 0;
+
+    animation: slideDown 0.25s ease;
+
+}
+
+.back-header lightning-button-icon {
+
+    background: white;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 2px 6px rgba(0,0,0,0.12);
+
+}
+
+.back-header lightning-button-icon:hover {
+
+    transform: scale(1.08);
+
+    box-shadow:
+        0 4px 12px rgba(37,99,235,0.25);
+
+}
+
+
+/* BACK TEXT */
+
+.back-text {
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    color: #1e293b;
+
+}
+
+
+/* FORM CONTAINER */
+
+.form-container {
+
+    padding: 24px;
+
+    animation: fadeSlideIn 0.35s ease;
+
+}
+
+
+/* SMOOTH FORM ENTRY */
+
+@keyframes fadeSlideIn {
+
+    from {
+
+        opacity: 0;
+
+        transform: translateX(20px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateX(0);
+
+    }
+
+}
+
+
+/* BACK HEADER ENTRY */
+
+@keyframes slideDown {
+
+    from {
+
+        opacity: 0;
+
+        transform: translateY(-10px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+    }
+
+}
+
+
+/* OPTIONAL: make hover smoother */
+
+.list-row {
+
+    will-change: transform;
+
+}

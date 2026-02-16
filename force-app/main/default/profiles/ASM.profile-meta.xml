@@ -1049,6 +1049,10 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>VisitFormController</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>VisitMapController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -12276,6 +12280,10 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>User_Activity_Tracker</tab>
+        <visibility>DefaultOn</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>VisitForm</tab>
         <visibility>DefaultOn</visibility>
     </tabVisibilities>
     <tabVisibilities>

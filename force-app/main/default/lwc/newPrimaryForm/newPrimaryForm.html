@@ -1,0 +1,295 @@
+<template>
+
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header-card">
+
+        <div class="header-left">
+
+            <lightning-button-icon
+                icon-name="utility:back"
+                onclick={handleBack}
+                class="back-btn">
+            </lightning-button-icon>
+
+            <div>
+                <div class="header-title">
+                    New Primary Customer
+                </div>
+
+                <div class="header-subtitle">
+                    Fill in the visit details
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FORM -->
+    <div class="form-card">
+
+
+        <!-- Customer Type -->
+        <div class="field-card">
+
+            <label class="label">Customer Type *</label>
+
+            <lightning-combobox
+                value={customerType}
+                options={customerTypeOptions}
+                placeholder="Select customer type"
+                onchange={handleCustomerType}>
+            </lightning-combobox>
+
+        </div>
+
+
+        <!-- Customer Name -->
+        <div class="field-card">
+
+            <label class="label">Primary Customer Name *</label>
+
+            <lightning-input
+                value={customerName}
+                placeholder="Enter primary customer name"
+                onchange={handleCustomerName}>
+            </lightning-input>
+
+        </div>
+
+
+        <!-- Product Category -->
+        <div class="field-card">
+
+            <label class="label">Product Category *</label>
+
+            <lightning-combobox
+                value={productCategory}
+                options={categoryOptions}
+                placeholder="Select product category"
+                onchange={handleCategory}>
+            </lightning-combobox>
+
+        </div>
+
+
+        <!-- Product Group -->
+        <template for:each={productGroups} for:item="group" for:index="index">
+
+            <div key={group.id} class="field-card">
+
+                <label class="label">
+                    Product Group {group.number}
+                </label>
+
+                <lightning-combobox
+                    data-index={index}
+                    value={group.value}
+                    options={groupOptions}
+                    placeholder="Select product group"
+                    onchange={handleGroupChange}>
+                </lightning-combobox>
+
+            </div>
+
+        </template>
+
+
+        <!-- Add Product Group -->
+        <div class="add-group" onclick={handleAddGroup}>
+            + Add product group
+        </div>
+
+
+        <!-- Business Type -->
+        <div class="field-card">
+
+            <label class="label">
+                Primary Customer Business Type *
+            </label>
+
+            <lightning-combobox
+                value={businessType}
+                options={businessTypeOptions}
+                placeholder="Select business type"
+                onchange={handleBusinessType}>
+            </lightning-combobox>
+
+        </div>
+
+
+        <!-- Competitor Name -->
+        <div class="field-card">
+
+            <label class="label">Competitor Name *</label>
+
+            <lightning-input
+                value={competitorName}
+                placeholder="Enter competitor name"
+                onchange={handleCompetitorName}>
+            </lightning-input>
+
+        </div>
+
+
+        <!-- Competitor Product -->
+        <div class="field-card">
+
+            <label class="label">Competitor Product *</label>
+
+            <lightning-input
+                value={competitorProduct}
+                placeholder="Enter competitor product"
+                onchange={handleCompetitorProduct}>
+            </lightning-input>
+
+        </div>
+
+
+        <!-- Competitor Remarks -->
+        <div class="field-card">
+
+            <label class="label">Competitor Remarks *</label>
+
+            <lightning-textarea
+                value={competitorRemarks}
+                placeholder="Enter competitor remarks"
+                onchange={handleCompetitorRemarks}>
+            </lightning-textarea>
+
+        </div>
+
+
+        <!-- General Remarks -->
+        <div class="field-card">
+
+            <label class="label">General Remarks *</label>
+
+            <lightning-textarea
+                value={generalRemarks}
+                placeholder="Enter general remarks"
+                onchange={handleGeneralRemarks}>
+            </lightning-textarea>
+
+        </div>
+
+
+        <!-- Address -->
+        <div class="field-card">
+
+            <label class="label">Address *</label>
+
+            <lightning-textarea
+                value={address}
+                placeholder="Enter address"
+                onchange={handleAddress}>
+            </lightning-textarea>
+
+        </div>
+
+
+        <!-- State -->
+        <div class="field-card">
+
+            <label class="label">
+                State <span class="auto">(Auto)</span>
+            </label>
+
+            <lightning-combobox
+                value={state}
+                options={stateOptions}
+                onchange={handleStateChange}>
+            </lightning-combobox>
+
+        </div>
+
+
+        <!-- District -->
+        <div class="field-card">
+
+            <label class="label">
+                District <span class="auto">(Auto)</span>
+            </label>
+
+            <lightning-combobox
+                value={district}
+                options={districtOptions}
+                onchange={handleDistrictChange}>
+            </lightning-combobox>
+
+        </div>
+
+
+        <!-- Pin Code -->
+        <div class="field-card">
+
+            <label class="label">Pin Code *</label>
+
+            <lightning-input
+                value={pinCode}
+                onchange={handlePin}>
+            </lightning-input>
+
+        </div>
+
+
+        <!-- Contact -->
+        <div class="field-card">
+
+            <label class="label">Contact Number *</label>
+
+            <lightning-input
+                value={contactNumber}
+                onchange={handleContact}>
+            </lightning-input>
+
+        </div>
+
+
+        <!-- Upload -->
+        <div class="upload-grid">
+
+            <div class="field-card">
+
+                <label class="label">Product Image *</label>
+
+                <lightning-input type="file"></lightning-input>
+
+            </div>
+
+            <div class="field-card">
+
+                <label class="label">Outlet Image *</label>
+
+                <lightning-input type="file"></lightning-input>
+
+            </div>
+
+        </div>
+
+
+        <!-- Buttons -->
+        <div class="button-bar">
+
+            <lightning-button
+                label="Cancel"
+                onclick={handleBack}>
+            </lightning-button>
+
+            <lightning-button
+                label="Submit"
+                variant="brand"
+                onclick={handleSubmit}>
+            </lightning-button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+</template>

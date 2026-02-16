@@ -1,0 +1,184 @@
+<template>
+
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header-card">
+
+        <div class="header-left">
+
+            <lightning-button-icon
+                icon-name="utility:back"
+                alternative-text="Back"
+                onclick={handleBack}
+                class="back-btn">
+            </lightning-button-icon>
+
+            <div>
+
+                <div class="header-title">
+                    Outlet - Existing Market Expansion
+                </div>
+
+                <div class="header-subtitle">
+                    Fill in the visit details
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+
+
+        <!-- Outlet -->
+        <div class="field-card">
+
+            <label class="label">
+                Outlet *
+            </label>
+
+            <lightning-combobox
+                placeholder="Select outlet"
+                options={outletOptions}
+                value={outlet}
+                onchange={handleChange}>
+            </lightning-combobox>
+
+        </div>
+
+
+        <!-- Product Category -->
+        <div class="field-card">
+
+            <label class="label">
+                Product Category *
+            </label>
+
+            <lightning-combobox
+                placeholder="Select product category"
+                options={categoryOptions}
+                value={category}
+                onchange={handleChange}>
+            </lightning-combobox>
+
+        </div>
+
+
+        <!-- Product Groups -->
+        <template for:each={productGroups} for:item="group" for:index="index">
+
+            <div key={group.id} class="field-card">
+
+                <label class="label">
+                    Product Group {group.number}
+                </label>
+
+                <lightning-combobox
+                    data-index={index}
+                    options={groupOptions}
+                    value={group.value}
+                    placeholder="Select product group"
+                    onchange={handleGroupChange}>
+                </lightning-combobox>
+
+            </div>
+
+        </template>
+
+
+        <div class="add-group" onclick={handleAddGroup}>
+            + Add product group
+        </div>
+
+
+        <!-- Competitor Name -->
+        <div class="field-card">
+
+            <label class="label">
+                Competitor Name *
+            </label>
+
+            <lightning-input
+                placeholder="Enter competitor name"
+                value={competitorName}
+                onchange={handleChange}>
+            </lightning-input>
+
+        </div>
+
+
+        <!-- Competitor Product -->
+        <div class="field-card">
+
+            <label class="label">
+                Competitor Product *
+            </label>
+
+            <lightning-input
+                placeholder="Enter competitor product"
+                value={competitorProduct}
+                onchange={handleChange}>
+            </lightning-input>
+
+        </div>
+
+
+        <!-- Competitor Remarks -->
+        <div class="field-card">
+
+            <label class="label">
+                Competitor Remarks *
+            </label>
+
+            <lightning-textarea
+                placeholder="Enter competitor remarks"
+                value={competitorRemarks}
+                onchange={handleChange}>
+            </lightning-textarea>
+
+        </div>
+
+
+        <!-- General Remarks -->
+        <div class="field-card">
+
+            <label class="label">
+                General Remarks *
+            </label>
+
+            <lightning-textarea
+                placeholder="Enter general remarks"
+                value={generalRemarks}
+                onchange={handleChange}>
+            </lightning-textarea>
+
+        </div>
+
+
+        <!-- BUTTONS -->
+        <div class="button-bar">
+
+            <lightning-button
+                label="Cancel"
+                onclick={handleCancel}>
+            </lightning-button>
+
+            <lightning-button
+                label="Save Visit"
+                variant="brand"
+                onclick={handleSubmit}>
+            </lightning-button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+</template>

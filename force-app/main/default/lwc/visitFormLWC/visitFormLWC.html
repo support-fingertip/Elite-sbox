@@ -1,0 +1,247 @@
+<template>
+
+<div class="page-container">
+
+<div class="main-card">
+
+    <!-- BACK BUTTON -->
+    <template if:false={showSelection}>
+
+        <div class="back-header">
+
+            <lightning-button-icon
+                icon-name="utility:back"
+                onclick={handleBack}
+                variant="bare">
+            </lightning-button-icon>
+
+            <span class="back-text">
+                Back
+            </span>
+
+        </div>
+
+    </template>
+
+
+    <!-- SELECTION SCREEN -->
+    <template if:true={showSelection}>
+
+
+        <!-- HEADER -->
+        <div class="header">
+
+            <div class="header-left">
+
+                <lightning-icon
+                    icon-name="utility:form"
+                    size="small"
+                    class="header-main-icon">
+                </lightning-icon>
+
+                <div>
+
+                    <div class="header-title">
+                        Select Visit Form Type
+                    </div>
+
+                    <div class="header-subtitle">
+                        New visit outside beat
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- BODY -->
+        <div class="body">
+
+
+            <!-- Existing Customers -->
+            <div class="section">
+
+                <div class="section-title">
+                    Existing Customers
+                </div>
+
+                <div class="list-card">
+
+
+                    <!-- Existing Primary -->
+                    <div class="list-row"
+                         data-type="existingPrimary"
+                         onclick={handleSelect}>
+
+                        <div class="row-left">
+
+                            <lightning-icon
+                                icon-name="standard:account"
+                                size="small"
+                                class="left-icon">
+                            </lightning-icon>
+
+                            <div>
+
+                                <div class="item-title">
+                                    Existing Primary Customer
+                                </div>
+
+                                <div class="item-subtitle">
+                                    Visit form for existing primary customer
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <lightning-icon
+                            icon-name="utility:chevronright"
+                            size="x-small"
+                            class="right-icon">
+                        </lightning-icon>
+
+                    </div>
+
+
+                    <!-- Existing Secondary -->
+                    <div class="list-row"
+                         data-type="existingSecondary"
+                         onclick={handleSelect}>
+
+                        <div class="row-left">
+
+                            <lightning-icon
+                                icon-name="standard:contact"
+                                size="small"
+                                class="left-icon">
+                            </lightning-icon>
+
+                            <div>
+
+                                <div class="item-title">
+                                    Existing Secondary Customer
+                                </div>
+
+                                <div class="item-subtitle">
+                                    Visit form for existing secondary customer
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <lightning-icon
+                            icon-name="utility:chevronright"
+                            size="x-small"
+                            class="right-icon">
+                        </lightning-icon>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- New Customers -->
+            <div class="section">
+
+                <div class="section-title">
+                    New Customers
+                </div>
+
+                <div class="list-card">
+
+                    <template for:each={newCustomerList} for:item="item">
+
+                        <div key={item.type}
+                             class="list-row"
+                             data-type={item.type}
+                             onclick={handleSelect}>
+
+                            <div class="row-left">
+
+                                <lightning-icon
+                                    icon-name={item.icon}
+                                    size="small"
+                                    class="left-icon">
+                                </lightning-icon>
+
+                                <div>
+
+                                    <div class="item-title">
+                                        {item.title}
+                                    </div>
+
+                                    <div class="item-subtitle">
+                                        {item.subtitle}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <lightning-icon
+                                icon-name="utility:chevronright"
+                                size="x-small"
+                                class="right-icon">
+                            </lightning-icon>
+
+                        </div>
+
+                    </template>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </template>
+
+
+    <!-- FORMS -->
+
+    <template if:true={showExistingPrimary}>
+    <div class="form-container">
+        <c-existing-primary-form
+            onback={handleBack}>
+        </c-existing-primary-form>
+    </div>
+   </template>
+
+    <template if:true={showExistingSecondary}>
+       <c-existing-secondary-form onback={handleChildBack}></c-existing-secondary-form>
+    </template>
+
+    <template if:true={showNewPrimary}>
+       <c-new-primary-form onback={handleChildBack}></c-new-primary-form>
+    </template>
+
+    <template if:true={showSubStockiestNew}>
+       <c-sub-stockiest-new-form onback={handleChildBack}></c-sub-stockiest-new-form>
+    </template>
+
+    <template if:true={showSubStockiestExisting}>
+       <c-sub-stockiest-existing-form onback={handleChildBack}></c-sub-stockiest-existing-form>
+    </template>
+
+    <template if:true={showOutletNew}>
+       <c-outlet-new-form onback={handleChildBack}></c-outlet-new-form>
+
+    </template>
+
+    <template if:true={showOutletExisting}>
+       <c-outlet-existing-form onback={handleChildBack}></c-outlet-existing-form>
+
+    </template>
+
+
+</div>
+
+</div>
+
+</template>
