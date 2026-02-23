@@ -1,0 +1,176 @@
+<aura:component  controller="LeaveCancellatoncmpCtrl" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:appHostable" access="global" >
+   
+    <aura:attribute name="Saving" type="Boolean" default="false" />
+    <aura:attribute name="recordId" type="string" />
+    <aura:attribute name="Comments" type="string" />
+    <aura:attribute name="isProcessing" type="Boolean" default="false" />
+    
+    <aura:attribute name="recordFields" type="Object" />
+    
+    <force:recordData aura:id="recordLoader"
+                      recordId="{!v.recordId}"
+                      layoutType="FULL" 
+                      targetFields="{!v.recordFields}" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:html tag="style">
+        .slds-modal__container{ 
+        max-width: 75rem !important;
+        width:60% !important;
+        } 
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }
+        .slds-modal__content{
+        
+        height:unset !important;
+        max-height:unset !important;
+        }
+        .closeIcon{
+        display:none;
+        }
+        .slds-col{
+        margin-left:5px;
+        }
+        .slds-modal__footer {
+        text-align: center; /* Center the buttons */
+        justify-content: right; /* Center button alignment */
+        display: flex;
+        }
+        
+        @media screen and (max-width: 768px) {
+        .slds-modal__container {
+        max-width: 75rem !important;
+        width: 100% !important;
+        position: relative;
+        max-height: 100% !important;
+        left: 0 !important;
+        margin: 0 !important; /* Remove margin */
+        padding: 0 !important; /* Remove padding */
+        }
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }
+        .slds-modal__content {
+        height: 100% !important;
+        max-height: 100% !important;
+        padding: 0.5rem; /* Add a small padding for content */
+        }
+        .closeIcon {
+        display: none;
+        }
+        .slds-col {
+        margin-left: 5px;
+        }
+        .slds-modal__footer {
+        text-align: center; /* Center the buttons */
+        justify-content: right; /* Center button alignment */
+        display: flex;
+        }
+        .slds-modal__header {
+        text-align: center; /* Center the header text */
+        }
+        
+        
+        
+        } 
+        }
+        .slds-spinner_container {
+        position: absolute; /* Position spinner absolutely within modal */
+        top: 50%; /* Center vertically */
+        left: 50%; /* Center horizontally */
+        transform: translate(-50%, -50%); /* Center the spinner */
+        }
+    </aura:html>
+    <div >
+     
+        
+        <!--Use aura:if tag to display/hide popup based on isModalOpen value-->  
+        
+        <lightning:recordEditForm  objectApiName="Lead__c"  aura:id="recordCreateForm">
+            
+            <!-- Modal/Popup Box starts here-->
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- Modal/Popup Box Header Starts here-->
+                    <header class="slds-modal__header">
+                        
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Leave Cancellation Request</h2>
+                    </header>
+                    <!--Modal/Popup Box Body Starts here-->
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                      
+                        <aura:if isTrue="{!$Browser.formFactor=='PHONE'}">
+                            <div class="slds-grid slds-wrap">
+                                <aura:if isTrue="{!!v.isProcessing}">
+                                    <div class="slds-col slds-size_1-of-1" style="padding-right:10px">
+                                        <b> <p style="font-size:18px;"> Are you sure you want to Cancel the Leave? </p> </b>
+                                        <lightning:textarea name="input3" label="Leave Cancellation Comments" placeholder="type here..."  value="{!v.Comments}"/>
+                                        
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!$Browser.formFactor!='PHONE'}">
+                                    <aura:if isTrue="{!v.isProcessing}">
+                                        <center><p style="font-size:18px;"> Please Wait...</p></center> 
+                                    </aura:if>
+                                </aura:if>
+                            </div>
+                        </aura:if>
+                        <aura:if isTrue="{!$Browser.formFactor=='DESKTOP'}">
+                            <div class="slds-grid">
+                              
+                                <div class="slds-col slds-size_1-of-1">
+                                    <aura:if isTrue="{!!v.isProcessing}">
+                                        <b> <p style="font-size:18px;"> Are you sure you want to Cancel the Leave? </p>
+                                            <br/>
+                                        </b> 
+                                        <lightning:textarea name="input3" required="true" label="Leave Cancellation Comments" placeholder="type here..."  value="{!v.Comments}"/>
+                                    </aura:if>
+                                    <aura:if isTrue="{!$Browser.formFactor!='PHONE'}">
+                                        <aura:if isTrue="{!v.isProcessing}">
+                                            <center> <p style="font-size:18px;"> Please Wait...</p></center> 
+                                        </aura:if>
+                                    </aura:if>
+                                </div>
+                                
+                            </div>
+                        </aura:if>
+                        
+                    </div>
+                    <!--Modal/Popup Box Footer Starts here-->
+                    <footer class="slds-modal__footer">
+                        <lightning:button  variant="brand" 
+                                          label="No I Don't"
+                                          title="Cancel"
+                                          onclick="{!c.closeModel }"
+                                           disabled="{!v.isProcessing}"/>
+                        <lightning:button  variant="destructive"
+                                          label="Cancel the Leave" onclick="{!c.orderCancel}" 
+                                          disabled="{!v.isProcessing}"/>
+                        
+                    </footer>
+                </div>
+            </section>
+            <aura:if isTrue="{!$Browser.formFactor=='PHONE'}">
+                <aura:if isTrue="{!v.isProcessing}"> 
+                    <div aura:id="spinnerId" class="slds-spinner_container">
+                        <div class="slds-spinner--brand  slds-spinner slds-spinner--small slds-is-relative" role="alert">
+                            <span class="slds-assistive-text">Loading...</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                </aura:if>
+            </aura:if>
+        </lightning:recordEditForm>
+        
+    </div>
+    
+    
+</aura:component>

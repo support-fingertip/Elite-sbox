@@ -1,227 +1,187 @@
-/* HOST */
-
-:host {
-    display: block;
-}
-
-
-/* FULL PAGE */
-
 .page {
 
-    width: 100%;
-    min-height: 100vh;
-    padding: 24px;
-
-    background:
-    linear-gradient(135deg,#eef2f7,#dce3ed);
+    background: #f4f6f9;
+    padding: 20px;
 
 }
 
 
-/* HEADER CARD */
+.header {
 
-.header-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 
-    background:
-    linear-gradient(135deg,#2b63d9,#4a8df0);
+    background: linear-gradient(to right, #2e6dd8, #1b4fbf);
 
-    padding: 18px 24px;
+    color: white;
 
-    border-radius: 12px;
+    padding: 14px 16px;
 
-    box-shadow:
-    0 8px 20px rgba(0,0,0,0.15);
+    border-radius: 6px;
 
     margin-bottom: 20px;
 
 }
 
 
-/* HEADER LEFT */
+.title {
 
-.header-left {
-
-    display: flex;
-    align-items: center;
-    gap: 14px;
-
-}
-
-
-/* BACK BUTTON */
-
-.back-btn {
-
-    --slds-c-icon-color-foreground-default: white;
-
-    background: rgba(255,255,255,0.15);
-
-    border-radius: 6px;
-
-}
-
-
-/* HEADER TITLE */
-
-.header-title {
-
-    color: white;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
 
 }
 
 
-/* HEADER SUBTITLE */
+.subtitle {
 
-.header-subtitle {
-
-    color: rgba(255,255,255,0.85);
     font-size: 13px;
 
 }
 
 
-/* FORM CARD */
-
-.form-card {
+.form {
 
     background: white;
 
     padding: 24px;
 
-    border-radius: 14px;
-
-    box-shadow:
-    0 12px 30px rgba(0,0,0,0.15);
-
-    transition: all .3s ease;
+    border-radius: 8px;
 
 }
 
 
-/* FORM CARD HOVER */
+.field {
 
-.form-card:hover {
-
-    box-shadow:
-    0 0 30px rgba(255,0,0,0.4),
-    0 20px 40px rgba(0,0,0,0.2);
+    margin-bottom: 18px;
 
 }
 
-
-/* FIELD CARD */
-
-.field-card {
-
-    background: #f9fafc;
-
-    padding: 14px;
-
-    border-radius: 10px;
-
-    margin-bottom: 16px;
-
-    transition: all .25s ease;
-
-}
-
-
-/* FIELD CARD HOVER */
-
-.field-card:hover {
-
-    transform: translateY(-4px);
-
-    box-shadow:
-    0 8px 18px rgba(0,0,0,0.2);
-
-}
-
-
-/* LABEL */
 
 .label {
-
-    display: block;
-
-    font-size: 13px;
 
     font-weight: 600;
 
     margin-bottom: 6px;
 
-}
-
-
-/* AUTO LABEL FOR STATE & DISTRICT */
-
-.auto {
-
-    color: #888;
-
-    font-size: 12px;
-
-    margin-left: 6px;
-
-    font-weight: 500;
+    display: block;
 
 }
 
 
-/* ADD PRODUCT GROUP */
+.required {
 
-.add-group {
+    color: red;
 
-    color: #2b63d9;
+}
 
-    font-weight: 600;
 
-    margin-bottom: 18px;
+.add-product {
+
+    color: #0176d3;
+
+    font-size: 13px;
+
+    margin-top: 6px;
 
     cursor: pointer;
 
 }
 
 
-/* UPLOAD GRID */
-
-.upload-grid {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 20px;
-
-}
-
-
-/* BUTTON BAR */
-
-.button-bar {
+.image-row {
 
     display: flex;
 
-    justify-content: flex-end;
+    flex-direction: column;
 
-    gap: 12px;
+    gap: 20px;
 
     margin-top: 20px;
 
 }
 
 
-/* RESPONSIVE */
+.upload-wrapper {
 
-@media (max-width:768px){
+    position: relative;
 
-    .upload-grid {
+    display: inline-block;
 
-        grid-template-columns: 1fr;
+}
 
-    }
+
+.file-input {
+
+    position: absolute;
+
+    width: 100%;
+
+    height: 100%;
+
+    opacity: 0;
+
+    cursor: pointer;
+
+}
+
+
+.upload-box {
+
+    border: 2px dashed #c9c9c9;
+
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    background: #fafafa;
+
+}
+
+
+.upload-text {
+
+    color: #0176d3;
+
+    font-weight: 600;
+
+}
+
+
+.upload-sub {
+
+    color: #666;
+
+    font-size: 13px;
+
+}
+
+
+.file-name {
+
+    margin-top: 6px;
+
+    color: green;
+
+    font-size: 13px;
+
+}
+
+
+.button-row {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 30px;
 
 }

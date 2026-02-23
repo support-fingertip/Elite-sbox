@@ -86,6 +86,9 @@ public class AccountTriggerHandler {
             if (acc.UniqueFileId__c != null) {
                 uniqueFileIds.add(acc.UniqueFileId__c);
                 accountIdMap.put(acc.UniqueFileId__c, acc.Id);
+                if(acc.Customer_Type__c == 'Secondary Customer'){
+                      System.enqueueJob(new AzureAccountSyncQueue(acc.Id,acc.ERP_Check__c));
+                }
             }
             
             userIds.add(acc.CreatedById);

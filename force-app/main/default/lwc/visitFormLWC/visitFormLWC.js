@@ -14,13 +14,6 @@ export default class VisitFormLWC extends LightningElement {
         },
 
         {
-            type: 'subStockiestNew',
-            title: 'Sub Stockiest - New Market Expansion',
-            subtitle: 'New area expansion',
-            icon: 'standard:channel_program_members'
-        },
-
-        {
             type: 'subStockiestExisting',
             title: 'Sub Stockiest - Existing Market Expansion',
             subtitle: 'Existing market expansion',
@@ -46,64 +39,38 @@ export default class VisitFormLWC extends LightningElement {
 
     // when clicking list item
     handleSelect(event) {
-
         const type = event.currentTarget.dataset.type;
-
-        console.log('Selected Type:', type);
-
         this.selectedType = type;
-
+        let message = { 
+            message: 'visitFormScreen' ,
+            visittype :type,
+            screen : 3.8
+        };
+        this.genericDispatchEvent(message);
     }
 
 
     // when clicking back button inside parent
     handleBack() {
-
         this.selectedType = null;
-
     }
 
 
     // when child form sends back event
     handleChildBack() {
-
         this.selectedType = null;
-
     }
 
+    genericDispatchEvent(message) {
+        // Creating a custom event with a payload (optional)
+        const event = new CustomEvent('visitform', {
+            detail: message
+        });
 
-    // GETTERS
-
-    get showSelection() {
-        return this.selectedType === null;
+        // Dispatching the event
+        this.dispatchEvent(event);
     }
 
-    get showExistingPrimary() {
-        return this.selectedType === 'existingPrimary';
-    }
-
-    get showExistingSecondary() {
-        return this.selectedType === 'existingSecondary';
-    }
-
-    get showNewPrimary() {
-        return this.selectedType === 'newPrimary';
-    }
-
-    get showSubStockiestNew() {
-        return this.selectedType === 'subStockiestNew';
-    }
-
-    get showSubStockiestExisting() {
-        return this.selectedType === 'subStockiestExisting';
-    }
-
-    get showOutletNew() {
-        return this.selectedType === 'outletNew';
-    }
-
-    get showOutletExisting() {
-        return this.selectedType === 'outletExisting';
-    }
+ 
 
 }

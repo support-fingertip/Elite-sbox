@@ -109,54 +109,93 @@ h4, h6, body{
     border-radius: 50%;
     padding: 5px;
 }
-.navbar{
+.navbar, .navBarSpace {
     border-radius: 5px;
     margin-right: 10px;
     margin-left: 10px;
     margin-top: 1rem;
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
     align-items: center;
     background-color: #fff;
-    padding: 10px 8px;/*25px;*/
     position: relative;
-}
-.navBarSpace{
-    border-radius: 5px;
-    margin-right: 10px;
-    margin-left: 10px;
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    background-color: #fff;
-    padding: 10px 25px;
-    position: relative;
-}
-.header{
-    font-size: 16px;
-    font-weight: 500;
+    padding: 8px 12px;
+    gap: 10px;
 }
 
-.nav-title{
+.header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;  /* needed for absolute centering */
+}
+
+.screen-bar-nav-icon {
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.header {
+    position: absolute;       /* pull out of flow */
+    left: 50%;                /* center relative to navbar */
+    transform: translateX(-50%);
+    font-size: 16px;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.button-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.nav-title {
     color: #fff;
     background-color: #2f5597;
-    padding: 5px 15px;
+    padding: 4px 10px;
     border-radius: 15px;
     font-size: 16px;
     font-weight: 500;
+    white-space: nowrap;
 }
-@media screen and (max-width : 600px)
-{
-  .nav-title{
-    font-size: 14px;
-  }
-  .header{
-    font-size: 14px;
-    font-weight: 500;
+
+/* ── Mobile ── */
+@media screen and (max-width: 600px) {
+    .navbar, .navBarSpace {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 6px 10px;
+        gap: 4px;
+    }
+
+    .header-row {
+        width: 100%;
+        position: relative;
+    }
+
+    .header {
+        position: static;      /* back to normal flow */
+        left: unset;
+        transform: none;
+        font-size: 16px;
+    }
+
+    .button-row {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .nav-title {
+        font-size: clamp(10px, 3.5vw, 16px);
+        padding: 4px 10px;
+    }
 }
-}
+
 .menu-open, .menu-close{
     cursor: pointer;
 }

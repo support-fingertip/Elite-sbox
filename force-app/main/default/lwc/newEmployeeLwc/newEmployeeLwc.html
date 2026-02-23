@@ -733,6 +733,42 @@
                                         </div> 
                                     </div>
                                 </div>
+                                <!--Leave Approval Information-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Leave Approval Information</span>
+                                    </h3>
+                                    <br />
+                                    <div class="slds-grid slds-wrap">
+                                        <template if:false={isAdminProfile}>
+                                            <!--Leave_Approver_L1__c-->
+                                            <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                            <c-user-lookup-lwc
+                                                    label="Leave Approver L1"
+                                                    field-name="Leave_Approver_L1__c"
+                                                    user-list={userList}
+                                                    selected-user-id={employee.Leave_Approver_L1__c}
+                                                    selected-user-name={employee.Leave_Approver_1_Name}
+                                                    heirachy-numner={selectedProfileHirachyNumber}
+                                                    onuserselected={handleApproverSelection}>
+                                                </c-user-lookup-lwc>
+                                            </div> 
+                                        </template>
+                                        <!--Leave_HR__c-->
+                                        <div class={customClass} style="padding-left:5px;padding-right:5px">
+                                            <c-user-lookup-lwc
+                                                label="Leave HR (For Notification)"
+                                                field-name="Leave_HR__c"
+                                                user-list={userList}
+                                                profile-name="HR"
+                                                selected-user-id={employee.Leave_HR__c}
+                                                selected-user-name={employee.Leave_HR_Name}
+                                                heirachy-numner={selectedProfileHirachyNumber}
+                                                onuserselected={handleApproverSelection}>
+                                            </c-user-lookup-lwc>
+                                        </div> 
+                                    </div>
+                                </div>
                             </template>
                             <template if:false={isAdminProfile}>
                                 <!--Pay Information-->

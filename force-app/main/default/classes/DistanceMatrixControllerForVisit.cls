@@ -93,7 +93,7 @@ public class DistanceMatrixControllerForVisit
         req.setMethod('GET');    
         Http http = new Http();
         
-        if(!test.isrunningtest()){
+        if(!Test.isRunningTest()){
             
             
             HTTPResponse res = http.send(req);
@@ -132,6 +132,100 @@ public class DistanceMatrixControllerForVisit
     public class duration{ 
         public  string text;
         public  decimal  value; 
+    }
+    
+    // Calculate full day route using Google Directions API (start -> visits -> end)
+    @future(callout=true)
+    public static void distanceCalculationForDailyRoute(String dailyLogId){
+        if(dailyLogId==null) return;
+        Daily_Log__c dl = [SELECT Id, Clock_In_Location__Latitude__s, Clock_In_Location__Longitude__s, Clock_Out_Location__Latitude__s, Clock_Out_Location__Longitude__s, KMs_Travelled__c, Today_Day_Travelled_Distance_KM__c,
+                            (SELECT Id,ClockIn_Latitude__c,Clockin_Longitude__c,Actual_Start_Time__c FROM Visits__r WHERE ClockIn_Latitude__c!=null AND Clockin_Longitude__c!=null ORDER BY Actual_Start_Time__c ASC)
+                            FROM Daily_Log__c WHERE Id = :dailyLogId LIMIT 1];
+
+        if(dl==null) return;
+
+        Decimal startLat = dl.Clock_In_Location__Latitude__s;
+        Decimal startLon = dl.Clock_In_Location__Longitude__s;
+        Decimal endLat = dl.Clock_Out_Location__Latitude__s;
+        Decimal endLon = dl.Clock_Out_Location__Longitude__s;
+
+        if(startLat==null || startLon==null || endLat==null || endLon==null){
+            return;
+        }
+
+        // Build waypoints from visits (exclude first/last which are start/end)
+        List<String> waypointParts = new List<String>();
+        for(Visit__c v : dl.Visits__r){
+            if(v.ClockIn_Latitude__c!=null && v.Clockin_Longitude__c!=null){
+                waypointParts.add(v.ClockIn_Latitude__c+','+v.Clockin_Longitude__c);
+            }
+        }
+
+        String ApiKey = label.GOOGLE_MAPS_API_KEY;
+        String endpoint = 'https://routes.googleapis.com/directions/v2:computeRoutes?key=' + ApiKey;
+
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(endpoint);
+        req.setMethod('POST');
+        Http http = new Http();
+
+        try{
+            // Build request body for Routes API
+            Map<String,Object> origin = new Map<String,Object>{'location' => new Map<String,Object>{'latLng' => new Map<String,Decimal>{'latitude'=>startLat,'longitude'=>startLon}}};
+            Map<String,Object> destination = new Map<String,Object>{'location' => new Map<String,Object>{'latLng' => new Map<String,Decimal>{'latitude'=>endLat,'longitude'=>endLon}}};
+            Map<String,Object> reqBodyMap = new Map<String,Object>{'origin' => origin, 'destination' => destination, 'travelMode' => 'DRIVE'};
+
+            if(waypointParts.size()>0){
+                List<Object> inter = new List<Object>();
+                for(String wp : waypointParts){
+                    List<String> parts = wp.split(',');
+                    if(parts.size()==2){
+                        Decimal wlat = Decimal.valueOf(parts[0]);
+                        Decimal wlon = Decimal.valueOf(parts[1]);
+                        inter.add(new Map<String,Object>{'location' => new Map<String,Object>{'latLng' => new Map<String,Decimal>{'latitude'=>wlat,'longitude'=>wlon}}});
+                    }
+                }
+                reqBodyMap.put('intermediateStops', inter);
+            }
+
+            String bodyStr = JSON.serialize(reqBodyMap);
+            req.setHeader('Content-Type','application/json');
+            req.setBody(bodyStr);
+
+            HTTPResponse res = http.send(req);
+            if(res.getStatusCode() == 200){
+                routesResponse rr = (routesResponse) JSON.deserialize(res.getBody(), routesResponse.class);
+                if(rr != null && rr.routes != null && rr.routes.size()>0){
+                    Decimal totalMeters = 0;
+                    for(rleg l : rr.routes[0].legs){
+                        if(l.distanceMeters!=null) totalMeters += l.distanceMeters;
+                    }
+                    Decimal totalKm = totalMeters/1000;
+                    Daily_Log__c upd = new Daily_Log__c(Id=dl.Id);
+                    upd.KMs_Travelled__c = totalKm;
+                    system.debug('totalKm:---' + totalKm);
+                    system.debug('dl:'+upd);
+                    //upd.Today_Day_Travelled_Distance_KM__c = totalKm;
+                   // update upd;
+                }
+            } else {
+                System.debug('Routes API response code: ' + res.getStatusCode() + ' body: ' + res.getBody());
+            }
+        }catch(Exception e){
+            System.debug('Routes API call failed: '+e.getMessage());
+        }
+    }
+
+    // Classes for Routes API response (computeRoutes)
+    public class routesResponse{
+        public List<rroute> routes;
+    }
+    public class rroute{
+        public List<rleg> legs;
+    }
+    public class rleg{
+        public Long distanceMeters;
+        public Long durationSeconds;
     }
     
 }

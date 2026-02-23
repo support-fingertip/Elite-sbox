@@ -1,0 +1,169 @@
+<aura:component controller="LeaveCreateOverrideCtrl"
+                implements="lightning:actionOverride,force:hasRecordId,force:hasSObjectName"
+                access="global">
+    
+    <!-- Attributes -->
+    <aura:attribute name="isProcessing" type="Boolean" default="false"/>
+    <aura:attribute name="showUserField" type="Boolean" default="false"/>
+    <aura:attribute name="fromDate" type="Date"/>
+    <aura:attribute name="toDate" type="Date"/>
+    <aura:attribute name="showSession" type="Boolean" default="false"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:html tag="style">
+        html, body {
+            overflow-x: hidden !important;
+        }
+    
+        .slds-modal {
+            overflow-x: hidden !important;
+        }
+    
+        .slds-modal__container {
+            max-width: 70rem;
+            width: 90%;
+        }
+    
+        .slds-modal__content {
+            overflow-x: hidden !important;
+        }
+    
+        @media screen and (max-width: 768px) {
+    
+            .slds-modal__container {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                left: 0 !important;
+            }
+    
+            .slds-modal__content {
+       			 min-height:100vh;
+                padding: 1rem !important;
+                overflow-x: hidden !important;
+            }
+    
+            .slds-grid {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+    
+            .slds-col {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+        }
+    </aura:html>
+        
+    <div>
+        
+        <lightning:recordEditForm objectApiName="Leaves__c"
+                                  aura:id="leaveForm"
+                                  onsuccess="{!c.handleSuccess}"
+                                  onsubmit="{!c.handleSubmit}">
+            
+            <section role="dialog"
+                     tabindex="-1"
+                     aria-modal="true"
+                     class="slds-modal slds-fade-in-open">
+                <div class="{!($Browser.isPhone) ? 'slds-card':'slds-modal__container'}" >
+                    <!-- ================= HEADER ================= -->
+                    <aura:if isTrue="{!($Browser.isDesktop)}">
+                        <header class="slds-modal__header">
+                            <h2 class="slds-text-heading_medium slds-hyphenate">
+                                New Leave
+                            </h2>
+                        </header>
+                    </aura:if>
+                    <aura:if isTrue="{!($Browser.isPhone)}">
+                        <div class="slds-card__header slds-gutters">
+                            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-modal__header">
+                                <div class="slds-col">
+                                    <button class="slds-button slds-float_left mobileCancel" onclick="{!c.closeModel}">Cancel</button>
+                                </div>
+                                <div class="slds-col slds-align_absolute-center">
+                                    <h1 id="modal-heading-02" class="slds-modal__title slds-hyphenate mobileTitle">New Lead</h1>
+                                </div>
+                                <div class="slds-col">
+                                    <button class="slds-button slds-float_right mobileSave"   name="Save"  disabled="{!v.isProcessing}"  type="submit" >Save</button>
+                                </div>
+                            </header>
+                        </div>
+                    </aura:if>
+                    
+                    <!-- ================= BODY ================= -->
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <aura:if isTrue="{!v.isProcessing}">
+                            <lightning:spinner size="medium" variant="brand"/>
+                        </aura:if>
+
+                        <lightning:messages/>
+                        
+                        <div class="slds-grid slds-wrap">
+                            
+                            <!-- LEFT COLUMN -->
+                            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                                
+                                <lightning:inputField fieldName="Type_of_Leave__c" required="true"/>
+                                
+                                <lightning:inputField fieldName="From_Date__c"
+                                                      value="{!v.fromDate}"
+                                                      onchange="{!c.handleDateChange}"
+                                                      required="true"/>
+                                
+                                <lightning:inputField fieldName="To_Date__c"
+                                                      value="{!v.toDate}"
+                                                      onchange="{!c.handleDateChange}"
+                                                      required="true"/>
+                                
+                            </div>
+                            
+                            <!-- RIGHT COLUMN -->
+                            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                                
+                                <aura:if isTrue="{!v.showUserField}">
+                                    <lightning:inputField fieldName="User__c" required="true"/>
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!v.showSession}">
+                                    <lightning:inputField fieldName="Session_Type__c"/>
+                                </aura:if>
+                                
+                                <lightning:inputField fieldName="Reason_for_Leave__c" required="true"/>
+                                
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- ================= FOOTER ================= -->
+                    <aura:if isTrue="{!($Browser.isDesktop)}">
+                        <footer class="slds-modal__footer">
+                            
+                            
+                            
+                            <lightning:button variant="neutral"
+                                              label="Cancel"
+                                              onclick="{!c.closeModel}"/>
+                            
+                            <lightning:button variant="brand"
+                                              type="submit"
+                                              label="Save Leave"
+                                              disabled="{!v.isProcessing}"/>
+                            
+                        </footer>
+                    </aura:if>
+                </div>
+            </section>
+            
+            <!-- Backdrop -->
+            <div class="slds-backdrop slds-backdrop_open"></div>
+            
+        </lightning:recordEditForm>
+        
+    </div>
+    
+</aura:component>

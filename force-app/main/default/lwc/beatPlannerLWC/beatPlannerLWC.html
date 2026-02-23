@@ -15,54 +15,56 @@
                     <template lwc:if={isAllowedDevice}>
                         <!--Header-->
                         <div class={navBarClass}>
-                            <template lwc:if={isShowBackButton}>
-                                <!--Back Icon-->
-                                <i class="material-icons screen-bar-nav-icon" onclick={goBackScreen}>
-                                <lightning-icon  icon-name="utility:back" size="small" alternative-text="Back" class=""></lightning-icon>
-                                </i>
-                            </template>
-                            <template lwc:else>
-                                <!--Refresh Icon-->
-                                <i class="material-icons screen-bar-nav-icon" onclick={refreshData}>
-                                <lightning-icon  icon-name="utility:refresh" size="small" alternative-text="refresh" class=""></lightning-icon>
-                                </i>
-                            </template>
+                            <!-- Line 1: Icon + Header -->
+                            <div class="header-row">
+                                <template lwc:if={isShowBackButton}>
+                                    <i class="material-icons screen-bar-nav-icon" onclick={goBackScreen}>
+                                        <lightning-icon icon-name="utility:back" size="small" alternative-text="Back"></lightning-icon>
+                                    </i>
+                                </template>
+                                <template lwc:else>
+                                    <i class="material-icons screen-bar-nav-icon" onclick={refreshData}>
+                                        <lightning-icon icon-name="utility:refresh" size="small" alternative-text="refresh"></lightning-icon>
+                                    </i>
+                                </template>
 
-                            <!--Header Name-->
-                            <template if:false={isProductScreen}>
-                                <span class="header slds-align_absolute-center">{header}</span>
-                            </template>
-                            <!--Buttons-->
+                                <template if:false={isProductScreen}>
+                                    <span class="header">{header}</span>
+                                </template>
+                            </div>
+
+                            <!-- Line 2: Buttons -->
                             <template lwc:if={isDailyLog}>
-                                <div class="slds-grid slds-gutters">
-                                    <template if:false={outletPage}>
-                                        <div class="slds-col">
+                                <template lwc:if={isLeaveExisted}>
+                                    <div class="button-row">
+                                        <h4 class="nav-title">Leave Applied</h4>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="button-row">
+                                        <template if:false={outletPage}>
                                             <h4 class="nav-title menu-close" onclick={isStartEndDay}>{buttonName}</h4>
-                                        </div>
-                                        <div class="slds-col">
-                                            <h4 class="nav-title menu-close" onclick={showVisitform}>New Visit</h4>
-                                        </div>
-                                        <template lwc:if={isVisitCreate}>
-                                            <div class="slds-col"> 
+                                            <template if:true={isShowNewVisitButton}>
+                                                <h4 class="nav-title menu-close" onclick={NewvisitformbuttonClick}>New Visit</h4>
+                                            </template>
+                                            <template lwc:if={isVisitCreate}>
                                                 <h4 class="nav-title menu-close" onclick={switchBeat}>Switch Beat</h4>
-                                            </div>
-                                          
-                                        </template>
-                                    </template>
-                                    <template if:true={outletPage}>
-                                        
-                                        <template lwc:if={executeScreenData.isInProgress}>
-                                            <template if:true={isExecuteScreen}>
-                                                <div class="slds-col"> 
-                                                    <h4 class="nav-title menu-close" onclick={completeVisit}>Complete Visit</h4>
-                                                </div>
                                             </template>
                                         </template>
-                                    </template>
-                                </div>
+                                        <template if:true={outletPage}>
+                                            <template lwc:if={executeScreenData.isInProgress}>
+                                                <template if:true={isExecuteScreen}>
+                                                    <h4 class="nav-title menu-close" onclick={completeVisit}>Complete Visit</h4>
+                                                </template>
+                                            </template>
+                                        </template>
+                                    </div>
+                                </template>
                             </template>
                             <template lwc:else>
-                                <h4 class="nav-title">Day Ended</h4>
+                                <div class="button-row">
+                                    <h4 class="nav-title">Day Ended</h4>
+                                </div>
                             </template>
                         </div>
 
@@ -139,13 +141,6 @@
                                 </div>
                             </template>
 
-                            <!-- Camera screen -->
-                        <!--- <template lwc:if={isCameraScreen}>
-                                <div lwc:if={recordId}>
-                                    <c-camera-screen record-id={recordId} is-desktop={isDesktop} open-camera-value=true visit-data={visitData} onmyvisitclick={handleOrderScreen}></c-camera-screen>
-                                </div>
-                            </template>-->
-
                             <!--Returns-->
                             <template lwc:if={isReturnScreen}>
                                 <div lwc:if={recordId}>
@@ -157,12 +152,43 @@
 
                             <!--Shelf Stock-->
                             <template lwc:if={isShelfStockScreen}>
-                            <div lwc:if={recordId}>
-                            <c-shelf-stock-screen  record-id={recordId} index={index} onscreen4={handleOrderScreen} 
-                            log-id={currentLogId} acccount-id={acccountId} obj-type={header} visit-data={visitData}>
-                            </c-shelf-stock-screen>
-                            </div>
+                                <div lwc:if={recordId}>
+                                    <c-shelf-stock-screen  record-id={recordId} index={index} onscreen4={handleOrderScreen} 
+                                    log-id={currentLogId} acccount-id={acccountId} obj-type={header} visit-data={visitData}>
+                                    </c-shelf-stock-screen>
+                                </div>
                             </template>
+
+                            <!--Visit Form Screen-->
+                           <template lwc:if={isVisitFormScreen}>
+                                <c-visit-form-l-w-c onvisitform={handleVisitFormDispatch} ></c-visit-form-l-w-c>
+                            </template>
+
+                            <template if:true={showExistingPrimary}>
+                                <c-existing-primary-form  onback={visitformRecordDispatch}> </c-existing-primary-form>
+                            </template>
+
+                            <template if:true={showExistingSecondary}>
+                                <c-existing-secondary-form onback={visitformRecordDispatch}></c-existing-secondary-form>
+                            </template>
+
+                            <template if:true={showNewPrimary}>
+                                <c-new-primary-form onback={visitformRecordDispatch}></c-new-primary-form>
+                            </template>
+
+                            <template if:true={showSubStockiestExisting}>
+                                <c-sub-stockiest-existing-form onback={visitformRecordDispatch}></c-sub-stockiest-existing-form>
+                            </template>
+
+                            <template if:true={showOutletNew}>
+                                <c-outlet-new-form onback={visitformRecordDispatch}></c-outlet-new-form>
+                            </template>
+
+                            <template if:true={showOutletExisting}>
+                                <c-outlet-existing-form onback={visitformRecordDispatch}></c-outlet-existing-form>
+                            </template>
+
+
                         </div>
                     </template>
                     <template lwc:else>
@@ -410,9 +436,6 @@
             </div>
         </section>
         <div class="slds-backdrop slds-backdrop_open"></div>
-    </template>
-    <template if:true={isShowVisitForm}>
-        <c-visit-form onclose={closeModal}></c-visit-form>
     </template>
     
 </template>

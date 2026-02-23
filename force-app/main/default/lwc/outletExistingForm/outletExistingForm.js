@@ -1,215 +1,401 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, wire } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
-export default class OutletExistingForm extends LightningElement {
+/* NEW IMPORTS FOR DEPENDENT PICKLIST */
+import { getObjectInfo, getPicklistValues }
+from 'lightning/uiObjectInfoApi';
 
-    // ===============================
-    // TRACKED FIELDS
-    // ===============================
+import VISIT_OBJECT
+from '@salesforce/schema/Visit_Form__c';
 
-    @track outlet;
-    @track category;
+import STATE_FIELD
+from '@salesforce/schema/Visit_Form__c.State__c';
+
+import DISTRICT_FIELD
+from '@salesforce/schema/Visit_Form__c.District__c';
+
+
+export default class OutletExistingMarket extends LightningElement {
+
+
+    /* =====================================================
+       FORM FIELDS
+    ===================================================== */
+
+    @track customerType;
+    @track visitType;
+    @track outletName;
+    @track secondaryBusinessType;
+    @track primaryCustomer;
+    @track productCategory;
+    @track primaryBusinessType;
     @track competitorName;
     @track competitorProduct;
     @track competitorRemarks;
     @track generalRemarks;
+    @track address;
 
-    @track state = 'MH';
+    @track state = 'Maharashtra';
     @track district;
 
-    // ===============================
-    // PRODUCT GROUPS (Dynamic)
-    // ===============================
+    @track pinCode;
+    @track contactNumber;
+
+
+    /* =====================================================
+       IMAGE FILES
+    ===================================================== */
+
+    productImageName;
+    outletImageName;
+    outletImageUploaded = false;
+
+
+    /* =====================================================
+       PRODUCT GROUP
+    ===================================================== */
 
     @track productGroups = [
-        {
-            id: 1,
-            number: 1,
-            value: ''
-        }
+        { id: 1, value: '' }
     ];
 
 
-    // ===============================
-    // OPTIONS
-    // ===============================
+    /* =====================================================
+       OPTIONS (UNCHANGED)
+    ===================================================== */
 
-    outletOptions = [
-        { label: 'Outlet A', value: 'A' },
-        { label: 'Outlet B', value: 'B' }
+    customerTypeOptions = [
+        { label: 'Outlet', value: 'Outlet' }
     ];
 
+    visitTypeOptions = [
+        { label: 'Existing Market', value: 'Existing Market' }
+    ];
+
+    primaryCustomerOptions = [
+        { label: 'Customer 1', value: 'Customer1' },
+        { label: 'Customer 2', value: 'Customer2' }
+    ];
 
     categoryOptions = [
-        { label: 'Bakery', value: 'bakery' },
-        { label: 'Beverages', value: 'beverages' }
+        { label: 'Bakery', value: 'Bakery' },
+        { label: 'Staple', value: 'Staple' }
     ];
-
 
     groupOptions = [
-        { label: 'Group A', value: 'A' },
-        { label: 'Group B', value: 'B' },
-        { label: 'Group C', value: 'C' }
+        { label: 'Cookies', value: 'Cookies' },
+        { label: 'Cake', value: 'Cake' }
+    ];
+
+    businessTypeOptions = [
+        { label: 'Retail', value: 'Retail' },
+        { label: 'Wholesale', value: 'Wholesale' }
     ];
 
 
-    stateOptions = [
-        { label: 'Maharashtra', value: 'MH' }
-    ];
+    /* =====================================================
+       STATE & DISTRICT DEPENDENCY VARIABLES
+    ===================================================== */
+
+    @track stateOptions = [];
+
+    districtControllerValues;
+
+    districtValues;
 
 
-    districtMap = {
+    /* =====================================================
+       OBJECT INFO
+    ===================================================== */
 
-        MH: [
-            { label: 'Mumbai', value: 'Mumbai' },
-            { label: 'Pune', value: 'Pune' },
-            { label: 'Nagpur', value: 'Nagpur' },
-            { label: 'Nashik', value: 'Nashik' }
-        ]
-
-    };
+    @wire(getObjectInfo, {
+        objectApiName: VISIT_OBJECT
+    })
+    objectInfo;
 
 
-    // ===============================
-    // GET DISTRICT OPTIONS
-    // ===============================
+
+    /* =====================================================
+       STATE PICKLIST (DYNAMIC)
+    ===================================================== */
+
+    @wire(getPicklistValues, {
+        recordTypeId: '$objectInfo.data.defaultRecordTypeId',
+        fieldApiName: STATE_FIELD
+    })
+    wiredStatePicklist({ data, error }) {
+
+        if(data) {
+
+            this.stateOptions = data.values;
+
+            console.log('State Options:', this.stateOptions);
+
+        }
+        else if(error) {
+
+            console.error('State Picklist Error:', error);
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       DISTRICT PICKLIST (DEPENDENT)
+    ===================================================== */
+
+    @wire(getPicklistValues, {
+        recordTypeId: '$objectInfo.data.defaultRecordTypeId',
+        fieldApiName: DISTRICT_FIELD
+    })
+    wiredDistrictPicklist({ data, error }) {
+
+        if(data) {
+
+            this.districtControllerValues =
+                data.controllerValues;
+
+            this.districtValues =
+                data.values;
+
+            console.log('District Controller Values:',
+                this.districtControllerValues);
+
+            console.log('District Values:',
+                this.districtValues);
+
+        }
+        else if(error) {
+
+            console.error('District Picklist Error:', error);
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       DISTRICT OPTIONS (DEPENDENCY FILTER)
+    ===================================================== */
 
     get districtOptions() {
 
-        return this.districtMap[this.state] || [];
+        if(!this.state || !this.districtValues)
+            return [];
+
+        const controllerKey =
+            this.districtControllerValues[this.state];
+
+        return this.districtValues.filter(
+            district =>
+                district.validFor.includes(controllerKey)
+        );
 
     }
 
 
-    // ===============================
-    // HANDLE FIELD CHANGE
-    // ===============================
+
+    /* =====================================================
+       FIELD CHANGE
+    ===================================================== */
 
     handleChange(event) {
 
-        const field = event.target.label;
-        const value = event.detail.value;
+        const field = event.target.dataset.field;
 
-        switch(field){
-
-            case 'Outlet *':
-                this.outlet = value;
-                break;
-
-            case 'Product Category *':
-                this.category = value;
-                break;
-
-            case 'Competitor Name *':
-                this.competitorName = value;
-                break;
-
-            case 'Competitor Product *':
-                this.competitorProduct = value;
-                break;
-
-            case 'Competitor Remarks *':
-                this.competitorRemarks = value;
-                break;
-
-            case 'General Remarks *':
-                this.generalRemarks = value;
-                break;
-
-        }
+        this[field] = event.detail.value;
 
     }
 
 
-    // ===============================
-    // HANDLE DISTRICT CHANGE
-    // ===============================
 
-    handleDistrictChange(event){
+    /* =====================================================
+       STATE CHANGE
+    ===================================================== */
+
+    handleStateChange(event) {
+
+        this.state = event.detail.value;
+
+        this.district = null;
+
+    }
+
+
+
+    /* =====================================================
+       DISTRICT CHANGE
+    ===================================================== */
+
+    handleDistrictChange(event) {
 
         this.district = event.detail.value;
 
     }
 
 
-    // ===============================
-    // ADD PRODUCT GROUP
-    // ===============================
 
-    handleAddGroup(){
+    /* =====================================================
+       PRODUCT GROUP CHANGE
+    ===================================================== */
 
-        const nextNumber = this.productGroups.length + 1;
-
-        const newGroup = {
-
-            id: nextNumber,
-            number: nextNumber,
-            value: ''
-
-        };
-
-        this.productGroups = [...this.productGroups, newGroup];
-
-    }
-
-
-    // ===============================
-    // HANDLE PRODUCT GROUP CHANGE
-    // ===============================
-
-    handleGroupChange(event){
+    handleGroupChange(event) {
 
         const index = event.target.dataset.index;
 
-        this.productGroups[index].value = event.detail.value;
+        this.productGroups[index].value =
+            event.detail.value;
 
         this.productGroups = [...this.productGroups];
 
     }
 
 
-    // ===============================
-    // BACK BUTTON → VisitForm
-    // ===============================
 
-    handleBack(){
+    /* =====================================================
+       ADD PRODUCT GROUP
+    ===================================================== */
 
-        this.dispatchEvent(new CustomEvent('back'));
+    handleAddProductGroup() {
+
+        this.productGroups = [
+
+            ...this.productGroups,
+
+            {
+                id: Date.now(),
+                value: ''
+            }
+
+        ];
 
     }
 
 
-    // ===============================
-    // CANCEL
-    // ===============================
 
-    handleCancel(){
+    /* =====================================================
+       PRODUCT IMAGE
+    ===================================================== */
 
-        this.handleBack();
+    handleProductImage(event) {
+
+        const file = event.target.files[0];
+
+        if (file) {
+
+            this.productImageName = file.name;
+
+        }
 
     }
 
 
-    // ===============================
-    // SUBMIT
-    // ===============================
 
-    handleSubmit(){
+    /* =====================================================
+       OUTLET IMAGE
+    ===================================================== */
 
-        const formData = {
+    handleOutletImage(event) {
 
-            outlet: this.outlet,
-            category: this.category,
-            productGroups: this.productGroups,
-            competitorName: this.competitorName,
-            competitorProduct: this.competitorProduct,
-            competitorRemarks: this.competitorRemarks,
-            generalRemarks: this.generalRemarks,
-            state: this.state,
-            district: this.district
+        const file = event.target.files[0];
 
-        };
+        if (file) {
 
-        console.log('Outlet Existing Market Form Data:', JSON.stringify(formData));
+            this.outletImageName = file.name;
+
+            this.outletImageUploaded = true;
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       BACK
+    ===================================================== */
+
+    handleBack() {
+
+        this.dispatchEvent(
+            new CustomEvent('back')
+        );
+
+    }
+
+
+
+    /* =====================================================
+       SUBMIT
+    ===================================================== */
+
+    handleSubmit() {
+
+        let valid = true;
+
+        this.template.querySelectorAll(
+            'lightning-input, lightning-combobox, lightning-textarea'
+        )
+        .forEach(field => {
+
+            if (field.required && !field.checkValidity()) {
+
+                field.reportValidity();
+
+                valid = false;
+
+            }
+
+        });
+
+
+        if (!this.outletImageUploaded) {
+
+            this.showToast(
+                'Error',
+                'Outlet Image is required',
+                'error'
+            );
+
+            valid = false;
+
+        }
+
+
+        if (valid) {
+
+            this.showToast(
+                'Success',
+                'Outlet Existing Market Form Submitted',
+                'success'
+            );
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       TOAST
+    ===================================================== */
+
+    showToast(title, message, variant) {
+
+        this.dispatchEvent(
+
+            new ShowToastEvent({
+
+                title,
+                message,
+                variant
+
+            })
+
+        );
 
     }
 

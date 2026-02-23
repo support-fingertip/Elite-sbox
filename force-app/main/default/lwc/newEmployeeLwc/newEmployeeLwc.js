@@ -70,6 +70,12 @@ export default class NewEmployeeLwc extends LightningElement {
         PJP_Approver_1_Name: '',
         PJP_Approver_2_Name: '',
         Expense_Approver_1_Name: '',
+
+        Leave_Approver_L1__c : '',
+        Leave_Approver_1_Name: '',
+        Leave_HR__c : '',
+        Leave_HR_Name: '',
+
         Expense_Approver_2_Finance_Department_Name: '',
         Category__c:'',
 
@@ -310,6 +316,12 @@ export default class NewEmployeeLwc extends LightningElement {
                     PJP_Approver_2_Name: emp.PJP_Approver_2__r?.Name || '',
                     Expense_Approver_1_Name: emp.Expense_Approver_1__r?.Name || '',
                     Expense_Approver_2_Finance_Department_Name: emp.Expense_Approver_2_Finance_Department__r?.Name || '',
+
+                    Leave_Approver_L1__c: emp.Leave_Approver_L1__c || '',
+                    Leave_Approver_1_Name: emp.Leave_Approver_L1__r?.Name || '',
+
+                    Leave_HR__c: emp.Leave_HR__c || '',
+                    Leave_HR_Name: emp.Leave_HR__r?.Name || '',
 
                     Basic_Pay__c: emp.Basic_Pay__c,
                     Gross_Salary__c: emp.Gross_Salary__c,
@@ -604,6 +616,7 @@ export default class NewEmployeeLwc extends LightningElement {
             this.employee.Replaced_For_Name__c = '';
             this.searchedReplacedForEmployees = [];
             this.isReportingManagerReadonly = false;
+            this.isReplaceForReadOnly = false;
         }
     }
     selectReplacedFor(event)
@@ -964,6 +977,18 @@ export default class NewEmployeeLwc extends LightningElement {
             this.employee.Expense_Approver_2_Finance_Department_Name = name;
         }
 
+         else if(fieldName === 'Leave_Approver_L1__c')
+        {
+            this.employee.Leave_Approver_L1__c = id;
+            this.employee.Leave_Approver_1_Name = name;
+        }
+
+        else if(fieldName === 'Leave_HR__c')
+        {
+            this.employee.Leave_HR__c = id;
+            this.employee.Leave_HR_Name = name;
+        }
+
        
     
     }
@@ -1142,9 +1167,6 @@ export default class NewEmployeeLwc extends LightningElement {
                     let msg = 'An employee already exists with the same employee code. employee Name : ' + data.employeeName;
                     this.showToast('Error', msg, 'Error');
                 }
-                else{
-                    this.handleSave();
-                }
             }
             else
             {
@@ -1158,7 +1180,6 @@ export default class NewEmployeeLwc extends LightningElement {
         });
     }
     handleSave() {
-
         this.isLoading = true;
         SAVE_DATA({ employeeData: this.employee})
         .then((result) => {

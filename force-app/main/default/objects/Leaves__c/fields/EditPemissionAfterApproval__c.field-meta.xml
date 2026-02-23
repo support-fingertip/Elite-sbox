@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>EditPemissionAfterApproval__c</fullName>
+    <externalId>false</externalId>
+    <formula>OpenByOwner__c &amp;&amp;
+  ($User.Profile_Name__c ==&apos;Admin&apos; || $User.Profile_Name__c ==&apos;Marketing Manager&apos; ||
+  $User.Profile_Name__c ==&apos;Zonal Sales Manager&apos; || $User.Profile_Name__c ==&apos;Regional Sales Manager&apos; ||
+   $User.Profile_Name__c ==&apos;System Administrator&apos;) &amp;&amp; 	Leave_Status__c ==&apos;Leave Approved&apos;</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>EditPemissionAfterApproval</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

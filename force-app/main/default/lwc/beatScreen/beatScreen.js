@@ -10,8 +10,8 @@ import GET_PREVIEW_BEAT from '@salesforce/apex/beatPlannerlwc.getPreviewBeatCust
 
 
 export default class BeatScreen extends NavigationMixin(LightningElement) {
-
     userId = Id;
+    @api activeTab = 'myBeats';
     googleIcons = {
         beat : GOOGLE_ICONS + "/googleIcons/bike.png",
         forward : GOOGLE_ICONS + "/googleIcons/forward.png",
@@ -43,6 +43,38 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
     previewClass = 'slds-col slds-size_1-of-2';
     isShowBeatData = true;
     isTodayBeatExisted = false;
+  
+    showReporteeView = true;
+        // Dummy outside beat visits (replace with real data from Apex later)
+    @track outsideBeatVisits = [
+        {
+            id: 'OBV001',
+            customerName: 'Reliance Mart - Andheri',
+            visitFormType: 'Existing Primary Customer',
+            status: 'Completed',
+            isInprogress: false,
+            createdTime: '10:15 AM'
+        },
+        {
+            id: 'OBV002',
+            customerName: 'Metro Cash & Carry',
+            visitFormType: 'Existing Secondary Customer',
+            status: 'Inprogress',
+            isInprogress: true,
+            createdTime: '12:40 PM'
+        }
+    ];
+        // Getters for tab active state
+    get myBeatsTabActive()   { return this.activeTab === 'myBeats'; }
+    get visitFormTabActive() { return this.activeTab === 'visitForm'; }
+    get reportTabActive()    { return this.activeTab === 'report'; }
+
+    // Getters for tab CSS classes
+    get myBeatsTabClass()   { return this.activeTab === 'myBeats'   ? 'tab-item tab-item-active' : 'tab-item'; }
+    get visitFormTabClass() { return this.activeTab === 'visitForm' ? 'tab-item tab-item-active' : 'tab-item'; }
+    get reportTabClass()    { return this.activeTab === 'report'    ? 'tab-item tab-item-active' : 'tab-item'; }
+
+
 
     connectedCallback(){
         this.isDesktop = FORM_FACTOR === 'Large'? true : false;
@@ -65,7 +97,13 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         GET_APEX_DATA({})
         .then(result => {
             console.log('result.beatDataList'+JSON.stringify(result.beatDataList));
-            this.beatData = result.beatDataList;
+            this.beatData = result.beatDataList.map((item, index) => {
+                return {
+                    ...item,
+                    uiKey: item.beatId + '-' + index  // unique key for UI
+                };
+            });
+
             this.sortBeatData();
             this.isDayStarted = result.isDayStarted;
             // Set currentBeat using isCurrentBeat or fallback to istodayBeat
@@ -79,6 +117,10 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
             this.isPageLoaded = false;
             console.error(error);
         });
+    }
+        // Tab switch handler
+    handleTabSwitch(event) {
+        this.activeTab = event.currentTarget.dataset.tab;
     }
     openMenu(event) {
         const index1 = parseInt(event.currentTarget.dataset.index, 10); 
@@ -233,16 +275,69 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         });
     }
 
+    
     /**Search Beat */
-    searchBeats(event){
-        const searchTerm = event.target.value.toLowerCase();
-        this.searchedbeatVale = event.target.value;
+    searchBeats(event) {
+        const value = event.target.value || '';
+        const searchTerm = value.toLowerCase().trim();
+        this.searchedbeatVale = value;
+
+        let filteredList = [];
+
         if (!searchTerm) {
-            this.beatData = [...this.originalBeatData];
-            return;
+            filteredList = [...this.originalBeatData];
+        } else {
+            filteredList = this.originalBeatData.filter(bt =>
+                bt &&
+                bt.beatId &&
+                bt.beatName &&
+                bt.beatName.toLowerCase().includes(searchTerm)
+            );
         }
-        this.beatData = this.originalBeatData.filter(bt => bt.beatName.toLowerCase().includes(searchTerm));
+
+        // ✅ Assign filtered list
+        this.beatData = [...filteredList];
+
+        // ✅ Sort directly here
+        this.beatData = [...this.beatData].sort((a, b) => {
+
+            // Priority 1: isCurrentBeat
+            if (a.isCurrentBeat && !b.isCurrentBeat) return -1;
+            if (!a.isCurrentBeat && b.isCurrentBeat) return 1;
+
+            // Priority 2: istodayBeat
+            if (a.istodayBeat && !b.istodayBeat) return -1;
+            if (!a.istodayBeat && b.istodayBeat) return 1;
+
+            // Priority 3: Sort by pjpDate (dd/MM/yyyy)
+            const parseDate = (str) => {
+                if (!str) return new Date(0);
+                const parts = str.split('/');
+                if (parts.length !== 3) return new Date(0);
+
+                const day = Number(parts[0]);
+                const month = Number(parts[1]) - 1;
+                const year = Number(parts[2]);
+
+                return new Date(year, month, day);
+            };
+
+            const dateA = parseDate(a.pjpDate);
+            const dateB = parseDate(b.pjpDate);
+
+            return dateA - dateB;
+        });
+
+        console.log(
+            this.beatData.map(b => b.beatId)
+        );
     }
+
+    get hasBeatData() {
+        return this.beatData && this.beatData.length > 0;
+    }
+
+
     closePreview()
     {
         this.isShowPreview = false;

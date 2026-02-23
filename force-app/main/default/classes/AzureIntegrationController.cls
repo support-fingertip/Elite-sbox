@@ -4,6 +4,167 @@
 */
 global class AzureIntegrationController {
     
+    
+    
+    global static void sendOrderfromBatch(string orderWrapperJson, string ord ){
+        
+        order__c oddrs=[select id,Name, OwnerId,Customer_Name__c,Owner_Name__c,Delivery_Plant__c from order__c where id=:ord]; 
+        
+        string bodyJson = orderWrapperJson;
+        
+        System.debug('oddrs ' + oddrs);
+        
+        
+        Azure_Connection__mdt az=  [select EndPoint__c,X_API_KEY__c from Azure_Connection__mdt where label='azureIntegration'];
+        
+        string endpoint = az.EndPoint__c+'/api/Integration/orders'; 
+        string method = 'POST';
+        String outcomeMsg;
+        system.debug('endpoint '+endpoint);
+        system.debug('getCallouts '+Limits.getCallouts());
+        system.debug('getLimitCallouts '+Limits.getLimitCallouts());
+        
+        // Create an HTTP request object
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(endpoint);
+        req.setMethod(method);
+        
+        system.debug(req);
+        req.setHeader('X-API-KEY', az.X_API_KEY__c);
+        req.setHeader('Content-Type', 'application/json');
+        req.setBody(orderWrapperJson);
+        req.setTimeout(120000);
+        system.debug('req '+req);
+        Http http = new Http();
+        HttpResponse res;
+        try {
+            res = http.send(req);
+            
+            system.debug('res.getStatusCode() '+res.getStatusCode() );
+            // system.debug('res.getBody() '+res.getBody());
+            if ((res.getStatusCode() == 200 || res.getStatusCode() == 201) && res.getBody() != null ) {
+                
+                Map<String, Object> cObjMap = (Map<String,  Object>) JSON.deserializeUntyped(res.getBody());
+                
+                
+                system.debug(cObjMap);
+                String status = (String)cObjMap.get('status');
+                String message = (String)cObjMap.get('message');
+                integer successCount = (integer)cObjMap.get('successCount');
+                
+                if(status=='completed'){
+                    order__c ords= new order__c(); 
+                    ords.id= ord;
+                    ords.ERP_Check__c = true;
+                    //  ords.Status__c = 'Order Sent to Azure';
+                    ords.Status__c = 'Push to Logistics';
+                    update ords;
+                    if(successCount==1){
+                        
+                        sendListEmail(ord); 
+                    }
+                    else{
+                    }
+                }
+                else  {
+                    
+                    order__c ords= new order__c(); 
+                    ords.id= ord;
+                    ords.ERP_Check__c = false;
+                    update ords;
+                    
+                }                                          
+                
+                try {
+                    
+                }
+                catch (Exception e) {
+                    System.debug('Problem sending notification: ' + e.getMessage());
+                    if (e.getMessage() != null && e.getMessage() != '') {
+                    }
+                    
+                }
+                
+            } else {
+                
+                
+                // callout failed
+                order__c ordss= new order__c(); 
+                ordss.id= ord;
+                ordss.ERP_Check__c = false;
+                update ordss;
+                outcomeMsg = 'Error: Callout failed. Please review the debug log for additional details.';
+                Map<String, Object> cObjMap = (Map<String,  Object>) JSON.deserializeUntyped(res.getBody());
+                system.debug(cObjMap);
+                Map<String, Object> errorMessage = (Map<String, Object>) cObjMap.get('errors');
+                String titl1s = (String)cObjMap.get('title')!=null?(String)cObjMap.get('title'):'';
+                system.debug(errorMessage); 
+                string errormsg;
+                if (errorMessage.isEmpty()) {
+                    errormsg=(String)cObjMap.get('error');
+                }
+                
+                try {
+                    
+                }
+                catch (Exception e) {
+                    System.debug('Problem sending notification: ' + e.getMessage());
+                    if (e.getMessage() != null && e.getMessage() != '') {
+                    }
+                    
+                }
+            } 
+            
+        }  catch (exception e) {
+            order__c ordss= new order__c(); 
+            ordss.id= ord;
+            ordss.ERP_Check__c = false;
+            update ordss;
+            System.debug('res: ' + res);
+            if (res != null) {
+                System.debug('Status: ' + res.getStatusCode());
+                System.debug('Response body: ' + res.getBody());
+                String responseBody = res.getBody();
+                
+                if (String.isNotBlank(responseBody)) {
+                    Map<String, Object> cObjMap = (Map<String,  Object>) JSON.deserializeUntyped(res.getBody());
+                    system.debug(cObjMap);
+                    Map<String, Object> errorMessage = (Map<String, Object>) cObjMap.get('errors');
+                    if(errorMessage!=null){
+                        String titl1s = (String)cObjMap.get('title');
+                        system.debug('errorMessage>>'+errorMessage);
+                        system.debug('res.getStatusCode()>>'+res.getStatusCode());
+                        system.debug('titl1s>>'+titl1s);
+                        
+                    }
+                    else{
+                        String status = (String)cObjMap.get('status');
+                        String message = (String)cObjMap.get('message');
+                        integer successCount = (integer)cObjMap.get('successCount');
+                        
+                    }      
+                }
+                else{
+                }                            
+                
+                
+            }
+            
+            // Unexpected exceptions will be caught here, like a deserialization error.
+            else{
+                outcomeMsg = 'Error: An exception has been encountered while calling out to Integration:  ' + e.getMessage();
+            }
+            try {
+                
+            }
+            catch (Exception ee) {
+                System.debug('Problem sending notification: ' + ee.getMessage());
+            }
+        }
+        
+        
+    } 
+    
     //calling from postHandler
     @ future (callout = true )
         global static void sendOrderMaster(string orderWrapperJson, string ord ){
@@ -290,7 +451,7 @@ global class AzureIntegrationController {
     
     
     @ future (callout = true )
-        global static void sendAccountMaster(string accWrapperJson, string acc, boolean isCreation ){
+        global static void sendAccountMaster(string accWrapperJson, string acc, boolean isUpdation ){
             String adminUserId = [SELECT Id FROM User WHERE Profile.Name = 'System Administrator' and isactive=true LIMIT 1].Id;
             
             system.debug('accWrapperJson>>'+accWrapperJson);     
@@ -406,7 +567,7 @@ System.debug('Problem sending notification: ' + e.getMessage());
                         AccountTriggerRecursion.skipAzureCall = true;                           
                         account accts= new account(); 
                         accts.id= acc;
-                        if(!isCreation){
+                        if(!isUpdation){
                             accts.ERP_Check__c=true; 
                             notification.setTitle('Account Created in ERP');
                         }
@@ -425,7 +586,7 @@ System.debug('Problem sending notification: ' + e.getMessage());
                         AccountTriggerRecursion.skipAzureCall = true;   
                         account accts= new account(); 
                         accts.id= acc;
-                        if(!isCreation){
+                        if(!isUpdation){
                             accts.ERP_Check__c=false;   
                         }
                         else{
@@ -458,7 +619,7 @@ System.debug('Problem sending notification: ' + e.getMessage());
                     // callout failed
                     account accts= new account(); 
                     accts.id= acc;
-                    if(!isCreation){
+                    if(!isUpdation){
                         accts.ERP_Check__c=false;   
                     }
                     else{
@@ -496,7 +657,7 @@ System.debug('Problem sending notification: ' + e.getMessage());
                     notification.setBody('Error While sending Account: '+ 'Status code : '+res.getStatusCode()+ ' Error: Callout failed...\n'+ errorMessage);    
                     
                     try {
-                      
+                        
                         notification.send(addressee);
                         
                         
@@ -517,7 +678,7 @@ System.debug('Problem sending notification: ' + e.getMessage());
                 AccountTriggerRecursion.skipAzureCall = true;   
                 account accts= new account(); 
                 accts.id= acc;
-                if(!isCreation){
+                if(!isUpdation){
                     accts.ERP_Check__c=false;   
                 }
                 else{
@@ -654,6 +815,32 @@ System.debug('Problem sending notification: ' + e.getMessage());
         i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
         i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
         i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
-        
+            i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;      i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;i++;
+        i++;
     }
 }

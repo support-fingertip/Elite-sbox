@@ -22,6 +22,17 @@ global with sharing class beatPlannerlwc {
         db.travelType = extractPicklistValues('Daily_Log__c','Travel_Type__c'); 
         db.vehicleUsed = extractPicklistValues('Daily_Log__c','Vehicle_Used__c'); 
         db.purposeofVisit = extractPicklistValues('Daily_Log__c','Purpose_of_Visit__c'); 
+        List<Leaves__c> lv = [
+            SELECT Id, Name
+            FROM Leaves__c
+            WHERE From_Date__c <= TODAY
+            AND To_Date__c >= TODAY
+            AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
+            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation' 
+            AND Session_Type__c = null
+        ];
+        
+        db.isLeaveExisted = !lv.isEmpty();
         
         List<Employee_Creation_Access__mdt> metaList = [
             SELECT Id, DeveloperName, Allow_Mobile_Access__c, Allow_Desktop_Access__c
@@ -1095,14 +1106,17 @@ global with sharing class beatPlannerlwc {
             if (item.Beat__c != null) {
                 String formattedDate = DateTime.newInstance(item.Date__c.year(), item.Date__c.month(), item.Date__c.day()).format('dd/MM/yyyy');
                 BeatData data = new BeatData();
-                data.beatId = item.Beat__c;
-                data.beatName = item.Beat__r.Name;
-                data.pjpDate = formattedDate;
-                data.pjpId = item.Id;
-                data.istodayBeat = item.Date__c == Date.today();
-                data.isCurrentBeat = item.Id == currentPjpItemId;
-                data.openPopup = false;
-                beatDataList.add(data);
+                if(item.Beat__c!= null)
+                {
+                    data.beatId = item.Beat__c;
+                    data.beatName = item.Beat__r.Name;
+                    data.pjpDate = formattedDate;
+                    data.pjpId = item.Id;
+                    data.istodayBeat = item.Date__c == Date.today();
+                    data.isCurrentBeat = item.Id == currentPjpItemId;
+                    data.openPopup = false;
+                    beatDataList.add(data);
+                }
             }
         }
         
@@ -3698,6 +3712,7 @@ return getTaskData(objectId);
         @AuraEnabled public List<Map<String, String>> vehicleUsed = new List<Map<String, String>> ();
         @AuraEnabled public List<Map<String, String>> visitTypes = new List<Map<String, String>> ();
         @AuraEnabled public boolean isPromoter{get; set;}
+        @AuraEnabled public boolean isLeaveExisted{get; set;}
         @AuraEnabled public List<Account> primaryCustomers {get; set;}
         @AuraEnabled public List<Account> secoundaryCustomers {get; set;}
         @AuraEnabled public List<Return_Item__c> returnItems{get; set;}

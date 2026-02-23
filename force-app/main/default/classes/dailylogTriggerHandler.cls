@@ -109,7 +109,9 @@ public class dailylogTriggerHandler {
         {
             if (dl.visits__r.size()>0) {
                 if(!dl.Is_System_Ended__c){
-                    DistanceMatrixControllerForVisit.distanceCalculationForLastVisit(dl.Id,dl.visits__r[0].ClockIn_Latitude__c,dl.visits__r[0].Clockin_Longitude__c, dl.Clock_Out_Location__Latitude__s, dl.Clock_Out_Location__Longitude__s);
+                  //  DistanceMatrixControllerForVisit.distanceCalculationForLastVisit(dl.Id,dl.visits__r[0].ClockIn_Latitude__c,dl.visits__r[0].Clockin_Longitude__c, dl.Clock_Out_Location__Latitude__s, dl.Clock_Out_Location__Longitude__s);
+                    // also calculate full day route distance (start -> visits -> end)
+                    DistanceMatrixControllerForVisit.distanceCalculationForDailyRoute(dl.Id);
                 }
             }
         }

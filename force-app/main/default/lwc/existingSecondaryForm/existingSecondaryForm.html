@@ -1,230 +1,181 @@
 <template>
-
-    <!-- PAGE -->
-    <div class="page">
-
-        <!-- HEADER CARD -->
-        <div class="header-card">
-
-            <div class="header-left">
-
-                <lightning-button-icon
-                    icon-name="utility:back"
-                    alternative-text="Back"
-                    onclick={handleBack}
-                    class="back-btn">
-                </lightning-button-icon>
-
+    <template lwc:if={isPageLoaded}>
+        <div >
+            <c-on-loading-screen></c-on-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="page">
+            <!-- HEADER -->
+            <div class="header">
                 <div>
-                    <div class="header-title">
+                    <div class="title">
                         Existing Secondary Customer
                     </div>
-
-                    <div class="header-subtitle">
+                    <div class="subtitle">
                         Fill in the visit details
                     </div>
                 </div>
-
             </div>
 
-        </div>
-
-
-        <!-- FORM CARD -->
-        <div class="form-card">
-
-
-            <!-- Primary Customer -->
-            <div class="field-card">
-
-                <label class="label">
-                    Primary Customer *
-                </label>
-
-                <lightning-combobox
+            <!-- FORM -->
+            <div class="form">
+                <!-- Primary Customer -->
+                <lightning-record-picker
+                    label="Primary Customer"
+                    placeholder="Search Customer..."
+                    object-api-name="Account"
                     value={primaryCustomer}
-                    options={primaryOptions}
-                    placeholder="Select primary customer"
-                    onchange={handlePrimaryChange}>
-                </lightning-combobox>
+                    display-info={displayInfo}
+                    matching-info={matchingInfo}
+                    filter={accountFilter}
+                    onchange={handlePrimaryCustomerSelect}
+                    required>
+                </lightning-record-picker>
 
-            </div>
+                <c-secondary-customer-lookup
+                    primary-customer-id={primaryCustomer}
+                    onselect={handleSecondarySelect}>
+                </c-secondary-customer-lookup>
 
-
-            <!-- Secondary Customer -->
-            <div class="field-card">
-
-                <label class="label">
-                    Secondary Customer *
-                </label>
-
+                <!-- Product Category -->
                 <lightning-combobox
-                    value={secondaryCustomer}
-                    options={secondaryOptions}
-                    placeholder="Select secondary customer"
-                    onchange={handleSecondaryChange}>
-                </lightning-combobox>
-
-            </div>
-
-
-            <!-- Product Category -->
-            <div class="field-card">
-
-                <label class="label">
-                    Product Category *
-                </label>
-
-                <lightning-combobox
-                    value={productCategory}
+                    label="Product Category"
                     options={categoryOptions}
-                    placeholder="Select product category"
-                    onchange={handleCategoryChange}>
+                    value={productCategory}
+                    data-field="productCategory"
+                    onchange={handleChange}
+                    required>
                 </lightning-combobox>
 
-            </div>
+                <!-- Product Group -->
+                <template lwc:if={showProductGroup}>
+                    <div class="field">
+                        <label class="label">
+                            Product Group
+                            <span class="required">*</span>
+                        </label>
+                        <lightning-checkbox-group
+                            options={groupOptions}
+                            value={selectedProductGroups}
+                            onchange={handleGroupChange}>
+                        </lightning-checkbox-group>
+                    </div>
+                </template>
 
-
-            <!-- Product Groups -->
-            <template for:each={productGroups} for:item="group" for:index="index">
-
-                <div key={group.id} class="field-card">
-
-                    <label class="label">
-                        Product Group {group.number} *
-                    </label>
-
-                    <lightning-combobox
-                        data-index={index}
-                        value={group.value}
-                        options={groupOptions}
-                        placeholder="Select product groups"
-                        onchange={handleGroupChange}>
-                    </lightning-combobox>
-
-                </div>
-
-            </template>
-
-
-            <!-- Add Group -->
-            <div class="add-group"
-                 onclick={handleAddGroup}>
-
-                + Add product group
-
-            </div>
-
-
-            <!-- Competitor Name -->
-            <div class="field-card">
-
-                <label class="label">
-                    Competitor Name *
-                </label>
-
+                <!-- Competitor Name -->
                 <lightning-input
+                    label="Competitor Name"
                     value={competitorName}
-                    onchange={handleCompetitorName}>
+                    data-field="competitorName"
+                    onchange={handleChange}
+                    required>
                 </lightning-input>
 
-            </div>
-
-
-            <!-- Competitor Product -->
-            <div class="field-card">
-
-                <label class="label">
-                    Competitor Product *
-                </label>
-
+                <!-- Competitor Product -->
                 <lightning-input
+                    label="Competitor Product"
                     value={competitorProduct}
-                    onchange={handleCompetitorProduct}>
+                    data-field="competitorProduct"
+                    onchange={handleChange}
+                    required>
                 </lightning-input>
 
-            </div>
+                <!-- Competitor Product Image -->
+                <div class="upload-field">
+                    <label class="label">
+                        Competitor Product Image
+                        <span class="required">*</span>
+                    </label>
+                    <div class="upload-wrapper">
+                        <input
+                            type="file"
+                            class="file-input"
+                            accept="image/*"
+                            onchange={handleCompetitorProductImage}>
+                        <div class="upload-box">
+                            <lightning-icon
+                                icon-name="utility:upload"
+                                size="x-small">
+                            </lightning-icon>
+                            <span class="upload-text">
+                                Upload Files
+                            </span>
+                            <span class="upload-sub">
+                                Or drop files
+                            </span>
+                        </div>
+                    </div>
+                    <template if:true={competitorProductImageName}>
+                        <div class="file-name">
+                            {competitorProductImageName}
+                        </div>
+                    </template>
+                </div>
 
-
-            <!-- Competitor Remarks -->
-            <div class="field-card">
-
-                <label class="label">
-                    Competitor Remarks *
-                </label>
-
+                <!-- Competitor Remarks -->
                 <lightning-textarea
+                    label="Competitor Remarks"
                     value={competitorRemarks}
-                    onchange={handleCompetitorRemarks}>
+                    data-field="competitorRemarks"
+                    onchange={handleChange}
+                    required>
                 </lightning-textarea>
 
-            </div>
-
-
-            <!-- General Remarks -->
-            <div class="field-card">
-
-                <label class="label">
-                    General Remarks *
-                </label>
-
+                <!-- General Remarks -->
                 <lightning-textarea
+                    label="General Remarks"
                     value={generalRemarks}
-                    onchange={handleGeneralRemarks}>
+                    data-field="generalRemarks"
+                    onchange={handleChange}
+                    required>
                 </lightning-textarea>
 
-            </div>
-
-
-            <!-- Upload Grid -->
-            <div class="upload-grid">
-
-
-                <div class="field-card">
-
+                <!-- Secondary Customer Image -->
+                <div class="upload-field">
                     <label class="label">
-                        Product Image *
+                        Secondary Customer Image
+                        <span class="required">*</span>
                     </label>
-
-                    <lightning-input type="file"></lightning-input>
-
+                    <div class="upload-wrapper">
+                        <input
+                            type="file"
+                            class="file-input"
+                            accept="image/*"
+                            onchange={handleSecondaryCustomerImage}>
+                        <div class="upload-box">
+                            <lightning-icon
+                                icon-name="utility:upload"
+                                size="x-small">
+                            </lightning-icon>
+                            <span class="upload-text">
+                                Upload Files
+                            </span>
+                            <span class="upload-sub">
+                                Or drop files
+                            </span>
+                        </div>
+                    </div>
+                    <template if:true={customerImageName}>
+                        <div class="file-name">
+                            {customerImageName}
+                        </div>
+                    </template>
                 </div>
 
-
-                <div class="field-card">
-
-                    <label class="label">
-                        Outlet Image *
-                    </label>
-
-                    <lightning-input type="file"></lightning-input>
-
+                <!-- BUTTONS -->
+                <div class="button-row">
+                    <lightning-button
+                        label="Cancel"
+                        onclick={handleBack}>
+                    </lightning-button>
+                    <lightning-button
+                        label="Submit"
+                        variant="brand"
+                        onclick={handleGetLatLon}>
+                    </lightning-button>
                 </div>
-
-
             </div>
-
-
-            <!-- Buttons -->
-            <div class="button-bar">
-
-                <lightning-button
-                    label="Cancel"
-                    onclick={handleCancel}>
-                </lightning-button>
-
-
-                <lightning-button
-                    label="Submit"
-                    variant="brand"
-                    onclick={handleSubmit}>
-                </lightning-button>
-
-            </div>
-
-
         </div>
-
-    </div>
-
+    </template>
 </template>

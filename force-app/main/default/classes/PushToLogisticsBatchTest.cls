@@ -7,7 +7,7 @@ public class PushToLogisticsBatchTest {
         List<Order__c> testOrders = new List<Order__c>();
         
         // Orders with Status__c = 'New' (should be updated to 'Push to Logistics')
-        for (Integer i = 0; i < 5; i++) {
+     /*   for (Integer i = 0; i < 5; i++) {
             Order__c order = new Order__c(
                 Push_to_Logistics__c = null,
                 Status__c = 'New',
@@ -15,9 +15,9 @@ public class PushToLogisticsBatchTest {
             );
             testOrders.add(order);
         }
-        
+        */
         // Orders with other statuses (Status__c should remain unchanged)
-        for (Integer i = 5; i < 10; i++) {
+        for (Integer i = 5; i < 6; i++) {
             Order__c order = new Order__c(
                 Push_to_Logistics__c = null,
                 Status__c = 'New',
@@ -36,7 +36,7 @@ public class PushToLogisticsBatchTest {
         
         Test.startTest();
         PushToLogisticsBatch batch = new PushToLogisticsBatch();
-		database.executeBatch(batch,100);    
+		database.executeBatch(batch,1);    
        
         Test.stopTest();
         

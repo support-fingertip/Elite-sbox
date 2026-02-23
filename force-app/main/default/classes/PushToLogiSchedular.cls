@@ -4,7 +4,7 @@ global class PushToLogiSchedular implements Schedulable {
         PushToLogisticsBatch batchJob = new PushToLogisticsBatch();
         
         // Execute the batch with optional scope size (default is 200)
-        Database.executeBatch(batchJob, 100); // You can adjust the batch size as needed
+        Database.executeBatch(batchJob, 5); // You can adjust the batch size as needed
     }
     
 }

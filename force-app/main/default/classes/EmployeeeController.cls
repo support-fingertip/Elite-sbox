@@ -20,7 +20,8 @@ public class EmployeeeController {
                 Primary_Customer_Approver_3_CD__c, Secondary_Customer_Approver_1__c, Secondary_Customer_Approver_2__c,
                 PJP_Approver_1__c, PJP_Approver_2__c, Expense_Approver_1__c, Expense_Approver_2_Finance_Department__c,
                 Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,User__c,Contract_Type__c,
-                Expense_Start_Date__c,Expense_End_Date__c,Expense_Back_Day_Entry_Limit__c,Employee_Remarks__c,Alternate_Sales_Channel__c
+                Expense_Start_Date__c,Expense_End_Date__c,Expense_Back_Day_Entry_Limit__c,Employee_Remarks__c,Alternate_Sales_Channel__c,
+                Leave_HR__c,Leave_Approver_L1__c
                 FROM Employee__c
                 WHERE Id = :recordId
             ];
@@ -139,6 +140,9 @@ public class EmployeeeController {
         user.PJP_Approver_1__c = emp.PJP_Approver_1__c;
         user.PJP_Approver_2__c = emp.PJP_Approver_2__c;
         
+        user.Leave_HR__c = emp.Leave_HR__c;
+        user.Leave_Approver_L1__c = emp.Leave_Approver_L1__c;
+
         user.Expense_Approver_1__c = emp.Expense_Approver_1__c;
         user.Expense_Approver_2_Finance_Dept__c = emp.Expense_Approver_2_Finance_Department__c;
         user.District_In_charge__c = emp.District_In_charge__c;
@@ -428,7 +432,8 @@ public class EmployeeeController {
                 ASM_TSM__r.Name,RSM__r.Name,Employee_Approver_3_HR__r.Name,
                 Primary_Customer_Approver_1__r.Name,Primary_Customer_Approver_2__r.Name,Primary_Customer_Approver_3_CD__r.Name,
                 PJP_Approver_1__r.Name,PJP_Approver_2__r.Name,Cloning_is_Completed__c,
-                Expense_Approver_1__r.Name,Expense_Approver_2_Finance_Department__r.Name,Opened_by_Credited_User__c,Alternate_Sales_Channel__c
+                Expense_Approver_1__r.Name,Expense_Approver_2_Finance_Department__r.Name,Opened_by_Credited_User__c,Alternate_Sales_Channel__c,
+                Leave_HR__c,Leave_HR__r.Name,Leave_Approver_L1__c,Leave_Approver_L1__r.Name
                 FROM Employee__c
                 WHERE Id = :recordId
             ];
@@ -851,7 +856,7 @@ public class EmployeeeController {
                     Street__c, Category__c, Employee_Approver_3_HR__c, Primary_Customer_Approver_1__c, Primary_Customer_Approver_2__c,
                     Primary_Customer_Approver_3_CD__c, Secondary_Customer_Approver_1__c, Secondary_Customer_Approver_2__c,
                     PJP_Approver_1__c, PJP_Approver_2__c, Expense_Approver_1__c, Expense_Approver_2_Finance_Department__c,
-                    Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,
+                    Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,Leave_HR__c,Leave_Approver_L1__c,
                     Employee_Remarks__c,Expense_Back_Day_Entry_Limit__c,Expense_Start_Date__c,Expense_End_Date__c
                     FROM Employee__c
                     WHERE Id = :recordId
@@ -879,7 +884,7 @@ public class EmployeeeController {
                     Street__c, Category__c, Employee_Approver_3_HR__c, Primary_Customer_Approver_1__c, Primary_Customer_Approver_2__c,
                     Primary_Customer_Approver_3_CD__c, Secondary_Customer_Approver_1__c, Secondary_Customer_Approver_2__c,
                     PJP_Approver_1__c, PJP_Approver_2__c, Expense_Approver_1__c, Expense_Approver_2_Finance_Department__c,
-                    Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,
+                    Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,Leave_HR__c,Leave_Approver_L1__c,
                     Employee_Remarks__c,Expense_Back_Day_Entry_Limit__c,Expense_Start_Date__c,Expense_End_Date__c
                     FROM Employee__c
                     WHERE User__c = :recordId
