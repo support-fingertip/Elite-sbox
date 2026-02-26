@@ -198,6 +198,10 @@ public with sharing class VisitFormController {
         visit.Contact_Number__c = contactNumber;
         visit.Customer_Type__c = 'New Primary Customer';
         visit.Primary_Customer_Business_Type__c = businessType;
+        if (latitude != null && longitude != null) {
+            visit.Geo_Location__Latitude__s = latitude;
+            visit.Geo_Location__Longitude__s = longitude;
+        }
         insert visit;
          
         List<ContentVersion> filesToInsert = new List<ContentVersion>();
@@ -231,20 +235,15 @@ public with sharing class VisitFormController {
     // SAVE SUB STOCKIST – EXISTING MARKET EXPANSION
     // =========================================================
     @AuraEnabled
-    public static Id saveSubStockistExistingMarketVisit(String subStockistName, String businessType, String address, String state,
-        String district, String pinCode, String contactNumber, String productCategory, String productGroup,
-        String competitorName, String competitorProduct, String competitorRemarks, String generalRemarks) {
-        Account acc = new Account();
-        acc.Name = subStockistName;
-        acc.Type = businessType;
-        acc.BillingStreet = address;
-        acc.BillingState = state;
-        acc.BillingCity = district;
-        acc.BillingPostalCode = pinCode;
-        acc.Phone = contactNumber;
-        insert acc;
+    public static Id saveSubStockistExistingMarketVisit(String subStockistName, String primaryCustomer, String address, String state,
+                                                        String district, String pinCode, String contactNumber, String productCategory, String productGroup,
+                                                        String competitorName, String competitorProduct, String competitorRemarks, String generalRemarks,
+                                                        String customerImageBase64, String customerImageName, String competitorImageBase64,
+                                                        String competitorImageName, Decimal latitude, Decimal longitude)
+    {
         Visit_Form__c visit = new Visit_Form__c();
-        visit.Primary_Customer__c = acc.Id;
+        visit.Sub_Stockiest_Name__c = subStockistName;
+        visit.Primary_Customer__c = primaryCustomer;
         visit.Product_Categories__c = productCategory;
         visit.Product_Group__c = productGroup;
         visit.Competitor_Name__c = competitorName;
@@ -257,9 +256,33 @@ public with sharing class VisitFormController {
         visit.Pincode__c = pinCode;
         visit.Contact_Number__c = contactNumber;
         visit.Customer_Type__c = 'New Sub Stockiest';
-        visit.Visit_Type__c = null;
-        visit.Primary_Customer_Business_Type__c = businessType;
+        visit.Visit_Type__c = 'Existing Market Expansion';
+        if (latitude != null && longitude != null) {
+            visit.Geo_Location__Latitude__s = latitude;
+            visit.Geo_Location__Longitude__s = longitude;
+        }
         insert visit;
+        
+        List<ContentVersion> filesToInsert = new List<ContentVersion>();
+        if (customerImageBase64 != null) {
+            filesToInsert.add(new ContentVersion(
+                Title = customerImageName,
+                PathOnClient = customerImageName,
+                VersionData = EncodingUtil.base64Decode(customerImageBase64),
+                FirstPublishLocationId = visit.Id
+            ));
+        }
+        if (competitorImageBase64 != null) {
+            filesToInsert.add(new ContentVersion(
+                Title = competitorImageName,
+                PathOnClient = competitorImageName,
+                VersionData = EncodingUtil.base64Decode(competitorImageBase64),
+                FirstPublishLocationId = visit.Id
+            ));
+        }
+        if (!filesToInsert.isEmpty()) {
+            insert filesToInsert;
+        }
         return visit.Id;
     }
 
@@ -267,18 +290,54 @@ public with sharing class VisitFormController {
     // SAVE OUTLET – NEW MARKET EXPANSION
     // =========================================================
     @AuraEnabled
-    public static Id saveOutletNewMarket(String outletName, String productCategory, String productGroup, String competitorName,
-        String competitorProduct, String competitorRemarks, String generalRemarks) {
+    public static Id saveOutletNewMarket(String outletName, String customerBusinessType, String address, String state,
+                                                        String district, String pinCode, String contactNumber, String productCategory, String productGroup,
+                                                        String competitorName, String competitorProduct, String competitorRemarks, String generalRemarks,
+                                                        String customerImageBase64, String customerImageName, String competitorImageBase64,
+                                                        String competitorImageName, Decimal latitude, Decimal longitude)
+    {
         Visit_Form__c visit = new Visit_Form__c();
+        visit.Outlet_Name__c = outletName;
+        visit.Secondary_Customer_Business_Type__c = customerBusinessType;
         visit.Product_Categories__c = productCategory;
         visit.Product_Group__c = productGroup;
         visit.Competitor_Name__c = competitorName;
         visit.Competitor_Product__c = competitorProduct;
         visit.Competitor_Remarks__c = competitorRemarks;
         visit.General_Remarks__c = generalRemarks;
+        visit.Address__c = address;
+        visit.State__c = state;
+        visit.District__c = district;
+        visit.Pincode__c = pinCode;
+        visit.Contact_Number__c = contactNumber;
         visit.Customer_Type__c = 'New Outlet';
         visit.Visit_Type__c = 'New Market Expansion';
+        if (latitude != null && longitude != null) {
+            visit.Geo_Location__Latitude__s = latitude;
+            visit.Geo_Location__Longitude__s = longitude;
+        }
         insert visit;
+        
+        List<ContentVersion> filesToInsert = new List<ContentVersion>();
+        if (customerImageBase64 != null) {
+            filesToInsert.add(new ContentVersion(
+                Title = customerImageName,
+                PathOnClient = customerImageName,
+                VersionData = EncodingUtil.base64Decode(customerImageBase64),
+                FirstPublishLocationId = visit.Id
+            ));
+        }
+        if (competitorImageBase64 != null) {
+            filesToInsert.add(new ContentVersion(
+                Title = competitorImageName,
+                PathOnClient = competitorImageName,
+                VersionData = EncodingUtil.base64Decode(competitorImageBase64),
+                FirstPublishLocationId = visit.Id
+            ));
+        }
+        if (!filesToInsert.isEmpty()) {
+            insert filesToInsert;
+        }
         return visit.Id;
     }
 
@@ -286,18 +345,55 @@ public with sharing class VisitFormController {
     // SAVE OUTLET – EXISTING MARKET EXPANSION
     // =========================================================
     @AuraEnabled
-    public static Id saveOutletExistingMarket(String outletName, String productCategory, String productGroup, String competitorName,
-        String competitorProduct, String competitorRemarks, String generalRemarks) {
+    public static Id saveOutletExistingMarket(String outletName,String primaryCustomer, String customerBusinessType, String address, String state,
+                                              String district, String pinCode, String contactNumber, String productCategory, String productGroup,
+                                              String competitorName, String competitorProduct, String competitorRemarks, String generalRemarks,
+                                              String customerImageBase64, String customerImageName, String competitorImageBase64,
+                                              String competitorImageName, Decimal latitude, Decimal longitude)
+    {
         Visit_Form__c visit = new Visit_Form__c();
+        visit.Outlet_Name__c = outletName;
+        visit.Primary_Customer__c = primaryCustomer;
+        visit.Secondary_Customer_Business_Type__c = customerBusinessType;
         visit.Product_Categories__c = productCategory;
         visit.Product_Group__c = productGroup;
         visit.Competitor_Name__c = competitorName;
         visit.Competitor_Product__c = competitorProduct;
         visit.Competitor_Remarks__c = competitorRemarks;
         visit.General_Remarks__c = generalRemarks;
+        visit.Address__c = address;
+        visit.State__c = state;
+        visit.District__c = district;
+        visit.Pincode__c = pinCode;
+        visit.Contact_Number__c = contactNumber;
         visit.Customer_Type__c = 'New Outlet';
         visit.Visit_Type__c = 'Existing Market Expansion';
+        if (latitude != null && longitude != null) {
+            visit.Geo_Location__Latitude__s = latitude;
+            visit.Geo_Location__Longitude__s = longitude;
+        }
         insert visit;
+        
+        List<ContentVersion> filesToInsert = new List<ContentVersion>();
+        if (customerImageBase64 != null) {
+            filesToInsert.add(new ContentVersion(
+                Title = customerImageName,
+                PathOnClient = customerImageName,
+                VersionData = EncodingUtil.base64Decode(customerImageBase64),
+                FirstPublishLocationId = visit.Id
+            ));
+        }
+        if (competitorImageBase64 != null) {
+            filesToInsert.add(new ContentVersion(
+                Title = competitorImageName,
+                PathOnClient = competitorImageName,
+                VersionData = EncodingUtil.base64Decode(competitorImageBase64),
+                FirstPublishLocationId = visit.Id
+            ));
+        }
+        if (!filesToInsert.isEmpty()) {
+            insert filesToInsert;
+        }
         return visit.Id;
     }
 
@@ -401,7 +497,7 @@ public with sharing class VisitFormController {
             return new List<Account>();
         }
         return [
-            SELECT Id, Name
+            SELECT Id, Name, Land_Mark__c, Street__c
             FROM Account
             WHERE Id IN (
                 SELECT Customer__c
@@ -413,6 +509,35 @@ public with sharing class VisitFormController {
             ORDER BY Name
             LIMIT 50
         ];
+    }
+
+      /**
+     * Get today's Visit_Form__c records for the current user, with optional search
+     */
+    @AuraEnabled
+    public static List<Visit_Form__c> getTodayVisitForms(String searchTerm) {
+        String userId = UserInfo.getUserId();
+        List<Visit_Form__c> results;
+        if (String.isNotBlank(searchTerm)) {
+            String likeClause = '%' + searchTerm + '%';
+            results = [
+                SELECT Id,Customer_Name__c,Customer_Type__c, Visit_Type__c, CreatedDate
+                FROM Visit_Form__c
+                WHERE CreatedById = :userId
+                    AND CreatedDate = TODAY
+                    AND Customer_Name__c LIKE :likeClause
+                ORDER BY CreatedDate DESC
+            ];
+        } else {
+            results = [
+                SELECT Id,Customer_Name__c,Customer_Type__c, Visit_Type__c, CreatedDate
+                FROM Visit_Form__c
+                WHERE CreatedById = :userId
+                    AND CreatedDate = TODAY
+                ORDER BY CreatedDate DESC
+            ];
+        }
+        return results;
     }
 
 }

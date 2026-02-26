@@ -1,0 +1,85 @@
+/* ===== Wrapper ===== */
+.detail-wrapper {
+    background: #e8f4fb;
+    min-height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ===== Card ===== */
+.card {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #dce6f0;
+    overflow: hidden;
+}
+
+/* ===== Card Header ===== */
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    background: #ffffff;
+    border-bottom: 1px solid #e8edf3;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1f36;
+}
+
+/* ===== Field Grid ===== */
+.field-grid {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Each row */
+.field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid #f0f4f8;
+    gap: 16px;
+}
+
+.field-row:last-child {
+    border-bottom: none;
+}
+
+/* Label — left side, light grey */
+.field-label {
+    font-size: 13px;
+    color: #6b7a99;
+    font-weight: 400;
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+/* Value — right side, dark bold */
+.field-value {
+    font-size: 13px;
+    color: #0f1726;
+    font-weight: 600;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* ===== Error ===== */
+.error-state {
+    margin: 24px 16px;
+    background: #fff1f0;
+    border: 1px solid #ffccc7;
+    border-radius: 8px;
+    padding: 16px;
+    color: #cf1322;
+    font-size: 14px;
+    text-align: center;
+}

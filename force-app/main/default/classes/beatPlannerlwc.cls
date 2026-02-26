@@ -29,7 +29,8 @@ global with sharing class beatPlannerlwc {
             AND To_Date__c >= TODAY
             AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
             AND Leave_Cancellation_Status__c != 'Submitted for Cancellation' 
-            AND Session_Type__c = null
+            AND Session_Type__c = null 
+            AND OwnerId = :UserInfo.getUserId()
         ];
         
         db.isLeaveExisted = !lv.isEmpty();
@@ -120,10 +121,7 @@ global with sharing class beatPlannerlwc {
                     }
                     upsert dailylog;
                     success ='true';
-                    if(operation == 'EndDay')
-                    {
-                        System.enqueueJob(new EODReportQueueableMail(dlNew.Id));
-                    }
+               
                 }
                 
                 
@@ -460,6 +458,18 @@ global with sharing class beatPlannerlwc {
             
         }
         dta.visit = visdata;
+        List<Leaves__c> lv = [
+            SELECT Id, Name
+            FROM Leaves__c
+            WHERE From_Date__c <= TODAY
+            AND To_Date__c >= TODAY
+            AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
+            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation' 
+            AND Session_Type__c = null 
+            AND OwnerId = :UserInfo.getUserId()
+        ];
+        
+        dta.isLeaveExisted = !lv.isEmpty();
         dta.isDayStarted = !dailyLog.isEmpty() && dailyLog[0].Day_ended_time__c == null; 
         return dta;
     }
@@ -1120,6 +1130,18 @@ global with sharing class beatPlannerlwc {
             }
         }
         
+        List<Leaves__c> lv = [
+            SELECT Id, Name
+            FROM Leaves__c
+            WHERE From_Date__c <= TODAY
+            AND To_Date__c >= TODAY
+            AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
+            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation' 
+            AND Session_Type__c = null 
+            AND OwnerId = :UserInfo.getUserId()
+        ];
+        
+        dt.isLeaveExisted = !lv.isEmpty();
         dt.beatDataList = beatDataList;
         dt.isDayStarted = !logs.isEmpty() && logs[0].Day_ended_time__c == null;    
         return dt;

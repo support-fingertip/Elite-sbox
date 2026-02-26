@@ -1,0 +1,61 @@
+<template>
+    <template lwc:if={isPageLoaded}>
+        <div >
+            <c-on-loading-screen></c-on-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="visit-form-list-root">
+            <div class="route">
+                <div class="outside-beat-section">
+                    <!-- Search Bar -->
+                    <div class="route-filters">
+                        <lightning-input 
+                            type="search" 
+                            placeholder="Search Visits...."
+                            value={searchTerm} 
+                            onchange={handleSearch}
+                            class="slds-input_bare slds-border_none textField">
+                        </lightning-input>
+                    </div>
+
+                    <!-- Visit Cards -->
+                    <template for:each={visitForms} for:item="item" for:index="index">
+                        <div class="visit-card" key={item.Id}>
+                            <!-- Left: Icon + Info -->
+                            <div class="card-left">
+                                <div class="outlet-header">
+                                    <span class="icon-wrapper">
+                                        <img src={accountIcon} class="custom-icon" width="20" height="20" />
+                                    </span>
+                                    <b class="account-name">{item.AccountName}</b>
+                                </div>
+                                <div class="card-meta">
+                                    <span class="meta-label">Status</span>
+                                    <span class="meta-sep">:</span>
+                                    <span class="meta-value">{item.Status}</span>
+                                    <template if:true={item.isInprogress}>
+                                        <span class="status-icon">&#9203;</span>
+                                    </template>
+                                </div>
+                                <div class="card-meta">
+                                    <span class="meta-label">Time</span>
+                                    <span class="meta-sep">:</span>
+                                    <span class="meta-value">{item.CreatedTime}</span>
+                                </div>
+                            </div>
+
+                            <!-- Right: Arrow -->
+                            <div class="card-arrow"
+                                onclick={handleOutsideVisitClick}
+                                data-id={item.Id}
+                                data-index={index}>
+                                <img src={forwardIcon} width="22" height="22" />
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

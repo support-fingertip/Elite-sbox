@@ -3251,6 +3251,53 @@
         </values>
     </picklistValues>
     <picklistValues>
+        <picklist>Secondary_Customer_Business_Type__c</picklist>
+        <values>
+            <fullName>Bakery</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Bakery and Condiments</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>CPD %2F Bulk</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Cafeteria</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Catering</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Grocery</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Hotel</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Institution</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Restaurant</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Retail</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Super Market</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
         <picklist>State__c</picklist>
         <values>
             <fullName>Andhra Pradesh</fullName>

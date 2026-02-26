@@ -121,9 +121,12 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
     showExistingSecondary = false;
     showNewPrimary = false;
     showSubStockiestExisting = false;
+    showOutletNew = false;
     showOutletExisting = false;
-    showOutletExisting = false;
+    showVisitFormDetail = false
     isLeaveExisted = false;
+    beatScreenTab = 'myBeats';
+    selectedVisitFormId ='';
 
     //detect if LWC is running in mobile publisher
     isMobilePublisher = window.navigator.userAgent.indexOf('CommunityHybridContainer') > 0;
@@ -782,12 +785,25 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
     //when beat start,switch,execute from Beat Screen
     handleBeatCustomEvent(event){
         this.resetAllScreen();
-        this.isShowBackButton = false;
-        this.header = 'Visit Plan';
         const msg = event.detail;
-        this.currentBeatId = msg.beatId;
-        this.Outlet = true;//Making the Outlet Screen 2 show 
-        this.isVisitCreate = true
+        if(msg.message == 'visitformDetail')
+        {
+            console.log('visitformId'+msg.visitformid);
+            this.isShowBackButton = true;
+            this.showVisitFormDetail = true;
+            this.selectedVisitFormId = msg.visitformid;
+            this.header = 'Visit Form Detail';
+            this.screen = 3.9;
+        }
+        else
+        {
+            this.isShowBackButton = false;
+            this.header = 'Visit Plan';
+            this.currentBeatId = msg.beatId;
+            this.Outlet = true;//Making the Outlet Screen 2 show 
+            this.isVisitCreate = true
+        }
+  
     }
     /**When beat Switch button clicked */
     handleBeatCheck(event) {
@@ -1034,6 +1050,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
             this.isShowNewVisitButton = true;
             this.isVisitHeader = true;
             this.outletPage = false;
+            this.beatScreenTab = 'visitForm';
         }
     }
 
@@ -1197,6 +1214,16 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
             this.isVisitCreate = false;
             this.outletPage = true;
         }
+        else if(sc == 3.9){
+            this.isBeatViewScreen = true;
+            this.header = 'Visit Plan';
+            this.screen = 1;
+            this.isShowBackButton = false;
+            this.isShowNewVisitButton = true;
+            this.isVisitHeader = true;
+            this.outletPage = false;
+            this.beatScreenTab = 'visitForm';
+        }
     }
     resetAllScreen(){
         this.isBeatViewScreen = false;
@@ -1226,6 +1253,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
         this.showNewPrimary = false;
         this.showSubStockiestExisting = false;
         this.showOutletNew = false;
+        this.showVisitFormDetail = false;
         this.showOutletExisting = false;
         
     }

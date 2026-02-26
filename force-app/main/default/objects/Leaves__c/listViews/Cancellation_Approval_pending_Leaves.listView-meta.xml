@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cancellation_Approval_pending_Leaves</fullName>
+    <columns>NAME</columns>
+    <columns>ApprovalStatus__c</columns>
+    <columns>From_Date__c</columns>
+    <columns>To_Date__c</columns>
+    <columns>Type_of_Leave__c</columns>
+    <columns>Leave_Status__c</columns>
+    <columns>User__c</columns>
+    <columns>CREATEDBY_USER</columns>
+    <columns>CREATED_DATE</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Is_Current_User_Approver__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <filters>
+        <field>Leave_Cancellation_Status__c</field>
+        <operation>equals</operation>
+        <value>Cancellation Approved</value>
+    </filters>
+    <label>Cancellation Approval pending Leaves</label>
+</ListView>

@@ -134,7 +134,7 @@ public class DistanceMatrixControllerForVisit
         public  decimal  value; 
     }
     
-    // Calculate full day route using Google Directions API (start -> visits -> end)
+    // Calculate full day route using Google Routes API (start -> visits -> end)
     @future(callout=true)
     public static void distanceCalculationForDailyRoute(String dailyLogId){
         if(dailyLogId==null) return;
@@ -149,13 +149,35 @@ public class DistanceMatrixControllerForVisit
         Decimal endLat = dl.Clock_Out_Location__Latitude__s;
         Decimal endLon = dl.Clock_Out_Location__Longitude__s;
 
-        if(startLat==null || startLon==null || endLat==null || endLon==null){
-            return;
+        // Start location (Clock In) is mandatory
+        if(startLat==null || startLon==null) return;
+
+        List<Visit__c> visits = dl.Visits__r;
+        Boolean endIsLastVisit = false;
+
+        // If end location (Clock Out) is not available, use the last visit location as destination
+        if(endLat==null || endLon==null){
+            if(visits!=null && visits.size()>0){
+                Visit__c lastVisit = visits[visits.size()-1];
+                endLat = lastVisit.ClockIn_Latitude__c;
+                endLon = lastVisit.Clockin_Longitude__c;
+                endIsLastVisit = true;
+                System.debug('Clock Out location not available. Using last visit as destination: ' + lastVisit.Id);
+            } else {
+                System.debug('No Clock Out location and no visits found for Daily Log: ' + dailyLogId);
+                return;
+            }
         }
 
-        // Build waypoints from visits (exclude first/last which are start/end)
+        if(endLat==null || endLon==null) return;
+
+        // Build waypoints from intermediate visits
+        // If the last visit is used as destination, exclude it from waypoints
         List<String> waypointParts = new List<String>();
-        for(Visit__c v : dl.Visits__r){
+        Integer visitCount = (visits!=null) ? visits.size() : 0;
+        for(Integer i=0; i<visitCount; i++){
+            if(endIsLastVisit && i == visitCount-1) continue;
+            Visit__c v = visits[i];
             if(v.ClockIn_Latitude__c!=null && v.Clockin_Longitude__c!=null){
                 waypointParts.add(v.ClockIn_Latitude__c+','+v.Clockin_Longitude__c);
             }
@@ -185,31 +207,53 @@ public class DistanceMatrixControllerForVisit
                         inter.add(new Map<String,Object>{'location' => new Map<String,Object>{'latLng' => new Map<String,Decimal>{'latitude'=>wlat,'longitude'=>wlon}}});
                     }
                 }
-                reqBodyMap.put('intermediateStops', inter);
+                reqBodyMap.put('intermediates', inter);
             }
 
             String bodyStr = JSON.serialize(reqBodyMap);
             req.setHeader('Content-Type','application/json');
+            // Request route-level and leg-level distance from Routes API
+            req.setHeader('X-Goog-FieldMask','routes.distanceMeters,routes.legs.distanceMeters');
             req.setBody(bodyStr);
 
-            HTTPResponse res = http.send(req);
-            if(res.getStatusCode() == 200){
-                routesResponse rr = (routesResponse) JSON.deserialize(res.getBody(), routesResponse.class);
-                if(rr != null && rr.routes != null && rr.routes.size()>0){
-                    Decimal totalMeters = 0;
-                    for(rleg l : rr.routes[0].legs){
-                        if(l.distanceMeters!=null) totalMeters += l.distanceMeters;
+            if(!Test.isRunningTest()){
+                HTTPResponse res = http.send(req);
+                if(res.getStatusCode() == 200){
+                    routesResponse rr = (routesResponse) JSON.deserialize(res.getBody(), routesResponse.class);
+                    if(rr != null && rr.routes != null && rr.routes.size()>0 && rr.routes[0] != null){
+                        Decimal totalMeters = 0;
+                        rroute route = rr.routes[0];
+                        // Sum leg distances if available for more accuracy with intermediates
+                        if(route.legs != null && route.legs.size()>0){
+                            for(rleg l : route.legs){
+                                if(l != null && l.distanceMeters!=null) totalMeters += l.distanceMeters;
+                            }
+                        } else if(route.distanceMeters != null){
+                            // Fallback to route-level total distance
+                            totalMeters = route.distanceMeters;
+                        }
+
+                        if(totalMeters > 0){
+                            Decimal totalKm = totalMeters/1000;
+                            Daily_Log__c upd = new Daily_Log__c(Id=dl.Id);
+                            upd.KMs_Travelled__c = totalKm;
+                            System.debug('Updating Daily Log with total route distance: ' + totalKm + ' km');
+                            try{
+                                update upd;
+                            } catch(Exception e){
+                                System.debug('Failed to update Daily_Log__c: ' + e.getMessage());
+                            }
+                            System.debug('Total route distance in km: ' + totalKm);
+                        } else {
+                            System.debug('Routes API returned route but no distance data. Response body: ' + res.getBody());
+                        }
+                    } else {
+                        System.debug('Routes API returned no routes. Response body: ' + res.getBody());
                     }
-                    Decimal totalKm = totalMeters/1000;
-                    Daily_Log__c upd = new Daily_Log__c(Id=dl.Id);
-                    upd.KMs_Travelled__c = totalKm;
-                    system.debug('totalKm:---' + totalKm);
-                    system.debug('dl:'+upd);
-                    //upd.Today_Day_Travelled_Distance_KM__c = totalKm;
-                   // update upd;
+                } else {
+                    System.debug('Routes API response code: ' + res.getStatusCode() + ' body: ' + res.getBody());
                 }
-            } else {
-                System.debug('Routes API response code: ' + res.getStatusCode() + ' body: ' + res.getBody());
+                System.enqueueJob(new EODReportQueueableMail(dl.Id));
             }
         }catch(Exception e){
             System.debug('Routes API call failed: '+e.getMessage());
@@ -222,6 +266,8 @@ public class DistanceMatrixControllerForVisit
     }
     public class rroute{
         public List<rleg> legs;
+        public Long distanceMeters;
+        public Long durationSeconds;
     }
     public class rleg{
         public Long distanceMeters;

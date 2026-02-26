@@ -87,6 +87,24 @@
         left: 50%; /* Center horizontally */
         transform: translate(-50%, -50%); /* Center the spinner */
         }
+        /* For mobile devices - keep modal footer sticky */
+        @media screen and (max-width: 768px) {
+        .slds-modal__footer {
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        z-index: 1050 !important;
+        background: #fff !important;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.10);
+        justify-content: right;
+        display: flex;
+        }
+        .slds-modal__container {
+        padding-bottom: 60px !important; /* Make space for sticky footer */
+        }
+        }
     </aura:html>
     <div >
      

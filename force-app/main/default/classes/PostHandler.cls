@@ -22,8 +22,8 @@ global class PostHandler {
     }
     
     global static void orderPost( Order__c ordds){
-        ordds.ERP_Check__c=false;
-        update ordds;
+      //  ordds.ERP_Check__c=false;
+        //update ordds;
         
         list<string>odId= new list<string>();
         list< map<string,string>>hd=new list< map<string,string>>();

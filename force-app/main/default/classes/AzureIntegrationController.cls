@@ -227,7 +227,10 @@ global class AzureIntegrationController {
             HttpResponse res;
             try {
                 res = http.send(req);
-                
+                order__c ords1= new order__c(); 
+                ords1.id= ord;
+                ords1.ERP_Check__c = false;
+                update ords1; 
                 system.debug('res.getStatusCode() '+res.getStatusCode() );
                 // system.debug('res.getBody() '+res.getBody());
                 if ((res.getStatusCode() == 200 || res.getStatusCode() == 201) && res.getBody() != null ) {

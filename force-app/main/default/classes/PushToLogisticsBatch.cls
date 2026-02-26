@@ -15,7 +15,7 @@ public class PushToLogisticsBatch
         for (Order__c ord : scope) {
             // Enqueue ONE order per Queueable
           //  System.enqueueJob(new PushOrderToSAQueueable(ord.Id));
-	PostHandler.sendOrder(ord.id);
+	PostHandler.orderPost(ord);
         }
     }
 

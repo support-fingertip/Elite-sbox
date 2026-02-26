@@ -83,11 +83,21 @@
                                                     size="small">
                                                 </lightning-icon>
                                             </span>
-                                            <span class="slds-media__body">
-                                                <span class="slds-truncate">
-                                                    {rec.Name}
+                                                <span class="slds-media__body">
+                                                    <span class="slds-truncate">
+                                                        {rec.Name}
+                                                    </span>
+                                                    <template if:true={rec.Land_Mark__c}>
+                                                        <br/>
+                                                        <span class="slds-text-color_weak slds-text-body_small">Landmark: {rec.Land_Mark__c}</span>
+                                                    </template>
+                                                    <template if:false={rec.Land_Mark__c}>
+                                                        <template if:true={rec.Street__c}>
+                                                            <br/>
+                                                            <span class="slds-text-color_weak slds-text-body_small">Street: {rec.Street__c}</span>
+                                                        </template>
+                                                    </template>
                                                 </span>
-                                            </span>
                                         </div>
 
                                     </li>

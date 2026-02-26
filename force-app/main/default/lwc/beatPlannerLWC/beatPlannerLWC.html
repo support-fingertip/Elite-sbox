@@ -73,7 +73,7 @@
                             
                             <!-- Beat Screen View -->
                             <template lwc:if={isBeatViewScreen}>
-                                <c-beat-screen onprocessbeatevent={handleBeatCustomEvent}></c-beat-screen>
+                                <c-beat-screen active-tab={beatScreenTab} onprocessbeatevent={handleBeatCustomEvent}></c-beat-screen>
                             </template>
 
                             <!-- Visit screen view -->
@@ -186,6 +186,10 @@
 
                             <template if:true={showOutletExisting}>
                                 <c-outlet-existing-form onback={visitformRecordDispatch}></c-outlet-existing-form>
+                            </template>
+
+                            <template if:true={showVisitFormDetail}>
+                                <c-visit-detail record-id={selectedVisitFormId} onclose={handleCloseDetail}></c-visit-detail>
                             </template>
 
 

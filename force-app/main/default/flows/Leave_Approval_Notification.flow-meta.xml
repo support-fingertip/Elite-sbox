@@ -57,7 +57,7 @@
         <inputParameters>
             <name>recipientIds</name>
             <value>
-                <elementReference>OwnerId</elementReference>
+                <elementReference>receiptentIds</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -97,7 +97,7 @@
         <inputParameters>
             <name>recipientIds</name>
             <value>
-                <elementReference>OwnerId</elementReference>
+                <elementReference>receiptentIds</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -242,6 +242,29 @@
     </actionCalls>
     <apiVersion>66.0</apiVersion>
     <assignments>
+        <name>get_Receipt_Id</name>
+        <label>get Receipt Id</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>receiptentIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>$Record.Approver__r.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>receiptentIds</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>$Record.OwnerId</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>getOwnerId</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
         <name>getOwnerId</name>
         <label>getOwnerId</label>
         <locationX>0</locationX>
@@ -383,7 +406,7 @@
         <locationY>0</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>getOwnerId</targetReference>
+            <targetReference>get_Receipt_Id</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -453,5 +476,12 @@ To Date :  {!$Record.To_Date__c}</text>
         <isCollection>true</isCollection>
         <isInput>true</isInput>
         <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <name>receiptentIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
     </variables>
 </Flow>

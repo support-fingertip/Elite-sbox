@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Approved_Leave</fullName>
+    <columns>NAME</columns>
+    <columns>ApprovalStatus__c</columns>
+    <columns>From_Date__c</columns>
+    <columns>To_Date__c</columns>
+    <columns>Type_of_Leave__c</columns>
+    <columns>Leave_Status__c</columns>
+    <columns>User__c</columns>
+    <columns>CREATEDBY_USER</columns>
+    <columns>CREATED_DATE</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>ApprovalStatus__c</field>
+        <operation>equals</operation>
+        <value>Leave Approved</value>
+    </filters>
+    <label>Approved Leave</label>
+</ListView>

@@ -1,0 +1,106 @@
+/* ── Container ── */
+.visit-form-list-root {
+    width: 100%;
+}
+
+.route {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.outside-beat-section {
+    display: flex;
+    flex-direction: column;
+    margin-top: 4px;
+}
+
+/* ── Search ── */
+.route-filters {
+    margin-bottom: 8px;
+}
+
+/* ── Card: flat row with bottom divider ── */
+.visit-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 4px 12px 4px;
+    border-bottom: #c3c3c3 1px solid;
+    background: #fff;
+}
+
+.visit-card:last-child {
+    border-bottom: none;
+}
+
+/* ── Left column ── */
+.card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+}
+
+.outlet-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.account-name {
+    font-weight: 700;
+    color: #1a2a3a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Meta rows ── */
+.card-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-left: 28px;
+    line-height: 1.6;
+}
+
+.meta-label {
+    min-width: 42px;
+    font-weight: 400;
+}
+
+.meta-sep {
+    margin-right: 2px;
+}
+
+.meta-value {
+    color: #2d3748;
+    font-weight: 400;
+}
+
+.status-icon {
+    margin-left: 4px;
+    font-size: 13px;
+    color: #dd6b20;
+}
+
+/* ── Right arrow ── */
+.card-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: 12px;
+    cursor: pointer;
+}

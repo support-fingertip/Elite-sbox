@@ -1,316 +1,244 @@
 <template>
-
-<div class="page">
-<div class="container">
-
-    <!-- HEADER -->
-    <div class="header">
-
-
-
-        <div>
-
-            <div class="title">
-                Outlet - New Market
-            </div>
-
-            <div class="subtitle">
-                Fill in the visit details
-            </div>
-
+    <template lwc:if={isPageLoaded}>
+        <div >
+            <c-on-loading-screen></c-on-loading-screen>
         </div>
+    </template>
+    <template lwc:else>
+        <div class="page">
+            <div class="container">
 
-    </div>
-
-
-    <!-- FORM -->
-    <div class="form">
-
-
-        <lightning-input
-    label="Customer Type"
-    value={customerType}
-    readonly>
-</lightning-input>
-
-        <lightning-input
-    label="Visit Type"
-    value={visitType}
-    readonly>
-</lightning-input>
-
-        <lightning-input
-            label="Outlet Name"
-            value={outletName}
-            data-field="outletName"
-            onchange={handleChange}
-            required>
-        </lightning-input>
-
-
-        <lightning-combobox
-            label="Secondary Customer Business Type"
-            value={secondaryBusinessType}
-            options={businessTypeOptions}
-            data-field="secondaryBusinessType"
-            onchange={handleChange}
-            required>
-        </lightning-combobox>
-
-
-        <lightning-combobox
-            label="Product Category"
-            value={productCategory}
-            options={categoryOptions}
-            data-field="productCategory"
-            onchange={handleChange}
-            required>
-        </lightning-combobox>
-
-
-        <!-- Product Group -->
-        <div class="field">
-
-            <label class="label">
-                Product Group
-                <span class="required">*</span>
-            </label>
-
-           <template for:each={productGroups} for:item="group" for:index="index">
-
-    <lightning-checkbox-group
-        key={group.id}
-        options={groupOptions}
-        value={group.value}
-        data-index={index}
-        onchange={handleProductGroupChange}>
-    </lightning-checkbox-group>
-
-</template>
-
-            <div class="add-product" onclick={handleAddProductGroup}>
-                Add product group
-            </div>
-
-        </div>
-
-
-        <lightning-combobox
-            label="Primary Customer Business Type"
-            value={primaryBusinessType}
-            options={businessTypeOptions}
-            data-field="primaryBusinessType"
-            onchange={handleChange}
-            required>
-        </lightning-combobox>
-
-
-        <lightning-input
-            label="Competitor Name"
-            value={competitorName}
-            data-field="competitorName"
-            onchange={handleChange}>
-        </lightning-input>
-
-
-        <lightning-input
-            label="Competitor Product"
-            value={competitorProduct}
-            data-field="competitorProduct"
-            onchange={handleChange}>
-        </lightning-input>
-
-
-        <!-- ✅ Competitor Product Image -->
-        <div class="upload-field">
-
-            <label class="label">
-                Competitor Product Image
-            </label>
-
-            <div class="upload-wrapper">
-
-                <input
-                    type="file"
-                    accept="image/*"
-                    onchange={handleProductImage}
-                    class="file-input"/>
-
-                <div class="upload-box">
-
-                    <lightning-icon
-                        icon-name="utility:upload"
-                        size="x-small">
-                    </lightning-icon>
-
-                    <span class="upload-text">
-                        Upload Files
-                    </span>
-
-                    <span class="upload-sub">
-                        Or drop files
-                    </span>
-
+                <!-- HEADER -->
+                <div class="header">
+                    <div>
+                        <div class="title">Outlet - New Market Expansion</div>
+                        <div class="subtitle">Fill in the visit details</div>
+                    </div>
                 </div>
 
-            </div>
+                <!-- FORM -->
+                <div class="form">
 
-            <template if:true={productImageName}>
-                <div class="file-name">
-                    {productImageName}
-                </div>
-            </template>
+                    <!-- Customer Type -->
+                    <div class="field">
+                        <lightning-combobox
+                            label="Customer Type"
+                            value={customerType}
+                            options={customerTypeOptions}
+                            disabled>
+                        </lightning-combobox>
+                    </div>
+                    <div class="field">
+                        <lightning-combobox
+                            label="Visit Type"
+                            value={visitType}
+                            options={visitTypeOptions}
+                            disabled>
+                        </lightning-combobox>
+                    </div>
 
-        </div>
+                    <!-- Outlet Name -->
+                    <div class="field">
+                        <lightning-input
+                            label="Outlet Name"
+                            value={outletName}
+                            data-field="outletName"
+                            onchange={handleChange}
+                            required>
+                        </lightning-input>
+                    </div>
+                    <!-- Business Type -->
+                    <div class="field">
+                        <lightning-combobox
+                            label="Secondary Customer Business Type"
+                            value={customerBusinessType}
+                            options={businessTypeOptions}
+                            data-field="customerBusinessType"
+                            onchange={handleChange}
+                            required>
+                        </lightning-combobox>
+                    </div>
 
+                    <!-- Product Category -->
+                    <div class="field">
+                        <lightning-combobox
+                            label="Product Category"
+                            value={productCategory}
+                            options={categoryOptions}
+                            data-field="productCategory"
+                            onchange={handleChange}
+                            required>
+                        </lightning-combobox>
+                    </div>
 
-        <lightning-textarea
-            label="Competitor Remarks"
-            value={competitorRemarks}
-            data-field="competitorRemarks"
-            onchange={handleChange}>
-        </lightning-textarea>
-
-
-        <lightning-textarea
-            label="General Remarks"
-            value={generalRemarks}
-            data-field="generalRemarks"
-            onchange={handleChange}
-            required>
-        </lightning-textarea>
-
-
-        <lightning-textarea
-            label="Address"
-            value={address}
-            data-field="address"
-            onchange={handleChange}
-            required>
-        </lightning-textarea>
-
-
-        <!-- State -->
-        <lightning-combobox
-            label="State (Auto)"
-            value={state}
-            options={stateOptions}
-            onchange={handleStateChange}
-            required>
-        </lightning-combobox>
-
-
-        <!-- District -->
-        <lightning-combobox
-            label="District (Auto)"
-            value={district}
-            options={districtOptions}
-            onchange={handleDistrictChange}
-            required>
-        </lightning-combobox>
-
-
-        <!-- Pin Code -->
-        <lightning-input
-            label="Pin Code"
-            type="tel"
-            pattern="[0-9]{6}"
-            maxlength="6"
-            message-when-pattern-mismatch="Pin Code must be exactly 6 digits"
-            value={pinCode}
-            data-field="pinCode"
-            onchange={handleChange}
-            required>
-        </lightning-input>
-
-
-        <!-- Contact Number -->
-        <lightning-input
-            label="Contact Number"
-            type="tel"
-            pattern="[0-9]{10}"
-            maxlength="10"
-            message-when-pattern-mismatch="Contact Number must be exactly 10 digits"
-            value={contactNumber}
-            data-field="contactNumber"
-            onchange={handleChange}
-            required>
-        </lightning-input>
+                    <!-- Product Group -->
+                    <template lwc:if={showProductGroup}>
+                        <div class="field">
+                            <label class="label">
+                                Product Group
+                                <span class="required">*</span>
+                            </label>
+                            <lightning-checkbox-group
+                                options={filteredGroupOptions}
+                                value={selectedProductGroups}
+                                onchange={handleGroupChange}>
+                            </lightning-checkbox-group>
+                        </div>
+                    </template>
 
 
+                    <!-- Competitor Name -->
+                    <div class="field">
+                        <lightning-input
+                            label="Competitor Name"
+                            value={competitorName}
+                            data-field="competitorName"
+                            onchange={handleChange}>
+                        </lightning-input>
+                    </div>
 
-        <!-- IMAGE SECTION -->
-        <div class="image-row">
+                    <!-- Competitor Product -->
+                    <div class="field">
+                        <lightning-input
+                            label="Competitor Product"
+                            value={competitorProduct}
+                            data-field="competitorProduct"
+                            onchange={handleChange}>
+                        </lightning-input>
+                    </div>
 
+                    <!-- Competitor Product Image -->
+                    <div class="field">
+                        <label class="label">Competitor Product Image</label>
+                        <div class="upload-wrapper">
+                            <input
+                                type="file"
+                                class="file-input"
+                                accept="image/*"
+                                onchange={handleCompetitorProductImage} />
+                            <div class="upload-box">
+                                <lightning-icon icon-name="utility:upload" size="x-small"></lightning-icon>
+                                <span class="upload-text">Upload Files</span>
+                                <span class="upload-sub">Or drop files</span>
+                            </div>
+                        </div>
+                        <template if:true={competitorProductImageName}>
+                            <div class="file-name">{competitorProductImageName}</div>
+                        </template>
+                    </div>
 
-            <!-- Outlet Image -->
-            <div class="upload-field">
+                    <!-- Competitor Remarks -->
+                    <div class="field">
+                        <lightning-textarea
+                            label="Competitor Remarks"
+                            value={competitorRemarks}
+                            data-field="competitorRemarks"
+                            onchange={handleChange}>
+                        </lightning-textarea>
+                    </div>
 
-                <label class="label">
-                    Outlet Image
-                    <span class="required">*</span>
-                </label>
+                    <!-- General Remarks -->
+                    <div class="field">
+                        <lightning-textarea
+                            label="General Remarks"
+                            value={generalRemarks}
+                            data-field="generalRemarks"
+                            onchange={handleChange}
+                            required>
+                        </lightning-textarea>
+                    </div>
 
-                <div class="upload-wrapper">
+                    <!-- Address -->
+                    <div class="field">
+                        <lightning-textarea
+                            label="Address"
+                            value={address}
+                            data-field="address"
+                            onchange={handleChange}
+                            required>
+                        </lightning-textarea>
+                    </div>
+                    <div class="field">
+                        <lightning-combobox
+                            label="State"
+                            value={state}
+                            options={stateOptions}
+                            data-field="state"
+                            onchange={handleChange}
+                            required>
+                        </lightning-combobox>
+                    </div>
+                    <div class="field">
+                        <lightning-combobox
+                            label="District"
+                            value={district}
+                            options={filteredDistrictOptions}
+                            data-field="district"
+                            onchange={handleChange}
+                            required>
+                        </lightning-combobox>
+                    </div>
+                    <!-- Pin Code -->
+                    <div class="field">
+                        <lightning-input
+                            label="Pin Code"
+                            type="tel"
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            message-when-pattern-mismatch="Pin Code must be exactly 6 digits"
+                            value={pinCode}
+                            data-field="pinCode"
+                            onchange={handleChange}
+                            required>
+                        </lightning-input>
+                    </div>
 
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onchange={handleOutletImage}
-                        class="file-input"/>
+                    <!-- Contact Number -->
+                    <div class="field">
+                        <lightning-input
+                            label="Contact Number"
+                            type="tel"
+                            maxlength="10"
+                            pattern="[0-9]{10}"
+                            message-when-pattern-mismatch="Contact Number must be exactly 10 digits"
+                            value={contactNumber}
+                            data-field="contactNumber"
+                            onchange={handleChange}
+                            required>
+                        </lightning-input>
+                    </div>
 
-                    <div class="upload-box">
+                    <!--  Outlet Image -->
+                    <div class="field">
+                        <label class="label">
+                            Outlet Image
+                            <span class="required">*</span>
+                        </label>
+                        <div class="upload-wrapper">
+                            <input
+                                type="file"
+                                class="file-input"
+                                accept="image/*"
+                                onchange={handleCustomerImage} />
+                            <div class="upload-box">
+                                <lightning-icon icon-name="utility:upload" size="x-small"></lightning-icon>
+                                <span class="upload-text">Upload Files</span>
+                                <span class="upload-sub">Or drop files</span>
+                            </div>
+                        </div>
+                        <template if:true={customerImageName}>
+                            <div class="file-name">{customerImageName}</div>
+                        </template>
+                    </div>
 
-                        <lightning-icon
-                            icon-name="utility:upload"
-                            size="x-small">
-                        </lightning-icon>
-
-                        <span class="upload-text">
-                            Upload Files
-                        </span>
-
-                        <span class="upload-sub">
-                            Or drop files
-                        </span>
-
+                    <!-- Buttons -->
+                    <div class="button-row">
+                        <lightning-button label="Cancel" onclick={handleBack}></lightning-button>
+                        <lightning-button label="Submit" variant="brand" onclick={handleGetLatLon}></lightning-button>
                     </div>
 
                 </div>
-
-                <template if:true={outletImageName}>
-                    <div class="file-name">
-                        {outletImageName}
-                    </div>
-                </template>
-
             </div>
-
-
         </div>
-
-
-
-        <!-- BUTTONS -->
-        <div class="button-row">
-
-            <lightning-button
-                label="Cancel"
-                onclick={handleBack}>
-            </lightning-button>
-
-            <lightning-button
-                label="Submit"
-                variant="brand"
-                onclick={handleSubmit}>
-            </lightning-button>
-
-        </div>
-
-
-    </div>
-
-</div>
-</div>
-
+    </template>
 </template>

@@ -2,36 +2,35 @@
     <!--Beat Card View-->
     <template if:true={isShowBeatData}>
         <div class="outlets">
-            <!-- When page is loading -->
-            <template lwc:if={isPageLoaded}>
-                <div >
-                    <c-on-loading-screen></c-on-loading-screen>
-                </div>
-            </template>
-            <!-- When page loaded -->
-            <template lwc:else>
-                <div class="route"> 
+            <div class="route"> 
 
-                    <!-- ══════════════════════════════════
-                         TAB BAR — ADD THIS SECTION
-                    ══════════════════════════════════ -->
-                    <div class="tab-bar">
-                        <div class={myBeatsTabClass} data-tab="myBeats" onclick={handleTabSwitch}>
-                            My Beats
-                        </div>
-                        <div class={visitFormTabClass} data-tab="visitForm" onclick={handleTabSwitch}>
-                            Visit Form Visits
-                        </div>
-                        <template lwc:if={showReporteeView}>
-                            <div class={reportTabClass} data-tab="report" onclick={handleTabSwitch}>
-                                Reportee View
-                            </div>
-                         </template>
+                <!-- ══════════════════════════════════
+                        TAB BAR — ADD THIS SECTION
+                ══════════════════════════════════ -->
+                <div class="tab-bar">
+                    <div class={myBeatsTabClass} data-tab="myBeats" onclick={handleTabSwitch}>
+                        My Beats
                     </div>
-                    <!-- ══════════════════════════════════ -->
+                    <div class={visitFormTabClass} data-tab="visitForm" onclick={handleTabSwitch}>
+                        Visit Form Visits
+                    </div>
+                    <template lwc:if={showReporteeView}>
+                        <div class={reportTabClass} data-tab="report" onclick={handleTabSwitch}>
+                            Reportee View
+                        </div>
+                        </template>
+                </div>
+                <!-- ══════════════════════════════════ -->
 
-                    <!--Search Bar — only on My Beats tab-->
-                    <template lwc:if={myBeatsTabActive}>
+                <!--Search Bar — only on My Beats tab-->
+                <template lwc:if={myBeatsTabActive}>
+                    <!-- When page is loading -->
+                    <template lwc:if={isPageLoaded}>
+                        <div >
+                            <c-on-loading-screen></c-on-loading-screen>
+                        </div>
+                    </template>
+                    <template lwc:else>
                         <!--Search Bar-->
                         <div class="route-filters">
                             <lightning-input 
@@ -87,75 +86,93 @@
                                             </div>        
                                             <!--Left side Icons-->                                       
                                             <div class="outlet-icon" >
-                                                <template lwc:if={isDayStarted}>
-                                                    <!-- Forward Icon for Current Beat -->
-                                                    <template if:true={item.isCurrentBeat}>
-                                                        <div class="icon-container">
-                                                            <div onclick={handleOnclickMenu}
-                                                                data-id={item.beatId}
-                                                                data-pjpid={item.pjpId}
-                                                                data-index={index}
-                                                                data-name="Execute_Beat"
-                                                                data-beatname={item.beatName}>
-                                                                <img src={googleIcons.forward} width="23" height="23">
+                                                <template if:false={isLeaveExisted}>
+                                                    <template lwc:if={isDayStarted}>
+                                                        <!-- Forward Icon for Current Beat -->
+                                                        <template if:true={item.isCurrentBeat}>
+                                                            <div class="icon-container">
+                                                                <div onclick={handleOnclickMenu}
+                                                                    data-id={item.beatId}
+                                                                    data-pjpid={item.pjpId}
+                                                                    data-index={index}
+                                                                    data-name="Execute_Beat"
+                                                                    data-beatname={item.beatName}>
+                                                                    <img src={googleIcons.forward} width="23" height="23">
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </template>
+                                                        </template>
 
-                                                    <!-- Play Icon Logic -->
-                                                    <template if:false={item.isCurrentBeat}>
-                                                        <!-- 1. Show Play for today beat when no current beat exists -->
-                                                        <template if:true={item.istodayBeat}>
+                                                        <!-- Play Icon Logic -->
+                                                        <template if:false={item.isCurrentBeat}>
+                                                            <!-- 1. Show Play for today beat when no current beat exists -->
+                                                            <template if:true={item.istodayBeat}>
+                                                                <template if:false={isCurrentBeatExisted}>
+                                                                    <div class="icon-container">
+                                                                        <div onclick={handleOnclickMenu}
+                                                                            data-id={item.beatId}
+                                                                            data-pjpid={item.pjpId}
+                                                                            data-index={index}
+                                                                            data-name="Start_Beat"
+                                                                            data-beatname={item.beatName}>
+                                                                            <img src={googleIcons.play} width="23" height="23">
+                                                                        </div>
+                                                                    </div>
+                                                                </template>
+                                                            </template>
+
+                                                            <!-- 2. Show Play for all beats if no current beat and no today beat exists -->
                                                             <template if:false={isCurrentBeatExisted}>
-                                                                <div class="icon-container">
-                                                                    <div onclick={handleOnclickMenu}
-                                                                        data-id={item.beatId}
-                                                                        data-pjpid={item.pjpId}
-                                                                        data-index={index}
-                                                                        data-name="Start_Beat"
-                                                                        data-beatname={item.beatName}>
-                                                                        <img src={googleIcons.play} width="23" height="23">
+                                                                <template if:false={isTodayBeatExisted}>
+                                                                    <div class="icon-container">
+                                                                        <div onclick={handleOnclickMenu}
+                                                                            data-id={item.beatId}
+                                                                            data-pjpid={item.pjpId}
+                                                                            data-index={index}
+                                                                            data-name="Start_Beat"
+                                                                            data-beatname={item.beatName}>
+                                                                            <img src={googleIcons.play} width="23" height="23">
+                                                                        </div>
                                                                     </div>
-                                                                </div>
+                                                                </template>
                                                             </template>
                                                         </template>
 
-                                                        <!-- 2. Show Play for all beats if no current beat and no today beat exists -->
-                                                        <template if:false={isCurrentBeatExisted}>
-                                                            <template if:false={isTodayBeatExisted}>
-                                                                <div class="icon-container">
-                                                                    <div onclick={handleOnclickMenu}
-                                                                        data-id={item.beatId}
-                                                                        data-pjpid={item.pjpId}
-                                                                        data-index={index}
-                                                                        data-name="Start_Beat"
-                                                                        data-beatname={item.beatName}>
-                                                                        <img src={googleIcons.play} width="23" height="23">
+                                                        <!-- Switch Icon Logic -->
+                                                        <template if:false={item.isCurrentBeat}>
+                                                            <!--this item is for Not today beat-->
+                                                            <template if:false={item.istodayBeat}>
+                                                                <!--If today beat any tday beat existed-->
+                                                                <template if:true={isTodayBeatExisted}>
+                                                                    <div class="icon-container">
+                                                                        <div onclick={handleOnclickMenu}
+                                                                            data-id={item.beatId}
+                                                                            data-pjpid={item.pjpId}
+                                                                            data-index={index}
+                                                                            data-name="Switch_Beat"
+                                                                            data-beatname={item.beatName}>
+                                                                            <img src={googleIcons.switch} width="23" height="23">
+                                                                        </div>
                                                                     </div>
-                                                                </div>
+                                                                </template>
+                                                                <!--If tofay any one today beat not existed but any one current beat existed-->
+                                                                <template if:false={isTodayBeatExisted}>
+                                                                    <template if:true={isCurrentBeatExisted}>
+                                                                        <div class="icon-container">
+                                                                            <div onclick={handleOnclickMenu}
+                                                                                data-id={item.beatId}
+                                                                                data-pjpid={item.pjpId}
+                                                                                data-index={index}
+                                                                                data-name="Switch_Beat"
+                                                                                data-beatname={item.beatName}>
+                                                                                <img src={googleIcons.switch} width="23" height="23">
+                                                                            </div>
+                                                                        </div>
+                                                                    </template>
+                                                                </template>
                                                             </template>
-                                                        </template>
-                                                    </template>
 
-                                                    <!-- Switch Icon Logic -->
-                                                    <template if:false={item.isCurrentBeat}>
-                                                        <!--this item is for Not today beat-->
-                                                        <template if:false={item.istodayBeat}>
-                                                            <!--If today beat any tday beat existed-->
-                                                            <template if:true={isTodayBeatExisted}>
-                                                                <div class="icon-container">
-                                                                    <div onclick={handleOnclickMenu}
-                                                                        data-id={item.beatId}
-                                                                        data-pjpid={item.pjpId}
-                                                                        data-index={index}
-                                                                        data-name="Switch_Beat"
-                                                                        data-beatname={item.beatName}>
-                                                                        <img src={googleIcons.switch} width="23" height="23">
-                                                                    </div>
-                                                                </div>
-                                                            </template>
-                                                            <!--If tofay any one today beat not existed but any one current beat existed-->
-                                                            <template if:false={isTodayBeatExisted}>
+                                                            <!--it today beat, but another beat is current -->
+                                                            <template if:true={item.istodayBeat}>
                                                                 <template if:true={isCurrentBeatExisted}>
                                                                     <div class="icon-container">
                                                                         <div onclick={handleOnclickMenu}
@@ -170,54 +187,38 @@
                                                                 </template>
                                                             </template>
                                                         </template>
-
-                                                        <!--it today beat, but another beat is current -->
-                                                        <template if:true={item.istodayBeat}>
-                                                            <template if:true={isCurrentBeatExisted}>
-                                                                <div class="icon-container">
-                                                                    <div onclick={handleOnclickMenu}
-                                                                        data-id={item.beatId}
-                                                                        data-pjpid={item.pjpId}
-                                                                        data-index={index}
-                                                                        data-name="Switch_Beat"
-                                                                        data-beatname={item.beatName}>
-                                                                        <img src={googleIcons.switch} width="23" height="23">
-                                                                    </div>
+                                                        
+                                                    <!-- <div onclick={openMenu} tabindex="0" data-id={item.id} data-index={index}>
+                                                            <lightning-icon 
+                                                                icon-name="utility:threedots_vertical" 
+                                                                size="x-small" 
+                                                                alternative-text="" 
+                                                                class="chevron-icon-ex"
+                                                                data-id={item.id}
+                                                                data-index={index}>
+                                                            </lightning-icon>
+                                                    
+                                                            <template lwc:if={item.openPopup}>
+                                                                <div class="popup" >
+                                                                    <ul>
+                                                                        <li onclick={handleOnclickMenu} data-name="Preview"
+                                                                        data-id={item.beatId} data-index={index}
+                                                                                data-pjpid={item.pjpId}>
+                                                                            <i class="material-symbols-outlined">
+                                                                                <lightning-icon 
+                                                                                    icon-name="utility:preview" 
+                                                                                    size="x-small" 
+                                                                                    alternative-text="Preview"
+                                                                                    class="invert-image" >
+                                                                                </lightning-icon>
+                                                                            </i>
+                                                                            Preview
+                                                                        </li>
+                                                                    </ul>
                                                                 </div>
                                                             </template>
-                                                        </template>
+                                                        </div>-->
                                                     </template>
-                                                    
-                                                <!-- <div onclick={openMenu} tabindex="0" data-id={item.id} data-index={index}>
-                                                        <lightning-icon 
-                                                            icon-name="utility:threedots_vertical" 
-                                                            size="x-small" 
-                                                            alternative-text="" 
-                                                            class="chevron-icon-ex"
-                                                            data-id={item.id}
-                                                            data-index={index}>
-                                                        </lightning-icon>
-                                                
-                                                        <template lwc:if={item.openPopup}>
-                                                            <div class="popup" >
-                                                                <ul>
-                                                                    <li onclick={handleOnclickMenu} data-name="Preview"
-                                                                    data-id={item.beatId} data-index={index}
-                                                                            data-pjpid={item.pjpId}>
-                                                                        <i class="material-symbols-outlined">
-                                                                            <lightning-icon 
-                                                                                icon-name="utility:preview" 
-                                                                                size="x-small" 
-                                                                                alternative-text="Preview"
-                                                                                class="invert-image" >
-                                                                            </lightning-icon>
-                                                                        </i>
-                                                                        Preview
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
-                                                        </template>
-                                                    </div>-->
                                                 </template>
                                             </div>                                    
                                         </div>   
@@ -225,93 +226,85 @@
                                 </div>
                             </template>
                         </template>
-                       <template lwc:else>
+                        <template lwc:else>
                             <div class="slds-align_absolute-center slds-m-top_medium">
                                 <p class="slds-text-color_weak">No Beats Found</p>
                             </div>
                         </template>
                     </template>
+                </template>
 
-                    <!--Visit Form Visits Tab-->
-                    <template lwc:if={visitFormTabActive}>
-                        <div class="outside-beat-section">
-                            <!--Search Bar-->
-                            <div class="route-filters">
-                                <lightning-input 
-                                    type="search" 
-                                    placeholder="Search Visits...."
-                                    value={searchedbeatVale} 
-                                    onchange={searchBeats}
-                                    class="slds-input_bare slds-border_none textField">
-                                </lightning-input>
-                            </div>
+                <!--Visit Form Visits Tab-->
+                <template lwc:if={visitFormTabActive}>
+                    <template lwc:if={isPageLoaded}>
+                        <div >
+                            <c-on-loading-screen></c-on-loading-screen>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="visit-form-list-root">
+                            <div class="route">
+                                <div class="outside-beat-section">
+                                    <!-- Search Bar -->
+                                    <div class="route-filters">
+                                        <lightning-input 
+                                            type="search" 
+                                            placeholder="Search Visits...."
+                                            value={visitSearchTerm} 
+                                            onchange={handleSearch}
+                                            class="slds-input_bare slds-border_none textField">
+                                        </lightning-input>
+                                    </div>
 
-                            <!-- Outside Visit Cards -->
-                            <template for:each={outsideBeatVisits} for:item="item" for:index="index">
-                                <div class="route-outlets" key={item.id}>
-                                    <div class="borderLine slds-m-top_small outside-beat-card">
-                                        <div class="route-outlet">
-                                            <div class="route-left">
-                                                <div class="outlet-title">
+                                    <!-- Visit Cards -->
+                                    <template for:each={visitForms} for:item="item" for:index="index">
+                                        <div class="visit-card" key={item.Id}>
+                                            <!-- Left: Icon + Info -->
+                                            <div class="card-left">
+                                                <div class="outlet-header">
                                                     <span class="icon-wrapper">
                                                         <img src={googleIcons.account} class="custom-icon" width="20" height="20" />
                                                     </span>
-                                                    &nbsp;
-                                                    <div class="beat-name-wrapper">
-                                                        <b>{item.customerName}</b>
-                                                    </div>
+                                                    <b class="account-name">{item.AccountName}</b>
                                                 </div>
-                                                <div class="outlet-title" style="padding-left:14px">
-                                                    &nbsp;&nbsp; Type : &nbsp;
-                                                    <span class="outside-visit-type">{item.visitFormType}</span>
-                                                </div>
-                                                <div class="outlet-title" style="padding-left:14px">
-                                                    &nbsp;&nbsp; Status : &nbsp;
-                                                    <template lwc:if={item.isInprogress}>
-                                                        Inprogress
-                                                        &nbsp;
-                                                        <span class="icon-margin-bottom">
-                                                            <lightning-icon 
-                                                                icon-name="utility:clock" 
-                                                                size="x-small" 
-                                                                alternative-text=""
-                                                                class="cloclColor">
-                                                            </lightning-icon>
-                                                        </span>
-                                                    </template>
-                                                    <template lwc:else>
-                                                        {item.status}
+                                                <div class="card-meta">
+                                                    <span class="meta-label">Status</span>
+                                                    <span class="meta-sep">:</span>
+                                                    <span class="meta-value">{item.Status}</span>
+                                                    <template if:true={item.isInprogress}>
+                                                        <span class="status-icon">&#9203;</span>
                                                     </template>
                                                 </div>
-                                                <div class="outlet-title" style="padding-left:14px">
-                                                    &nbsp;&nbsp; Time : {item.createdTime}
+                                                <div class="card-meta">
+                                                    <span class="meta-label">Time</span>
+                                                    <span class="meta-sep">:</span>
+                                                    <span class="meta-value">{item.CreatedTime}</span>
                                                 </div>
                                             </div>
-                                            <div class="outlet-icon">
-                                                <div 
-                                                    class="icon-container"
-                                                    onclick={handleOutsideVisitClick}
-                                                    data-id={item.id}
-                                                    data-index={index}>
-                                                    <img src={googleIcons.forward} width="23" height="23">
-                                                </div>
+
+                                            <!-- Right: Arrow -->
+                                            <div class="card-arrow"
+                                                onclick={handleOutsideVisitClick}
+                                                data-id={item.Id}
+                                                data-index={index}>
+                                                <img src={googleIcons.forward} width="22" height="22" />
                                             </div>
                                         </div>
-                                    </div>
+                                    </template>
                                 </div>
-                            </template>
+                            </div>
                         </div>
                     </template>
+                </template>
 
-                    <!--Report View Tab — extend with your report content-->
-                    <template lwc:if={reportTabActive}>
-                        <div class="report-section">
-                            <!-- Add your report content here -->
-                        </div>
-                    </template>
+                <!--Report View Tab — extend with your report content-->
+                <template lwc:if={reportTabActive}>
+                    <div class="report-section">
+                        <!-- Add your report content here -->
+                    </div>
+                </template>
 
-                </div>
-            </template>
+            </div>
         </div>
     </template>
 

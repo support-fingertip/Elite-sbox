@@ -18,7 +18,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AccountDocumentMailer</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AccountEditAccessController</apexClass>
@@ -38,7 +38,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AccountTriggerRecursion</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ApproverReplacementQueue</apexClass>
@@ -58,7 +58,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AzureAccountSyncQueue</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AzureAccountSyncQueueTest</apexClass>
@@ -66,7 +66,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AzureIntegrationController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AzureIntegrationControllerTest</apexClass>
@@ -94,7 +94,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>BeatCloneBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatItemTriggerHandler</apexClass>
@@ -174,7 +174,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ClientInspectorController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CloneBeatController</apexClass>
@@ -330,7 +330,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DashboardService</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DataType</apexClass>
@@ -354,6 +354,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DisplayFormatTriggerHandlerTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>DistanceCalculationQueueable</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
@@ -426,11 +430,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeProductMappingCloneBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeReplacementBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeReplacementUpdateQueue</apexClass>
@@ -498,7 +502,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseApprovalController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseApprovalController_Test</apexClass>
@@ -562,7 +566,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>GTInvoiceController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>GenericNotificationCenter</apexClass>
@@ -578,7 +582,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>GoogleMapsConfigController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceController</apexClass>
@@ -586,7 +590,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceHeaderTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceItemTriggerHandler</apexClass>
@@ -606,7 +610,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LeavesTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LightningFileUploadHandler</apexClass>
@@ -754,7 +758,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PostHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PrimaryTargetsBatch</apexClass>
@@ -778,7 +782,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PushOrderToSAQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogiSchedular</apexClass>
@@ -830,7 +834,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnTriggerHandler</apexClass>
@@ -894,11 +898,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SendAccountDocumentsOrgWide</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SendEmailNotificationToBillingTeam</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SendEmailNotificationToBillingTeam_Test</apexClass>
@@ -950,6 +954,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SyncApprovers</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SystemEndDayBatch</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
@@ -1038,7 +1046,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UserListController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UserRoleSyncBatch</apexClass>
@@ -1066,7 +1074,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>VisitMapController</apexClass>
@@ -1090,7 +1098,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ceoDashboardController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ceoDashboardControllerTest</apexClass>
@@ -1130,7 +1138,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>newStockAdjustment</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>postHandler_TestClass</apexClass>
@@ -5996,7 +6004,27 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Leaves__c.Is_Current_User_Approver__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Leaves__c.Is_Current_User_Cancellation_Approver__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Leaves__c.Leave_Approved_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Leaves__c.Leave_Approver_L1_Email__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Leaves__c.Leave_Cancellation_Approved_Date__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -10085,6 +10113,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>Visit_Form__c.Customer_Name__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>Visit_Form__c.Customer_Type__c</field>
         <readable>true</readable>
@@ -10097,6 +10130,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Visit_Form__c.General_Remarks__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Outlet_Name__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -10131,12 +10169,22 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Visit_Form__c.Secondary_Customer_Business_Type__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Visit_Form__c.Secondary_Customer__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
         <field>Visit_Form__c.State__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Visit_Form__c.Sub_Stockiest_Name__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -11659,12 +11707,12 @@
     </objectPermissions>
     <objectPermissions>
         <allowCreate>true</allowCreate>
-        <allowDelete>true</allowDelete>
+        <allowDelete>false</allowDelete>
         <allowEdit>true</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
         <object>Leaves__c</object>
-        <viewAllRecords>true</viewAllRecords>
+        <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
         <allowCreate>true</allowCreate>
