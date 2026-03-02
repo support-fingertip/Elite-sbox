@@ -25,7 +25,7 @@
                     label="Primary Customer"
                     placeholder="Search Customer..."
                     object-api-name="Account"
-                    value={primaryCustomer}
+                    value={defaultPrimaryCustomerId}
                     display-info={displayInfo}
                     matching-info={matchingInfo}
                     filter={accountFilter}
@@ -34,7 +34,9 @@
                 </lightning-record-picker>
 
                 <c-secondary-customer-lookup
-                    primary-customer-id={primaryCustomer}
+                    primary-customer-id={defaultPrimaryCustomerId}
+                    preselected-record-id={defaultSecondaryCustomerId}
+                    preselected-record-name={defaultCustomerName}
                     onselect={handleSecondarySelect}>
                 </c-secondary-customer-lookup>
 

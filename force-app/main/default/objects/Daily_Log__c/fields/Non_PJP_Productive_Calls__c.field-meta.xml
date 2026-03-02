@@ -4,7 +4,7 @@
     <externalId>false</externalId>
     <formula>Non_PJP_Order_Calls__c</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-    <label>Non PJP Productive Calls</label>
+    <label>Non PJP PC</label>
     <precision>18</precision>
     <required>false</required>
     <scale>0</scale>

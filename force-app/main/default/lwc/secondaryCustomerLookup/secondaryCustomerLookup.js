@@ -4,6 +4,8 @@ import searchSecondaryCustomers from '@salesforce/apex/VisitFormController.searc
 export default class SecondaryCustomerLookup extends LightningElement {
 
     @api primaryCustomerId;
+    @api preselectedRecordId;
+    @api preselectedRecordName;
 
     @track searchTerm = '';
     @track records = [];
@@ -11,6 +13,29 @@ export default class SecondaryCustomerLookup extends LightningElement {
 
     showDropdown = false;
     delayTimeout;
+
+    connectedCallback() {
+        this.applyPreselection();
+    }
+
+    renderedCallback() {
+        this.applyPreselection();
+    }
+
+    applyPreselection() {
+        if (
+            this.preselectedRecordId &&
+            this.preselectedRecordName &&
+            (!this.selectedRecord || this.selectedRecord.Id !== this.preselectedRecordId)
+        ) {
+            this.selectedRecord = {
+                Id: this.preselectedRecordId,
+                Name: this.preselectedRecordName
+            };
+            this.searchTerm = '';
+            this.showDropdown = false;
+        }
+    }
 
     get comboboxClass() {
         return `slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click ${this.showDropdown ? 'slds-is-open' : ''}`;

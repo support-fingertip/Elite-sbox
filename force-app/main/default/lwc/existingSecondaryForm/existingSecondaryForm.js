@@ -1,9 +1,10 @@
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, track, wire, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import getAllowedProducts from '@salesforce/apex/VisitFormController.getAllowedProducts';
 import saveSecondaryVisit from '@salesforce/apex/VisitFormController.saveSecondaryVisit';
 import getPrimaryCustomers from '@salesforce/apex/VisitFormController.getPrimaryCustomers';
+import getSecondaryCustomerAutoFill from '@salesforce/apex/VisitFormController.getSecondaryCustomerAutoFill';
 import { getObjectInfo, getPicklistValues } from 'lightning/uiObjectInfoApi';
 import VISIT_FORM_OBJECT from '@salesforce/schema/Visit_Form__c';
 import PRODUCT_GROUP_FIELD from '@salesforce/schema/Visit_Form__c.Product_Group__c';
@@ -11,7 +12,14 @@ import PRODUCT_GROUP_FIELD from '@salesforce/schema/Visit_Form__c.Product_Group_
 import { getLocationService } from 'lightning/mobileCapabilities';
 
 export default class ExistingSecondaryCustomer extends NavigationMixin(LightningElement) {
-    @track primaryCustomer;
+    lastPrefillKey = '';
+    @api defaultPrimaryCustomerId;
+    @api defaultSecondaryCustomerId;
+    @api defaultCustomerName;
+
+    @api returnScreen = 3.8;
+    @api visitId;
+
     @track secondaryCustomer;
     @track productCategory;
 
@@ -44,6 +52,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
     currentLocationRequestId= '';
     latitude = '';
     longitude = '';
+    @api logId;
 
 
     displayInfo = {
@@ -62,16 +71,13 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
                 fieldPath: "Customer_Type__c",
                 operator: "eq",
                 value: "Primary Customer"
-            },
-            {
-                fieldPath: "Customer_Status__c",
-                operator: "eq",
-                value: "Active"
             }
         ]
     };
 
     isMobilePublisher = window.navigator.userAgent.indexOf('CommunityHybridContainer') > 0;
+    @track prefilledSecondaryCustomerId = '';
+    @track prefilledSecondaryCustomerName = '';
 
     get selectedProductGroups() {
         return this.productGroups?.[0]?.value || [];
@@ -104,6 +110,14 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
     }
 
     connectedCallback() {
+        if(!this.defaultSecondaryCustomerId)
+        {
+             this.secondaryCustomer = this.defaultSecondaryCustomerId;
+        }
+       
+
+        
+        console.log('this.defaultPrimaryCustomerId'+this.defaultPrimaryCustomerId);
         getAllowedProducts()
             .then(result => {
                 console.log('PRODUCT MAP FROM APEX:', result);
@@ -117,20 +131,11 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
                 console.error('Product Dependency Load Error:', error);
             });
 
-        getPrimaryCustomers()
-            .then(result => {
-                this.primaryOptions = result.map(acc => ({
-                    label: acc.Name,
-                    value: acc.Id
-                }));
-            })
-            .catch(error => {
-                console.error('Primary Customer Load Error:', error);
-            });
     }
 
+
     handlePrimaryCustomerSelect(event) {
-        this.primaryCustomer = event.detail.recordId;
+        this.defaultPrimaryCustomerId = event.detail.recordId;
     }
     handleSecondarySelect(event) {
         this.secondaryCustomer = event.detail?.Id;
@@ -202,7 +207,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
 
     handleGetLatLon() {
          
-        if (!this.primaryCustomer) {
+        if (!this.defaultPrimaryCustomerId) {
             this.showToast('Error', 'Please select Primary Customer', 'error');
             return;
         }
@@ -356,7 +361,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
         const groupValue = this.productGroups.flatMap(pg => pg.value).join(';');
 
         saveSecondaryVisit({
-            primaryCustomerId: this.primaryCustomer,
+            primaryCustomerId: this.defaultPrimaryCustomerId,
             secondaryCustomerId: this.secondaryCustomer,
             productCategory: this.productCategory,
             productGroup: groupValue,
@@ -369,14 +374,17 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
             competitorImageBase64: competitorImageBase64,
             competitorImageName: this.competitorProductImageName,
             latitude: this.latitude,
-            longitude: this.longitude
+            longitude: this.longitude,
+            visitId: this.visitId,
+            logId : this.logId
         })
             .then(recordId => {
                 this.showToast('Success', 'Secondary Customer Visit saved successfully', 'success');
                 this.isPageLoaded = false;
                 let message = { 
                     message: 'save' ,
-                    screen : 3.8
+                    screen : this.returnScreen,
+                    visittype: 'existingSecondary'
                 };
                 this.genericDispatchEvent(message);
             })
@@ -397,7 +405,8 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
     {
         let message = { 
             message: 'cancel' ,
-            screen : 3.8
+            screen : this.returnScreen,
+            visittype: 'existingSecondary'
         };
         this.genericDispatchEvent(message);
     }

@@ -62,7 +62,9 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
         isProgressVisit : false,
         isAcc : false,
         isCompleted : false,
-        isInProgress : false
+        isInProgress : false,
+        primaryVisitFormCreated: false,
+        secondaryVisitFormCreated: false
     };
     @track dailylogData = {
         Id: null,
@@ -114,6 +116,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
     isAllowedDevice = false;
     deviceRestictionMessage = '';
     currentLocationRequestId= '';
+    currentCustomerName;
 
     /**Visit Form Related */
     isShowNewVisitButton = false;
@@ -123,10 +126,14 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
     showSubStockiestExisting = false;
     showOutletNew = false;
     showOutletExisting = false;
-    showVisitFormDetail = false
+    showVisitFormDetail = false;
     isLeaveExisted = false;
     beatScreenTab = 'myBeats';
     selectedVisitFormId ='';
+    visitFormPrimaryCustomerId = '';
+    visitFormSecondaryCustomerId = '';
+    visitFormVisitId = '';
+    visitFormReturnScreen = 3.8;
 
     //detect if LWC is running in mobile publisher
     isMobilePublisher = window.navigator.userAgent.indexOf('CommunityHybridContainer') > 0;
@@ -737,6 +744,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
             if (childComp) {
                 // Wait for child to emit event
                 childComp.validateInprogressVisit();
+                this.isShowNewVisitButton = true;
             } else {
                 console.error('Child component not found');
             }
@@ -826,6 +834,8 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
         console.log('Beatplanner Entered inside');
         const msg = event.detail;
         if(msg.message == 'executeScreen'){
+            this.executeScreenData.primaryVisitFormCreated = false;
+            this.executeScreenData.secondaryVisitFormCreated = false;
             this.checkinData.locationType =  msg.locationType;
             this.checkinData.latitude =  msg.latitude;
             this.checkinData.longitude =  msg.longitude;
@@ -962,6 +972,24 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
             this.outletPage = true;
             this.isShelfStockScreen = true;
         }
+        else if(msg.message == 'visitFormScreen'){
+            this.currentCustomerName = this.header;
+            this.header = 'Visit Forms';
+            this.screen = msg.screen;
+            this.isShowNewVisitButton = false;
+            this.outletPage = true;
+            this.visitFormPrimaryCustomerId = msg.primaryCustomerId ? msg.primaryCustomerId : '';
+            this.visitFormSecondaryCustomerId = msg.secondaryCustomerId ? msg.secondaryCustomerId : '';
+            this.visitFormVisitId = msg.visitId ? msg.visitId : this.recordId;
+            this.visitFormReturnScreen = msg.screen ? msg.screen : 3.8;
+            this.executeScreenData.isProgressVisit = msg.isProgressVisit;
+            if(msg.visittype == 'existingPrimary') {
+                this.showExistingPrimary = true;
+            }
+            else if(msg.visittype == 'existingSecondary') {
+                this.showExistingSecondary = true;
+            }
+        }
       
     }
     //After saving of order or Stock or we will redirect to the execute screen 3
@@ -999,6 +1027,10 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
             this.screen = msg.screen;
             this.isShowNewVisitButton = false;
             this.outletPage = true;
+            this.visitFormPrimaryCustomerId = msg.primaryCustomerId ? msg.primaryCustomerId : '';
+            this.visitFormSecondaryCustomerId = msg.secondaryCustomerId ? msg.secondaryCustomerId : '';
+            this.visitFormVisitId = msg.visitId ? msg.visitId : this.recordId;
+            this.visitFormReturnScreen = msg.screen ? msg.screen : 3.8;
         
             if(msg.visittype == 'existingPrimary')
             {
@@ -1032,6 +1064,16 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
         this.resetAllScreen();
         const msg = event.detail;
         if(msg.message=='cancel') {
+            if(msg.screen == 3.2) {
+                this.isShowBackButton = true;
+                this.header = this.VisitListName;
+                this.isExecuteScreen = true;
+                this.screen = 3;
+                this.isVisitHeader = true;
+                this.outletPage = true;
+                this.isVisitCreate = true;
+                return;
+            }
             this.isShowBackButton = true;
             this.header = 'Visit Forms';
             this.isVisitFormScreen = true;
@@ -1042,6 +1084,22 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
             this.outletPage = true;
         }
         else if(msg.message=='save') {
+            if(msg.screen == 3.2) {
+                if (msg.visittype == 'existingPrimary') {
+                    this.executeScreenData.primaryVisitFormCreated = true;
+                }
+                if (msg.visittype == 'existingSecondary') {
+                    this.executeScreenData.secondaryVisitFormCreated = true;
+                }
+                this.isShowBackButton = true;
+                this.header = this.VisitListName;
+                this.isExecuteScreen = true;
+                this.screen = 3;
+                this.isVisitHeader = true;
+                this.outletPage = true;
+                this.isVisitCreate = true;
+                return;
+            }
             this.isShowBackButton = false;
             this.isBeatViewScreen = true;
             this.header = 'Visit Plan';
@@ -1255,6 +1313,10 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
         this.showOutletNew = false;
         this.showVisitFormDetail = false;
         this.showOutletExisting = false;
+        this.visitFormPrimaryCustomerId = '';
+        this.visitFormSecondaryCustomerId = '';
+        this.visitFormVisitId = '';
+        this.visitFormReturnScreen = 3.8;
         
     }
     refreshData(){
@@ -1266,6 +1328,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
         this.isPageLoaded = true;
         this.isRenderDataLoaded = true;
         this.Outlet = true;
+        this.beatScreenTab = 'myBeats';
         this.isShowBackButton = false;
         this.getDailyLogDetails();
        // this.isPageLoaded = false;

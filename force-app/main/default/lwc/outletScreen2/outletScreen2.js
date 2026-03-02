@@ -157,7 +157,7 @@ export default class OutletScreen2 extends NavigationMixin(LightningElement) {
             } 
             itm.isAcc = (itm.visitTypes == 'Primary Customer' || itm.visitTypes == 'Secondary Customer') ? true : false;
             itm.isPrimaryCustomer = itm.visitTypes == 'Primary Customer' ? true: false;
-            itm.isSecoundaryCustomer = itm.visitTypes == 'Primary Customer' ? true: false;
+            itm.isSecoundaryCustomer = itm.visitTypes == 'Secondary Customer' ? true : false;
             itm.isMoreLoad = true;
             itm.isShowAllData = itm.formattedVisitDate == formattedDate ? false : true;
             itm.execute = visitDate === today ? true : false;

@@ -87,7 +87,8 @@
                                 <c-execute-screen3 record-id={recordId} account-id={acccountId} index={index} onscreen3={handleProductScreen} is-progress-visit={executeScreenData.isProgressVisit} 
                                     is-acc={executeScreenData.isAcc} is-completed={executeScreenData.isCompleted} is-in-progress={executeScreenData.isInProgress} visit-parent-data={visitData} is-desktop={isDesktop}
                                     isplay-button-clicked={isplayButtonClicked} is-primary-customer={executeScreenData.isPrimaryCustomer} is-promoter={isPromoter}
-                                    checkin-data={checkinData}>
+                                    checkin-data={checkinData} primary-visit-form-created={executeScreenData.primaryVisitFormCreated}
+                                    secondary-visit-form-created={executeScreenData.secondaryVisitFormCreated}>
                                 </c-execute-screen3>
                             </template>
         
@@ -165,27 +166,41 @@
                             </template>
 
                             <template if:true={showExistingPrimary}>
-                                <c-existing-primary-form  onback={visitformRecordDispatch}> </c-existing-primary-form>
+                                <c-existing-primary-form
+                                    onback={visitformRecordDispatch}
+                                    log-id ={dailylogData.Id}
+                                    default-primary-customer-id={visitFormPrimaryCustomerId}
+                                    visit-id={visitFormVisitId}
+                                    return-screen={visitFormReturnScreen}>
+                                </c-existing-primary-form>
                             </template>
 
                             <template if:true={showExistingSecondary}>
-                                <c-existing-secondary-form onback={visitformRecordDispatch}></c-existing-secondary-form>
+                                <c-existing-secondary-form
+                                    onback={visitformRecordDispatch}
+                                    log-id ={dailylogData.Id}
+                                    default-customer-name={currentCustomerName}
+                                    default-primary-customer-id={visitFormPrimaryCustomerId}
+                                    default-secondary-customer-id={visitFormSecondaryCustomerId}
+                                    visit-id={visitFormVisitId}
+                                    return-screen={visitFormReturnScreen}>
+                                </c-existing-secondary-form>
                             </template>
 
                             <template if:true={showNewPrimary}>
-                                <c-new-primary-form onback={visitformRecordDispatch}></c-new-primary-form>
+                                <c-new-primary-form log-id ={dailylogData.Id} onback={visitformRecordDispatch}></c-new-primary-form>
                             </template>
 
                             <template if:true={showSubStockiestExisting}>
-                                <c-sub-stockiest-existing-form onback={visitformRecordDispatch}></c-sub-stockiest-existing-form>
+                                <c-sub-stockiest-existing-form log-id ={dailylogData.Id} onback={visitformRecordDispatch}></c-sub-stockiest-existing-form>
                             </template>
 
                             <template if:true={showOutletNew}>
-                                <c-outlet-new-form onback={visitformRecordDispatch}></c-outlet-new-form>
+                                <c-outlet-new-form log-id ={dailylogData.Id} onback={visitformRecordDispatch}></c-outlet-new-form>
                             </template>
 
                             <template if:true={showOutletExisting}>
-                                <c-outlet-existing-form onback={visitformRecordDispatch}></c-outlet-existing-form>
+                                <c-outlet-existing-form log-id ={dailylogData.Id} onback={visitformRecordDispatch}></c-outlet-existing-form>
                             </template>
 
                             <template if:true={showVisitFormDetail}>

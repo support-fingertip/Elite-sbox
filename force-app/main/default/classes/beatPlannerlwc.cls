@@ -661,6 +661,17 @@ global with sharing class beatPlannerlwc {
             }
             else
             {
+                list<Product_Mapping__c> secondaryMapping = new list<Product_Mapping__c>();
+                secondaryMapping = [Select Id,Name,Primary_Customer__c from Product_Mapping__c where Customer__c =:ids And Exectuive__c =: userInfo.getUserId() AND Primary_Customer__c != null limit 1];
+                if(secondaryMapping.isEmpty())
+                {
+                    secondaryMapping = [Select Id,Name,Primary_Customer__c from Product_Mapping__c where Customer__c =:ids AND Primary_Customer__c != null  limit 1];
+                }
+                dt.primaryCustmerId = !secondaryMapping.isEmpty() && String.isNotBlank(secondaryMapping[0].Primary_Customer__c)
+                    ? secondaryMapping[0].Primary_Customer__c
+                    : null;
+                   system.debug(' dt.secondaryMapping==>'+secondaryMapping);
+                system.debug(' dt.primaryCustmerId==>'+ dt.primaryCustmerId);
                 dt.currentMonthStockExisted = true;
             }
             
@@ -743,7 +754,17 @@ global with sharing class beatPlannerlwc {
         dt.Competition = [SELECT id,name,Product_Category__c,Product_Category__r.Name, Product__r.Name,Product__c,Display_boards__c,
                           Competitor_Name__c,Product_Category_Text__c,Product_Text__c,Special_offer_going_on__c,	Remarks__c
                           from Competition__c where visit__c =: recordid];
-        dt.visitForm=[SELECT Id, LastName, Phone, Street FROM Lead WHERE Visit__c = :recordId ORDER BY CreatedDate DESC ];
+
+        dt.visitForm = [
+            SELECT Id,Name,Customer_Name__c, Product_Categories__c
+            FROM Visit_Form__c
+            WHERE CreatedById = :UserInfo.getUserId()
+                AND CreatedDate = TODAY
+                AND (
+                    Visit__c = :recordId
+                )
+            ORDER BY CreatedDate DESC
+        ];
         dt.displayFormat=[SELECT Id, SKU__r.Name,skuName__c, Display__c FROM Display_Format__c WHERE Visit__c = :recordId
                           ORDER BY CreatedDate DESC ];
         dt.ShelfStocks= [SELECT Id,Name, Visit__c,Total_Stock_Level__c,Total_Sales_Quantity__c FROM Shelf_Stock__c  WHERE Visit__c = :recordId
@@ -3674,6 +3695,7 @@ return getTaskData(objectId);
         @AuraEnabled public Account currentAccountRec{get;set;}
         @AuraEnabled public List<SchemeStrategy> scheme { get; set; }
         @AuraEnabled public List<schemeData> schemessss{get;set;}
+        @AuraEnabled public String primaryCustmerId{get;set;}
         public data() {
             outData = new List<outstanding>();
             ordData = new List<Orders>();
@@ -3702,7 +3724,7 @@ return getTaskData(objectId);
         @AuraEnabled public List<ContentDocument> VisitPhoto{get; set;}
         @AuraEnabled public List<Dealer_Stock__c> Stock{get; set;}
         @AuraEnabled public List<Competition__c> Competition{get; set;}
-        @AuraEnabled public List<lead> visitForm{get; set;}
+        @AuraEnabled public List<Visit_Form__c> visitForm{get; set;}
         @AuraEnabled public List<Display_Format__c> displayFormat{get; set;}
         @AuraEnabled public List<Shelf_Stock__c> ShelfStocks{get; set;}
         @AuraEnabled public List<Outlet_Task__c> outletTask{get; set;}

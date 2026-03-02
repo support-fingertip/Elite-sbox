@@ -1,4 +1,4 @@
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, track, wire,api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import getAllowedProducts from '@salesforce/apex/VisitFormController.getAllowedProducts';
@@ -16,7 +16,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
 
     customerType = 'New Outlet';
     visitType = 'Existing Market Expansion';
-
+    @api logId;
     customerTypeOptions = [{ label: 'New Outlet', value: 'New Outlet' }];
     visitTypeOptions = [{ label: 'Existing Market Expansion', value: 'Existing Market Expansion' }];
 
@@ -447,7 +447,8 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
             competitorImageBase64: competitorImageBase64,
             competitorImageName: this.competitorProductImageName,
             latitude: this.latitude,
-            longitude: this.longitude
+            longitude: this.longitude,
+            logId : this.logId
         })
             .then(recordId => {
                 this.showToast('Success', 'New Outlet Visit saved successfully', 'success');

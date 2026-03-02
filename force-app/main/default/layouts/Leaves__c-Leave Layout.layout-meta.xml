@@ -91,6 +91,10 @@
                 <behavior>Readonly</behavior>
                 <field>Is_Current_User_Cancellation_Approver__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>Is_Record_Owner__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

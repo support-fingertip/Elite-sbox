@@ -30,6 +30,64 @@ public with sharing class VisitFormController {
         ];
     }
 
+    @AuraEnabled(cacheable=true)
+    public static Map<String, String> getSecondaryCustomerAutoFill(Id secondaryCustomerId) {
+        Map<String, String> response = new Map<String, String>();
+
+        if (secondaryCustomerId == null) {
+            return response;
+        }
+
+        Account secondaryCustomer;
+        List<Account> secondaryList = [
+            SELECT Id, Name, ParentId
+            FROM Account
+            WHERE Id = :secondaryCustomerId
+            LIMIT 1
+        ];
+
+        if (secondaryList.isEmpty()) {
+            return response;
+        }
+
+        secondaryCustomer = secondaryList[0];
+
+        Id primaryCustomerId;
+        List<Product_Mapping__c> productMappings = [
+            SELECT Id, Name, Primary_Customer__c
+            FROM Product_Mapping__c
+            WHERE Customer__c = :secondaryCustomerId
+            AND Primary_Customer__c != null
+            ORDER BY LastModifiedDate DESC
+            LIMIT 1
+        ];
+
+        if (!productMappings.isEmpty()) {
+            primaryCustomerId = productMappings[0].Primary_Customer__c;
+        } else if (secondaryCustomer.ParentId != null) {
+            primaryCustomerId = secondaryCustomer.ParentId;
+        }
+
+        response.put('secondaryCustomerId', (String) secondaryCustomer.Id);
+        response.put('secondaryCustomerName', secondaryCustomer.Name);
+
+        if (primaryCustomerId != null) {
+            List<Account> primaryList = [
+                SELECT Id, Name
+                FROM Account
+                WHERE Id = :primaryCustomerId
+                LIMIT 1
+            ];
+
+            if (!primaryList.isEmpty()) {
+                response.put('primaryCustomerId', (String) primaryList[0].Id);
+                response.put('primaryCustomerName', primaryList[0].Name);
+            }
+        }
+
+        return response;
+    }
+
  
     // =========================================================
     // GET ALLOWED PRODUCTS BASED ON EMPLOYEE CATEGORY
@@ -81,7 +139,8 @@ public with sharing class VisitFormController {
     @AuraEnabled
     public static Id savePrimaryVisit(Id primaryCustomerId, String productCategory, String productGroup, String competitorName,
         String competitorProduct, String competitorRemarks, String generalRemarks, String primaryImageBase64, String primaryImageName,
-        String competitorImageBase64, String competitorImageName, Decimal latitude, Decimal longitude) {
+        String competitorImageBase64, String competitorImageName, Decimal latitude, Decimal longitude,string visitId,string logId) 
+    {
         Visit_Form__c visit = new Visit_Form__c();
         visit.Primary_Customer__c = primaryCustomerId;
         visit.Product_Categories__c = productCategory;
@@ -90,6 +149,14 @@ public with sharing class VisitFormController {
         visit.Competitor_Product__c = competitorProduct;
         visit.Competitor_Remarks__c = competitorRemarks;
         visit.General_Remarks__c = generalRemarks;
+        if(visitId != null)
+        {
+            visit.Visit__c = visitId;
+        }
+        if(logId != null)
+        {
+            visit.Daily_Log__c = logId;
+        }
         visit.Customer_Type__c = 'Existing Primary Customer';
         if (latitude != null && longitude != null) {
             visit.Geo_Location__Latitude__s = latitude;
@@ -126,7 +193,8 @@ public with sharing class VisitFormController {
     public static Id saveSecondaryVisit(Id primaryCustomerId, Id secondaryCustomerId, String productCategory, String productGroup,
                                         String competitorName, String competitorProduct, String competitorRemarks, String generalRemarks,
                                         String customerImageBase64, String customerImageName,
-                                        String competitorImageBase64, String competitorImageName, Decimal latitude, Decimal longitude) 
+                                        String competitorImageBase64, String competitorImageName, Decimal latitude, Decimal longitude,
+                                        string visitId,String logId) 
     {
         Visit_Form__c visit = new Visit_Form__c();
         visit.Primary_Customer__c = primaryCustomerId;
@@ -142,6 +210,14 @@ public with sharing class VisitFormController {
         if (latitude != null && longitude != null) {
             visit.Geo_Location__Latitude__s = latitude;
             visit.Geo_Location__Longitude__s = longitude;
+        }
+        if(logId != null)
+        {
+            visit.Daily_Log__c = logId;
+        }
+        if(visitId != null)
+        {
+            visit.Visit__c = visitId;
         }
         insert visit;
         
@@ -179,7 +255,7 @@ public with sharing class VisitFormController {
                                                  String productGroup, String competitorName, String competitorProduct,
                                                  String competitorRemarks, String generalRemarks,
                                                  String customerImageBase64, String customerImageName, String competitorImageBase64,
-                                                 String competitorImageName, Decimal latitude, Decimal longitude)
+                                                 String competitorImageName, Decimal latitude, Decimal longitude,String logId)
     {
         
         
@@ -197,10 +273,15 @@ public with sharing class VisitFormController {
         visit.Pincode__c = pinCode;
         visit.Contact_Number__c = contactNumber;
         visit.Customer_Type__c = 'New Primary Customer';
+        visit.Visit_Type__c = 'New Market Expansion';
         visit.Primary_Customer_Business_Type__c = businessType;
         if (latitude != null && longitude != null) {
             visit.Geo_Location__Latitude__s = latitude;
             visit.Geo_Location__Longitude__s = longitude;
+        }
+        if(logId != null)
+        {
+            visit.Daily_Log__c = logId;
         }
         insert visit;
          
@@ -239,7 +320,7 @@ public with sharing class VisitFormController {
                                                         String district, String pinCode, String contactNumber, String productCategory, String productGroup,
                                                         String competitorName, String competitorProduct, String competitorRemarks, String generalRemarks,
                                                         String customerImageBase64, String customerImageName, String competitorImageBase64,
-                                                        String competitorImageName, Decimal latitude, Decimal longitude)
+                                                        String competitorImageName, Decimal latitude, Decimal longitude,String logId)
     {
         Visit_Form__c visit = new Visit_Form__c();
         visit.Sub_Stockiest_Name__c = subStockistName;
@@ -260,6 +341,10 @@ public with sharing class VisitFormController {
         if (latitude != null && longitude != null) {
             visit.Geo_Location__Latitude__s = latitude;
             visit.Geo_Location__Longitude__s = longitude;
+        }
+        if(logId != null)
+        {
+            visit.Daily_Log__c = logId;
         }
         insert visit;
         
@@ -294,7 +379,7 @@ public with sharing class VisitFormController {
                                                         String district, String pinCode, String contactNumber, String productCategory, String productGroup,
                                                         String competitorName, String competitorProduct, String competitorRemarks, String generalRemarks,
                                                         String customerImageBase64, String customerImageName, String competitorImageBase64,
-                                                        String competitorImageName, Decimal latitude, Decimal longitude)
+                                                        String competitorImageName, Decimal latitude, Decimal longitude,String logId)
     {
         Visit_Form__c visit = new Visit_Form__c();
         visit.Outlet_Name__c = outletName;
@@ -315,6 +400,10 @@ public with sharing class VisitFormController {
         if (latitude != null && longitude != null) {
             visit.Geo_Location__Latitude__s = latitude;
             visit.Geo_Location__Longitude__s = longitude;
+        }
+        if(logId != null)
+        {
+            visit.Daily_Log__c = logId;
         }
         insert visit;
         
@@ -349,7 +438,7 @@ public with sharing class VisitFormController {
                                               String district, String pinCode, String contactNumber, String productCategory, String productGroup,
                                               String competitorName, String competitorProduct, String competitorRemarks, String generalRemarks,
                                               String customerImageBase64, String customerImageName, String competitorImageBase64,
-                                              String competitorImageName, Decimal latitude, Decimal longitude)
+                                              String competitorImageName, Decimal latitude, Decimal longitude,String logId)
     {
         Visit_Form__c visit = new Visit_Form__c();
         visit.Outlet_Name__c = outletName;
@@ -371,6 +460,10 @@ public with sharing class VisitFormController {
         if (latitude != null && longitude != null) {
             visit.Geo_Location__Latitude__s = latitude;
             visit.Geo_Location__Longitude__s = longitude;
+        }
+        if(logId != null)
+        {
+            visit.Daily_Log__c = logId;
         }
         insert visit;
         

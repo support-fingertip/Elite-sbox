@@ -177,9 +177,11 @@
         <searchResultsAdditionalFields>ApprovalStatus__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>From_Date__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>To_Date__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Session_Type__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Reason_for_Leave__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Leave_Cancellation_Status__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Approver__c</searchResultsAdditionalFields>
     </searchLayouts>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>Private</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

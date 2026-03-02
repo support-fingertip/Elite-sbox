@@ -170,6 +170,10 @@
                 <behavior>Edit</behavior>
                 <field>Leave_HR__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>RSM_Name__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

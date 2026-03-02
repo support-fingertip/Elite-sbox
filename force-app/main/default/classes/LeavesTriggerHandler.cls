@@ -162,7 +162,7 @@ public with sharing class LeavesTriggerHandler {
             // ===============================
             //send Email to HR
             // ===============================
-            if (String.isNotBlank(record.HR_Email__c)) {
+        /*    if (String.isNotBlank(record.HR_Email__c)) {
                 
                 Messaging.SingleEmailMessage hrMail = new Messaging.SingleEmailMessage();
                 hrMail.setToAddresses(new List<String>{ record.HR_Email__c });
@@ -186,7 +186,7 @@ public with sharing class LeavesTriggerHandler {
                 
                 emails.add(hrMail);
             }
-            
+           */ 
             // =============================
             //  Send Email to L1 Approver
             // ===============================
@@ -253,7 +253,7 @@ public with sharing class LeavesTriggerHandler {
                 // ===============================
                 //send Email to HR
                 // ===============================
-                if (String.isNotBlank(record.HR_Email__c)) {
+            /*    if (String.isNotBlank(record.HR_Email__c)) {
                     
                     Messaging.SingleEmailMessage hrMail = new Messaging.SingleEmailMessage();
                     hrMail.setToAddresses(new List<String>{ record.HR_Email__c });
@@ -277,7 +277,7 @@ public with sharing class LeavesTriggerHandler {
                     
                     emails.add(hrMail);
                 }
-                
+               */ 
                 // =============================
                 //  Send Email to L1 Approver
                 // ===============================

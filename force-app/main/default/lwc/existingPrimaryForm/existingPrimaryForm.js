@@ -1,4 +1,4 @@
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, track, wire, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import getAllowedProducts from '@salesforce/apex/VisitFormController.getAllowedProducts';
@@ -13,6 +13,22 @@ import VISIT_FORM_OBJECT from '@salesforce/schema/Visit_Form__c';
 import PRODUCT_GROUP_FIELD from '@salesforce/schema/Visit_Form__c.Product_Group__c';
 
 export default class ExistingPrimaryForm extends NavigationMixin(LightningElement) {
+
+    _defaultPrimaryCustomerId;
+    lastPrimaryPrefillId = '';
+
+    @api
+    get defaultPrimaryCustomerId() {
+        return this._defaultPrimaryCustomerId;
+    }
+    set defaultPrimaryCustomerId(value) {
+        this._defaultPrimaryCustomerId = value;
+        this.applyDefaultPrimaryCustomer();
+    }
+    @api logId;
+
+    @api returnScreen = 3.8;
+    @api visitId;
 
     // =====================================================
     // FORM VARIABLES
@@ -54,16 +70,26 @@ export default class ExistingPrimaryForm extends NavigationMixin(LightningElemen
                 fieldPath: "Customer_Type__c",
                 operator: "eq",
                 value: "Primary Customer"
-            },
-            {
-                fieldPath: "Customer_Status__c",
-                operator: "eq",
-                value: "Active"
             }
         ]
     };
 
     isMobilePublisher = window.navigator.userAgent.indexOf('CommunityHybridContainer') > 0;
+
+    connectedCallback() {
+        this.applyDefaultPrimaryCustomer();
+    }
+
+    applyDefaultPrimaryCustomer() {
+        if (!this.defaultPrimaryCustomerId) {
+            return;
+        }
+        if (this.lastPrimaryPrefillId === this.defaultPrimaryCustomerId) {
+            return;
+        }
+        this.lastPrimaryPrefillId = this.defaultPrimaryCustomerId;
+        this.primaryCustomer = this.defaultPrimaryCustomerId;
+    }
     // =====================================================
     // DROPDOWN OPTIONS
     // =====================================================
@@ -395,14 +421,17 @@ export default class ExistingPrimaryForm extends NavigationMixin(LightningElemen
                 competitorImageBase64: competitorImageBase64,
                 competitorImageName: this.competitorProductImageName,
                 latitude: this.latitude,
-                longitude: this.longitude
+                longitude: this.longitude,
+                visitId: this.visitId,
+                logId : this.logId
             });
 
             this.showToast('Success', 'Primary Visit saved successfully', 'success');
             this.isPageLoaded = false;
             let message = { 
                 message: 'save' ,
-                screen : 3.8
+                screen : this.returnScreen,
+                visittype: 'existingPrimary'
             };
             this.genericDispatchEvent(message);
             
@@ -420,7 +449,8 @@ export default class ExistingPrimaryForm extends NavigationMixin(LightningElemen
     {
         let message = { 
             message: 'cancel' ,
-            screen : 3.8
+            screen : this.returnScreen,
+            visittype: 'existingPrimary'
         };
         this.genericDispatchEvent(message);
     }

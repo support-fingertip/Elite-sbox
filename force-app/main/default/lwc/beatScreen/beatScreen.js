@@ -21,6 +21,7 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         account : GOOGLE_ICONS + "/googleIcons/apartment.png",
     }
     @track visitForms = [];
+    @track allVisitForms = [];
     @track visitSearchTerm = '';
 
     isPageLoaded = false;
@@ -385,9 +386,10 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         this.isPageLoaded = true;
         getTodayVisitForms({ searchTerm: this.visitSearchTerm })
             .then(result => {
-                this.visitForms = result.map(vf => ({
+                this.allVisitForms = result.map(vf => ({
                     Id: vf.Id,
                     AccountName: vf.Customer_Name__c ? vf.Customer_Name__c : '',
+                    CustomerType: vf.Customer_Type__c ? vf.Customer_Type__c : '',
                     VisitType: vf.Visit_Type__c,
                     Status: 'Completed',
                     CreatedTime: vf.CreatedDate 
@@ -395,15 +397,25 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
                         : ''
                 }));
                 this.isPageLoaded = false;
+                this.visitForms = [...this.allVisitForms];
             })
             .catch(error => {
                 this.visitForms = [];
+                this.allVisitForms = [];
             });
     }
 
     handleSearch(event) {
         this.searchTerm = event.target.value;
-        this.fetchVisitForms();
+        const term = this.searchTerm ? this.searchTerm.toLowerCase() : '';
+        if(term) {
+            this.visitForms = this.allVisitForms.filter(form =>
+                (form.AccountName && form.AccountName.toLowerCase().includes(term)) ||
+                (form.VisitType && form.VisitType.toLowerCase().includes(term))
+            );
+        } else {
+            this.visitForms = [...this.allVisitForms];
+        }
     }
 
 

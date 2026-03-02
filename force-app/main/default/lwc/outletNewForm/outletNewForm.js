@@ -1,4 +1,4 @@
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, track, wire,api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import getAllowedProducts from '@salesforce/apex/VisitFormController.getAllowedProducts';
@@ -21,7 +21,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
     visitTypeOptions = [{ label: 'New Market Expansion', value: 'New Market Expansion' }];
 
     primaryCustomer = '';
-
+    @api logId;
     outletName = '';
     address ='';
     state = '';
@@ -67,6 +67,26 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
 
     stateControllerValues = {};
     allDistrictValues = [];
+
+    displayInfo = {
+        primaryField: "Name",
+        additionalFields: ["SAP_Customer_Code__c"]
+    };
+    matchingInfo = {
+        primaryField: { fieldPath: "Name", mode: "contains" },
+        additionalFields: [
+            { fieldPath: "SAP_Customer_Code__c", mode: "contains" }
+        ]
+    };
+    accountFilter = {
+        criteria: [
+            {
+                fieldPath: "Customer_Type__c",
+                operator: "eq",
+                value: "Primary Customer"
+            }
+        ]
+    };
 
     get selectedProductGroups() {
         return this.productGroups?.[0]?.value || [];
@@ -235,6 +255,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
             this.showToast('Error', 'Please enter Outlet Name', 'error');
             return;
         }
+
         if (!this.productCategory) {
             this.showToast('Error', 'Please select Product Category', 'error');
             return;
@@ -402,6 +423,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
         const groupValue = this.productGroups[0].value.join(';');
         saveOutletNewMarket({
             outletName: this.outletName,
+            primaryCustomer: this.primaryCustomer,
             customerBusinessType: this.customerBusinessType,
             address: this.address,
             state: this.state,
@@ -419,7 +441,8 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
             competitorImageBase64: competitorImageBase64,
             competitorImageName: this.competitorProductImageName,
             latitude: this.latitude,
-            longitude: this.longitude
+            longitude: this.longitude,
+            logId : this.logId
         })
             .then(recordId => {
                 this.showToast('Success', 'New Outlet Visit saved successfully', 'success');

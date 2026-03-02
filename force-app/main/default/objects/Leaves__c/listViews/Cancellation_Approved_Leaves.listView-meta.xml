@@ -5,11 +5,11 @@
     <columns>ApprovalStatus__c</columns>
     <columns>From_Date__c</columns>
     <columns>To_Date__c</columns>
+    <columns>Session_Type__c</columns>
     <columns>Type_of_Leave__c</columns>
     <columns>Leave_Status__c</columns>
     <columns>User__c</columns>
-    <columns>CREATEDBY_USER</columns>
-    <columns>CREATED_DATE</columns>
+    <columns>Approver__c</columns>
     <filterScope>Everything</filterScope>
     <filters>
         <field>Leave_Cancellation_Status__c</field>
