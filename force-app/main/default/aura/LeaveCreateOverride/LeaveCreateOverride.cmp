@@ -1,0 +1,269 @@
+<aura:component controller="LeaveCreateOverrideCtrl"
+                implements="lightning:actionOverride,force:hasRecordId,force:hasSObjectName"
+                access="global">
+    
+    <!-- Attributes -->
+    <aura:attribute name="isProcessing" type="Boolean" default="false"/>
+    <aura:attribute name="showUserField" type="Boolean" default="false"/>
+    <aura:attribute name="fromDate" type="Date"/>
+    <aura:attribute name="toDate" type="Date"/>
+    <aura:attribute name="showSession" type="Boolean" default="false"/>
+    
+    <!--Added by Pattu-->
+    <aura:attribute name="userSearchTerm"    type="String"  default=""/>
+    <aura:attribute name="userSearchResults" type="List"    default="[]"/>
+    <aura:attribute name="showUserDropdown"  type="Boolean" default="false"/>
+    <aura:attribute name="selectedUserId"    type="String"  default=""/>
+    <aura:attribute name="selectedUserName"  type="String"  default=""/>
+    <aura:attribute name="searchTimer"       type="Object"  />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:html tag="style">
+        html, body {
+        overflow-x: hidden !important;
+        }
+        
+        .slds-modal {
+        overflow-x: hidden !important;
+        }
+        
+        .slds-modal__container {
+        max-width: 70rem;
+        width: 90%;
+        }
+        
+        .slds-modal__content {
+        overflow-x: hidden !important;
+        }
+        
+        @media screen and (max-width: 768px) {
+        
+        .slds-modal__container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        left: 0 !important;
+        }
+        
+        .slds-modal__content {
+        min-height:100vh;
+        padding: 1rem !important;
+        overflow-x: hidden !important;
+        }
+        
+        .slds-grid {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        }
+        
+        .slds-col {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        }
+        }
+    </aura:html>
+    
+    <div>
+        
+        <lightning:recordEditForm objectApiName="Leaves__c"
+                                  aura:id="leaveForm"
+                                  onsuccess="{!c.handleSuccess}"
+                                  onsubmit="{!c.handleSubmit}">
+            
+            <section role="dialog"
+                     tabindex="-1"
+                     aria-modal="true"
+                     class="slds-modal slds-fade-in-open">
+                <div class="{!($Browser.isPhone) ? 'slds-card':'slds-modal__container'}" >
+                    <!-- ================= HEADER ================= -->
+                    <aura:if isTrue="{!($Browser.isDesktop)}">
+                        <header class="slds-modal__header">
+                            <h2 class="slds-text-heading_medium slds-hyphenate">
+                                New Leave
+                            </h2>
+                        </header>
+                    </aura:if>
+                    <aura:if isTrue="{!($Browser.isPhone)}">
+                        <div class="slds-card__header slds-gutters">
+                            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-modal__header">
+                                <div class="slds-col">
+                                    <button class="slds-button slds-float_left mobileCancel" onclick="{!c.closeModel}">Cancel</button>
+                                </div>
+                                <div class="slds-col slds-align_absolute-center">
+                                    <h1 id="modal-heading-02" class="slds-modal__title slds-hyphenate mobileTitle">New Leave</h1>
+                                </div>
+                                <div class="slds-col">
+                                    <button class="slds-button slds-float_right mobileSave"   name="Save"  disabled="{!v.isProcessing}"  type="submit" >Save</button>
+                                </div>
+                            </header>
+                        </div>
+                    </aura:if>
+                    
+                    <!-- ================= BODY ================= -->
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <aura:if isTrue="{!v.isProcessing}">
+                            <lightning:spinner size="medium" variant="brand"/>
+                        </aura:if>
+                        
+                        <lightning:messages/>
+                        
+                        <div class="slds-grid slds-wrap">
+                            
+                            <!-- LEFT COLUMN -->
+                            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                                
+                                <lightning:inputField fieldName="Type_of_Leave__c" required="true"/>
+                                
+                                <lightning:inputField fieldName="From_Date__c"
+                                                      value="{!v.fromDate}"
+                                                      onchange="{!c.handleDateChange}"
+                                                      required="true"/>
+                                
+                                <lightning:inputField fieldName="To_Date__c"
+                                                      value="{!v.toDate}"
+                                                      onchange="{!c.handleDateChange}"
+                                                      required="true"/>
+                                
+                            </div>
+                            
+                            <!-- RIGHT COLUMN -->
+                            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                                <!-- Added by pattu-->
+                                <aura:if isTrue="{!v.showUserField}">
+                                    <div class="slds-form-element slds-m-bottom_small">
+                                        <label class="slds-form-element__label">
+                                            <abbr class="slds-required" title="required">*</abbr> Employee / User
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-combobox_container">
+                                                <div class="{! 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click' + (v.showUserDropdown ? ' slds-is-open' : '') }"
+                                                     aria-expanded="{!v.showUserDropdown}" aria-haspopup="listbox" role="combobox">
+                                                    
+                                                    <!-- Input box with clear icon inside -->
+                                                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                                        <lightning:input
+                                                                         type="text"
+                                                                         value="{!v.userSearchTerm}"
+                                                                         placeholder="Search by Name, Emp Code, Vendor Code..."
+                                                                         onchange="{!c.handleUserSearch}"
+                                                                         onblur="{!c.handleUserBlur}"
+                                                                         variant="label-hidden"
+                                                                         class="slds-combobox__input"
+                                                                         readonly="{!not(empty(v.selectedUserId))}" />
+                                                        
+                                                        <!-- Show X clear icon inside box when a user is selected -->
+                                                        <aura:if isTrue="{!not(empty(v.selectedUserId))}">
+                                                            <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
+                                                                    onclick="{!c.handleClearUser}"
+                                                                    title="Clear selection"
+                                                                    style="cursor:pointer;">
+                                                                <lightning:icon iconName="utility:close" size="x-small" alternativeText="Clear"/>
+                                                            </button>
+                                                        </aura:if>
+                                                        
+                                                        <!-- Show search icon when nothing selected -->
+                                                        <aura:if isTrue="{!empty(v.selectedUserId)}">
+                                                            <lightning:icon iconName="utility:search"
+                                                                            size="x-small"
+                                                                            class="slds-input__icon slds-input__icon_right slds-icon-text-default"
+                                                                            alternativeText="Search"/>
+                                                        </aura:if>
+                                                    </div>
+                                                    
+                                                    <!-- Dropdown results -->
+                                                    <aura:if isTrue="{!v.showUserDropdown}">
+                                                        <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                            <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                
+                                                                <!-- Results list -->
+                                                                <aura:iteration items="{!v.userSearchResults}" var="user">
+                                                                    <li role="presentation" class="slds-listbox__item">
+                                                                        <span class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
+                                                                              role="option"
+                                                                              data-user-id="{!user.Id}"
+                                                                              data-user-name="{!user.Name}"
+                                                                              onmousedown="{!c.handleUserSelect}">
+                                                                            <span class="slds-media__figure slds-listbox__option-icon">
+                                                                                <lightning:icon iconName="standard:user" size="small"/>
+                                                                            </span>
+                                                                            <span class="slds-media__body" style="padding: 6px 0;">
+                                                                                <span class="slds-listbox__option-text slds-truncate"
+                                                                                      style="margin-bottom: 4px; display: block; font-weight: 600;">
+                                                                                    {!user.Name}
+                                                                                </span>
+                                                                                <span class="slds-listbox__option-meta slds-truncate"
+                                                                                      style="display: block; line-height: 1.8; letter-spacing: 0.3px;">
+                                                                                    Emp: <strong>{!user.Employee_Code__c}</strong> &nbsp;|&nbsp;
+                                                                                    Vendor: <strong>{!user.Vendor_Code__c}</strong> &nbsp;|&nbsp;
+                                                                                    ID: <strong>{!user.User_Id__c}</strong>
+                                                                                </span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </li>
+                                                                </aura:iteration>
+                                                                
+                                                                <!-- No results -->
+                                                                <aura:if isTrue="{!and(v.userSearchResults.length == 0, v.userSearchTerm.length > 1)}">
+                                                                    <li class="slds-listbox__item">
+                                                                        <span class="slds-media slds-listbox__option slds-listbox__option_entity" role="option">
+                                                                            <span class="slds-media__body">
+                                                                                <span class="slds-listbox__option-text slds-text-color_weak">
+                                                                                    No results found
+                                                                                </span>
+                                                                            </span>
+                                                                        </span>
+                                                                    </li>
+                                                                </aura:if>
+                                                                
+                                                            </ul>
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!v.showSession}">
+                                    <lightning:inputField fieldName="Session_Type__c"/>
+                                </aura:if>
+                                
+                                <lightning:inputField fieldName="Reason_for_Leave__c" required="true"/>
+                                
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- ================= FOOTER ================= -->
+                    <aura:if isTrue="{!($Browser.isDesktop)}">
+                        <footer class="slds-modal__footer">
+                            
+                            
+                            
+                            <lightning:button variant="neutral"
+                                              label="Cancel"
+                                              onclick="{!c.closeModel}"/>
+                            
+                            <lightning:button variant="brand"
+                                              type="submit"
+                                              label="Save Leave"
+                                              disabled="{!v.isProcessing}"/>
+                            
+                        </footer>
+                    </aura:if>
+                </div>
+            </section>
+            
+            <!-- Backdrop -->
+            <div class="slds-backdrop slds-backdrop_open"></div>
+            
+        </lightning:recordEditForm>
+        
+    </div>
+    
+</aura:component>

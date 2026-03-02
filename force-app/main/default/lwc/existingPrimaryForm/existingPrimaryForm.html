@@ -1,0 +1,153 @@
+<template>
+    <template lwc:if={isPageLoaded}>
+        <div >
+            <c-on-loading-screen></c-on-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="page">
+            <!-- HEADER -->
+            <div class="header">
+                <div>
+                    <div class="title">
+                        Existing Primary Customer
+                    </div>
+                    <div class="subtitle">
+                        Fill in the visit details
+                    </div>
+                </div>
+            </div>
+            <div class="form">
+                <!-- Primary Customer -->
+                <lightning-record-picker
+                    label="Primary Customer"
+                    placeholder="Search Customer..."
+                    object-api-name="Account"
+                    value={primaryCustomer}
+                    display-info={displayInfo}
+                    matching-info={matchingInfo}
+                    filter={accountFilter}
+                    onchange={handleCustomerSelect}
+                    required>
+                </lightning-record-picker>
+
+                <!-- Product Category -->
+                <lightning-combobox
+                    label="Product Category"
+                    value={productCategory}
+                    options={categoryOptions}
+                    data-field="productCategory"
+                    onchange={handleChange}
+                    required>
+                </lightning-combobox>
+
+                <!-- Product Group -->
+                <template lwc:if={showProductGroup}>
+                    <div class="field">
+                        <label class="label">
+                            Product Group
+                            <span class="required">*</span>
+                        </label>
+                        <lightning-checkbox-group
+                            options={groupOptions}
+                            value={selectedProductGroups}
+                            onchange={handleGroupChange}>
+                        </lightning-checkbox-group>
+                    </div>
+                </template>
+
+                <!-- Competitor Name -->
+                <lightning-input
+                    label="Competitor Name"
+                    value={competitorName}
+                    data-field="competitorName"
+                    onchange={handleChange}
+                    required>
+                </lightning-input>
+
+                <!-- Competitor Product -->
+                <lightning-input
+                    label="Competitor Product"
+                    value={competitorProduct}
+                    data-field="competitorProduct"
+                    onchange={handleChange}
+                    required>
+                </lightning-input>
+
+                <!-- Competitor Product Image -->
+                <div class="upload-field">
+                    <label class="label">
+                        Competitor Product Image
+                        <span class="required">*</span>
+                    </label>
+                    <div class="upload-wrapper">
+                        <input
+                            type="file"
+                            class="file-input"
+                            accept="image/*"
+                            onchange={handleCompetitorProductImage} />
+                        <div class="upload-box">
+                            <lightning-icon icon-name="utility:upload" size="x-small"></lightning-icon>
+                            <span class="upload-text">Upload Files</span>
+                            <span class="upload-sub">Or drop files</span>
+                        </div>
+                    </div>
+                    <template if:true={competitorProductImageName}>
+                        <div class="file-name">
+                            {competitorProductImageName}
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Competitor Remarks -->
+                <lightning-textarea
+                    label="Competitor Remarks"
+                    value={competitorRemarks}
+                    data-field="competitorRemarks"
+                    onchange={handleChange}
+                    required>
+                </lightning-textarea>
+
+                <!-- General Remarks -->
+                <lightning-textarea
+                    label="General Remarks"
+                    value={generalRemarks}
+                    data-field="generalRemarks"
+                    onchange={handleChange}
+                    required>
+                </lightning-textarea>
+
+                <!-- Primary Customer Image -->
+                <div class="upload-field">
+                    <label class="label">
+                        Primary Customer Image
+                        <span class="required">*</span>
+                    </label>
+                    <div class="upload-wrapper">
+                        <input
+                            type="file"
+                            class="file-input"
+                            accept="image/*"
+                            onchange={handlePrimaryCustomerImage} />
+                        <div class="upload-box">
+                            <lightning-icon icon-name="utility:upload" size="x-small"></lightning-icon>
+                            <span class="upload-text">Upload Files</span>
+                            <span class="upload-sub">Or drop files</span>
+                        </div>
+                    </div>
+                    <template if:true={primaryCustomerImageName}>
+                        <div class="file-name">
+                            {primaryCustomerImageName}
+                        </div>
+                    </template>
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="button-row">
+                    <lightning-button label="Cancel" onclick={handleBack} disabled={isPageLoaded}></lightning-button>
+                    <lightning-button label="Submit" variant="brand" disabled={isPageLoaded} onclick={handleGetLatLon}></lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

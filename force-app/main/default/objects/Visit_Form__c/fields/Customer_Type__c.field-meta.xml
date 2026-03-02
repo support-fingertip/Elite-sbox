@@ -12,14 +12,29 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Primary Customer</fullName>
+                <fullName>Existing Primary Customer</fullName>
                 <default>false</default>
-                <label>Primary Customer</label>
+                <label>Existing Primary Customer</label>
             </value>
             <value>
-                <fullName>Secondary Customer</fullName>
+                <fullName>Existing Secondary Customer</fullName>
                 <default>false</default>
-                <label>Secondary Customer</label>
+                <label>Existing Secondary Customer</label>
+            </value>
+            <value>
+                <fullName>New Primary Customer</fullName>
+                <default>false</default>
+                <label>New Primary Customer</label>
+            </value>
+            <value>
+                <fullName>New Sub Stockiest</fullName>
+                <default>false</default>
+                <label>New Sub Stockiest</label>
+            </value>
+            <value>
+                <fullName>New Outlet</fullName>
+                <default>false</default>
+                <label>New Outlet</label>
             </value>
         </valueSetDefinition>
     </valueSet>

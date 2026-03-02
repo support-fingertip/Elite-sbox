@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>No_of_Days__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF( Halfday__c , 0.5,
+
+CASE(MOD( From_Date__c - DATE(1985,6,24),7),
+0 , CASE( MOD( To_Date__c - From_Date__c ,7),1,2,2,3,3,4,4,5,5,6,6,6,1),
+1 , CASE( MOD( To_Date__c - From_Date__c ,7),1,2,2,3,3,4,4,5,5,5,6,6,1),
+2 , CASE( MOD( To_Date__c - From_Date__c ,7),1,2,2,3,3,4,4,4,5,5,6,6,1),
+3 , CASE( MOD( To_Date__c - From_Date__c ,7),1,2,2,3,3,3,4,4,5,5,6,6,1),
+4 , CASE( MOD( To_Date__c - From_Date__c ,7),1,2,2,2,3,3,4,4,5,5,6,6,1),
+5 , CASE( MOD( To_Date__c - From_Date__c ,7),1,1,2,2,3,3,4,4,5,5,6,6,1),
+6 , CASE( MOD( To_Date__c - From_Date__c ,7),1,1,2,2,3,3,4,4,5,5,6,6,0),
+999)
++
+(FLOOR(( To_Date__c - From_Date__c )/7)*6))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>No of Days</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workflow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <alerts>
+        <fullName>Send_email_notification_appiled_leave_approval</fullName>
+        <description>Send email notification appiled leave approval</description>
+        <protected>false</protected>
+        <recipients>
+            <recipient>HR</recipient>
+            <type>role</type>
+        </recipients>
+        <senderType>CurrentUser</senderType>
+        <template>unfiled$public/Leave_Approval_Email</template>
+    </alerts>
+    <fieldUpdates>
+        <fullName>Approvalrejected</fullName>
+        <field>ApprovalStatus__c</field>
+        <literalValue>Leave Rejected</literalValue>
+        <name>Approvalrejected</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>CancellationApproved</fullName>
+        <field>Leave_Cancellation_Status__c</field>
+        <literalValue>Cancellation Approved</literalValue>
+        <name>CancellationApproved</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>CancellationRejected</fullName>
+        <field>Leave_Cancellation_Status__c</field>
+        <literalValue>Cancellation Rejected</literalValue>
+        <name>CancellationRejected</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Cancellation_Approved_Date</fullName>
+        <field>Leave_Cancellation_Approved_Date__c</field>
+        <formula>Today()</formula>
+        <name>Cancellation Approved Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>false</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Leave_Approved_Date</fullName>
+        <field>Leave_Approved_Date__c</field>
+        <formula>TODAY()</formula>
+        <name>Leave Approved Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Leave_Cancellation</fullName>
+        <field>ApprovalStatus__c</field>
+        <literalValue>Leave Cancelled</literalValue>
+        <name>Leave Cancellation</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Leave_Cancellation_submitt</fullName>
+        <field>Leave_Cancellation_Status__c</field>
+        <literalValue>Submitted for Cancellation</literalValue>
+        <name>Leave Cancellation submitt</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Leave_Submitted_For_Approval</fullName>
+        <field>ApprovalStatus__c</field>
+        <literalValue>Submitted for Approval</literalValue>
+        <name>Leave Submitted For Approval</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Leave_Submitted_for_1Cancellation</fullName>
+        <field>Leave_Cancellation_Status__c</field>
+        <literalValue>Submitted for Cancellation</literalValue>
+        <name>Leave Submitted for Cancellation</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Leave_Submitted_for_Cancellation</fullName>
+        <field>Leave_Cancellation_Status__c</field>
+        <literalValue>Submitted for Cancellation</literalValue>
+        <name>Leave Submitted for Cancellation</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>approvalAproved</fullName>
+        <field>ApprovalStatus__c</field>
+        <literalValue>Leave Approved</literalValue>
+        <name>approvalAproved</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+</Workflow>

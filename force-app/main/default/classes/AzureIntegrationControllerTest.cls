@@ -96,6 +96,24 @@ private class AzureIntegrationControllerTest {
         System.assertEquals(1, [SELECT COUNT() FROM Apex_Log__c], 'Log should be inserted');
 	    }
 
+       @IsTest
+    static void testOrderSuccess1() {
+
+        setupData();
+        Order__c ord = [SELECT Id FROM Order__c LIMIT 1];
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new OrderSuccessMock());
+
+        AzureIntegrationController.sendOrderfromBatch('{ "test": "order" }', ord.Id);
+
+        Test.stopTest();
+
+        Order__c updatedOrd = [SELECT ERP_Check__c FROM Order__c WHERE Id = :ord.Id];
+   //     System.assertEquals(true, updatedOrd.ERP_Check__c, 'Order ERP flag should be true');
+
+	    }
+    
     @IsTest
     static void testOrderFailure() {
 
@@ -115,7 +133,25 @@ private class AzureIntegrationControllerTest {
    //     System.assertEquals(1, [SELECT COUNT() FROM Apex_Log__c], 'Error log must be created');
     }
 
-    @IsTest
+     @IsTest
+    static void testOrderFailure1() {
+
+        setupData();
+        Order__c ord = [SELECT Id FROM Order__c LIMIT 1];
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new OrderFailMock());
+
+        AzureIntegrationController.sendOrderfromBatch('{ "test": "order" }', ord.Id);
+
+        Test.stopTest();
+
+        Order__c updatedOrd = [SELECT ERP_Check__c FROM Order__c WHERE Id = :ord.Id];
+     //   System.assertEquals(false, updatedOrd.ERP_Check__c, 'ERP flag must be false on failure');
+
+   //     System.assertEquals(1, [SELECT COUNT() FROM Apex_Log__c], 'Error log must be created');
+    }
+     @IsTest
     static void testAccountSuccess() {
 
         setupData();

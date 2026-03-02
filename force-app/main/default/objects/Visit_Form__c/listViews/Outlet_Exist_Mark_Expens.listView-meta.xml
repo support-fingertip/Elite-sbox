@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Outlet_Exist_Mark_Expens</fullName>
+    <columns>NAME</columns>
+    <columns>Customer_Name__c</columns>
+    <columns>Customer_Type__c</columns>
+    <columns>Visit_Type__c</columns>
+    <columns>Product_Categories__c</columns>
+    <columns>Product_Group__c</columns>
+    <columns>Competitor_Name__c</columns>
+    <columns>Competitor_Product__c</columns>
+    <columns>Competitor_Remarks__c</columns>
+    <columns>Address__c</columns>
+    <columns>State__c</columns>
+    <columns>District__c</columns>
+    <columns>Pincode__c</columns>
+    <columns>CREATEDBY_USER</columns>
+    <columns>CREATED_DATE</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Customer_Type__c</field>
+        <operation>equals</operation>
+        <value>New Outlet</value>
+    </filters>
+    <filters>
+        <field>Visit_Type__c</field>
+        <operation>equals</operation>
+        <value>Existing Market Expansion</value>
+    </filters>
+    <label>Outlet-Exist. Mark. Expens.</label>
+</ListView>

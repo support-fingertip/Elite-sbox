@@ -357,6 +357,16 @@ public class EmployeeTriggerHandler {
                 {
                     newUser.Employee_Approver_3_HR__c = emp.Employee_Approver_3_HR__c;
                 }
+                
+                if(emp.Leave_HR__c != oldEmp.Leave_HR__c)
+                {
+                    newUser.Leave_HR__c = emp.Leave_HR__c;
+                }
+                if(emp.Leave_Approver_L1__c != oldEmp.Leave_Approver_L1__c)
+                {
+                    newUser.Leave_Approver_L1__c = emp.Leave_Approver_L1__c;
+                }
+
 
                 if(emp.Secondary_Customer_Approver_1__c != oldEmp.Secondary_Customer_Approver_1__c)
                 {

@@ -21,12 +21,5 @@ trigger VisitTrigger on Visit__c (after insert,after Update, after Delete,after 
             VisitTriggerHandler.afterInsert(Trigger.new);
         }
     }
-    else if(Trigger.isDelete)
-    {
-        if(Trigger.isAfter)
-        {
-            VisitTriggerHandler.afterDelete(Trigger.old);
-        }
-    }
 
 }

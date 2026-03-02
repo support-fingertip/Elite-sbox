@@ -14,5 +14,10 @@
     <columns>CREATEDBY_USER</columns>
     <columns>Distance_Travelled__c</columns>
     <filterScope>Everything</filterScope>
+    <filters>
+        <field>Today_Day_Travelled_Distance_KM__c</field>
+        <operation>greaterThan</operation>
+        <value>0</value>
+    </filters>
     <label>All</label>
 </ListView>

@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Date__c</fullName>
     <externalId>false</externalId>
-    <formula>DATEVALUE(Day_started_time__c)</formula>
+    <formula>DATEVALUE( Day_started_time__c )</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <label>Date</label>
     <required>false</required>

@@ -1,0 +1,75 @@
+<template>
+    <template if:true={isLoading}>
+        <div>
+            <c-on-loading-screen></c-on-loading-screen>
+        </div>
+    </template>
+
+    <template if:true={hasError}>
+        <div class="error-state">
+            <p>Unable to load visit details. Please try again.</p>
+        </div>
+    </template>
+
+    <template if:false={isLoading}>
+        <div class="detail-wrapper">
+            <template if:true={visitRecord}>
+                <div class="detail-content">
+                    <!-- Visit Info Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a73b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>Visit Information</span>
+                        </div>
+                        <div class="field-grid">
+                            <div class="field-row">
+                                <span class="field-label">Visit Date</span>
+                                <span class="field-value">{formattedDate}</span>
+                            </div>
+                            <div class="field-row">
+                                <span class="field-label">Visit Time</span>
+                                <span class="field-value">{formattedTime}</span>
+                            </div>
+                            <div class="field-row">
+                                <span class="field-label">Visit Type</span>
+                                <span class="field-value">{visitRecord.visitType}</span>
+                            </div>
+                            <div class="field-row">
+                                <span class="field-label">Visited By</span>
+                                <span class="field-value">{visitRecord.Owner.Name}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <template if:true={hasFormSpecificFields}>
+                        <div class="card">
+                            <div class="card-header">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a73b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 12h6"/>
+                                    <path d="M9 16h6"/>
+                                    <path d="M9 8h6"/>
+                                    <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+                                </svg>
+                                <span>Form Details</span>
+                            </div>
+                            <div class="field-grid">
+                                <template for:each={formSpecificFields} for:item="item">
+                                    <div class="field-row" key={item.label}>
+                                        <span class="field-label">{item.label}</span>
+                                        <span class="field-value">{item.value}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

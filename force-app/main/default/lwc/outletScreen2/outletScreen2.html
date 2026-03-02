@@ -105,106 +105,108 @@
                                             <div class="outlet-title" style="padding-left:14px"> &nbsp;&nbsp; Longitude : {item.customerLocationLongitude}  </div>
                                             </template>
                                         
-                                        </div>        
-                                        <template if:true={isDayStarted}>                                     
-                                            <div class="outlet-icon" >
-                                                <template lwc:if={item.showMenuPlanned}> 
-                                                    <template if:false={isProgressVisit}>
+                                        </div>  
+                                        <template if:false={isLeaveExisted}> 
+                                            <template if:true={isDayStarted}>                                     
+                                                <div class="outlet-icon" >
+                                                    <template lwc:if={item.showMenuPlanned}> 
+                                                        <template if:false={isProgressVisit}>
+                                                            <div class="icon-container">
+                                                                <div onclick={handleOnclickMenu} data-id={item.id} data-index={index} data-name="Execute_StartCall" >
+                                                                    <img src={googleIcons.play}   width="20" height="20" > 
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </template>
+                                                    <template if:false={item.showMenuPlanned}>
                                                         <div class="icon-container">
-                                                            <div onclick={handleOnclickMenu} data-id={item.id} data-index={index} data-name="Execute_StartCall" >
-                                                                <img src={googleIcons.play}   width="20" height="20" > 
+                                                            <div onclick={handleOnclickMenu} data-id={item.id} data-index={index} data-name="Execute">
+                                                                <img src={googleIcons.forward}   width="20" height="20" > 
                                                             </div>
                                                         </div>
                                                     </template>
-                                                </template>
-                                                <template if:false={item.showMenuPlanned}>
-                                                    <div class="icon-container">
-                                                        <div onclick={handleOnclickMenu} data-id={item.id} data-index={index} data-name="Execute">
-                                                            <img src={googleIcons.forward}   width="20" height="20" > 
-                                                        </div>
-                                                    </div>
-                                                </template>
 
-                                                <div onclick={openMenu} tabindex="0" data-id={item.id} data-index={index}>
-                                                    <lightning-icon 
-                                                                icon-name="utility:threedots_vertical" 
-                                                                size="x-small" 
-                                                                alternative-text="" 
-                                                                class="chevron-icon-ex"
-                                                                data-id={item.id}
-                                                                data-index={index}></lightning-icon>
-                                                    <!-- Popup menu -->
-                                                    <template lwc:if={item.openPopup}>
-                                                        <div class="popup" >
-                                                            <ul>
-                                                                <li onclick={handleOnclickMenu} data-name="OpenStore" data-id={item.id} data-index={index}>
-                                                                    <i class="material-symbols-outlined">
-                                                                        <lightning-icon 
-                                                                            icon-name="utility:record_update" 
-                                                                            size="x-small" 
-                                                                            alternative-text="Complete"
-                                                                            class="invert-image" >
-                                                                        </lightning-icon>
-                                                                    </i>
-                                                                    Store
-                                                                </li>
-                                                                <li onclick={handleOnclickMenu} data-name="NavigateToMap" data-id={item.id} data-index={index} data-latitude={item.customerLocationLattitude} data-longitude={item.customerLocationLongitude}>
-                                                                    <i class="material-symbols-outlined">
-                                                                        <lightning-icon 
-                                                                            icon-name="utility:location" 
-                                                                            size="x-small" 
-                                                                            alternative-text="Complete"
-                                                                            class="invert-image" >
-                                                                        </lightning-icon>
-                                                                    </i>
-                                                                    Go To Map
-                                                                </li>
-                                                                <template if:true={item.showMenuInProgress}>
-                                                                    <li onclick={handleOnclickMenu} data-name="EndCall" data-id={item.id} data-index={index}>
+                                                    <div onclick={openMenu} tabindex="0" data-id={item.id} data-index={index}>
+                                                        <lightning-icon 
+                                                                    icon-name="utility:threedots_vertical" 
+                                                                    size="x-small" 
+                                                                    alternative-text="" 
+                                                                    class="chevron-icon-ex"
+                                                                    data-id={item.id}
+                                                                    data-index={index}></lightning-icon>
+                                                        <!-- Popup menu -->
+                                                        <template lwc:if={item.openPopup}>
+                                                            <div class="popup" >
+                                                                <ul>
+                                                                    <li onclick={handleOnclickMenu} data-name="OpenStore" data-id={item.id} data-index={index}>
                                                                         <i class="material-symbols-outlined">
                                                                             <lightning-icon 
-                                                                                icon-name="utility:success" 
+                                                                                icon-name="utility:record_update" 
                                                                                 size="x-small" 
                                                                                 alternative-text="Complete"
                                                                                 class="invert-image" >
                                                                             </lightning-icon>
                                                                         </i>
-                                                                        Complete
+                                                                        Store
                                                                     </li>
-                                                                </template>
-                                                               <!--- <template lwc:if={item.showMenuPlanned}>                
-                                                                    <li onclick={handleOnclickMenu} data-name="Reshedule" data-id={item.id} data-index={index}>
+                                                                    <li onclick={handleOnclickMenu} data-name="NavigateToMap" data-id={item.id} data-index={index} data-latitude={item.customerLocationLattitude} data-longitude={item.customerLocationLongitude}>
                                                                         <i class="material-symbols-outlined">
                                                                             <lightning-icon 
-                                                                                icon-name="utility:shift_scheduling_operation" 
+                                                                                icon-name="utility:location" 
                                                                                 size="x-small" 
-                                                                                alternative-text="Reschedule"
+                                                                                alternative-text="Complete"
                                                                                 class="invert-image" >
                                                                             </lightning-icon>
                                                                         </i>
-                                                                        Reschedule
+                                                                        Go To Map
                                                                     </li>
-                                                                </template>-->
-                                                                <template lwc:if={item.showMenu}>
-                                                                    <template  lwc:if={item.showMenuCompleted}>
-                                                                        <li onclick={handleOnclickMenu} data-name="Navigate" data-id={item.id} data-index={index}>
+                                                                    <template if:true={item.showMenuInProgress}>
+                                                                        <li onclick={handleOnclickMenu} data-name="EndCall" data-id={item.id} data-index={index}>
                                                                             <i class="material-symbols-outlined">
                                                                                 <lightning-icon 
-                                                                                    icon-name="utility:location" 
+                                                                                    icon-name="utility:success" 
                                                                                     size="x-small" 
-                                                                                    alternative-text="Navigate"
+                                                                                    alternative-text="Complete"
                                                                                     class="invert-image" >
                                                                                 </lightning-icon>
                                                                             </i>
-                                                                            Navigate
+                                                                            Complete
                                                                         </li>
                                                                     </template>
-                                                                </template>
-                                                            </ul>
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                            </div>  
+                                                                <!--- <template lwc:if={item.showMenuPlanned}>                
+                                                                        <li onclick={handleOnclickMenu} data-name="Reshedule" data-id={item.id} data-index={index}>
+                                                                            <i class="material-symbols-outlined">
+                                                                                <lightning-icon 
+                                                                                    icon-name="utility:shift_scheduling_operation" 
+                                                                                    size="x-small" 
+                                                                                    alternative-text="Reschedule"
+                                                                                    class="invert-image" >
+                                                                                </lightning-icon>
+                                                                            </i>
+                                                                            Reschedule
+                                                                        </li>
+                                                                    </template>-->
+                                                                    <template lwc:if={item.showMenu}>
+                                                                        <template  lwc:if={item.showMenuCompleted}>
+                                                                            <li onclick={handleOnclickMenu} data-name="Navigate" data-id={item.id} data-index={index}>
+                                                                                <i class="material-symbols-outlined">
+                                                                                    <lightning-icon 
+                                                                                        icon-name="utility:location" 
+                                                                                        size="x-small" 
+                                                                                        alternative-text="Navigate"
+                                                                                        class="invert-image" >
+                                                                                    </lightning-icon>
+                                                                                </i>
+                                                                                Navigate
+                                                                            </li>
+                                                                        </template>
+                                                                    </template>
+                                                                </ul>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>  
+                                            </template>     
                                         </template>                                  
                                     </div>
                                         

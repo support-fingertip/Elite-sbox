@@ -22,6 +22,18 @@ global with sharing class beatPlannerlwc {
         db.travelType = extractPicklistValues('Daily_Log__c','Travel_Type__c'); 
         db.vehicleUsed = extractPicklistValues('Daily_Log__c','Vehicle_Used__c'); 
         db.purposeofVisit = extractPicklistValues('Daily_Log__c','Purpose_of_Visit__c'); 
+        List<Leaves__c> lv = [
+            SELECT Id, Name
+            FROM Leaves__c
+            WHERE From_Date__c <= TODAY
+            AND To_Date__c >= TODAY
+            AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
+            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation' 
+            AND Session_Type__c = null 
+            AND OwnerId = :UserInfo.getUserId()
+        ];
+        
+        db.isLeaveExisted = !lv.isEmpty();
         
         List<Employee_Creation_Access__mdt> metaList = [
             SELECT Id, DeveloperName, Allow_Mobile_Access__c, Allow_Desktop_Access__c
@@ -109,10 +121,7 @@ global with sharing class beatPlannerlwc {
                     }
                     upsert dailylog;
                     success ='true';
-                    if(operation == 'EndDay')
-                    {
-                        System.enqueueJob(new EODReportQueueableMail(dlNew.Id));
-                    }
+               
                 }
                 
                 
@@ -449,6 +458,18 @@ global with sharing class beatPlannerlwc {
             
         }
         dta.visit = visdata;
+        List<Leaves__c> lv = [
+            SELECT Id, Name
+            FROM Leaves__c
+            WHERE From_Date__c <= TODAY
+            AND To_Date__c >= TODAY
+            AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
+            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation' 
+            AND Session_Type__c = null 
+            AND OwnerId = :UserInfo.getUserId()
+        ];
+        
+        dta.isLeaveExisted = !lv.isEmpty();
         dta.isDayStarted = !dailyLog.isEmpty() && dailyLog[0].Day_ended_time__c == null; 
         return dta;
     }
@@ -596,7 +617,7 @@ global with sharing class beatPlannerlwc {
     global static data getAllVisitData(string recordId){
         data dt = new data();
         visit__c vs = [select id, Visit_for__c,Status__c,Lead__c,Distributor__c,Dealer__c,Account1__c,Daily_Log__c 
-                       from visit__c where id=:recordID];
+                       from visit__c where id=:recordId];
         string ids;
         List<Visit__c> allVisit = new List<Visit__c>();
         
@@ -640,6 +661,17 @@ global with sharing class beatPlannerlwc {
             }
             else
             {
+                list<Product_Mapping__c> secondaryMapping = new list<Product_Mapping__c>();
+                secondaryMapping = [Select Id,Name,Primary_Customer__c from Product_Mapping__c where Customer__c =:ids And Exectuive__c =: userInfo.getUserId() AND Primary_Customer__c != null limit 1];
+                if(secondaryMapping.isEmpty())
+                {
+                    secondaryMapping = [Select Id,Name,Primary_Customer__c from Product_Mapping__c where Customer__c =:ids AND Primary_Customer__c != null  limit 1];
+                }
+                dt.primaryCustmerId = !secondaryMapping.isEmpty() && String.isNotBlank(secondaryMapping[0].Primary_Customer__c)
+                    ? secondaryMapping[0].Primary_Customer__c
+                    : null;
+                   system.debug(' dt.secondaryMapping==>'+secondaryMapping);
+                system.debug(' dt.primaryCustmerId==>'+ dt.primaryCustmerId);
                 dt.currentMonthStockExisted = true;
             }
             
@@ -722,7 +754,17 @@ global with sharing class beatPlannerlwc {
         dt.Competition = [SELECT id,name,Product_Category__c,Product_Category__r.Name, Product__r.Name,Product__c,Display_boards__c,
                           Competitor_Name__c,Product_Category_Text__c,Product_Text__c,Special_offer_going_on__c,	Remarks__c
                           from Competition__c where visit__c =: recordid];
-        dt.visitForm=[SELECT Id, LastName, Phone, Street FROM Lead WHERE Visit__c = :recordId ORDER BY CreatedDate DESC ];
+
+        dt.visitForm = [
+            SELECT Id,Name,Customer_Name__c, Product_Categories__c
+            FROM Visit_Form__c
+            WHERE CreatedById = :UserInfo.getUserId()
+                AND CreatedDate = TODAY
+                AND (
+                    Visit__c = :recordId
+                )
+            ORDER BY CreatedDate DESC
+        ];
         dt.displayFormat=[SELECT Id, SKU__r.Name,skuName__c, Display__c FROM Display_Format__c WHERE Visit__c = :recordId
                           ORDER BY CreatedDate DESC ];
         dt.ShelfStocks= [SELECT Id,Name, Visit__c,Total_Stock_Level__c,Total_Sales_Quantity__c FROM Shelf_Stock__c  WHERE Visit__c = :recordId
@@ -1095,17 +1137,32 @@ global with sharing class beatPlannerlwc {
             if (item.Beat__c != null) {
                 String formattedDate = DateTime.newInstance(item.Date__c.year(), item.Date__c.month(), item.Date__c.day()).format('dd/MM/yyyy');
                 BeatData data = new BeatData();
-                data.beatId = item.Beat__c;
-                data.beatName = item.Beat__r.Name;
-                data.pjpDate = formattedDate;
-                data.pjpId = item.Id;
-                data.istodayBeat = item.Date__c == Date.today();
-                data.isCurrentBeat = item.Id == currentPjpItemId;
-                data.openPopup = false;
-                beatDataList.add(data);
+                if(item.Beat__c!= null)
+                {
+                    data.beatId = item.Beat__c;
+                    data.beatName = item.Beat__r.Name;
+                    data.pjpDate = formattedDate;
+                    data.pjpId = item.Id;
+                    data.istodayBeat = item.Date__c == Date.today();
+                    data.isCurrentBeat = item.Id == currentPjpItemId;
+                    data.openPopup = false;
+                    beatDataList.add(data);
+                }
             }
         }
         
+        List<Leaves__c> lv = [
+            SELECT Id, Name
+            FROM Leaves__c
+            WHERE From_Date__c <= TODAY
+            AND To_Date__c >= TODAY
+            AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
+            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation' 
+            AND Session_Type__c = null 
+            AND OwnerId = :UserInfo.getUserId()
+        ];
+        
+        dt.isLeaveExisted = !lv.isEmpty();
         dt.beatDataList = beatDataList;
         dt.isDayStarted = !logs.isEmpty() && logs[0].Day_ended_time__c == null;    
         return dt;
@@ -3638,6 +3695,7 @@ return getTaskData(objectId);
         @AuraEnabled public Account currentAccountRec{get;set;}
         @AuraEnabled public List<SchemeStrategy> scheme { get; set; }
         @AuraEnabled public List<schemeData> schemessss{get;set;}
+        @AuraEnabled public String primaryCustmerId{get;set;}
         public data() {
             outData = new List<outstanding>();
             ordData = new List<Orders>();
@@ -3666,7 +3724,7 @@ return getTaskData(objectId);
         @AuraEnabled public List<ContentDocument> VisitPhoto{get; set;}
         @AuraEnabled public List<Dealer_Stock__c> Stock{get; set;}
         @AuraEnabled public List<Competition__c> Competition{get; set;}
-        @AuraEnabled public List<lead> visitForm{get; set;}
+        @AuraEnabled public List<Visit_Form__c> visitForm{get; set;}
         @AuraEnabled public List<Display_Format__c> displayFormat{get; set;}
         @AuraEnabled public List<Shelf_Stock__c> ShelfStocks{get; set;}
         @AuraEnabled public List<Outlet_Task__c> outletTask{get; set;}
@@ -3698,6 +3756,7 @@ return getTaskData(objectId);
         @AuraEnabled public List<Map<String, String>> vehicleUsed = new List<Map<String, String>> ();
         @AuraEnabled public List<Map<String, String>> visitTypes = new List<Map<String, String>> ();
         @AuraEnabled public boolean isPromoter{get; set;}
+        @AuraEnabled public boolean isLeaveExisted{get; set;}
         @AuraEnabled public List<Account> primaryCustomers {get; set;}
         @AuraEnabled public List<Account> secoundaryCustomers {get; set;}
         @AuraEnabled public List<Return_Item__c> returnItems{get; set;}

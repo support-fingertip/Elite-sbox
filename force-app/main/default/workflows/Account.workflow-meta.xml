@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workflow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fieldUpdates>
+        <fullName>ASM_Approved_Date</fullName>
+        <field>ASM_Approved_Date__c</field>
+        <formula>NOW()</formula>
+        <name>Customer L1 Approved Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>ASM_Approved_Date_Empty</fullName>
+        <field>ASM_Approved_Date__c</field>
+        <name>Customer Level 1 Approved Date Empty</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Null</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>ASM_Approved_Main_Status</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Level 1 Approved</literalValue>
+        <name>Customer L1 Approved Main Status</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>ASM_Rejected_Date</fullName>
+        <field>ASM_Rejected_Date__c</field>
+        <formula>NOW()</formula>
+        <name>Customer L1 Rejected Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>ASM_Rejected_Date_Empty</fullName>
+        <field>ASM_Rejected_Date__c</field>
+        <name>Customer Level 1 Rejected Date Empty</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Null</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>ASM_Rejected_Main_Approval_Status</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Level 1 Rejected</literalValue>
+        <name>Customer L1 Rejected  Approval Status</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Activate_Customer</fullName>
+        <field>Customer_Status__c</field>
+        <literalValue>Active</literalValue>
+        <name>Activate Customer</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>false</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Credit_Department_Approved</fullName>
+        <field>Credit_Department_Approval__c</field>
+        <literalValue>Approved</literalValue>
+        <name>Credit Department Approved</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Credit_Department_Approver_Name</fullName>
+        <field>Credit_Department_Approver_Name__c</field>
+        <formula>$User.FirstName +&apos; &apos;+ $User.LastName</formula>
+        <name>Credit Department Approver Name</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Credit_Department_Rejected_Main_Status</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Credit Dept. Rejected</literalValue>
+        <name>Credit Department Rejected Main Status</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Credit_Dept_Approved_Date</fullName>
+        <field>Credit_Department_Approved_Date__c</field>
+        <formula>NOW()</formula>
+        <name>Credit Dept. Approved Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Credit_Dept_Approved_Main_Status</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Credit Dept. Approved</literalValue>
+        <name>Credit Dept. Approved Main Status</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Credit_Dept_Rejected</fullName>
+        <field>Credit_Department_Approval__c</field>
+        <literalValue>Rejected</literalValue>
+        <name>Credit Dept. Rejected</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Credit_Dept_Rejected_Date</fullName>
+        <field>Credit_Department_Rejected_Date__c</field>
+        <formula>NOW()</formula>
+        <name>Credit Dept. Rejected Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Customer_L1_Approver_Name</fullName>
+        <field>Customer_L1_Approver_Name__c</field>
+        <formula>$User.FirstName +&apos; &apos;+ $User.LastName</formula>
+        <name>Customer L1 Approver Name</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Customer_L2_Approver_Name</fullName>
+        <field>Customer_L2_Approver_Name__c</field>
+        <formula>$User.FirstName +&apos; &apos;+ $User.LastName</formula>
+        <name>Customer L2 Approver Name</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Customer_L2_Rejected_Status</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Level 2 Rejected</literalValue>
+        <name>Customer L2 Rejected Status</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Main_Approved_Date_Primary_Custmer</fullName>
+        <field>Approval_Date_Time__c</field>
+        <formula>NOW()</formula>
+        <name>Main Approved Date Primary Custmer</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>RSM_Approved_Date</fullName>
+        <field>RSM_Approved_Date__c</field>
+        <formula>NOW()</formula>
+        <name>RSM Approved Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>RSM_Approved_Date_Empty</fullName>
+        <field>RSM_Approved_Date__c</field>
+        <name>Customer Level 2 Approved Date Empty</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Null</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>RSM_Approved_Main_Status</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Level 2 Approved</literalValue>
+        <name>Customer L2 Approved Main Status</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>RSM_Rejected_Date</fullName>
+        <field>RSM_Rejected_Date__c</field>
+        <formula>NOW()</formula>
+        <name>Customer L2 Rejected Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>RSM_Rejected_Date_Empty</fullName>
+        <field>RSM_Rejected_Date__c</field>
+        <name>Customer Level 2 Rejected Date Empty</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Null</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Secondary_Customer_Approved</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Approved</literalValue>
+        <name>Secondary Customer Approved</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Secondary_Customer_Rejected</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Rejected</literalValue>
+        <name>Secondary Customer Rejected</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Secoundary_Customer_Approved_Date</fullName>
+        <field>Approval_Date_Time__c</field>
+        <formula>NOW()</formula>
+        <name>Secoundary Customer Approved Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Secoundary_Customer_Rejected_Date</fullName>
+        <field>Rejected_Date__c</field>
+        <formula>NOW()</formula>
+        <name>Secoundary Customer Rejected Date</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Formula</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Submitted_for_Approval</fullName>
+        <field>Approval_Status__c</field>
+        <literalValue>Pending</literalValue>
+        <name>Customer Submitted for Approval</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>true</reevaluateOnChange>
+    </fieldUpdates>
+</Workflow>

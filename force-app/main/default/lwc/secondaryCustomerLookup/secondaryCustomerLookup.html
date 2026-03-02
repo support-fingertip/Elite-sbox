@@ -1,0 +1,124 @@
+<template>
+    <div class="slds-form-element">
+      <label class="slds-form-element__label">
+        <abbr class="slds-required" title="required">*</abbr>
+        Secondary Customer
+      </label>
+
+        <div class="slds-form-element__control">
+            <div class={comboboxClass} role="combobox">
+
+                <!-- ================= SELECTED MODE ================= -->
+                <template if:true={selectedRecord}>
+                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_left-right">
+
+                        <!-- Left Account Icon -->
+                        <lightning-icon
+                            icon-name="standard:account"
+                            size="small"
+                            class="slds-input__icon slds-input__icon_left">
+                        </lightning-icon>
+
+                        <!-- Selected Value -->
+                        <input
+                            type="text"
+                            class="slds-input slds-combobox__input"
+                            value={selectedRecord.Name}
+                            style="padding-left: 2rem;"
+                            readonly
+                        />
+
+                        <!-- Clear Button -->
+                        <button
+                            class="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
+                            type="button"
+                            onclick={clearSelection}>
+                            <lightning-icon
+                                icon-name="utility:close"
+                                size="x-small">
+                            </lightning-icon>
+                        </button>
+                    </div>
+                </template>
+
+                <!-- ================= SEARCH MODE ================= -->
+                <template if:false={selectedRecord}>
+                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_left">
+
+                        <!-- Search Icon -->
+                        <lightning-icon
+                            icon-name="utility:search"
+                            size="x-small"
+                            class="slds-input__icon slds-input__icon_left">
+                        </lightning-icon>
+
+                        <input
+                            type="text"
+                            class="slds-input slds-combobox__input"
+                            placeholder="Search Secondary Customer..."
+                            value={searchTerm}
+                            oninput={handleInputChange}
+                            onfocus={handleFocus}
+                        />
+                    </div>
+                </template>
+
+                <!-- ================= DROPDOWN ================= -->
+                <template if:true={showDropdown}>
+                    <div class="slds-dropdown slds-dropdown_fluid slds-dropdown_length-5">
+                        <ul class="slds-listbox slds-listbox_vertical">
+
+                            <template if:true={records.length}>
+                                <template for:each={records} for:item="rec">
+                                    <li key={rec.Id}
+                                        class="slds-listbox__item"
+                                        data-id={rec.Id}
+                                        data-name={rec.Name}
+                                        onclick={handleSelect}>
+
+                                        <div class="slds-media slds-listbox__option slds-listbox__option_plain">
+                                            <span class="slds-media__figure">
+                                                <lightning-icon
+                                                    icon-name="standard:account"
+                                                    size="small">
+                                                </lightning-icon>
+                                            </span>
+                                                <span class="slds-media__body">
+                                                    <span class="slds-truncate">
+                                                        {rec.Name}
+                                                    </span>
+                                                    <template if:true={rec.Land_Mark__c}>
+                                                        <br/>
+                                                        <span class="slds-text-color_weak slds-text-body_small">Landmark: {rec.Land_Mark__c}</span>
+                                                    </template>
+                                                    <template if:false={rec.Land_Mark__c}>
+                                                        <template if:true={rec.Street__c}>
+                                                            <br/>
+                                                            <span class="slds-text-color_weak slds-text-body_small">Street: {rec.Street__c}</span>
+                                                        </template>
+                                                    </template>
+                                                </span>
+                                        </div>
+
+                                    </li>
+                                </template>
+                            </template>
+
+                            <template if:false={records.length}>
+                                <li class="slds-listbox__item">
+                                    <div class="slds-media slds-listbox__option_plain">
+                                        <span class="slds-media__body">
+                                            No records found
+                                        </span>
+                                    </div>
+                                </li>
+                            </template>
+
+                        </ul>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+    </div>
+</template>
