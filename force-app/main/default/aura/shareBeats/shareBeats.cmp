@@ -1,0 +1,36 @@
+<aura:component controller="EmployeeeController"
+                implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="users" type="List" default="[]" />
+    <aura:attribute name="selectedUserId" type="String" value="" />
+    <aura:attribute name="isLoading" type="Boolean" value="false" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.loadUsers}"></aura:handler>
+
+    <div class="slds-p-around_medium">
+        <h2 class="slds-text-heading_small slds-m-bottom_small">Share Beats</h2>
+        
+        <aura:if isTrue="{!v.isLoading}">
+            <lightning:spinner alternativeText="Loading" size="medium" />
+        </aura:if>
+        
+        <aura:if isTrue="{!!v.isLoading}">
+            <aura:if isTrue="{!greaterThan(length(v.users), 0)}">
+                <lightning:select label="Select User to Share Beats With" value="{!v.selectedUserId}">
+                    <option value="">-- Select User --</option>
+                    <aura:iteration items="{!v.users}" var="u">
+                        <option value="{!u.Id}">{!u.Name} ({!u.Profile.Name})</option>
+                    </aura:iteration>
+                </lightning:select>
+                <div class="slds-m-top_medium">
+                    <lightning:button label="Cancel" onclick="{!c.handleCancel}" />
+                    <lightning:button label="Share Beats" variant="brand" onclick="{!c.handleShare}" />
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!equals(length(v.users), 0)}">
+                <p>No peer users found to share beats with.</p>
+                <lightning:button label="Close" onclick="{!c.handleCancel}" />
+            </aura:if>
+        </aura:if>
+    </div>
+</aura:component>

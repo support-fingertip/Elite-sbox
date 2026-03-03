@@ -242,8 +242,7 @@ public without sharing class BeatTriggerHandler {
         
     }
     
-    public static void createSecMappings(List<Child_beat__c> beats){
-        
+    public static void createSecMappings(List<Child_beat__c> beats){        
         List<Junction_Beat__c> items = [select Id,Name,Child_Beat__c,Account__c,Beat_Primary_Customer__c,Beat_Substockiest__c,Beat_OwnerId__c,
                                         Payroll_Employee__c,Beat_Type__c
                                         from Junction_Beat__c where Child_Beat__c IN :beats];
@@ -289,6 +288,75 @@ public without sharing class BeatTriggerHandler {
             }
         }
         
+    }
+    
+    public static void validateOwnerChangeProfile(List<Child_beat__c> beats, Map<Id, Child_beat__c> oldMap) {
+        Set<Id> oldOwnerIds = new Set<Id>();
+        Set<Id> newOwnerIds = new Set<Id>();
+        
+        for (Child_beat__c beat : beats) {
+            Child_beat__c oldBeat = oldMap.get(beat.Id);
+            if (oldBeat != null && beat.User__c != oldBeat.User__c && beat.User__c != null && oldBeat.User__c != null) {
+                oldOwnerIds.add(oldBeat.User__c);
+                newOwnerIds.add(beat.User__c);
+            }
+        }
+        
+        if (oldOwnerIds.isEmpty()) return;
+        
+        Map<Id, User> oldUsers = new Map<Id, User>([SELECT Id, Profile.Name FROM User WHERE Id IN :oldOwnerIds]);
+        Map<Id, User> newUsers = new Map<Id, User>([SELECT Id, Profile.Name FROM User WHERE Id IN :newOwnerIds]);
+        
+        // Check if current user is admin — admins bypass this restriction
+        String currentProfileName = [SELECT Name FROM Profile WHERE Id = :UserInfo.getProfileId() LIMIT 1].Name;
+        if (currentProfileName.contains('System Administrator')) return;
+        
+        for (Child_beat__c beat : beats) {
+            Child_beat__c oldBeat = oldMap.get(beat.Id);
+            if (oldBeat != null && beat.User__c != oldBeat.User__c && beat.User__c != null && oldBeat.User__c != null) {
+                String oldProfile = oldUsers.containsKey(oldBeat.User__c) ? oldUsers.get(oldBeat.User__c).Profile.Name : '';
+                String newProfile = newUsers.containsKey(beat.User__c) ? newUsers.get(beat.User__c).Profile.Name : '';
+                
+                if (String.isNotBlank(oldProfile) && String.isNotBlank(newProfile) && oldProfile != newProfile) {
+                    beat.addError('Beat owner change is only allowed between users of the same profile (' + oldProfile + ' to ' + newProfile + ' is not permitted).');
+                }
+            }
+        }
+    }
+    
+    public static void cascadeBeatItemStatus(List<Child_beat__c> beats, Map<Id, Child_beat__c> oldMap) {
+        Set<Id> activatedBeatIds = new Set<Id>();
+        Set<Id> deactivatedBeatIds = new Set<Id>();
+        
+        for (Child_beat__c beat : beats) {
+            Child_beat__c oldBeat = oldMap.get(beat.Id);
+            if (oldBeat != null) {
+                Boolean wasActive = oldBeat.Active__c;
+                Boolean isActive = beat.Active__c;
+                if (!wasActive && isActive) activatedBeatIds.add(beat.Id);
+                if (wasActive && !isActive) deactivatedBeatIds.add(beat.Id);
+            }
+        }
+        
+        List<Junction_Beat__c> itemsToUpdate = new List<Junction_Beat__c>();
+        
+        if (!activatedBeatIds.isEmpty()) {
+            for (Junction_Beat__c item : [SELECT Id, Active__c FROM Junction_Beat__c WHERE Child_beat__c IN :activatedBeatIds AND Active__c = false]) {
+                item.Active__c = true;
+                itemsToUpdate.add(item);
+            }
+        }
+        
+        if (!deactivatedBeatIds.isEmpty()) {
+            for (Junction_Beat__c item : [SELECT Id, Active__c FROM Junction_Beat__c WHERE Child_beat__c IN :deactivatedBeatIds AND Active__c = true]) {
+                item.Active__c = false;
+                itemsToUpdate.add(item);
+            }
+        }
+        
+        if (!itemsToUpdate.isEmpty()) {
+            Database.update(itemsToUpdate, false);
+        }
     }
     
 }

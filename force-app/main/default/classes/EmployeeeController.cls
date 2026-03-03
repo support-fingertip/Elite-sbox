@@ -899,5 +899,106 @@ public class EmployeeeController {
         db.profileName = currentUserProfieName;
         return db;
     }
-    
+
+    @AuraEnabled
+    public static String deactivateUserWithBeatOption(Id recordId, String beatOption) {
+        // beatOption = 'BEATS_ACTIVE' or 'BEATS_INACTIVE'
+
+        // 1. Get the employee record and linked user
+        Employee__c emp = [SELECT Id, User__c, Is_Active__c FROM Employee__c WHERE Id = :recordId LIMIT 1];
+
+        if (emp.User__c == null) {
+            throw new AuraHandledException('No linked user found for this employee.');
+        }
+
+        // 2. Handle beats based on option (before User DML to follow existing patterns)
+        if (beatOption == 'BEATS_INACTIVE') {
+            List<Child_beat__c> userBeats = [SELECT Id, Active__c FROM Child_beat__c WHERE OwnerId = :emp.User__c AND Active__c = true];
+            for (Child_beat__c beat : userBeats) {
+                beat.Active__c = false;
+            }
+            if (!userBeats.isEmpty()) {
+                update userBeats;
+            }
+            // Also deactivate beat items
+            List<Junction_Beat__c> beatItems = [SELECT Id FROM Junction_Beat__c WHERE Child_beat__c IN :userBeats AND Active__c = true];
+            for (Junction_Beat__c item : beatItems) {
+                item.Active__c = false;
+            }
+            if (!beatItems.isEmpty()) {
+                update beatItems;
+            }
+        }
+        // If BEATS_ACTIVE, beats remain active — accessible to hierarchy via reportee view
+
+        // 3. Share customer access to next hierarchy person (BRD 2f)
+        CustomSharingService.shareCustomerAccessToHierarchy(emp.User__c);
+
+        // 4. Deactivate the Salesforce user first (User DML before Employee DML — follows existing pattern)
+        UserTriggerHandler.userdeactivationProcess = true;
+        User u = [SELECT Id, IsActive FROM User WHERE Id = :emp.User__c LIMIT 1];
+        u.IsActive = false;
+        update u;
+
+        // 5. Deactivate the employee async (Employee DML after User DML)
+        deactivateEmployeeAsync(emp.Id, emp.User__c);
+
+        return 'User deactivated successfully with beats ' + (beatOption == 'BEATS_ACTIVE' ? 'active' : 'inactive') + '.';
+    }
+
+    @AuraEnabled
+    public static List<User> getUsersForBeatSharing(Id employeeId) {
+        Employee__c emp = [SELECT Id, User__c, Reporting_Manager__c FROM Employee__c WHERE Id = :employeeId LIMIT 1];
+        if (emp.Reporting_Manager__c == null) {
+            throw new AuraHandledException('No reporting manager found.');
+        }
+
+        // Get all employees reporting to the same reporting manager (peers)
+        List<Employee__c> peers = [SELECT Id, User__c, Name FROM Employee__c
+                                   WHERE Reporting_Manager__c = :emp.Reporting_Manager__c
+                                   AND Id != :employeeId
+                                   AND Is_Active__c = true];
+
+        Set<Id> peerUserIds = new Set<Id>();
+        for (Employee__c peer : peers) {
+            if (peer.User__c != null) peerUserIds.add(peer.User__c);
+        }
+
+        return [SELECT Id, Name, Profile.Name FROM User WHERE Id IN :peerUserIds AND IsActive = true];
+    }
+
+    @AuraEnabled
+    public static String shareBeatToUser(Id employeeId, Id targetUserId) {
+        Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE Id = :employeeId LIMIT 1];
+
+        // Get all active beats of the employee
+        List<Child_beat__c> beats = [SELECT Id FROM Child_beat__c WHERE OwnerId = :emp.User__c AND Active__c = true];
+
+        // Create sharing records using Apex managed sharing
+        List<Child_beat__Share> sharesToInsert = new List<Child_beat__Share>();
+        for (Child_beat__c beat : beats) {
+            Child_beat__Share share = new Child_beat__Share();
+            share.ParentId = beat.Id;
+            share.UserOrGroupId = targetUserId;
+            share.AccessLevel = 'Edit';
+            share.RowCause = Schema.Child_beat__Share.RowCause.Manual;
+            sharesToInsert.add(share);
+        }
+
+        if (!sharesToInsert.isEmpty()) {
+            Database.insert(sharesToInsert, false);
+        }
+
+        // Also share customer access
+        List<AccountShare> accountShares = new List<AccountShare>();
+        for (Product_Mapping__c pm : [SELECT Customer__c FROM Product_Mapping__c WHERE Exectuive__c = :emp.User__c AND Customer__c != null]) {
+            accountShares.add(CustomSharingService.buildAccountShare(pm.Customer__c, targetUserId));
+        }
+        if (!accountShares.isEmpty()) {
+            CustomSharingService.shareAccounts(accountShares);
+        }
+
+        return 'Beats shared successfully.';
+    }
+
 }

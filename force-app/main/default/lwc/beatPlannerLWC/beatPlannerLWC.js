@@ -1388,4 +1388,26 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
         }, 0);
     }
 
+    /**Reportee View **/
+    @track isReporteeView = false;
+
+    handleReporteeViewToggle() {
+        this.isReporteeView = !this.isReporteeView;
+        if (this.isReporteeView) {
+            this.isBeatViewScreen = false;
+            this.Outlet = false;
+        }
+    }
+
+    handleReporteeStartVisit(event) {
+        const beatId = event.detail.beatId;
+        if (beatId) {
+            this.isReporteeView = false;
+            this.currentBeatId = beatId;
+            this.Outlet = true;
+            this.header = 'Visit Plan';
+            this.isVisitCreate = true;
+        }
+    }
+
 }

@@ -169,4 +169,34 @@ public without sharing class PJPItemHandler {
         } */
     }
     
+    public static void autoApprovePJPForAdminOrManager(List<PJP_Item__c> items) {
+        String currentProfileName = [SELECT Name FROM Profile WHERE Id = :UserInfo.getProfileId() LIMIT 1].Name;
+        Id currentUserId = UserInfo.getUserId();
+        Boolean isAdmin = currentProfileName.contains('System Administrator');
+        
+        Set<Id> ownerIds = new Set<Id>();
+        for (PJP_Item__c item : items) {
+            if (item.OwnerId != currentUserId) {
+                ownerIds.add(item.OwnerId);
+            }
+        }
+        
+        Set<Id> subordinateIds = new Set<Id>();
+        if (!ownerIds.isEmpty() && !isAdmin) {
+            subordinateIds = RoleHeirarchyUtility.getRoleSubordinateUsers(currentUserId);
+            subordinateIds.remove(currentUserId);
+        }
+        
+        for (PJP_Item__c item : items) {
+            // Auto-approve if created by Admin for any user
+            if (isAdmin && item.OwnerId != currentUserId) {
+                item.Status__c = 'Approved';
+            }
+            // Auto-approve if created by reporting manager for subordinate
+            else if (!isAdmin && item.OwnerId != currentUserId && subordinateIds.contains(item.OwnerId)) {
+                item.Status__c = 'Approved';
+            }
+        }
+    }
+    
 }

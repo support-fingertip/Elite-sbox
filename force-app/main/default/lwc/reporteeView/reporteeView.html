@@ -1,0 +1,91 @@
+<template>
+    <div class="reportee-view-container">
+        <!-- Left panel: subordinate list -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <span>Reportees</span>
+                <lightning-input
+                    type="search"
+                    placeholder="Search by name..."
+                    value={searchTerm}
+                    onchange={handleSearch}
+                    class="search-input">
+                </lightning-input>
+            </div>
+            <template lwc:if={isLoading}>
+                <div class="loading-container">
+                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                </div>
+            </template>
+            <template lwc:else>
+                <template lwc:if={hasSubordinates}>
+                    <ul class="subordinate-list">
+                        <template for:each={filteredSubordinates} for:item="sub">
+                            <li key={sub.userId}
+                                class={sub.listItemClass}
+                                data-id={sub.userId}
+                                onclick={handleSubordinateSelect}>
+                                <div class="sub-name">{sub.userName}</div>
+                                <div class="sub-meta">
+                                    <span class="sub-role">{sub.roleName}</span>
+                                    <template lwc:if={sub.isActive}>
+                                        <span class="badge badge-active">Active</span>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="badge badge-inactive">Inactive</span>
+                                    </template>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:else>
+                    <p class="no-data">No reportees found.</p>
+                </template>
+            </template>
+        </div>
+
+        <!-- Right panel: beat list for selected subordinate -->
+        <div class="right-panel">
+            <template lwc:if={selectedSubordinateName}>
+                <div class="panel-header">
+                    <span>Beats for {selectedSubordinateName}</span>
+                </div>
+                <template lwc:if={isBeatsLoading}>
+                    <div class="loading-container">
+                        <lightning-spinner alternative-text="Loading beats" size="medium"></lightning-spinner>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <template lwc:if={hasBeats}>
+                        <ul class="beat-list">
+                            <template for:each={subordinateBeats} for:item="beat">
+                                <li key={beat.beatId} class="beat-item">
+                                    <div class="beat-info">
+                                        <div class="beat-name">{beat.beatName}</div>
+                                        <div class="beat-meta">
+                                            <span>{beat.primaryCustomerName}</span>
+                                            <span class="outlet-count">Outlets: {beat.outletCount}</span>
+                                        </div>
+                                    </div>
+                                    <lightning-button
+                                        label="Start Visit"
+                                        variant="brand"
+                                        data-beat-id={beat.beatId}
+                                        onclick={handleStartVisit}>
+                                    </lightning-button>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:else>
+                        <p class="no-data">No active beats found for this reportee.</p>
+                    </template>
+                </template>
+            </template>
+            <template lwc:else>
+                <p class="no-data">Select a reportee to view their beats.</p>
+            </template>
+        </div>
+    </div>
+</template>
