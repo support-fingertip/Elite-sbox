@@ -1,90 +1,75 @@
 ({
-    
-    createUser: function(component, event, helper) {
-        var action = component.get("c.deactivateUser");
+    init: function(component, event, helper) {
+        var action = component.get("c.getUsersForBeatSharing");
         action.setParams({
-            "recordId": component.get("v.recordId")
+            "employeeId": component.get("v.recordId")
         });
         action.setCallback(this, function(response) {
             var state = response.getState();
-            
+            component.set("v.isLoading", false);
             if (state === 'SUCCESS') {
-                $A.get("e.force:showToast").setParams({
-                    "type": "success",
-                    "title": "Success",
-                    "message": "User De-Activated Successfully"
-                }).fire();
-            }
-            else if (state === 'ERROR') {
+                component.set("v.users", response.getReturnValue());
+            } else {
                 var errors = response.getError();
                 var message = 'Unknown error';
                 if (errors && errors[0] && errors[0].message) {
                     message = errors[0].message;
                 }
-                
                 $A.get("e.force:showToast").setParams({
                     "type": "error",
                     "title": "Error",
                     "message": message
                 }).fire();
+                $A.get("e.force:closeQuickAction").fire();
             }
-            
-            $A.get('e.force:refreshView').fire();
-            event.stopPropagation();
-            $A.get("e.force:closeQuickAction").fire();
         });
         $A.enqueueAction(action);
     },
 
-    initModal: function(component, event, helper) {
-        component.set("v.showModal", true);
-    },
-
-    handleBeatOptionChange: function(component, event, helper) {
-        component.set("v.selectedBeatOption", event.getParam("value"));
-    },
-
     handleCancel: function(component, event, helper) {
-        component.set("v.showModal", false);
         $A.get("e.force:closeQuickAction").fire();
     },
 
-    deactivateWithOption: function(component, event, helper) {
-        var beatOption = component.get("v.selectedBeatOption");
-        var action = component.get("c.deactivateUserWithBeatOption");
+    handleShare: function(component, event, helper) {
+        var targetUserId = component.get("v.selectedUserId");
+        if (!targetUserId) {
+            $A.get("e.force:showToast").setParams({
+                "type": "warning",
+                "title": "Warning",
+                "message": "Please select a user to share beats with."
+            }).fire();
+            return;
+        }
+        component.set("v.isLoading", true);
+        var action = component.get("c.shareBeatToUser");
         action.setParams({
-            "recordId": component.get("v.recordId"),
-            "beatOption": beatOption
+            "employeeId": component.get("v.recordId"),
+            "targetUserId": targetUserId
         });
         action.setCallback(this, function(response) {
+            component.set("v.isLoading", false);
             var state = response.getState();
-            
             if (state === 'SUCCESS') {
                 $A.get("e.force:showToast").setParams({
                     "type": "success",
                     "title": "Success",
-                    "message": "User De-Activated Successfully"
+                    "message": "Beats shared successfully"
                 }).fire();
-            }
-            else if (state === 'ERROR') {
+            } else {
                 var errors = response.getError();
                 var message = 'Unknown error';
                 if (errors && errors[0] && errors[0].message) {
                     message = errors[0].message;
                 }
-                
                 $A.get("e.force:showToast").setParams({
                     "type": "error",
                     "title": "Error",
                     "message": message
                 }).fire();
             }
-            
-            component.set("v.showModal", false);
             $A.get('e.force:refreshView').fire();
             $A.get("e.force:closeQuickAction").fire();
         });
         $A.enqueueAction(action);
     }
-    
 })

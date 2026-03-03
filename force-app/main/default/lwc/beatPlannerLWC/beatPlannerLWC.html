@@ -50,6 +50,9 @@
                                             <template lwc:if={isVisitCreate}>
                                                 <h4 class="nav-title menu-close" onclick={switchBeat}>Switch Beat</h4>
                                             </template>
+                                            <template if:false={isSSA_DSM}>
+                                                <h4 class="nav-title menu-close" onclick={handleReporteeViewToggle}>Reportee View</h4>
+                                            </template>
                                         </template>
                                         <template if:true={outletPage}>
                                             <template lwc:if={executeScreenData.isInProgress}>
@@ -74,6 +77,11 @@
                             <!-- Beat Screen View -->
                             <template lwc:if={isBeatViewScreen}>
                                 <c-beat-screen active-tab={beatScreenTab} onprocessbeatevent={handleBeatCustomEvent}></c-beat-screen>
+                            </template>
+
+                            <!-- Reportee View -->
+                            <template lwc:if={isReporteeView}>
+                                <c-reportee-view onreporteebeat={handleReporteeBeat}></c-reportee-view>
                             </template>
 
                             <!-- Visit screen view -->

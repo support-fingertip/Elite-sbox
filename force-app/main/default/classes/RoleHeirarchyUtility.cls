@@ -176,7 +176,17 @@ public with sharing class RoleHeirarchyUtility {
             }
         }
     }
-    
-    
-    
+
+    // Get direct manager user IDs for a given user (via ManagerId field)
+    public static Set<Id> getManagerUsers(Id userId) {
+        Set<Id> managerIds = new Set<Id>();
+        List<User> users = [SELECT Id, ManagerId FROM User WHERE Id = :userId LIMIT 1];
+        if (!users.isEmpty() && users[0].ManagerId != null) {
+            managerIds.add(users[0].ManagerId);
+        }
+        return managerIds;
+    }
+
+
+
 }

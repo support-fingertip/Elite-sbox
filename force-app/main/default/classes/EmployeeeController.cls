@@ -899,5 +899,128 @@ public class EmployeeeController {
         db.profileName = currentUserProfieName;
         return db;
     }
+
+    @AuraEnabled
+    public static String deactivateUserWithBeatOption(Id recordId, String beatOption) {
+        // beatOption values: 'BEATS_ACTIVE' or 'BEATS_INACTIVE'
+        try {
+            Employee__c emp = [SELECT Id, User__c, Is_Active__c FROM Employee__c WHERE Id = :recordId LIMIT 1];
+
+            if (emp.User__c == null) {
+                throw new AuraHandledException('No user linked to this employee');
+            }
+
+            // Step 1: Deactivate the employee
+            emp.Is_Active__c = false;
+            emp.Is_User_Deactivated__c = true;
+            update emp;
+
+            // Step 2: Deactivate the Salesforce User
+            User u = new User(Id = emp.User__c, IsActive = false);
+            update u;
+
+            // Step 3: Handle beats based on option
+            if (beatOption == 'BEATS_INACTIVE') {
+                List<Child_beat__c> beats = [SELECT Id, Active__c FROM Child_beat__c WHERE OwnerId = :emp.User__c AND Active__c = true];
+                for (Child_beat__c beat : beats) {
+                    beat.Active__c = false;
+                }
+                if (!beats.isEmpty()) {
+                    update beats;
+                }
+            }
+            // If BEATS_ACTIVE, beats remain active — no action needed
+
+            // Step 4: Share customer access to hierarchy
+            CustomSharingService.shareCustomerAccessToHierarchy(emp.User__c);
+
+            return 'Success';
+        } catch (Exception e) {
+            ExceptionHandler.addLog(e, String.valueOf(recordId), 'EmployeeeController.deactivateUserWithBeatOption');
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static List<User> getUsersForBeatSharing(Id employeeId) {
+        try {
+            Employee__c emp = [SELECT Id, User__c, Reporting_Manager__c FROM Employee__c WHERE Id = :employeeId LIMIT 1];
+
+            if (emp.Reporting_Manager__c == null) {
+                throw new AuraHandledException('No reporting manager found for this employee');
+            }
+
+            List<Employee__c> peers = [SELECT Id, User__c, Name FROM Employee__c
+                                       WHERE Reporting_Manager__c = :emp.Reporting_Manager__c
+                                       AND Id != :employeeId
+                                       AND Is_Active__c = true
+                                       AND User__c != null];
+
+            Set<Id> peerUserIds = new Set<Id>();
+            for (Employee__c peer : peers) {
+                peerUserIds.add(peer.User__c);
+            }
+
+            return [SELECT Id, Name, Profile.Name FROM User WHERE Id IN :peerUserIds AND IsActive = true];
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            ExceptionHandler.addLog(e, String.valueOf(employeeId), 'EmployeeeController.getUsersForBeatSharing');
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static String shareBeatToUser(Id employeeId, Id targetUserId) {
+        try {
+            Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE Id = :employeeId LIMIT 1];
+
+            List<Child_beat__c> beats = [SELECT Id FROM Child_beat__c WHERE OwnerId = :emp.User__c AND Active__c = true];
+
+            if (beats.isEmpty()) {
+                throw new AuraHandledException('No active beats found for this employee');
+            }
+
+            // Share via Child_beat__Share (manual sharing)
+            List<Child_beat__Share> sharesToInsert = new List<Child_beat__Share>();
+            for (Child_beat__c beat : beats) {
+                Child_beat__Share share = new Child_beat__Share();
+                share.ParentId = beat.Id;
+                share.UserOrGroupId = targetUserId;
+                share.AccessLevel = 'Edit';
+                share.RowCause = Schema.Child_beat__Share.RowCause.Manual;
+                sharesToInsert.add(share);
+            }
+
+            if (!sharesToInsert.isEmpty()) {
+                Database.insert(sharesToInsert, false);
+            }
+
+            // Also share related customer accounts
+            List<AccountShare> accountShares = new List<AccountShare>();
+            Set<Id> customerIds = new Set<Id>();
+
+            List<Junction_Beat__c> beatItems = [SELECT Account__c FROM Junction_Beat__c
+                                                 WHERE Child_beat__c IN :beats AND Active__c = true AND Account__c != null];
+            for (Junction_Beat__c item : beatItems) {
+                customerIds.add(item.Account__c);
+            }
+
+            for (Id custId : customerIds) {
+                accountShares.add(CustomSharingService.buildAccountShare(custId, targetUserId));
+            }
+
+            if (!accountShares.isEmpty()) {
+                CustomSharingService.shareAccounts(accountShares);
+            }
+
+            return 'Beats shared successfully';
+        } catch (AuraHandledException e) {
+            throw e;
+        } catch (Exception e) {
+            ExceptionHandler.addLog(e, String.valueOf(employeeId), 'EmployeeeController.shareBeatToUser');
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
     
 }

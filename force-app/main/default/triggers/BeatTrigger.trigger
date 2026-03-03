@@ -56,6 +56,7 @@ trigger BeatTrigger on Child_beat__c (after insert,before insert,before update,a
                         BeatTriggerHandler.handleValidations(beats);
                     }
                 }
+                BeatTriggerHandler.validateOwnerChangeProfile(Trigger.new, Trigger.oldMap);
             }
             else
             {
@@ -85,6 +86,7 @@ trigger BeatTrigger on Child_beat__c (after insert,before insert,before update,a
                         }
                     }
                 }
+                BeatTriggerHandler.cascadeBeatItemStatus(Trigger.new, Trigger.oldMap);
             }
         }
     }

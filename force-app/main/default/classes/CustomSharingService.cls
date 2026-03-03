@@ -520,10 +520,7 @@ public class CustomSharingService {
         }
         
         
-        // Step 2: Beat and Beat Items Replacement
-        List<Child_beat__c> clonedBeats = new List<Child_beat__c>();
-        Map<Id, Id> oldBeatIdToNewBeatIdMap = new Map<Id, Id>();
-        
+        // Step 2: Beat Transfer (update in place instead of clone — Beat ID stays the same)
         Set<String> affectedPrimaryIds = oldPrimaryCustomerToNewMap.keySet();
         Set<String> affectedSubStockiestIds = oldSubStockiestToNewSubStockiestMap.keySet();
         
@@ -535,75 +532,40 @@ public class CustomSharingService {
             OR Sub_Stockist__c IN :affectedSubStockiestIds
         ];
         
+        List<Child_beat__c> beatsToUpdate = new List<Child_beat__c>();
+        
         for (Child_beat__c oldBeat : oldBeats) {
-            Id newPrimaryId;
-            Id newSubStockiestId;
+            if (!oldBeat.Active__c) continue; // Only transfer active beats (BRD requirement)
             
-            // if this is a Primary customer replacement
+            Id newPrimaryId = null;
+            Id newSubStockiestId = null;
+            
             if (oldPrimaryCustomerToNewMap.containsKey(oldBeat.Primary_Customer__c)) {
                 newPrimaryId = oldPrimaryCustomerToNewMap.get(oldBeat.Primary_Customer__c);
             }
             
-            // if this is a Sub Stockist replacement
             if (oldSubStockiestToNewSubStockiestMap.containsKey(oldBeat.Sub_Stockist__c)) {
                 newSubStockiestId = oldSubStockiestToNewSubStockiestMap.get(oldBeat.Sub_Stockist__c);
-                
-                // Lookup the new primary customer for this sub stockist (from Product Mappings)
                 Id mappedPrimary = subStockiestToPrimaryMap.get(newSubStockiestId);
                 if (mappedPrimary != null) {
                     newPrimaryId = mappedPrimary;
                 }
             }
-            if( newPrimaryId != null )
-            {
-                Child_beat__c newBeat = new Child_beat__c();
-                newBeat.Name = oldBeat.Name;
-                newBeat.Cloned_From_Customer_Deactivation__c = true;
-                newBeat.Primary_Customer__c = newPrimaryId;
-                newBeat.Sub_Stockist__c = newSubStockiestId != null ? newSubStockiestId : oldBeat.Sub_Stockist__c;
-                newBeat.Order_Number__c = oldBeat.Order_Number__c;
-                newBeat.Active__c =  oldBeat.Active__c ;
-                newBeat.Beat_Type__c =  oldBeat.Beat_Type__c;
-                newBeat.Old_Beat_Id_Back_End_Purpose__c = oldBeat.Id;//just for map creation
-                newBeat.OwnerId = oldBeat.OwnerId;
-                clonedBeats.add(newBeat);
+            
+            if (newPrimaryId != null) {
+                oldBeat.Primary_Customer__c = newPrimaryId;
+            }
+            if (newSubStockiestId != null) {
+                oldBeat.Sub_Stockist__c = newSubStockiestId;
             }
             
+            beatsToUpdate.add(oldBeat);
         }
         
-        // Insert cloned beats
-        if (!clonedBeats.isEmpty()) {
-            database.insert(clonedBeats,false);
-            
-            // Map old beat to new beat Id
-            for (Child_beat__c inserted : clonedBeats) {
-                if (String.isNotBlank(inserted.Old_Beat_Id_Back_End_Purpose__c)) {
-                    oldBeatIdToNewBeatIdMap.put(Id.valueOf(inserted.Old_Beat_Id_Back_End_Purpose__c), inserted.Id);
-                }
-            }
+        if (!beatsToUpdate.isEmpty()) {
+            database.update(beatsToUpdate, false);
         }
-        
-        // Step 4: Clone Junction Beat records
-        List<Junction_Beat__c> junctionsToInsert = new List<Junction_Beat__c>();
-        
-        for (Child_beat__c oldBeat : oldBeats) {
-            Id newBeatId = oldBeatIdToNewBeatIdMap.get(oldBeat.Id);
-            if (newBeatId == null) continue;
-            
-            for (Junction_Beat__c jb : oldBeat.Junction_Beats__r) {
-                Junction_Beat__c newJb = new Junction_Beat__c();
-                newJb.Child_Beat__c = newBeatId;
-                newJb.Cloned_From_Customer_Deactivation__c = true;
-                newJb.Account__c = jb.Account__c;
-                newJb.Active__c = jb.Active__c;
-                newJb.Order_Number__c = jb.Order_Number__c;
-                junctionsToInsert.add(newJb);
-            }
-        }
-        
-        if (!junctionsToInsert.isEmpty()) {
-            database.insert(junctionsToInsert,false);
-        }
+        // Junction beats stay as-is since the beat ID does not change (BRD: "A transfer is a movement, not a cloned record creation")
         
     }
     
@@ -652,6 +614,34 @@ public class CustomSharingService {
         delete clonedPJPToDelete;
         
         
+    }
+
+    public static void shareCustomerAccessToHierarchy(Id deactivatedUserId) {
+        // Find the reporting manager via role hierarchy
+        Set<Id> managerIds = RoleHeirarchyUtility.getManagerUsers(deactivatedUserId);
+        if (managerIds == null || managerIds.isEmpty()) return;
+
+        Id managerId = new List<Id>(managerIds)[0]; // Get direct manager
+
+        List<AccountShare> sharesToInsert = new List<AccountShare>();
+
+        // Get all customer assignments of deactivated user
+        List<Product_Mapping__c> mappings = [SELECT Id, Customer__c FROM Product_Mapping__c
+                                              WHERE Exectuive__c = :deactivatedUserId AND Customer__c != null];
+        for (Product_Mapping__c pm : mappings) {
+            sharesToInsert.add(buildAccountShare(pm.Customer__c, managerId));
+        }
+
+        // Also share from Employee_Customer_Assignment
+        List<Employee_Customer_Assignment__c> assignments = [SELECT Customer__c FROM Employee_Customer_Assignment__c
+                                                              WHERE Executive__c = :deactivatedUserId AND Customer__c != null];
+        for (Employee_Customer_Assignment__c eca : assignments) {
+            sharesToInsert.add(buildAccountShare(eca.Customer__c, managerId));
+        }
+
+        if (!sharesToInsert.isEmpty()) {
+            shareAccounts(sharesToInsert);
+        }
     }
     
     

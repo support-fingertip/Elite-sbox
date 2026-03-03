@@ -1,0 +1,28 @@
+<aura:component controller="EmployeeeController"
+                implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="users" type="List" default="[]" />
+    <aura:attribute name="selectedUserId" type="String" default="" />
+    <aura:attribute name="isLoading" type="Boolean" default="true" />
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+
+    <aura:if isTrue="{!v.isLoading}">
+        <lightning:spinner alternativeText="Loading" size="medium" />
+    </aura:if>
+
+    <aura:if isTrue="{!!v.isLoading}">
+        <div class="slds-p-around_medium">
+            <p class="slds-m-bottom_medium">Select a peer user to share beats with:</p>
+            <lightning:select name="userSelect" label="Select User" value="{!v.selectedUserId}">
+                <option value="">-- Select a User --</option>
+                <aura:iteration items="{!v.users}" var="user">
+                    <option value="{!user.Id}">{!user.Name}</option>
+                </aura:iteration>
+            </lightning:select>
+        </div>
+        <div class="slds-modal__footer">
+            <lightning:button variant="neutral" label="Cancel" onclick="{!c.handleCancel}" />
+            <lightning:button variant="brand" label="Share Beats" onclick="{!c.handleShare}" disabled="{!!v.selectedUserId}" />
+        </div>
+    </aura:if>
+</aura:component>

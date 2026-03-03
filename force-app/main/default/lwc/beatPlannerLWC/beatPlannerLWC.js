@@ -110,6 +110,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
     isShowBackButton = false;
     currentBeatId = '';
     isSSA_DSM = false;
+    @track isReporteeView = false;
     isstartodometermandatory = false;
     isEndOdomterMandatory = false;
     currentUser = {};
@@ -750,7 +751,25 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
             }
         }, 0);
     }
-    
+
+    /**Reportee View Toggle */
+    handleReporteeViewToggle() {
+        this.isReporteeView = !this.isReporteeView;
+        if (this.isReporteeView) {
+            this.isBeatViewScreen = false;
+            this.Outlet = false;
+        }
+    }
+
+    handleReporteeBeat(event) {
+        const detail = event.detail;
+        this.currentBeatId = detail.beatId;
+        this.isReporteeView = false;
+        this.Outlet = true;
+        this.isVisitCreate = true;
+        this.header = 'Visit Plan';
+    }
+
     /**Visit Data */
     visitCreate(){
         this.isvisitDesktop = this.isDesktop ? true : false;

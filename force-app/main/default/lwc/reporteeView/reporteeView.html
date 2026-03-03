@@ -1,0 +1,112 @@
+<template>
+    <div class="reportee-container">
+        <!-- Left Panel: Subordinate List -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <span class="panel-title">Team Members</span>
+            </div>
+            <div class="search-container">
+                <lightning-input
+                    type="search"
+                    label="Search"
+                    variant="label-hidden"
+                    placeholder="Search by name..."
+                    value={searchTerm}
+                    onchange={handleSearchSubordinate}>
+                </lightning-input>
+            </div>
+            <template lwc:if={isLoading}>
+                <div class="loading-container">
+                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                </div>
+            </template>
+            <template lwc:else>
+                <template lwc:if={filteredSubordinates.length}>
+                    <ul class="subordinate-list">
+                        <template for:each={filteredSubordinates} for:item="sub">
+                            <li key={sub.userId}
+                                class={sub.itemClass}
+                                data-id={sub.userId}
+                                onclick={handleSubordinateSelect}>
+                                <div class="sub-info">
+                                    <span class="sub-name">{sub.userName}</span>
+                                    <span class="sub-role">{sub.roleName}</span>
+                                </div>
+                                <template lwc:if={sub.isActive}>
+                                    <span class="badge active-badge">Active</span>
+                                </template>
+                                <template lwc:else>
+                                    <span class="badge inactive-badge">Inactive</span>
+                                </template>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:else>
+                    <div class="empty-state">No team members found.</div>
+                </template>
+            </template>
+        </div>
+
+        <!-- Right Panel: Beat Cards -->
+        <div class="right-panel">
+            <div class="panel-header">
+                <span class="panel-title">
+                    <template lwc:if={selectedSubordinateName}>
+                        Beats for {selectedSubordinateName}
+                    </template>
+                    <template lwc:else>
+                        Select a team member to view beats
+                    </template>
+                </span>
+            </div>
+            <template lwc:if={isBeatsLoading}>
+                <div class="loading-container">
+                    <lightning-spinner alternative-text="Loading beats" size="small"></lightning-spinner>
+                </div>
+            </template>
+            <template lwc:else>
+                <template lwc:if={beats.length}>
+                    <div class="beats-grid">
+                        <template for:each={beats} for:item="beat">
+                            <div key={beat.beatId} class="beat-card">
+                                <div class="beat-card-header">
+                                    <span class="beat-name">{beat.beatName}</span>
+                                    <span class="beat-type">{beat.beatType}</span>
+                                </div>
+                                <div class="beat-card-body">
+                                    <div class="beat-detail">
+                                        <span class="detail-label">Primary Customer:</span>
+                                        <span class="detail-value">{beat.primaryCustomerName}</span>
+                                    </div>
+                                    <div class="beat-detail">
+                                        <span class="detail-label">Outlets:</span>
+                                        <span class="detail-value">{beat.outletCount}</span>
+                                    </div>
+                                    <div class="beat-detail">
+                                        <span class="detail-label">Owner:</span>
+                                        <span class="detail-value">{beat.ownerName}</span>
+                                    </div>
+                                </div>
+                                <div class="beat-card-footer">
+                                    <lightning-button
+                                        label="Start Visit"
+                                        variant="brand"
+                                        data-beat-id={beat.beatId}
+                                        data-beat-name={beat.beatName}
+                                        onclick={handleStartBeat}>
+                                    </lightning-button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <template lwc:if={selectedSubordinateId}>
+                        <div class="empty-state">No active beats found for this team member.</div>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>

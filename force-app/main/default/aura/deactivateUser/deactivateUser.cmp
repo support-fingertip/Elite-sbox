@@ -1,5 +1,37 @@
 <aura:component controller="EmployeeeController"
                 implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >    
     <aura:attribute name="recordId" type="Id" />
-    <aura:handler name="init" value="{!this}" action="{!c.createUser}"></aura:handler>	
+    <aura:attribute name="showModal" type="Boolean" default="true" />
+    <aura:attribute name="selectedBeatOption" type="String" default="BEATS_ACTIVE" />
+    <aura:handler name="init" value="{!this}" action="{!c.initModal}"></aura:handler>
+
+    <aura:if isTrue="{!v.showModal}">
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title">Deactivate User</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p>Please select how to handle the user's beats:</p>
+                    <div class="slds-m-top_medium">
+                        <lightning:radioGroup name="beatOption"
+                            label="Beat Option"
+                            options="{!v.beatOptions}"
+                            value="{!v.selectedBeatOption}"
+                            type="radio"
+                            onchange="{!c.handleBeatOptionChange}" />
+                    </div>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral" label="Cancel" onclick="{!c.handleCancel}" />
+                    <lightning:button variant="destructive" label="Deactivate" onclick="{!c.deactivateWithOption}" />
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    <aura:attribute name="beatOptions" type="List" default="[
+        {'label': 'Deactivate user with beats Active', 'value': 'BEATS_ACTIVE'},
+        {'label': 'Deactivate user with beats Inactive', 'value': 'BEATS_INACTIVE'}
+    ]" />
 </aura:component>
