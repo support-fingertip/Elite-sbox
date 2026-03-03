@@ -1,0 +1,402 @@
+                             Business Requirement Document
+                                                     for
+                                   Visit Forms implementation
+                                                     By
+                                  Fingertip Technologies Pvt. Ltd
+
+   Document Name                                                 Visit Forms
+
+   Project Name                                                  Elite Foods
+
+   Client                                                    ELITE FOODS
+
+   Document Author                                           Anusha Koppera
+
+   Document Version                                                   2
+
+   Document Status                                                Submitted
+                                                                13/02/2026
+   Date Released
+
+   Contact Person                                         Ms. Anusha, +91-9538117552
+
+Sign-off Index
+                 Document shared on       Document Approved on                 Version
+
+                     10/02/2026                                                  1
+
+                     13/02/2026         17/02/2026                               2
+
+
+
+
+                                                                                         1
+Visit forms:
+   1. Visit forms can be created outside the beat
+   2. Visit forms can be created within beat visit
+   3. Visit forms can be created for the following types
+            a. Existing Primary customer
+            b. Existing secondary customer
+            c. New customer
+                       i. Primary customer
+                      ii. Sub stockiest
+                              1. Existing Market Expansion
+                     iii. Outlet
+                              1. New Market Expansion
+                              2. Existing Market Expansion
+   4. Once the day is started, user can view the “New visit form” button
+   5. Once clicked on “New visit form” user can select the respective visit form and proceed
+   6. Based on the selected visit form fields would appear
+   7. In case if the visit form needs to be created outside the beat, visit form selection would be
+       mandatory for the user and based on the visit form selected respective fields needs to be filled
+   8. In case of “visit form” creation during the customer visit, customer name will be auto filled
+       and remaining fields can be entered by the user
+   9. Within the customer visit for Primary customer: TSE and above hierarchy users can create the
+       visit form a. Existing primary customer and save
+   10. Within the customer visit for secondary customer: DSM and above users can only create the
+       visit form b. Existing secondary customer
+   11. C. New customer visit forms can be created outside the beat only. Using the button “Create
+       New visit form”
+   12. TSE and above hierarchy users can create the visit forms for the customers mapped to them
+       (Can search and select the customer for which they are mapped, statement applicable for
+       existing customer visit form)
+   13. DSM and above hierarchy users can create the visit forms for the customers mapped to them
+       (Can search and select the customer for which they are mapped, statement applicable for
+       existing customer visit form)
+   14. If the visit form is created outside the beat using “New visit form” button system will capture
+       the coordinates.
+   15. KMS will be calculated and added to the worked beats (visits). This distance will be added to
+       the total kms and it will shown as kms travelled under the expense management as well
+   16. Each visit form with set of fields is shown below on the respective tables.
+
+
+
+
+                                                                                                          2
+          a. Existing Primary customer
+
+Existing Primary Customer Visit Form
+                                         Auto
+Field                                    Selection Mandatory Type           Dependency Remarks
+Primary Customer                         No         Yes          Lookup                   Auto filled
+                                                                            Based on      Based on
+                                                                            Employee      Employee
+                                                                            Product       Product
+Product Category                         No         Yes          Picklist   Category      Category
+                                                                            Based on      Based on
+                                                                 Multi      Product       Product
+Product Group                            No         Yes          picklist   Category      Category
+Competitor Name                          No         Yes          Text
+Competitor Product                       No         Yes          Text
+Competitor Remarks                       No         Yes          Text
+General Remarks                          No         Yes          Text
+                                                                 File
+Competitor Product Image                 No         No           upload
+                                                                 File
+Primary customer image                   No         Yes          upload
+1. Product image name changes to Competitor product image and it will be placed between
+   Competitor product and competitor remarks
+2. Outlet image name changes to Primary customer image
+3. dependency will be added for Product category and the product group
+4. Product category and product group will be visible for based on the mapping for the user
+   performed in the employee on boarding process
+
+
+
+
+                                                                                                 3
+             b. Existing secondary customer
+
+                               Existing Secondary Customer Visit Form
+                    Auto
+Field               Selection       Mandatory Type               Dependency Remarks
+Primary Customer No                 Yes            Lookup                   Auto filled
+Secondary
+Customer         No                 Yes            Lookup                   Auto filled
+                                                                 Based on
+                                                                 Employee
+                                                                 Product    Based on Employee
+Product Category No                 Yes            Picklist      Category   Product Category
+                                                                 Based on
+                                                   Multi         Product    Based on Product
+Product Group   No                  Yes            picklist      Category   Category
+Competitor Name No                  Yes            Text
+Competitor
+Product         No                  Yes            Text
+Competitor
+Remarks         No                  Yes            Text
+General Remarks No                  Yes            Text
+Competitor
+Product Image       No              Yes            File upload
+Outlet Image        No              Yes            File upload
+
+
+1. The Above form can be filled with in the visit
+2. 2 extra fields to be added DSM Name & Beat Name 
+                 i. If this is only for filtering the secondary customers based on DSM and Beat
+                     name, this is not required. Based on the primary customer selection,
+                     secondary customer can be filtered.
+                 ii. TSE and above users can search for the required secondary customer and
+                     select.
+                 iii. Filters for the search will be added accordingly.
+3. dependency will be added for Product category and the product group
+4. Product category and product group will be visible based on the mapping for the user
+   performed in the employee on boarding process
+5. Product Group should be given multiple selection option with check box  Instead of check
+    box Multipicklist will be provided.
+                                                                                                  4
+6. Product image name changes to Competitor product image and will be placed between
+    Competitor product and competitor remarks
+7. Outlet image name changes to Secondary customer image
+
+
+
+          c. New customer
+                i. Primary customer
+
+                                  New Primary Customer
+                  Auto
+Field             Selection    Mandatory Type              Dependency Remarks
+                                                                      Customer type they
+                                                                      will select as
+Customer Type     No           Yes           Picklist                 Primary Customer
+                                                                      User can enter
+Primary Customer                                                      manually customer
+Name             No            Yes           Text                     Name
+                                                           Based on
+                                                           Employee
+                                                           Product    Based on Employee
+Product Category No            Yes           Picklist      Category   Product Category
+                                                           Based on
+                                             Multi         Product    Based on Product
+Product Group    No            Yes           picklist      Category   Category
+Primary Customer
+Business type    No            Yes           Picklist
+Competitor Name No             No            Text
+Competitor
+Product          No            No            Text
+Competitor
+Remarks          No            No            Text
+General Remarks No             Yes           Text
+Address          No            Yes           Text
+                                                           Based on    Based on employee
+                                                           employee    Sate Auto selection
+State             Yes          Yes           Picklist      state       of State
+                                                                       Based on employee
+                                                                       Sate Auto selection
+District          Yes          Yes           Picklist      Based state of District
+Pin code          No           Yes           text
+Contact Number    No           Yes           phone
+Product Image     No           No            File upload
+Outlet Image      No           Yes           File upload
+
+
+1. The Above form can be filled/ used outside beat only                                      5
+2. While selecting primary customer SAP code will be populated along with the Name
+3. dependency will be added for Product category and the product group
+4. Product category and product group will be visible for based on the mapping for the user
+   performed in the employee on boarding process
+5. Product Group should be given multiple selection option with check box  Instead of check
+   box Multipicklist will be provided.
+6. Product image name changes to Competitor product image and will be placed between
+    Competitor product and competitor remarks
+7. Outlet image name changes to Primary customer image
+8. State and District will be a drop down
+9. District field will be dependent on State and populate based on its selection
+10. Pin code should be in number format and limited to 6 digits
+11. Contact number will be in number format and limited to 10 digits
+12. In both the above points if the digits are less than the limit then it shows an error
+13. Product image name changes to Competitor product image and it will be placed between
+    Competitor product and competitor remark
+
+
+
+                    ii. Sub stockiest
+                            1. Existing Market Expansion
+
+                           Sub Stockiest- Existing Market Expansion
+                   Auto
+Field              Selection      Mandatory Type               Dependency Remarks
+                                                                          Customer type they
+                                                                          will select as Sub
+Customer Type      No             Yes            Picklist                 Stockiest/Outlet
+                                                                          Existing Market
+Visit Type         No             Yes            picklist                 Expansion
+Sub Stockiest      No             Yes            Text
+                                                                               User will enter
+Primary                                                                        manually customer
+Customer           No             Yes            Lookup                        Name
+                                                               Based on
+                                                               Employee
+                                                               Product         Based on Employee
+Product Category No               Yes            Picklist      Category        Product Category
+                                                               Based on
+                                                 Multi         Product         Based on Product
+Product Group      No             Yes            picklist      Category        Category
+Competitor
+Name               No             No             Text
+Competitor
+Product            No             No             Text
+Competitor
+Remarks            No             No             Text                                              6
+General Remarks No                Yes            Text
+Address         No                Yes            Text
+                                                               Based on        Based on employee
+                                                               employee        Sate Auto selection
+State              Yes            Yes            Picklist      state           of State
+                                                                           Based on employee
+                                                                           Sate Auto selection
+District           Yes            Yes            Picklist      Based state of District
+Pin code           No             Yes            text
+Contact Number No                 Yes            phone
+Competitor
+Product Image No                  No             File upload
+Sub stockiest
+Image          No                 Yes            File upload
+1. Customer type and Visit type should auto populate based on the selection of the form.
+2. While selecting primary customer SAP code should be populated along with the Name
+3. Customer type and Visit type will auto populate based on the selection of the form.
+4. Dependency exists between Product category and the product group
+5. Product Group should be given multiple selection option with check box  Instead of check
+    box Multipicklist will be provided.
+6. State and District will be a drop down
+7. District field will be dependent on State and populate based on its selection
+8. Pin code should be in number format and limited to 6 digits
+9. Contact number will be in number format and limited to 10 digits
+10. In both the above points if the digits are less than the limit then it shows an error
+11. Product image name changes to Competitor product image and will be placed between
+    Competitor product and competitor remarks
+12. Outlet image name changes to Sub- Stockiest image
+
+
+
+
+                                                                                                     7
+                   iii. Outlet
+                           1. New Market Expansion
+                           2. Existing Market Expansion
+
+                                Outlet - New Area Expansion
+                       Auto
+Field                  Selection     Mandatory     Type          Dependency Remarks
+                                                                            Customer
+                                                                            type they will
+                                                                            select as Sub
+Customer Type          No            Yes           Picklist                 Stockiest
+                                                                            Auto
+Visit Type         No                Yes                                    populates
+Outlet Name        No                Yes           Text
+Secondary Customer
+Business Type      No                Yes           picklist
+                                                                  Based on      Based on
+                                                                  Employee      Employee
+                                                                  Product       Product
+Product Category       No            Yes           Picklist       Category      Category
+                                                                  Based on      Based on
+                                                                  Product       Product
+Product Group      No                Yes           Mutli picklist Category      Category
+Competitor Name    No                No            Text
+Competitor Product No                No            Text
+Competitor Remarks No                No            Text
+General Remarks    No                Yes           Text
+Address            No                Yes           Text
+                                                                             Based on
+                                                                             employee
+                                                                 Based on    Sate Auto
+                                                                 employee    selection of
+State                  Yes           Yes           Picklist      state       State
+                                                                             Based on
+                                                                             employee
+                                                                             Sate Auto
+                                                                             selection of
+District               Yes           Yes           Picklist      Based state District
+Pin code               No            Yes           text
+Contact Number         No            Yes           phone
+Product Image          No            No            File upload
+Outlet Image           No            Yes           File upload
+
+             1. Customer type and Visit type will auto populate based on the selection of the   8
+                   form.
+                2. Dependency exists between Product category and the product group
+                3. Product Group should be given multiple selection option with check box 
+                    Instead of check box Multipicklist will be provided.
+                4. State and District will be a drop down
+                5. District field will be dependent on State and populate based on its selection
+                6. Pin code should be in number format and limited to 6 digits
+                7. Contact number will be in number format and limited to 10 digits
+                8. In both the above points if the digits are less than the limit then it shows an
+                    error
+                9. Product image name changes to Competitor product image and it will be placed
+                    between Competitor product and competitor remark
+
+
+
+                                Outlet - Existing Market Expansion
+                    Auto
+Field               Selection     Mandatory Type               Dependency Remarks
+                                                                          Customer type they
+                                                                          willl select as Sub
+Customer Type       No            Yes            Picklist                 Stockiest/Outlet
+                                                                          Existing Market
+Visit Type          No            Yes            picklist                 Expansion
+Outlet Name         No            Yes            Text
+Secondary
+Customer
+Business Type       No            Yes            picklist
+                                                                              User will enter
+Primary                                                                       manually customer
+Customer            No            Yes            Lookup                       Name
+                                                               Based on
+                                                               Employee
+                                                               Product        Based on Employee
+Product Category No               Yes            Picklist      Category       Product Category
+                                                               Based on
+                                                 Multi         Product        Based on Product
+Product Group No                  Yes            picklist      Category       Category
+Competitor
+Name            No                No             Text
+Competitor
+Product         No                No             Text
+Competitor
+Remarks         No                No             Text
+General Remarks No                Yes            Text
+Address         No                Yes            Text
+                                                                                                     9
+                                                               Based on    Based on employee
+                                                               employee    Sate Auto selection
+State               Yes           Yes            Picklist      state       of State
+                                                                           Based on employee
+                                                                           Sate Auto selection
+District       Yes                Yes            Picklist      Based state of District
+Pin code       No                 Yes            text
+Contact Number No                 Yes            phone
+Competitor
+Product Image No                  No             File upload
+Outlet Image   No                 Yes            File upload
+   1. Customer type and Visit type should auto populate based on the selection of the form.
+   2. Dependency exists between Product category and the product group
+   3. Product Group should be given multiple selection option with check box  Instead of check
+        box Multipicklist will be provided.
+   4. State and District will be a drop down
+   5. District field will be dependent on State and populate based on its selection
+   6. Pin code should be in number format and limited to 6 digits
+   7. Contact number will be in number format and limited to 10 digits
+   8. In both the above points (ie. F & G) if the digits are less than the limit then it shows an error
+   9. Product image name changes to Competitor product image and it will be placed between
+        Competitor product and competitor remark
+
+IMPORTANT NOTES:
+
+            a. Any requirement not mentioned explicitly on the document will be considered as
+               out of scope of work.
+            b. In case of any changes POST UAT or POST GO LIVE will be considered as change
+               request and additional estimations and timeline will be applicable to implement
+
+
+                                   ***END OF THE DOCUMENT***
+
+
+
+
+                                                                                                          10
+
