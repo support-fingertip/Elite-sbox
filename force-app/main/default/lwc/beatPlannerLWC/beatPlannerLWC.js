@@ -135,6 +135,10 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
     visitFormVisitId = '';
     visitFormReturnScreen = 3.8;
 
+    // Reportee View
+    @track isReporteeView = false;
+    @track isReporteeViewAvailable = false;
+
     //detect if LWC is running in mobile publisher
     isMobilePublisher = window.navigator.userAgent.indexOf('CommunityHybridContainer') > 0;
 
@@ -812,6 +816,23 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement){
             this.isVisitCreate = true
         }
   
+    }
+
+    handleReporteeViewToggle() {
+        this.isReporteeView = !this.isReporteeView;
+        if (this.isReporteeView) {
+            this.resetAllScreen();
+        }
+    }
+
+    handleStartSubordinateVisit(event) {
+        const { beatId } = event.detail;
+        this.resetAllScreen();
+        this.isReporteeView = false;
+        this.currentBeatId = beatId;
+        this.Outlet = true;
+        this.isVisitCreate = true;
+        this.header = 'Visit Plan';
     }
     /**When beat Switch button clicked */
     handleBeatCheck(event) {
