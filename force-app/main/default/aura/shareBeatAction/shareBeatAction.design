@@ -1,0 +1,3 @@
+<design:component label="Share Beat Action">
+    <design:attribute name="recordId" label="Record ID" />
+</design:component>
