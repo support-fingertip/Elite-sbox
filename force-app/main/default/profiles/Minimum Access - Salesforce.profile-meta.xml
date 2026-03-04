@@ -813,6 +813,14 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>ReporteeViewController</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>ReporteeViewControllerTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>ResetPasswordController</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -3074,6 +3082,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Daily_Log__c.Last_Visit_Distance_Salesforce__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Daily_Log__c.Last_Visit_Form_Visit_Time__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -9098,6 +9111,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Stock_Adjustment__c.Stock_Adjust_M__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Stock_Adjustment__c.Stock_Adjustment_Date__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -10227,6 +10245,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>Visit_Form__c.Product__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>Visit_Form__c.Secondary_Customer_Business_Type__c</field>
         <readable>true</readable>
@@ -11295,7 +11318,15 @@
     </layoutAssignments>
     <layoutAssignments>
         <layout>Visit_Form__c-Visit Form</layout>
+        <recordType>Visit_Form__c.New_Customer</recordType>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Visit_Form__c-Visit Form</layout>
         <recordType>Visit_Form__c.Primary_Customer</recordType>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Visit_Form__c-Visit Form</layout>
+        <recordType>Visit_Form__c.Secondary_Customer</recordType>
     </layoutAssignments>
     <layoutAssignments>
         <layout>Visit__c-Visit Layout</layout>
@@ -11449,9 +11480,19 @@
         <enabled>true</enabled>
     </pageAccesses>
     <recordTypeVisibilities>
+        <default>false</default>
+        <recordType>Visit_Form__c.New_Customer</recordType>
+        <visible>false</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
         <default>true</default>
         <recordType>Visit_Form__c.Primary_Customer</recordType>
         <visible>true</visible>
+    </recordTypeVisibilities>
+    <recordTypeVisibilities>
+        <default>false</default>
+        <recordType>Visit_Form__c.Secondary_Customer</recordType>
+        <visible>false</visible>
     </recordTypeVisibilities>
     <tabVisibilities>
         <tab>Apex_Log__c</tab>

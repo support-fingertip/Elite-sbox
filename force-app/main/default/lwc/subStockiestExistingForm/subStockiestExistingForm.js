@@ -414,6 +414,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
 
         const groupValue = this.productGroups[0].value.join(';');
         saveSubStockistExistingMarketVisit({
+            subStockistName: this.subStockiestName,
             subStockiestName: this.subStockiestName,
             primaryCustomer: this.primaryCustomer,
             address: this.address,

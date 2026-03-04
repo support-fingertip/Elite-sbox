@@ -431,6 +431,7 @@ export default class ExistingPrimaryForm extends NavigationMixin(LightningElemen
             let message = { 
                 message: 'save' ,
                 screen : this.returnScreen,
+                visitId: this.visitId,
                 visittype: 'existingPrimary'
             };
             this.genericDispatchEvent(message);

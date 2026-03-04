@@ -1,12 +1,16 @@
 import { LightningElement, api, track } from 'lwc';
-import getExpneseData from '@salesforce/apex/ExpenseListViewController.getAllData';
+//import getExpneseData from '@salesforce/apex/ExpenseListViewController.getAllData';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { deleteRecord } from 'lightning/uiRecordApi';
-import saveExpenseItem from '@salesforce/apex/ExpenseListViewController.insertExpenseItem';
+//import saveExpenseItem from '@salesforce/apex/ExpenseListViewController.insertExpenseItem';
+
+// Stubs while ExpenseListViewController is disabled
+const getExpneseData = () => Promise.reject('ExpenseListViewController is currently disabled');
+const saveExpenseItem = () => Promise.reject('ExpenseListViewController is currently disabled');
 
 
 export default class ExpenseDetailedPage extends LightningElement {
-    @api recordId ;
+    @api recordId;
     @api isDesktop;
     @track expItems = [];
     @track dailyLogs = [];
@@ -25,13 +29,13 @@ export default class ExpenseDetailedPage extends LightningElement {
     perKMChargeBike = 0;
     perKMChargeCar = 0;
     daAmount = 0;
-  
+
     expenseDataExisted = true;
     isModalOpen = false;
     isDeleteModalOpen = false;
     isLoading = false;
     expectedAmount = '';
-    customClass='slds-size_1-of-2 slds-p-horizontal_small';
+    customClass = 'slds-size_1-of-2 slds-p-horizontal_small';
     comments = '';
     modalTitle = '';
     itemtId = '';
@@ -40,11 +44,11 @@ export default class ExpenseDetailedPage extends LightningElement {
     containerClass;
     isDisabled = false;
     showUpload = false;
-    approvalStatus ='';
+    approvalStatus = '';
     get showExpenseItems() {
-        return !( (this.isModalOpen || this.showPopup || this.isDeleteModalOpen) && !this.isDesktop );
+        return !((this.isModalOpen || this.showPopup || this.isDeleteModalOpen) && !this.isDesktop);
     }
-   
+
     @api refreshData() {
         // Logic to refresh expense data
         this.getExpenseLineItems();
@@ -56,7 +60,7 @@ export default class ExpenseDetailedPage extends LightningElement {
         this.getExpenseLineItems();
         this.disablePullToRefresh();
     }
-   
+
 
     //it will get the expense line items
     getExpenseLineItems() {
@@ -69,14 +73,14 @@ export default class ExpenseDetailedPage extends LightningElement {
                 this.expense = result.expense;
                 this.dailyLogs = result.dailyLogList;
                 this.approvalStatus = result.expense.Approval_Status__c;
-    
+
                 // Convert result arrays into key-value objects for picklist
                 this.expenseOptions = this.addAllOption(result.ExpTypes);
                 this.transportOptions = this.addAllOption(result.ModOfTrans);
                 this.allowanceOptions = this.addAllOption(result.AllwTypes);
 
                 this.expItems = result.ExlineItems.map(item => ({
-                    ...item,  
+                    ...item,
                     openPopup: false,
                     sObjectType: 'Expense_Line_Item__c'
 
@@ -107,8 +111,7 @@ export default class ExpenseDetailedPage extends LightningElement {
     //once we click on add or edit or delete buttons
     handleOnclickMenu(event) {
         const action = event.currentTarget.dataset.name;
-        if(this.isApprovalStatusValid)
-        {
+        if (this.isApprovalStatusValid) {
             const itemId = event.currentTarget.dataset.id;
             const exLineItem = this.expItems.find(item => item.id === itemId);
             this.showUpload = false;
@@ -125,11 +128,11 @@ export default class ExpenseDetailedPage extends LightningElement {
                     Area_Name__c: exLineItem.Area_Name__c,
                     City__c: exLineItem.City__c,
                     Description__c: exLineItem.Description__c,
-                    Mode_of_transport__c:exLineItem.Mode_of_transport__c,
+                    Mode_of_transport__c: exLineItem.Mode_of_transport__c,
                     Total_KM__c: exLineItem.Total_KM__c,
                     Amount__c: exLineItem.Amount__c,
                     Calculated_KM__c: exLineItem.Calculated_KM__c,
-                    AddtionalKMWith20__c:exLineItem.AddtionalKMWith20__c,
+                    AddtionalKMWith20__c: exLineItem.AddtionalKMWith20__c,
                     Id: exLineItem.Id,
                     isTA: exLineItem.Allowance_Type__c == 'TA',
                     isDA: exLineItem.Expense_Type__c == 'DA',
@@ -147,30 +150,30 @@ export default class ExpenseDetailedPage extends LightningElement {
                 this.modalTitle = 'New Expense';
                 this.itemtId = null;
                 this.isModalOpen = true;
-            }else {
+            } else {
                 console.error('Invalid action or item not found.');
             }
-                    
+
         }
-        else{
+        else {
             let actionValue = action.toLowerCase();
 
             this.showToast('Error', `Expense is ${this.expense.Approval_Status__c}, you can't ${actionValue} the expense`, 'error');
         }
-       
+
     }
     //When Line Item Date Selected
     validateLog(event) {
         const id = event.target.dataset.id;
         console.log('Id:', id);
-    
+
         let expenseDate = event.target.value;
         let expenseDateObject = new Date(expenseDate);
         let backDatedEntry = this.backDatedEntry || 1;
-    
+
         // Ensure reactive updates by creating a new object
         let updatedExpenseItem = { ...this.expenseItem };
-    
+
         updatedExpenseItem.Allowance_Type__c = '';
         updatedExpenseItem.Amount__c = null;
         updatedExpenseItem.isTA = false;
@@ -181,19 +184,19 @@ export default class ExpenseDetailedPage extends LightningElement {
 
         let matchedDialog = this.dailyLogs.find(dialog => dialog.LogDate__c === expenseDate);
         console.log('matchedDialog:', JSON.stringify(matchedDialog));
-    
+
         let expenseDateField = this.template.querySelector('[data-id="Expense_Date"]');
-    
+
         if (matchedDialog) {
             let XDaysAgo = new Date();
             XDaysAgo.setDate(XDaysAgo.getDate() - parseInt(backDatedEntry));
-    
+
             if (expenseDateObject < XDaysAgo) {
                 if (expenseDateField) {
                     expenseDateField.value = '';
                 }
                 this.showToast('Error', "You are not allowed to add expense for the selected date", "error");
-    
+
                 updatedExpenseItem.allownceDisabled = true;
                 updatedExpenseItem.Expense_Date__c = null;
                 updatedExpenseItem.isCompanionExisted = false;
@@ -202,31 +205,31 @@ export default class ExpenseDetailedPage extends LightningElement {
                 updatedExpenseItem.Expense_Date__c = expenseDateObject.toISOString().split('T')[0];
                 updatedExpenseItem.Expense_Type__c = matchedDialog.Travel_Type__c;
                 updatedExpenseItem.Calculated_KM__c = matchedDialog.Today_Day_Travelled_Distance_KM__c || 0;
-    
-              
+
+
             }
         } else {
             if (expenseDateField) {
                 expenseDateField.value = '';
             }
             this.showToast('Error', "There is no log for the selected date", "error");
-    
+
             updatedExpenseItem.Expense_Date__c = null;
             updatedExpenseItem.allownceDisabled = true;
             updatedExpenseItem.isCompanionExisted = false;
             updatedExpenseItem.Allowance_Type__c = '';
         }
-    
+
         // Assign updated object back to trigger UI reactivity
         this.expenseItem = updatedExpenseItem;
     }
     //Allowance Type changed
     allowanceTypeChangeHandler(event) {
-        let expItems = [...this.expItems]; 
+        let expItems = [...this.expItems];
         let allowanceType = event.target.value;
         let updatedExpenseItem = { ...this.expenseItem };
         updatedExpenseItem.Allowance_Type__c = allowanceType;
-    
+
         // Reset values
         updatedExpenseItem.Amount__c = null;
         updatedExpenseItem.Mode_of_transport__c = '';
@@ -242,22 +245,21 @@ export default class ExpenseDetailedPage extends LightningElement {
             updatedExpenseItem.Amount__c = this.daAmount;
             updatedExpenseItem.isDA = true;
         }
-        else if (allowanceType === 'TA'){
+        else if (allowanceType === 'TA') {
             updatedExpenseItem.isTA = true;
         }
-        else if(allowanceType === 'Other')
-        {
+        else if (allowanceType === 'Other') {
             updatedExpenseItem.isOtherExpense = true;
         }
-    
+
         // Validate duplicate Allowance_Type__c for the same Expense_Date__c
-        let count = expItems.filter(item => 
-            item.Expense_Date__c === updatedExpenseItem.Expense_Date__c && 
-            item.Allowance_Type__c === 'DA'&& updatedExpenseItem.Allowance_Type__c =='DA'
-            &&  item.Id != updatedExpenseItem.Id
+        let count = expItems.filter(item =>
+            item.Expense_Date__c === updatedExpenseItem.Expense_Date__c &&
+            item.Allowance_Type__c === 'DA' && updatedExpenseItem.Allowance_Type__c == 'DA'
+            && item.Id != updatedExpenseItem.Id
         ).length;
-        console.log('count'+count);
-        console.log('updatedExpenseItem.Expense_Date__c'+updatedExpenseItem.Expense_Date__c);
+        console.log('count' + count);
+        console.log('updatedExpenseItem.Expense_Date__c' + updatedExpenseItem.Expense_Date__c);
         if (count > 0) {
             updatedExpenseItem.Allowance_Type__c = '';
             updatedExpenseItem.Amount__c = null;
@@ -266,18 +268,18 @@ export default class ExpenseDetailedPage extends LightningElement {
             if (inputfield) {
                 inputfield.value = '';
             }
-            this.showToast('Error',"DA for the Selected Date is Already Added", "error");
+            this.showToast('Error', "DA for the Selected Date is Already Added", "error");
         }
-    
+
         this.expenseItem = updatedExpenseItem;
     }
     //Mode Of Transport and Distance Travelled Change Handler
     modeOfTransportChangeHandler(event) {
         const id = event.target.dataset.id;
-        let expItems = [...this.expItems]; 
+        let expItems = [...this.expItems];
         let updatedExpenseItem = { ...this.expenseItem };
         const field = event.currentTarget.dataset.id;
-        if (field.includes('Mode_of_transport')) { 
+        if (field.includes('Mode_of_transport')) {
             updatedExpenseItem.Mode_of_transport__c = event.target.value;
         } else if (field === 'Total_KM') {
             updatedExpenseItem.Total_KM__c = event.currentTarget.value;
@@ -285,14 +287,14 @@ export default class ExpenseDetailedPage extends LightningElement {
         const CarPerKm = this.perKMChargeCar;
         const BikePerKm = this.perKMChargeBike;
         updatedExpenseItem.Amount__c = null;
- 
-    
+
+
         let SystemCalculatedKm = updatedExpenseItem.Calculated_KM__c || 0;
         let ExpDate = updatedExpenseItem.Expense_Date__c;
-    
+
         let WithAdditonalSystemKM = SystemCalculatedKm + ((20 * SystemCalculatedKm) / 100);
         let TotalKmManuallyEntered = 0;
-    
+
         // Restricting user from entering more than system-calculated KM
         expItems.forEach(item => {
             if (
@@ -303,11 +305,11 @@ export default class ExpenseDetailedPage extends LightningElement {
             }
         });
 
-        let kmEntered = TotalKmManuallyEntered +  updatedExpenseItem.Total_KM__c;
+        let kmEntered = TotalKmManuallyEntered + updatedExpenseItem.Total_KM__c;
 
-        console.log('TotalKmManuallyEntered'+ TotalKmManuallyEntered);
-        console.log('kmEntered'+ kmEntered);
-    
+        console.log('TotalKmManuallyEntered' + TotalKmManuallyEntered);
+        console.log('kmEntered' + kmEntered);
+
         if (kmEntered > WithAdditonalSystemKM) {
             this.showToast(
                 "Info",
@@ -331,26 +333,26 @@ export default class ExpenseDetailedPage extends LightningElement {
                     updatedExpenseItem.Amount__c = updatedExpenseItem.Total_KM__c * CarPerKm;
                     updatedExpenseItem.isTransportCarBike = true;
                 }
-                else{
+                else {
 
                     updatedExpenseItem.isTransportNotBikeCar = true;
                 }
             }
         }
-    
+
         // Validate duplicate Mode of Transport for the same date
-        let count = expItems.filter(item => 
+        let count = expItems.filter(item =>
             item.Expense_Date__c === ExpDate &&
             item.Allowance_Type__c === 'TA' &&
             item.Mode_of_transport__c === updatedExpenseItem.Mode_of_transport__c &&
             item.Id != updatedExpenseItem.Id &&
             updatedExpenseItem.Mode_of_transport__c
         ).length;
-    
+
         if (count > 0) {
-            
+
             let errorMsg = `TA by ${updatedExpenseItem.Mode_of_transport__c} for the Selected Date is Already Added`;
-            this.showToast('Error',errorMsg, "error");
+            this.showToast('Error', errorMsg, "error");
             updatedExpenseItem.Mode_of_transport__c = '';
             updatedExpenseItem.isTransportNotBikeCar = false;
             updatedExpenseItem.isTransportCarBike = false;
@@ -386,7 +388,7 @@ export default class ExpenseDetailedPage extends LightningElement {
             Calculated_KM__c: null,
             AddtionalKMWith20__c: 0,
             Id: null,
-            Expense__c:this.recordId,
+            Expense__c: this.recordId,
             isTA: false,
             isDA: false,
             isTransportCarBike: false,
@@ -401,8 +403,7 @@ export default class ExpenseDetailedPage extends LightningElement {
     }
 
     //Input field change
-    handlerInputChange(event)
-    {
+    handlerInputChange(event) {
         const field = event.currentTarget.dataset.id;
         let updatedExpenseItem = { ...this.expenseItem };
         if (field === 'City') {
@@ -411,12 +412,10 @@ export default class ExpenseDetailedPage extends LightningElement {
         else if (field === 'Area_Name') {
             updatedExpenseItem.Area_Name__c = event.target.value;
         }
-        else if(field === "Amount")
-        {
+        else if (field === "Amount") {
             updatedExpenseItem.Amount__c = event.target.value;
         }
-        else if(field === "Description")
-        {
+        else if (field === "Description") {
             updatedExpenseItem.Description__c = event.target.value;
         }
         this.expenseItem = updatedExpenseItem;
@@ -424,7 +423,7 @@ export default class ExpenseDetailedPage extends LightningElement {
 
     save() {
         var ExpenseRecord = this.expenseItem;
-    
+
         // Validations
         if (!ExpenseRecord.Expense_Date__c) {
             this.showToast('Error', 'Please select an Expense Date', 'error');
@@ -442,8 +441,8 @@ export default class ExpenseDetailedPage extends LightningElement {
             this.showToast('Error', 'Please select the mode of transport', 'error');
             return;
         }
-        if ( ExpenseRecord.Mode_of_transport__c == 'Car' ||
-            ExpenseRecord.Mode_of_transport__c == 'Bike' &&   (!ExpenseRecord.Total_KM__c || ExpenseRecord.Total_KM__c == 0)) {
+        if (ExpenseRecord.Mode_of_transport__c == 'Car' ||
+            ExpenseRecord.Mode_of_transport__c == 'Bike' && (!ExpenseRecord.Total_KM__c || ExpenseRecord.Total_KM__c == 0)) {
             this.showToast('Error', 'Please enter distance travelled', 'error');
             return;
         }
@@ -456,13 +455,13 @@ export default class ExpenseDetailedPage extends LightningElement {
             this.showToast('Error', 'Please enter the amount', 'error');
             return;
         }
-    
+
         this.isLoading = true;
-    
+
         saveExpenseItem({ expenseItem: ExpenseRecord })
             .then((result) => {
                 console.log('Result:', JSON.stringify(result));
-    
+
                 const newExpenseItem = {
                     Expense_Date__c: result.Expense_Date__c,
                     Expense_Type__c: result.Expense_Type__c,
@@ -488,14 +487,14 @@ export default class ExpenseDetailedPage extends LightningElement {
                     isTransportNotBikeCar: result.Mode_of_transport__c !== 'Car' && result.Mode_of_transport__c !== 'Bike',
                     isDisabled: false,
                 };
-    
+
                 this.expenseItem = newExpenseItem;
-    
+
                 // Handle modal visibility
                 this.isModalOpen = this.showUpload === false;
-    
+
                 if (this.itemtId) {
-                    console.log('Id'+this.itemtId);
+                    console.log('Id' + this.itemtId);
                     // Update existing record
                     this.expItems = this.expItems.map(item => (item.Id === this.itemtId ? newExpenseItem : item));
                 } else {
@@ -503,37 +502,36 @@ export default class ExpenseDetailedPage extends LightningElement {
                     this.expItems = [...this.expItems, newExpenseItem];
                     this.itemtId = result.Id;
                 }
-    
+
                 this.sortExpenseItems();
-    
+
                 this.expenseDataExisted = this.expItems.length > 0;
                 this.isLoading = false;
-                if( this.showUpload == false)
-                {
-                    this.showToast("Success","Expense Created Successfully. Please upload bills", "success");
+                if (this.showUpload == false) {
+                    this.showToast("Success", "Expense Created Successfully. Please upload bills", "success");
                 }
                 this.showUpload = true;
-               
-                
+
+
             })
             .catch((error) => {
                 this.isLoading = false;
                 console.error('Save Error:', JSON.stringify(error));
-    
+
                 let message = 'Unknown error';
                 if (error.body && error.body.message) {
                     message = error.body.message;
                 }
-    
+
                 this.showToast('Error', `Error while saving expense: ${message}`, 'error');
             });
     }
-    
+
     deleteExpense() {
         const itemId = this.itemtId;
         this.isDeleteModalOpen = false;
         this.isLoading = true;
-        console.log('itemId'+itemId);
+        console.log('itemId' + itemId);
         deleteRecord(itemId)
             .then(() => {
                 this.expItems = this.expItems.filter(expense => expense.Id !== itemId);
@@ -549,28 +547,27 @@ export default class ExpenseDetailedPage extends LightningElement {
             });
     }
 
-    sortExpenseItems()
-    {
+    sortExpenseItems() {
         // Define sorting order for Allowance_Type__c
         const allowanceOrder = { 'TA': 1, 'DA': 2, 'Other': 3 };
 
         // Close all popups and sort by Expense_Date__c first, then by Allowance_Type__c (custom order)
         this.expItems = this.expItems
-        .map(item => ({ ...item, openPopup: false , sObjectType: 'Expense_Line_Item__c'}))
-        .sort((a, b) => {
-            const dateA = new Date(a.Expense_Date__c);
-            const dateB = new Date(b.Expense_Date__c);
+            .map(item => ({ ...item, openPopup: false, sObjectType: 'Expense_Line_Item__c' }))
+            .sort((a, b) => {
+                const dateA = new Date(a.Expense_Date__c);
+                const dateB = new Date(b.Expense_Date__c);
 
-            if (dateA - dateB !== 0) {
-                return dateA - dateB; // Sort by date first (ascending)
-            }
+                if (dateA - dateB !== 0) {
+                    return dateA - dateB; // Sort by date first (ascending)
+                }
 
-            // Get priority for Allowance_Type__c (default to a high number if not found)
-            const typeA = allowanceOrder[a.Allowance_Type__c] || 99;
-            const typeB = allowanceOrder[b.Allowance_Type__c] || 99;
+                // Get priority for Allowance_Type__c (default to a high number if not found)
+                const typeA = allowanceOrder[a.Allowance_Type__c] || 99;
+                const typeB = allowanceOrder[b.Allowance_Type__c] || 99;
 
-            return typeA - typeB; // Sort by custom Allowance_Type__c order
-        });
+                return typeA - typeB; // Sort by custom Allowance_Type__c order
+            });
     }
 
     handleDeleteCancel() {
@@ -581,13 +578,13 @@ export default class ExpenseDetailedPage extends LightningElement {
     openPopupDetails(event) {
         // Reset all items to have openPopup as false
         this.expItems = this.expItems.map(item => ({
-            ...item,  
-            openPopup: false 
+            ...item,
+            openPopup: false
         }));
-    
+
         const itemId = event.currentTarget.dataset.id;
         const selectedItem = this.expItems.find(item => item.Id === itemId);
-    
+
         if (selectedItem) {
             this.selectedItem = {
                 ...selectedItem,
@@ -598,7 +595,7 @@ export default class ExpenseDetailedPage extends LightningElement {
         } else {
             this.selectedItem = null; // Handle the case where no matching item is found
         }
-    
+
         this.showPopup = true;
     }
 
@@ -611,7 +608,7 @@ export default class ExpenseDetailedPage extends LightningElement {
     disablePullToRefresh() {
         const disableRefresh = new CustomEvent("updateScrollSettings", {
             detail: {
-            isPullToRefreshEnabled: false
+                isPullToRefreshEnabled: false
             },
             bubbles: true,
             composed: true
@@ -622,7 +619,7 @@ export default class ExpenseDetailedPage extends LightningElement {
         this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }
     addAllOption(options) {
-       return [{ label: 'Select an Option', value: '' }, ...options];
+        return [{ label: 'Select an Option', value: '' }, ...options];
     }
 
     // Method to send status to parent component

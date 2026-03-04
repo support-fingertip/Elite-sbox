@@ -168,5 +168,28 @@ public without sharing class PJPItemHandler {
             }
         } */
     }
-    
+    public static void autoApprovePJPForAdminOrManager(List<PJP_Item__c> items) {
+        Id currentUserId = UserInfo.getUserId();
+        String profileName = [SELECT Name FROM Profile WHERE Id = :UserInfo.getProfileId() LIMIT 1].Name;
+        Boolean isAdmin = profileName == 'System Administrator';
+
+        Set<Id> ownerIds = new Set<Id>();
+        for (PJP_Item__c item : items) {
+            if (item.OwnerId__c != currentUserId) ownerIds.add(item.OwnerId__c);
+        }
+
+        Set<Id> subordinateIds = new Set<Id>();
+        if (!ownerIds.isEmpty() && !isAdmin) {
+            subordinateIds = RoleHeirarchyUtility.getRoleSubordinateUsers(currentUserId);
+        }
+
+        for (PJP_Item__c item : items) {
+            if (item.OwnerId__c != currentUserId) {
+                if (isAdmin || subordinateIds.contains(item.OwnerId__c)) {
+                    item.Status__c = 'Approved';
+                }
+            }
+        }
+    }
+
 }

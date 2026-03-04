@@ -211,7 +211,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
             this.showToast('Error', 'Please select Primary Customer', 'error');
             return;
         }
-        if (!this.secondaryCustomer) {
+        if (!this.defaultSecondaryCustomerId && !this.secondaryCustomer) {
             this.showToast('Error', 'Please select Secondary Customer', 'error');
             return;
         }
@@ -362,7 +362,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
 
         saveSecondaryVisit({
             primaryCustomerId: this.defaultPrimaryCustomerId,
-            secondaryCustomerId: this.secondaryCustomer,
+            secondaryCustomerId: this.defaultSecondaryCustomerId || this.secondaryCustomer,
             productCategory: this.productCategory,
             productGroup: groupValue,
             competitorName: this.competitorName,
@@ -384,6 +384,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
                 let message = { 
                     message: 'save' ,
                     screen : this.returnScreen,
+                    visitId: this.visitId,
                     visittype: 'existingSecondary'
                 };
                 this.genericDispatchEvent(message);

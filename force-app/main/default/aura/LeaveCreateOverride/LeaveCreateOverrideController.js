@@ -137,8 +137,8 @@
     },
 
     // ─── User Search Handlers ───────────────────── Added by Pattu -- 25/02/26
-
-    handleUserSearch : function(component, event, helper) {
+// ─── User Search Handlers ─────────────────────────────────────────────────────
+handleUserSearch : function(component, event, helper) {
     var searchTerm = event.getSource().get("v.value");
     component.set("v.userSearchTerm", searchTerm);
     component.set("v.selectedUserId", "");
@@ -150,31 +150,37 @@
         return;
     }
 
-    // Debounce: cancel previous timer before firing new Apex call
+    // Cancel previous debounce timer
     var existingTimer = component.get("v.searchTimer");
     if (existingTimer) {
         clearTimeout(existingTimer);
     }
 
-    var timer = window.setTimeout(function() {
+    // Reduced debounce from 300ms → 200ms for snappier feel
+    var timer = window.setTimeout($A.getCallback(function() {
         var currentTerm = component.get("v.userSearchTerm");
-
-        // Bail out if search term changed before timer fired
         if (!currentTerm || currentTerm.trim().length < 2) return;
 
         var action = component.get("c.searchUsers");
         action.setParams({ searchTerm: currentTerm.trim() });
+
+        // ✅ setStorable() uses Lightning's client-side cache for cacheable=true methods
+        // repeated identical searches return instantly from cache
+        action.setStorable();
+
         action.setCallback(this, function(response) {
-            // Only update if search term hasn't changed while waiting
+            // Stale response guard: discard if the term changed while waiting
             if (component.get("v.userSearchTerm") !== currentTerm) return;
 
             if (response.getState() === "SUCCESS") {
-                var results = response.getReturnValue();
+                var results = response.getReturnValue() || [];
                 component.set("v.userSearchResults", results);
                 component.set("v.showUserDropdown", results.length > 0);
             } else {
-                var errors = response.getError();
-                var msg = (errors && errors[0] && errors[0].message) ? errors[0].message : "Search failed.";
+                var errors  = response.getError();
+                var msg = (errors && errors[0] && errors[0].message)
+                            ? errors[0].message
+                            : "Search failed.";
                 helper.showToast("Error", msg, "error");
                 component.set("v.userSearchResults", []);
                 component.set("v.showUserDropdown", false);
@@ -182,7 +188,7 @@
         });
         $A.enqueueAction(action);
 
-    }, 300); // 300ms debounce
+    }), 200); // ← 200ms debounce (was 300ms)
 
     component.set("v.searchTimer", timer);
 },

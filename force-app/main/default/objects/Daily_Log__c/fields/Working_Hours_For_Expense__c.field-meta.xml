@@ -7,12 +7,31 @@
         NOT(ISBLANK(Day_started_time__c)),
         NOT(
             ISBLANK(
-                IF(Is_System_Ended__c, Last_Visit_Date_and_Time__c, Day_ended_time__c)
+                IF(
+                    Is_System_Ended__c,
+                    IF(
+                        AND(NOT(ISBLANK(Last_Visit_Date_and_Time__c)), NOT(ISBLANK(Last_Visit_Form_Visit_Time__c))),
+                        IF(Last_Visit_Date_and_Time__c &gt; Last_Visit_Form_Visit_Time__c, Last_Visit_Date_and_Time__c, Last_Visit_Form_Visit_Time__c),
+                        IF(NOT(ISBLANK(Last_Visit_Date_and_Time__c)), Last_Visit_Date_and_Time__c, Last_Visit_Form_Visit_Time__c)
+                    ),
+                    Day_ended_time__c
+                )
             )
         )
     ),
     ROUND(
-        (IF(Is_System_Ended__c, Last_Visit_Date_and_Time__c, Day_ended_time__c) - Day_started_time__c) * 24,
+        (
+            IF(
+                Is_System_Ended__c,
+                IF(
+                    AND(NOT(ISBLANK(Last_Visit_Date_and_Time__c)), NOT(ISBLANK(Last_Visit_Form_Visit_Time__c))),
+                    IF(Last_Visit_Date_and_Time__c &gt; Last_Visit_Form_Visit_Time__c, Last_Visit_Date_and_Time__c, Last_Visit_Form_Visit_Time__c),
+                    IF(NOT(ISBLANK(Last_Visit_Date_and_Time__c)), Last_Visit_Date_and_Time__c, Last_Visit_Form_Visit_Time__c)
+                ),
+                Day_ended_time__c
+            )
+            - Day_started_time__c
+        ) * 24,
         2
     ),
     NULL

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>New_Sub_Stockiest_Exi_Mark_Expa</fullName>
+    <columns>NAME</columns>
+    <columns>Customer_Name__c</columns>
+    <columns>Customer_Type__c</columns>
+    <columns>Visit_Type__c</columns>
+    <columns>Product_Categories__c</columns>
+    <columns>Product_Group__c</columns>
+    <columns>Competitor_Name__c</columns>
+    <columns>Competitor_Remarks__c</columns>
+    <columns>Address__c</columns>
+    <columns>State__c</columns>
+    <columns>District__c</columns>
+    <columns>Pincode__c</columns>
+    <columns>CREATED_DATE</columns>
+    <columns>CREATEDBY_USER</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Customer_Type__c</field>
+        <operation>equals</operation>
+        <value>New Sub Stockiest</value>
+    </filters>
+    <filters>
+        <field>Visit_Type__c</field>
+        <operation>equals</operation>
+        <value>Existing Market Expansion</value>
+    </filters>
+    <label>New Sub Stockiest - Exi. Mark. Expa.</label>
+</ListView>

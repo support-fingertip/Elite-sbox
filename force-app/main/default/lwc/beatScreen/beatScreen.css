@@ -638,3 +638,105 @@
     margin-left: 12px;
     cursor: pointer;
 }
+
+/* ══════════════════════════════════
+    REPORTEE VIEW STYLES
+══════════════════════════════════ */
+.reportee-section {
+    padding: 4px 0;
+}
+
+.reportee-card {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 8px 4px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.reportee-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+}
+
+.reportee-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 14px;
+    color: #6b7280;
+}
+
+.reportee-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.reportee-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 2px;
+}
+
+.reportee-meta {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+.status-active {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.status-inactive {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.reportee-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: 12px;
+    color: #9ca3af;
+}
+
+/* ── Reportee Beat Sub-View ── */
+.reportee-beat-section {
+    padding: 4px 0;
+}
+
+.reportee-beat-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 4px;
+    gap: 10px;
+}
+
+.reportee-back-btn {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.reportee-back-btn:hover {
+    background: #f0f0f0;
+}
+
+.reportee-beat-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+}

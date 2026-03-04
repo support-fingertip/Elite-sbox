@@ -617,7 +617,7 @@ global with sharing class beatPlannerlwc {
     global static data getAllVisitData(string recordId){
         data dt = new data();
         visit__c vs = [select id, Visit_for__c,Status__c,Lead__c,Distributor__c,Dealer__c,Account1__c,Daily_Log__c 
-                       from visit__c where id=:recordID];
+                       from visit__c where id=:recordId];
         string ids;
         List<Visit__c> allVisit = new List<Visit__c>();
         
