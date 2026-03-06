@@ -11453,15 +11453,7 @@
     </layoutAssignments>
     <layoutAssignments>
         <layout>Visit_Form__c-Visit Form</layout>
-        <recordType>Visit_Form__c.New_Customer</recordType>
-    </layoutAssignments>
-    <layoutAssignments>
-        <layout>Visit_Form__c-Visit Form</layout>
         <recordType>Visit_Form__c.Primary_Customer</recordType>
-    </layoutAssignments>
-    <layoutAssignments>
-        <layout>Visit_Form__c-Visit Form</layout>
-        <recordType>Visit_Form__c.Secondary_Customer</recordType>
     </layoutAssignments>
     <layoutAssignments>
         <layout>Visit__c-Visit Layout</layout>
@@ -12343,17 +12335,7 @@
     </pageAccesses>
     <recordTypeVisibilities>
         <default>false</default>
-        <recordType>Visit_Form__c.New_Customer</recordType>
-        <visible>false</visible>
-    </recordTypeVisibilities>
-    <recordTypeVisibilities>
-        <default>false</default>
         <recordType>Visit_Form__c.Primary_Customer</recordType>
-        <visible>false</visible>
-    </recordTypeVisibilities>
-    <recordTypeVisibilities>
-        <default>false</default>
-        <recordType>Visit_Form__c.Secondary_Customer</recordType>
         <visible>false</visible>
     </recordTypeVisibilities>
     <tabVisibilities>

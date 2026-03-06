@@ -81,12 +81,6 @@
                                     onprocessbeatevent={handleBeatCustomEvent}></c-beat-screen>
                             </template>
 
-                            <!-- Reportee View -->
-                            <template lwc:if={isReporteeView}>
-                                <c-reportee-view
-                                    onstartsubordinatevisit={handleStartSubordinateVisit}></c-reportee-view>
-                            </template>
-
                             <!-- Visit screen view -->
                             <template lwc:if={Outlet}>
                                 <c-outlet-screen2 is-desktop={isDesktop} screen-height={screenHeight}
@@ -193,7 +187,7 @@
 
                             <!--Visit Form Screen-->
                             <template lwc:if={isVisitFormScreen}>
-                                <c-visit-form-l-w-c onvisitform={handleVisitFormDispatch}></c-visit-form-l-w-c>
+                                <c-visit-form-l-w-c isdsmssa={isSSA_DSM} onvisitform={handleVisitFormDispatch}></c-visit-form-l-w-c>
                             </template>
 
                             <template if:true={showExistingPrimary}>

@@ -13,6 +13,18 @@
             <fullName>Existing Secondary Customer</fullName>
             <default>false</default>
         </values>
+        <values>
+            <fullName>New Outlet</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>New Primary Customer</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>New Sub Stockiest</fullName>
+            <default>false</default>
+        </values>
     </picklistValues>
     <picklistValues>
         <picklist>District__c</picklist>

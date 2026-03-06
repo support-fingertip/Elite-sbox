@@ -1,25 +1,19 @@
 ({
-    onInit: function(component, event, helper) {
-        component.set('v.showModal', true);
+    handleBeatOptionChange: function (component, event, helper) {
+        component.set('v.beatOption', event.getParam('value'));
     },
 
-    handleBeatOptionChange: function(component, event, helper) {
-        component.set('v.beatOption', event.target.value);
-    },
-
-    handleCancel: function(component, event, helper) {
-        component.set('v.showModal', false);
+    handleCancel: function (component, event, helper) {
         $A.get('e.force:closeQuickAction').fire();
     },
 
-    handleConfirm: function(component, event, helper) {
-        component.set('v.showModal', false);
+    handleConfirm: function (component, event, helper) {
         var action = component.get('c.deactivateUserWithBeatOption');
         action.setParams({
             'recordId': component.get('v.recordId'),
             'beatOption': component.get('v.beatOption')
         });
-        action.setCallback(this, function(response) {
+        action.setCallback(this, function (response) {
             var state = response.getState();
             if (state === 'SUCCESS') {
                 var result = response.getReturnValue();

@@ -117,7 +117,7 @@
         <recordTriggerType>Create</recordTriggerType>
         <triggerType>RecordAfterSave</triggerType>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <textTemplates>
         <name>Notificationbody</name>
         <isViewedAsPlainText>true</isViewedAsPlainText>

@@ -40,41 +40,42 @@
 
                     <div class="list-card">
 
+                        <template if:false={isdsmssa}>
+                            <!-- Existing Primary -->
+                            <div class="list-row"
+                                data-type="existingPrimary"
+                                onclick={handleSelect}>
 
-                        <!-- Existing Primary -->
-                        <div class="list-row"
-                            data-type="existingPrimary"
-                            onclick={handleSelect}>
+                                <div class="row-left">
 
-                            <div class="row-left">
+                                    <lightning-icon
+                                        icon-name="standard:account"
+                                        size="small"
+                                        class="left-icon">
+                                    </lightning-icon>
 
-                                <lightning-icon
-                                    icon-name="standard:account"
-                                    size="small"
-                                    class="left-icon">
-                                </lightning-icon>
+                                    <div>
 
-                                <div>
+                                        <div class="item-title">
+                                            Existing Primary Customer
+                                        </div>
 
-                                    <div class="item-title">
-                                        Existing Primary Customer
-                                    </div>
+                                        <div class="item-subtitle">
+                                            Visit form for existing primary customer
+                                        </div>
 
-                                    <div class="item-subtitle">
-                                        Visit form for existing primary customer
                                     </div>
 
                                 </div>
 
+                                <lightning-icon
+                                    icon-name="utility:chevronright"
+                                    size="x-small"
+                                    class="right-icon">
+                                </lightning-icon>
+
                             </div>
-
-                            <lightning-icon
-                                icon-name="utility:chevronright"
-                                size="x-small"
-                                class="right-icon">
-                            </lightning-icon>
-
-                        </div>
+                        </template>
 
 
                         <!-- Existing Secondary -->

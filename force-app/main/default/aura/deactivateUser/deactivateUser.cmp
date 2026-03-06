@@ -1,47 +1,21 @@
 <aura:component controller="EmployeeeController"
-                implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >    
+    implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader"
+    access="global">
     <aura:attribute name="recordId" type="Id" />
-    <aura:attribute name="showModal" type="Boolean" default="false" />
     <aura:attribute name="beatOption" type="String" default="BEATS_ACTIVE" />
-    <aura:handler name="init" value="{!this}" action="{!c.onInit}"></aura:handler>
+    <aura:attribute name="beatOptions" type="List" default="[
+        {'label': 'Deactivate user with beats Active', 'value': 'BEATS_ACTIVE'},
+        {'label': 'Deactivate user with beats Inactive', 'value': 'BEATS_INACTIVE'}
+    ]" />
 
-    <aura:if isTrue="{!v.showModal}">
-        <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
-            <div class="slds-modal__container">
-                <header class="slds-modal__header">
-                    <h2 class="slds-modal__title">Deactivate User</h2>
-                </header>
-                <div class="slds-modal__content slds-p-around_medium">
-                    <p>Please choose how to handle beats for this user:</p>
-                    <fieldset class="slds-form-element slds-m-top_small">
-                        <div class="slds-form-element__control">
-                            <span class="slds-radio">
-                                <input type="radio" name="beatOption" id="beatsActive" value="BEATS_ACTIVE"
-                                    checked="{!v.beatOption == 'BEATS_ACTIVE'}"
-                                    onchange="{!c.handleBeatOptionChange}" />
-                                <label class="slds-radio__label" for="beatsActive">
-                                    <span class="slds-radio_faux"></span>
-                                    <span class="slds-form-element__label">Deactivate user with beats Active</span>
-                                </label>
-                            </span>
-                            <span class="slds-radio">
-                                <input type="radio" name="beatOption" id="beatsInactive" value="BEATS_INACTIVE"
-                                    checked="{!v.beatOption == 'BEATS_INACTIVE'}"
-                                    onchange="{!c.handleBeatOptionChange}" />
-                                <label class="slds-radio__label" for="beatsInactive">
-                                    <span class="slds-radio_faux"></span>
-                                    <span class="slds-form-element__label">Deactivate user with beats Inactive</span>
-                                </label>
-                            </span>
-                        </div>
-                    </fieldset>
-                </div>
-                <footer class="slds-modal__footer">
-                    <lightning:button label="Cancel" onclick="{!c.handleCancel}" />
-                    <lightning:button label="Confirm" variant="brand" onclick="{!c.handleConfirm}" />
-                </footer>
-            </div>
-        </section>
-        <div class="slds-backdrop slds-backdrop_open"></div>
-    </aura:if>
+    <div class="slds-p-around_medium">
+        <p class="slds-text-body_regular slds-m-bottom_small">Please choose how to handle beats for this user:</p>
+        <lightning:radioGroup name="beatOption" label="Beat Option" options="{!v.beatOptions}" value="{!v.beatOption}"
+            type="radio" variant="label-hidden" onchange="{!c.handleBeatOptionChange}" />
+    </div>
+
+    <div class="slds-align_absolute-center slds-m-top_medium slds-m-bottom_small">
+        <lightning:button label="Cancel" onclick="{!c.handleCancel}" class="slds-m-right_x-small" />
+        <lightning:button label="Confirm" variant="brand" onclick="{!c.handleConfirm}" />
+    </div>
 </aura:component>

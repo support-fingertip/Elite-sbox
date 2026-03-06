@@ -39,8 +39,11 @@ public class InvoiceHeaderTriggerHandler {
             if(inv.Is_Order_Owner_Active__c == True && inv.SF_Order__c != null && inv.Order_OwnerId__c != null){inv.OwnerId = inv.Order_OwnerId__c; }
             else if((inv.SF_Order__c == null || inv.SF_Order__c == '') && (inv.Customer_SAP_Code__c != null && inv.Delivery_Plant__c != null))
             {
+                system.debug('key p>>'+inv.Customer_SAP_Code__c + '_' + inv.Delivery_Plant__c);
+                
                 String key = inv.Customer_SAP_Code__c + '_' + inv.Delivery_Plant__c;
                 if (pairWithLowestHierarchy.containsKey(key)) {
+                     system.debug('key p>>'+pairWithLowestHierarchy.get(key));
                     Product_Mapping__c lowestMapping = pairWithLowestHierarchy.get(key);
                     inv.OwnerId = lowestMapping.Exectuive__c; 
                 }

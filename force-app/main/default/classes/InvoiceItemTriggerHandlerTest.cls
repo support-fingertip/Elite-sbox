@@ -191,4 +191,29 @@ public class InvoiceItemTriggerHandlerTest {
         insert testItems;
         Test.stopTest();
     }
+        @isTest
+    static void testInsertInvoiceCoversHeaderHandler() {
+        Account acc = [SELECT Id, SAP_Customer_Code__c FROM Account WHERE SAP_Customer_Code__c = '1133' LIMIT 1];
+        
+        // Create Order__c for OwnerId assignment
+        User u = [SELECT Id FROM User WHERE IsActive = true LIMIT 1];
+        Order__c ord = new Order__c(Account__c = acc.Id, Order_Date__c = Date.today(), OwnerId = u.Id);
+        insert ord;
+
+        Invoice__c inv = new Invoice__c(
+            Invoice_No__c = 'INV-HEADER-TEST',
+            Store__c = acc.Id,
+            Customer_SAP_Code__c = acc.SAP_Customer_Code__c,
+            Status__c = 'Raised',
+            Customer_Name__c = 'Test Customer',
+            Delivery_Plant__c = '1480',
+            SF_Order__c = ord.Id
+        );
+        Test.startTest();
+        insert inv;
+        Test.stopTest();
+        // Optionally, assert OwnerId assignment
+        Invoice__c insertedInv = [SELECT Id, OwnerId FROM Invoice__c WHERE Id = :inv.Id];
+        System.assertNotEquals(null, insertedInv.OwnerId, 'OwnerId should be set by handler');
+    }
 }

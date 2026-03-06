@@ -358,14 +358,30 @@
                                                         <div class="outlet-icon">
                                                             <template if:false={isLeaveExisted}>
                                                                 <template lwc:if={isDayStarted}>
-                                                                    <div class="icon-container">
-                                                                        <div onclick={handleReporteeBeatClick}
-                                                                            data-beatid={beat.beatId}
-                                                                            data-beatname={beat.beatName}>
-                                                                            <img src={googleIcons.forward} width="23"
-                                                                                height="23">
+                                                                    <!-- If current beat exists, show Switch icon -->
+                                                                    <template lwc:if={isCurrentBeatExisted}>
+                                                                        <div class="icon-container">
+                                                                            <div onclick={handleReporteeBeatClick}
+                                                                                data-beatid={beat.beatId}
+                                                                                data-beatname={beat.beatName}
+                                                                                data-action="Switch_Beat">
+                                                                                <img src={googleIcons.switch} width="23"
+                                                                                    height="23">
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
+                                                                    </template>
+                                                                    <!-- No current beat, show Play icon to Start -->
+                                                                    <template lwc:else>
+                                                                        <div class="icon-container">
+                                                                            <div onclick={handleReporteeBeatClick}
+                                                                                data-beatid={beat.beatId}
+                                                                                data-beatname={beat.beatName}
+                                                                                data-action="Start_Beat">
+                                                                                <img src={googleIcons.play} width="23"
+                                                                                    height="23">
+                                                                            </div>
+                                                                        </div>
+                                                                    </template>
                                                                 </template>
                                                             </template>
                                                         </div>

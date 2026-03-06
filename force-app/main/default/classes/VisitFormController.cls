@@ -342,7 +342,7 @@ public with sharing class VisitFormController {
             visit.Geo_Location__Latitude__s = latitude;
             visit.Geo_Location__Longitude__s = longitude;
         }
-        if(logId != null)
+        if(String.isNotBlank(logId))
         {
             visit.Daily_Log__c = logId;
         }

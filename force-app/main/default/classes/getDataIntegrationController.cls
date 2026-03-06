@@ -60,7 +60,6 @@ global class getDataIntegrationController {
                             ));
                             continue;
                         }
-                                    
                         so.Invoice_Date__c = date.valueof(obj.invoiceDate);
                         so.Invoice_No__c = obj.invoiceNumber;
                         so.SAP_Order_ID__c = obj.SAPOrderId;
@@ -77,7 +76,7 @@ global class getDataIntegrationController {
                         so.IGST_Amount__c = obj.igstAmount;
                         so.GST_Amount__c = obj.gstAmount;   
                         so.Grand_Total__c = obj.billAmount;    
-                        if(obj.InvoiceItems.size()>0){	
+                        if(obj.InvoiceItems.size()>0){
                             for(Invoiceitems ad : obj.InvoiceItems){
                                 //Link line item to invoice record   
                                 if(ad.invoiceNumber == null || ad.invoiceNumber == '')
@@ -118,7 +117,6 @@ global class getDataIntegrationController {
                                     ));
                                     continue;
                                 }
-                                
                                 if(ad.serialNumber == null || ad.serialNumber == '')
                                 {
                                     logList.add(buildLog(
@@ -129,8 +127,6 @@ global class getDataIntegrationController {
                                     ));
                                     continue;
                                 }
-                                
-                                
                                 Invoice_item__c invItem = new Invoice_item__c();
                                 invItem.Invoice__r = new Invoice__c(Invoice_No__c = ad.invoiceNumber); 
                                 invItem.Bill_Number__c = ad.invoiceNumber;
@@ -152,12 +148,9 @@ global class getDataIntegrationController {
                                     invItem.Price_per_case__c = (ad.pricePerUnit).setScale(4, RoundingMode.HALF_UP);
                                     invItem.Qyt_in_Each__c = prod.Uom_Conversion__c * ad.quantity; 
                                     Decimal uomConv = (prod.Uom_Conversion__c);
-                                    
                                     invItem.Price_per_unit__c = 
                                         (ad.pricePerUnit / uomConv).setScale(4, RoundingMode.HALF_UP);
-                                    
                                 }
-                                
                                 invItem.Bill_Amount__c = ad.billAmount; 
                                 invItem.GST_Amount__c = ad.gstAmount; 
                                 invItem.IGST_Amt__c = ad.igstAmount; 
@@ -166,16 +159,19 @@ global class getDataIntegrationController {
                                 {
                                     invItem.Batch_Expiry__c = date.Valueof(ad.batchExpiry); 
                                 }
-                                
-                                
-                                //Extra paramets
-                                invItem.SAP_Order_Id__c = ad.SAP_OrderId; 
-                                if(ad.SAP_OrderId != null && ad.SAP_OrderId != '') invItem.Order__r = new Order__c(Order_Id_Text__c = ad.SAP_OrderId);
+                                //Extra paramets                             
+                                invItem.SAP_Order_Id__c = obj.SAPOrderId; 
+                                // Set Order__r from ad.SAP_OrderId if present
+                                //  if(obj.sfOrderId != null && obj.sfOrderId != '') invItem.Order__r = new Order__c(Order_Id_Text__c = obj.sfOrderId);
+
+                                if(ad.SAP_OrderId != null && ad.SAP_OrderId != '') {
+                            //        invItem.Order__r = new Order__c(Order_Id_Text__c = ad.SAP_OrderId);
+                                }
+
                                 invItem.Company_Code__c = obj.companyCode;
                                 invItem.Plant__c  = obj.delivaryPlant;
                                 invItem.Bill_Date__c =  date.valueof(obj.invoiceDate);
                                 invLineList.add(invItem);
-                                
                             }
                         }
                         invList.add(so);
@@ -375,11 +371,11 @@ global class getDataIntegrationController {
         Public decimal pricePerCase;
         Public decimal pricePerUnit;
         Public decimal billAmount;
-        Public string  SAP_OrderId;
         Public decimal gstAmount;
         Public decimal igstAmount;
         Public string batch;
         Public string batchExpiry;
         Public string serialNumber;
+        Public string SAP_OrderId;
     } 
 }

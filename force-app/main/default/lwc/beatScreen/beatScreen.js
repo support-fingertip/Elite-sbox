@@ -265,15 +265,8 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
             this.isShowBeatData = true;
         }
 
-        // If this is a reportee beat, dispatch directly to open outlet screen
-        if (this.confirmationMessage.isReporteeBeat) {
-            this.isPageLoaded = true;
-            this.genericDispatchEvent(this.confirmationMessage);
-            return;
-        }
-
         let currentbeatId = this.confirmationMessage.beatId;
-        let currentPJPId = this.confirmationMessage.pjpId;
+        let currentPJPId = this.confirmationMessage.pjpId || null;
         let message = 'Beat started successfully';
         this.isPageLoaded = true;
         this.updateBeat(currentbeatId, message, '', '', '', currentPJPId);
@@ -299,7 +292,10 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
                 this.isPageLoaded = false;
                 this.isShowConfirmation = false;
                 this.isShowSwitchBeat = false;
+                this.beatSwitchReason = '';
                 this.genericDispatchToastEvent('Success ', message, 'Success ');
+                // Refresh beat data so isCurrentBeatExisted stays in sync
+                this.getBeatData();
                 this.genericDispatchEvent(this.confirmationMessage);
             })
             .catch(error => {
@@ -571,17 +567,33 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         }
         const beatId = event.currentTarget.dataset.beatid;
         const beatName = event.currentTarget.dataset.beatname;
-        const message = {
-            message: 'Execute_Beat',
-            beatId: beatId,
-            beatName: beatName,
-            pjpId: null,
-            isReporteeBeat: true
-        };
-        this.confirmationMessage = message;
-        this.isShowConfirmation = true;
-        if (!this.isDesktop) {
-            this.isShowBeatData = false;
+        const action = event.currentTarget.dataset.action;
+
+        if (action === 'Switch_Beat') {
+            // Current beat exists — open Switch Beat popup with reason
+            const message = {
+                message: 'Switch_Beat',
+                beatId: beatId,
+                beatName: beatName,
+                pjpId: null,
+                isReporteeBeat: true
+            };
+            this.confirmationMessage = message;
+            this.isShowSwitchBeat = true;
+        } else {
+            // No current beat — open Start Beat confirmation
+            const message = {
+                message: 'Start_Beat',
+                beatId: beatId,
+                beatName: beatName,
+                pjpId: null,
+                isReporteeBeat: true
+            };
+            this.confirmationMessage = message;
+            this.isShowConfirmation = true;
+            if (!this.isDesktop) {
+                this.isShowBeatData = false;
+            }
         }
     }
 
