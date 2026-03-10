@@ -2,26 +2,31 @@ public with sharing class RoleHeirarchyUtility {
     
     public static Set<ID> getRoleSubordinateUsers(Id userId) {
         
-        Set<Id> allSubRoleIds = getAllSubRoleIds(New Set<ID>{userId});
-        allSubRoleIds.add(userId);
-        Map<Id, User> users = new Map<Id, User>([SELECT Id, Name From  User Where Id IN  :allSubRoleIds and isActive = true]);
-        
-        return users.keySet();
+        // Get the User's Role ID
+        Id userRoleId = [SELECT UserRoleId FROM User WHERE Id = :userId].UserRoleId;
+        if (userRoleId == null) return new Set<Id>();
+
+        // Collect all subordinate role Ids recursively using the existing method
+        Set<Id> subordinateRoleIds = getAllChildRoleIds(new Set<Id>{ userRoleId });
+        subordinateRoleIds.add(userRoleId); // include the current user's role
+
+        // Query all users with those roles
+        List<User> subordinateUsers = [
+            SELECT Id
+            FROM User
+            WHERE UserRoleId IN :subordinateRoleIds
+            AND IsActive = true
+        ];
+
+        Set<Id> userIds = new Set<Id>();
+        for (User u : subordinateUsers) {
+            userIds.add(u.Id);
+        }
+        return userIds;
     }
     
     //Recursive function
-    private static Set<ID> getAllSubRoleIds(Set<ID> userId) {
-        
-        Set<ID> currentRoleIds = new Set<ID>();
-        
-        for(User userRole :[SELECT Id, Name,ManagerId From  User Where ManagerId IN :userId AND ManagerId != null and isActive = true]){
-            currentRoleIds.add(userRole.Id);
-        }
-        if(currentRoleIds.size() > 0){
-            currentRoleIds.addAll(getAllSubRoleIds(currentRoleIds));
-        }        
-        return currentRoleIds;   
-    }
+    // ...existing code...
     
     public static Set<Id> getUsersUnderRoleHierarchy(Id userId) {
         // Step 1: Get user's role
