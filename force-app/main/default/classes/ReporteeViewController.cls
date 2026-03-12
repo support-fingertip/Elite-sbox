@@ -35,6 +35,10 @@ public without sharing class ReporteeViewController {
         // Remove current user from the set
         subordinateUserIds.remove(currentUserId);
 
+        // Also include inactive users under the same role hierarchy who still have active beats
+        Set<Id> inactiveUserIdsWithBeats = getInactiveSubordinatesWithActiveBeats(currentUserId);
+        subordinateUserIds.addAll(inactiveUserIdsWithBeats);
+
         if (subordinateUserIds.isEmpty()) return new List<SubordinateWrapper>();
 
         // Get employee records for subordinates (include inactive if beats exist)
@@ -129,5 +133,37 @@ public without sharing class ReporteeViewController {
             WHERE Child_beat__c = :beatId AND Active__c = true
             ORDER BY Order_Number__c ASC NULLS LAST
         ];
+    }
+
+    // Find inactive users under the manager's role hierarchy who still own active beats
+    private static Set<Id> getInactiveSubordinatesWithActiveBeats(Id managerId) {
+        Id managerRoleId = [SELECT UserRoleId FROM User WHERE Id = :managerId].UserRoleId;
+        if (managerRoleId == null) return new Set<Id>();
+
+        Set<Id> subordinateRoleIds = RoleHeirarchyUtility.getAllChildRoleIds(new Set<Id>{ managerRoleId });
+
+        // Get inactive users in subordinate roles
+        Set<Id> inactiveUserIds = new Set<Id>();
+        for (User u : [
+            SELECT Id FROM User
+            WHERE UserRoleId IN :subordinateRoleIds
+            AND IsActive = false
+        ]) {
+            inactiveUserIds.add(u.Id);
+        }
+
+        if (inactiveUserIds.isEmpty()) return new Set<Id>();
+
+        // Only include those who still have active beats
+        Set<Id> result = new Set<Id>();
+        for (AggregateResult ar : [
+            SELECT OwnerId
+            FROM Child_beat__c
+            WHERE OwnerId IN :inactiveUserIds AND Active__c = true
+            GROUP BY OwnerId
+        ]) {
+            result.add((Id)ar.get('OwnerId'));
+        }
+        return result;
     }
 }

@@ -158,6 +158,9 @@ public with sharing class VisitFormController {
             visit.Daily_Log__c = logId;
         }
         visit.Customer_Type__c = 'Existing Primary Customer';
+        visit.State__c = 'Test State';
+        visit.District__c = 'Test District';
+
         if (latitude != null && longitude != null) {
             visit.Geo_Location__Latitude__s = latitude;
             visit.Geo_Location__Longitude__s = longitude;

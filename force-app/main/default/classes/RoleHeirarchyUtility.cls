@@ -67,7 +67,7 @@ public with sharing class RoleHeirarchyUtility {
     }
     
     // Recursive function to get all child role IDs from a given set of parent role IDs
-    private static Set<Id> getAllChildRoleIds(Set<Id> parentRoleIds) {
+    public static Set<Id> getAllChildRoleIds(Set<Id> parentRoleIds) {
         Set<Id> childRoleIds = new Set<Id>();
         
         // Fetch roles where ParentRoleId is in the given set
