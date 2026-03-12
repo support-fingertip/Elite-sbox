@@ -51,6 +51,8 @@ export default class ExecuteScreen3 extends NavigationMixin(LightningElement) {
     @api isCompleted;
     @api isDesktop;
     @api visitParentData;
+    @api primaryVisitFormCreated = false;
+    @api secondaryVisitFormCreated = false;
     @api isplayButtonClicked = false;
     @track visitData = [];
     @track orderData = [];
@@ -68,12 +70,14 @@ export default class ExecuteScreen3 extends NavigationMixin(LightningElement) {
     @track showModal = false;
     @track localLeads = [];
     @track isVisitFormDropdownOpen = false;
+    @track isPrimaryVisitFormDropdownOpen = false;
     @track isdisplayDropdownOpen = false;
     @track isOrderFuldropdownOpen = false;
     @track isShelfStockDropdownOpen = false;
     newvisitFormPoup =false;
     isvisitDesktop = true;
     leadsWireResult;
+    primaryCustmerId ='';
     acceptedFormats = ['.jpg', '.jpeg', '.png'];
     showExecuteScreen3 = true;
     isstockCreated = true;
@@ -101,6 +105,7 @@ export default class ExecuteScreen3 extends NavigationMixin(LightningElement) {
         photo : false,
         competition : false,
         visitform : false,
+        primaryVisitForm : false,
         DisFormat : false,
         ordful : false,
         order : false,
@@ -114,7 +119,7 @@ export default class ExecuteScreen3 extends NavigationMixin(LightningElement) {
         payment : ['Name','Expected amt','Exp. Pay Date','Comments'],
         task:['Name','Desc.','Status'],
         comptitor:['SKU','Comp. Name','Disp. board','Spl offer','Remarks'],
-        visitForm:['Name','Phone','Location'],
+        visitForm:['Visit Form Id','Customer Name','Product Category'],
         displayFormat : ['SKU ','Display Value'],
         orderfulfillments : ['Order No','Status','Order Type'],
         returns : ['Return No.','Total Qty','Total Amt'],
@@ -183,11 +188,14 @@ export default class ExecuteScreen3 extends NavigationMixin(LightningElement) {
             this.visActionData.Competition = (result.Competition && result.Competition.length != 0) ? result.Competition : null;
             this.visActionData.Stock =( result.Stock && result.Stock.length != 0) ? result.Stock : null;
             this.visActionData.visitForm =( result.visitForm && result.visitForm.length != 0) ? result.visitForm : null;
+            this.hasVisitFormRows = ( result.visitForm && result.visitForm.length != 0) ? true : false;
             this.visActionData.displayFormat =( result.displayFormat && result.displayFormat.length != 0) ? result.displayFormat : null;
            // this.visActionData.photoData = (result.VisitPhoto && result.VisitPhoto.length != 0 )? result.VisitPhoto : null;
             this.visActionData.ShelfStocks =( result.ShelfStocks && result.ShelfStocks.length != 0) ? result.ShelfStocks : null;
             this.visActionData.orderfulfillments = (result.orderfulfillments && result.orderfulfillments.length != 0 )? result.orderfulfillments : null;
             this.isPageLoaded = false;
+            this.primaryCustmerId = result.primaryCustmerId;
+            console.log('this.primaryCustmerId'+this.primaryCustmerId);
             this.isstockCreated = result.currentMonthStockExisted;
             this.businessSummery = {
                 totalOutStanding : result.totalOutStanding,
@@ -427,6 +435,40 @@ export default class ExecuteScreen3 extends NavigationMixin(LightningElement) {
             index : this.index,
             screen : 3.2,
             isProgressVisit : true
+        };
+        this.genericDispatchEvent(message);
+    }
+    openExistingPrimaryCustomerForm() {
+        if (!navigator.onLine) {
+            this.genericDispatchToastEvent('Error', 'No internet connection. Please check your network and try again.', 'error');
+            return;
+        }
+        const customerId = this.accountId || this.accId || '';
+        const message = {
+            message: 'visitFormScreen',
+            visittype: 'existingPrimary',
+            screen: 3.2,
+            primaryCustomerId: customerId,
+            isProgressVisit : true,
+            secondaryCustomerId: '',
+            visitId: this.recordId
+        };
+        this.genericDispatchEvent(message);
+    }
+    openExistingSecondaryCustomerForm() {
+        if (!navigator.onLine) {
+            this.genericDispatchToastEvent('Error', 'No internet connection. Please check your network and try again.', 'error');
+            return;
+        }
+        const customerId = this.accountId || this.accId || '';
+        const message = {
+            message: 'visitFormScreen',
+            visittype: 'existingSecondary',
+            isProgressVisit : true,
+            screen: 3.2,
+            primaryCustomerId: this.primaryCustmerId ? this.primaryCustmerId : '',
+            secondaryCustomerId: customerId,
+            visitId: this.recordId
         };
         this.genericDispatchEvent(message);
     }
@@ -704,6 +746,21 @@ export default class ExecuteScreen3 extends NavigationMixin(LightningElement) {
             }
         }
     }
+    togglePrimaryVisitFormDropdown() {
+        this.dropdown.primaryVisitForm = !this.dropdown.primaryVisitForm;
+        this.isPrimaryVisitFormDropdownOpen = this.dropdown.primaryVisitForm;
+        const dropdownBody = this.template.querySelector('.dropdown-body-primary-vf');
+        const chevronIcon = this.template.querySelector('.chevron-icon-primary-vf');
+        if (dropdownBody) {
+            if (this.dropdown.primaryVisitForm) {
+                dropdownBody.classList.add('active');
+                if (chevronIcon) chevronIcon.iconName = 'utility:chevronup';
+            } else {
+                dropdownBody.classList.remove('active');
+                if (chevronIcon) chevronIcon.iconName = 'utility:chevrondown';
+            }
+        }
+    }
     toggleShelfStockDropdown(){
         this.dropdown.shelfstock  = !this.dropdown.shelfstock ;
         this.isShelfStockDropdownOpen = this.dropdown.shelfstock;
@@ -975,6 +1032,25 @@ export default class ExecuteScreen3 extends NavigationMixin(LightningElement) {
             this.completeVisit = false;
             this.isDesktopCheckoutPage = true;
         }
+    }
+
+    get showPrimaryVisitFormCard() {
+        return this.isPrimaryCustomer;
+    }
+
+
+
+
+    get visitFormRows() {
+        return Array.isArray(this.visActionData?.visitForm)
+            ? this.visActionData.visitForm
+            : [];
+    }
+
+
+
+    get showSecondaryVisitFormCard() {
+        return !this.isPrimaryCustomer;
     }
 
     

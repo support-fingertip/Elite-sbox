@@ -20,7 +20,8 @@ public class EmployeeeController {
                 Primary_Customer_Approver_3_CD__c, Secondary_Customer_Approver_1__c, Secondary_Customer_Approver_2__c,
                 PJP_Approver_1__c, PJP_Approver_2__c, Expense_Approver_1__c, Expense_Approver_2_Finance_Department__c,
                 Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,User__c,Contract_Type__c,
-                Expense_Start_Date__c,Expense_End_Date__c,Expense_Back_Day_Entry_Limit__c,Employee_Remarks__c,Alternate_Sales_Channel__c
+                Expense_Start_Date__c,Expense_End_Date__c,Expense_Back_Day_Entry_Limit__c,Employee_Remarks__c,Alternate_Sales_Channel__c,
+                Leave_HR__c,Leave_Approver_L1__c
                 FROM Employee__c
                 WHERE Id = :recordId
             ];
@@ -139,6 +140,9 @@ public class EmployeeeController {
         user.PJP_Approver_1__c = emp.PJP_Approver_1__c;
         user.PJP_Approver_2__c = emp.PJP_Approver_2__c;
         
+        user.Leave_HR__c = emp.Leave_HR__c;
+        user.Leave_Approver_L1__c = emp.Leave_Approver_L1__c;
+
         user.Expense_Approver_1__c = emp.Expense_Approver_1__c;
         user.Expense_Approver_2_Finance_Dept__c = emp.Expense_Approver_2_Finance_Department__c;
         user.District_In_charge__c = emp.District_In_charge__c;
@@ -428,7 +432,8 @@ public class EmployeeeController {
                 ASM_TSM__r.Name,RSM__r.Name,Employee_Approver_3_HR__r.Name,
                 Primary_Customer_Approver_1__r.Name,Primary_Customer_Approver_2__r.Name,Primary_Customer_Approver_3_CD__r.Name,
                 PJP_Approver_1__r.Name,PJP_Approver_2__r.Name,Cloning_is_Completed__c,
-                Expense_Approver_1__r.Name,Expense_Approver_2_Finance_Department__r.Name,Opened_by_Credited_User__c,Alternate_Sales_Channel__c
+                Expense_Approver_1__r.Name,Expense_Approver_2_Finance_Department__r.Name,Opened_by_Credited_User__c,Alternate_Sales_Channel__c,
+                Leave_HR__c,Leave_HR__r.Name,Leave_Approver_L1__c,Leave_Approver_L1__r.Name
                 FROM Employee__c
                 WHERE Id = :recordId
             ];
@@ -851,7 +856,7 @@ public class EmployeeeController {
                     Street__c, Category__c, Employee_Approver_3_HR__c, Primary_Customer_Approver_1__c, Primary_Customer_Approver_2__c,
                     Primary_Customer_Approver_3_CD__c, Secondary_Customer_Approver_1__c, Secondary_Customer_Approver_2__c,
                     PJP_Approver_1__c, PJP_Approver_2__c, Expense_Approver_1__c, Expense_Approver_2_Finance_Department__c,
-                    Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,
+                    Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,Leave_HR__c,Leave_Approver_L1__c,
                     Employee_Remarks__c,Expense_Back_Day_Entry_Limit__c,Expense_Start_Date__c,Expense_End_Date__c
                     FROM Employee__c
                     WHERE Id = :recordId
@@ -879,7 +884,7 @@ public class EmployeeeController {
                     Street__c, Category__c, Employee_Approver_3_HR__c, Primary_Customer_Approver_1__c, Primary_Customer_Approver_2__c,
                     Primary_Customer_Approver_3_CD__c, Secondary_Customer_Approver_1__c, Secondary_Customer_Approver_2__c,
                     PJP_Approver_1__c, PJP_Approver_2__c, Expense_Approver_1__c, Expense_Approver_2_Finance_Department__c,
-                    Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,
+                    Basic_Pay__c, Gross_Salary__c, Minimum_Order_value__c,Leave_HR__c,Leave_Approver_L1__c,
                     Employee_Remarks__c,Expense_Back_Day_Entry_Limit__c,Expense_Start_Date__c,Expense_End_Date__c
                     FROM Employee__c
                     WHERE User__c = :recordId
@@ -893,6 +898,113 @@ public class EmployeeeController {
         }
         db.profileName = currentUserProfieName;
         return db;
+    }
+
+    // Feature 2: Deactivate User with Beat Status Option
+    @AuraEnabled
+    public static String deactivateUserWithBeatOption(Id recordId, String beatOption) {
+        try {
+            Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE Id = :recordId LIMIT 1];
+            if (emp.User__c == null) {
+                throw new AuraHandledException('No associated User to deactivate.');
+            }
+            // Call existing deactivation logic
+            deactivateUser(recordId);
+
+            // If BEATS_INACTIVE, deactivate all beats (cascade trigger handles beat items)
+            if (beatOption == 'BEATS_INACTIVE') {
+                List<Child_beat__c> userBeats = [SELECT Id FROM Child_beat__c WHERE OwnerId = :emp.User__c AND Active__c = true];
+                if (!userBeats.isEmpty()) {
+                    for (Child_beat__c b : userBeats) {
+                        b.Active__c = false;
+                    }
+                    Database.update(userBeats, false);
+                }
+            }
+
+            // Share customer access to hierarchy
+            CustomSharingService.shareCustomerAccessToHierarchy(emp.User__c);
+
+            return 'Success: User Deactivated Successfully';
+        } catch (AuraHandledException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            return 'Error: ' + ex.getMessage();
+        }
+    }
+
+    // Feature 4: Get Users for Beat Sharing
+    public class UserWrapper {
+        @AuraEnabled public Id userId;
+        @AuraEnabled public String name;
+        @AuraEnabled public String profileName;
+    }
+
+    @AuraEnabled
+    public static List<UserWrapper> getUsersForBeatSharing(Id employeeId) {
+        // Get the employee's reporting manager
+        Employee__c emp = [SELECT Id, User__c, Reporting_Manager__c FROM Employee__c WHERE Id = :employeeId LIMIT 1];
+        if (emp.Reporting_Manager__c == null) return new List<UserWrapper>();
+
+        Id reportingManagerUserId = emp.Reporting_Manager__c;
+
+        // Get all employees reporting to the same manager, excluding current employee
+        List<Employee__c> peers = [
+            SELECT Id, Name, User__c, Profile__c
+            FROM Employee__c
+            WHERE Reporting_Manager__c = :reportingManagerUserId
+            AND Id != :employeeId
+            AND User__c != null
+            AND Is_Active__c = true
+        ];
+
+        List<UserWrapper> result = new List<UserWrapper>();
+        for (Employee__c peer : peers) {
+            UserWrapper uw = new UserWrapper();
+            uw.userId = peer.User__c;
+            uw.name = peer.Name;
+            uw.profileName = peer.Profile__c;
+            result.add(uw);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static String shareBeatToUser(Id employeeId, Id targetUserId) {
+        try {
+            Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE Id = :employeeId LIMIT 1];
+            if (emp.User__c == null) return 'Error: No user associated with this employee.';
+
+            // Get all active beats of source employee
+            List<Child_beat__c> sourceBeats = [SELECT Id, Primary_Customer__c FROM Child_beat__c WHERE OwnerId = :emp.User__c AND Active__c = true];
+
+            if (sourceBeats.isEmpty()) return 'Error: No active beats found for this employee.';
+
+            Set<Id> accountIds = new Set<Id>();
+            for (Child_beat__c beat : sourceBeats) {
+                if (beat.Primary_Customer__c != null) accountIds.add(beat.Primary_Customer__c);
+            }
+
+            List<AccountShare> sharesToInsert = new List<AccountShare>();
+            Set<Id> existingAccountIds = new Set<Id>();
+            for (AccountShare s : [SELECT AccountId FROM AccountShare WHERE AccountId IN :accountIds AND UserOrGroupId = :targetUserId]) {
+                existingAccountIds.add(s.AccountId);
+            }
+
+            for (Id accId : accountIds) {
+                if (!existingAccountIds.contains(accId)) {
+                    sharesToInsert.add(CustomSharingService.buildAccountShare(accId, targetUserId));
+                }
+            }
+
+            if (!sharesToInsert.isEmpty()) {
+                Database.insert(sharesToInsert, false);
+            }
+
+            return 'Success: Beats shared successfully';
+        } catch (Exception ex) {
+            return 'Error: ' + ex.getMessage();
+        }
     }
     
 }

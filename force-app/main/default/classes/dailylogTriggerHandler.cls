@@ -104,13 +104,13 @@ public class dailylogTriggerHandler {
                                       Clockin_Longitude__c!=null ORDER BY Actual_End_Time__c DESC) 
                                      FROM Daily_log__c WHERE Id IN : dailyLogIds];
         
-        // List<Visit__c> recentCheckouts = new List<Visit__c>();
         for (Daily_Log__c dl : dlList) 
         {
-            if (dl.visits__r.size()>0) {
-                if(!dl.Is_System_Ended__c){
-                    DistanceMatrixControllerForVisit.distanceCalculationForLastVisit(dl.Id,dl.visits__r[0].ClockIn_Latitude__c,dl.visits__r[0].Clockin_Longitude__c, dl.Clock_Out_Location__Latitude__s, dl.Clock_Out_Location__Longitude__s);
-                }
+            if(!dl.Is_System_Ended__c){
+                //  DistanceMatrixControllerForVisit.distanceCalculationForLastVisit(dl.Id,dl.visits__r[0].ClockIn_Latitude__c,dl.visits__r[0].Clockin_Longitude__c, dl.Clock_Out_Location__Latitude__s, dl.Clock_Out_Location__Longitude__s);
+                // also calculate full day route distance (start -> visits -> end)
+                system.debug('entered');
+                DistanceMatrixControllerForVisit.distanceCalculationForDailyRoute(dl.Id);
             }
         }
     }

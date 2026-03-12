@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>KMs_Travelled__c</fullName>
     <externalId>false</externalId>
-    <label>Distance Travelled (Google)</label>
+    <label>Distance Travelled From Visits (Google)</label>
     <precision>18</precision>
     <required>false</required>
     <scale>0</scale>

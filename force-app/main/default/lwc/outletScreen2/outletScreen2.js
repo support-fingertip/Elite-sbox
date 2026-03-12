@@ -72,6 +72,7 @@ export default class OutletScreen2 extends NavigationMixin(LightningElement) {
     currentvisitCustomerType =false;
     isDesktop = false;
     isPhone = false;
+    isLeaveExisted = false;
     loadingScreenSize = 2;
     get startVisitButtonLabel() {
         return this.checkInAnyway ? 'Proceed' : 'Save';
@@ -119,6 +120,7 @@ export default class OutletScreen2 extends NavigationMixin(LightningElement) {
         getApexData({currentBeatId:this.currentBeatId})
         .then(result => {
             //alert('hello');
+            this.isLeaveExisted = result.isLeaveExisted;
             this.isDayStarted = result.isDayStarted;
             this.forOneDayData(result);
             const pop = this.template.querySelector(".popup");
@@ -155,7 +157,7 @@ export default class OutletScreen2 extends NavigationMixin(LightningElement) {
             } 
             itm.isAcc = (itm.visitTypes == 'Primary Customer' || itm.visitTypes == 'Secondary Customer') ? true : false;
             itm.isPrimaryCustomer = itm.visitTypes == 'Primary Customer' ? true: false;
-            itm.isSecoundaryCustomer = itm.visitTypes == 'Primary Customer' ? true: false;
+            itm.isSecoundaryCustomer = itm.visitTypes == 'Secondary Customer' ? true : false;
             itm.isMoreLoad = true;
             itm.isShowAllData = itm.formattedVisitDate == formattedDate ? false : true;
             itm.execute = visitDate === today ? true : false;

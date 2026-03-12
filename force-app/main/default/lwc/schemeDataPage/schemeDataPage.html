@@ -92,10 +92,10 @@
                                             <lightning-input type="number" name="buyQuantity" value={product.buyQuantity} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isBuyQnt}></lightning-input>
                                         </td>
                                         <td>
-                                            <lightning-input type="number" name="SaleValue" value={product.SaleValue} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isBuyVal}></lightning-input>
+                                            <lightning-input type="number" step="any" name="SaleValue" value={product.SaleValue} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isBuyVal}></lightning-input>
                                         </td>
                                         <td>
-                                            <lightning-input type="number" name="PerKg" value={product.PerKg} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isOfferQnt}></lightning-input>
+                                            <lightning-input type="number" step="any" name="PerKg" value={product.PerKg} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isOfferQnt}></lightning-input>
                                         </td>
                                         <td>
                                             <lightning-input type="percent" name="Discount" value={product.Discount} class="input-box" data-index={i} onchange={handleProductVal} disabled={product.isDiscount}></lightning-input>

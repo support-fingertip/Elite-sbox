@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Non_PJP_Order_Calls__c</fullName>
     <externalId>false</externalId>
-    <label>Non PJP Order Calls</label>
+    <label>Non PJP TC</label>
     <precision>18</precision>
     <required>false</required>
     <scale>0</scale>

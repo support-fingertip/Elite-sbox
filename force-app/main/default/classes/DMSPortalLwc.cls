@@ -629,6 +629,19 @@ public without sharing class DMSPortalLwc
         dt.statusOptions = getStatusOptions('Credit_Note__c', 'Status__c');
         return dt;
     }
+
+    @AuraEnabled
+    public static void saveCreditNote(String creditNoteJson) {
+        Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(creditNoteJson);
+
+        Credit_Note__c cn = new Credit_Note__c();
+        cn.Customer__c = (String) data.get('customerId');
+        cn.Credit_Date__c = Date.valueOf((String) data.get('noteDate'));
+        cn.Credit_Amount__c = Decimal.valueOf(String.valueOf(data.get('amount')));
+        cn.Status__c = 'New';
+
+        insert cn;
+    }
     
     //Secoundary Invoices
     @AuraEnabled
@@ -907,7 +920,7 @@ public without sharing class DMSPortalLwc
         if (!newStocks.isEmpty()) {
             insert newStocks;
             for (Distributor_Stock__c stock : newStocks) {
-                String key = stock.Distributor__c + '_' + stock.Product_Name__c;
+                String key = stock.Distributor__c + '_' + stock.Product__c;
                 existingStockMap.put(key, stock);
             }
             
@@ -1042,7 +1055,7 @@ public without sharing class DMSPortalLwc
         if (!channelSet.isEmpty()) {
             Set<String> productIds = new Set<String>();
             List<Sales_Channel_To_SKU__c> channels = [SELECT Id, Name, SKU__r.Name,SKU__c,Delivery_Plant__c,Sales_Channel__c
-                                                      FROM Sales_Channel_To_SKU__c WHERE Sales_Channel__c IN :channelSet
+                                                      FROM Sales_Channel_To_SKU__c WHERE Sales_Channel__c IN: channelSet
                                                       and SKU__r.Is_Active__c = true];
             map<String,String> skuNameToSkuId = new map<String,String>();
             for (Sales_Channel_To_SKU__c channel : channels) {
@@ -1439,7 +1452,7 @@ public without sharing class DMSPortalLwc
         if (!newStocks.isEmpty()) {
             insert newStocks;
             for (Distributor_Stock__c stock : newStocks) {
-                String key = stock.Distributor__c + '_' + stock.Product_Name__c;
+                String key = stock.Distributor__c + '_' + stock.Product__c;
                 existingStockMap.put(key, stock);
             }
             
@@ -1945,7 +1958,7 @@ public without sharing class DMSPortalLwc
         if (!newStocks.isEmpty()) {
             insert newStocks;
             for (Distributor_Stock__c stock : newStocks) {
-                String key = stock.Distributor__c + '_' + stock.Product_Name__c;
+                String key = stock.Distributor__c + '_' + stock.Product__c;
                 existingStockMap.put(key, stock);
             }
             
@@ -2208,5 +2221,23 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public String productId;
         @AuraEnabled public Integer quantity;
         
+    }
+
+    @AuraEnabled
+    public static List<Product__c> getProductGalleryData() {
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        System.debug('partnerUser: ' + partnerUser);
+        if(partnerUser.size() > 0 && partnerUser[0].ContactId != null){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            System.debug('contact: ' + contact);
+            if(contact.size() > 0 && contact[0].AccountId != null){
+                accountId = contact[0].AccountId;
+            }
+        }
+        System.debug('accountId: ' + accountId);
+        List<Product__c> products = beatPlannerlwc.getProducts(accountId, 'Primary Customer');
+        System.debug('products: ' + products);
+        return products;
     }
 }

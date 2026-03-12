@@ -1761,110 +1761,132 @@ public with sharing class userProfileLWC {
     }
     
     
-    
     @AuraEnabled
     public static userData attendance(String ids, Date frmDate, Date toDate, String status) {
+        
         userData dt = new userData();
         List<Map<String, String>> formattedAttendanceData = new List<Map<String, String>>();
         
-        // Fetch Daily Logs for the given date range
+        // ========================================================
+        //FETCH DAILY LOGS
+        //========================================================== 
         List<Daily_Log__c> logs = [
-            SELECT Id,Name, Total_Working_Hours__c, Day_started_time__c, Start_time__c, End_Time__c,
-            First_Visit_Time1__c,Last_Visit_Time1__c,Total_Order_Amount__c,Primary_Order_Amount__c,Secondary_Order_Amont__c,
-            TLSD__c,TLSD_Primary__c,TLSD_Retailers_Outlets__c,TLSD_Sub_Stockist__c,	TPut_Per_OL__c,	Lines_Per_OL__c,
-            Assigned_Beat__c,Current_Beat__c,Beat_Switch_History__c,Distributor_Id__c,Distributor_Name__c,Effective_Man_Hours__c,
-            Market_Hours__c,New_Calls__c,Collection_Calls__c,Stock_Calls__c,Total_Visits__c,Outlets_Not_Visited__c,	Total_Productive_Calls__c,
-            Telephonic_Call__c,	Normal_Call__c,Total_Non_Productive_Calls__c,Total_Outlets__c,Worked_Beat_Name__c,Assigned_Beat_Name__c,
-            Distance_Travelled__c,Distance_Travelled_by_Odometer__c,
-            Total_Calls__c,Non_PJP_Order_Calls__c,Total_Productive_Calls_Made__c,Non_PJP_Productive_Calls__c,
-            No_Of_Outlets_from_Non_PJP_Order__c,Total_No_of_Outlets__c,Calls_Made__c,Return_Calls__c, 
-            
-            Prouctive_Calls_Made__c,(SELECT minute_duration__c FROM Visits__r where status__c = 'Completed') 
-             FROM Daily_Log__c
+            SELECT Id, Name, Total_Working_Hours__c, Day_started_time__c,
+            Start_time__c, End_Time__c,
+            First_Visit_Time1__c, Last_Visit_Time1__c,
+            Total_Order_Amount__c, Primary_Order_Amount__c, Secondary_Order_Amont__c,
+            TLSD__c, TLSD_Primary__c, TLSD_Retailers_Outlets__c, TLSD_Sub_Stockist__c,
+            Assigned_Beat_Name__c, Worked_Beat_Name__c,
+            Beat_Switch_History__c, Distributor_Id__c, Distributor_Name__c,
+            New_Calls__c, Collection_Calls__c, Stock_Calls__c,
+            Total_Visits__c, Outlets_Not_Visited__c, Total_Productive_Calls__c,
+            Prouctive_Calls_Made__c, Total_Outlets__c,
+            Distance_Travelled__c, Distance_Travelled_by_Odometer__c,
+            Total_Calls__c, Non_PJP_Order_Calls__c,
+            Total_Productive_Calls_Made__c, Non_PJP_Productive_Calls__c,
+            No_Of_Outlets_from_Non_PJP_Order__c,
+            Total_No_of_Outlets__c, Calls_Made__c, Return_Calls__c,
+            (SELECT minute_duration__c FROM Visits__r WHERE status__c = 'Completed')
+            FROM Daily_Log__c
             WHERE DAY_ONLY(Day_started_time__c) >= :frmDate
             AND DAY_ONLY(Day_started_time__c) <= :toDate
             AND OwnerId = :ids
-            order by Day_started_time__c asc
+            ORDER BY Day_started_time__c ASC
         ];
         
-        // Convert fetched logs into a Map<Date, Daily_Log__c>
+        //=========================================================
+        // CONVERT LOGS TO MAP (Date → Log)
+        //========================================================== 
         Map<Date, Daily_Log__c> logMap = new Map<Date, Daily_Log__c>();
+        
         for (Daily_Log__c log : logs) {
-            system.debug('log :'+log);
-            logMap.put(log.Day_started_time__c.date(), log); // Convert Datetime to Date
+            logMap.put(log.Day_started_time__c.date(), log);
         }
         
-        // Loop through the date range to check for missing records and weekends
+        //=========================================================
+        //FETCH LEAVES FOR USER IN DATE RANGE
+        //========================================================== 
+        List<Leaves__c> leaveList = [
+            SELECT Id, User__c, From_Date__c, To_Date__c
+            FROM Leaves__c
+            WHERE User__c = :ids
+            AND From_Date__c <= :toDate
+            AND To_Date__c >= :frmDate
+            AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
+            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation'
+            AND Session_Type__c = null
+        ];
+        
+        // =========================================================
+        //CONVERT LEAVES INTO DATE SET
+        //========================================================== 
+        Set<Date> leaveDates = new Set<Date>();
+        
+        for (Leaves__c lv : leaveList) {
+            for (Date d = lv.From_Date__c; d <= lv.To_Date__c; d = d.addDays(1)) {
+                leaveDates.add(d);
+            }
+        }
+        
+        //=========================================================
+        // LOOP DATE RANGE
+        //========================================================== 
         for (Date currentDate = frmDate; currentDate <= toDate; currentDate = currentDate.addDays(1)) {
+            
             Map<String, String> record = new Map<String, String>();
             record.put('Date', String.valueOf(currentDate));
             
-            // Convert Date to Datetime to use format()
             Datetime dtTime = Datetime.newInstance(currentDate.year(), currentDate.month(), currentDate.day());
-            String dayOfWeek = dtTime.format('EEEE'); // 'EEEE' gives full day name (e.g., "Saturday", "Sunday")
+            String dayOfWeek = dtTime.format('EEEE');
             
-            // Check if it's a weekend (Saturday or Sunday)
-            
-            // Check if a record exists for this date
+            // =====================================================
+            //  PRESENT
+            // =====================================================
             if (logMap.containsKey(currentDate)) {
+                
                 Daily_Log__c log = logMap.get(currentDate);
+                
                 record.put('Id', log.Id);
                 record.put('Name', log.Name);
                 record.put('Status', 'Present');
                 record.put('StartTime', String.valueOf(log.Start_time__c));
                 record.put('EndTime', String.valueOf(log.End_Time__c));
                 record.put('TotalHours', String.valueOf(log.Total_Working_Hours__c));
-                record.put('First_Visit_Time1__c', String.valueOf(log.First_Visit_Time1__c));
-                record.put('Last_Visit_Time1__c', String.valueOf(log.Last_Visit_Time1__c));
-                record.put('Total_Order_Amount__c', String.valueOf(log.Total_Order_Amount__c));
-                record.put('Primary_Order_Amount__c', String.valueOf(log.Primary_Order_Amount__c));
-                record.put('Secondary_Order_Amont__c', String.valueOf(log.Secondary_Order_Amont__c));
-                record.put('TLSD__c', String.valueOf(log.TLSD__c));
-                record.put('TLSD_Primary__c', String.valueOf(log.TLSD_Primary__c));
-                record.put('TLSD_Retailers_Outlets__c', String.valueOf(log.TLSD_Retailers_Outlets__c));
-                record.put('TLSD_Sub_Stockist__c', String.valueOf(log.TLSD_Sub_Stockist__c));
-                record.put('Assigned_Beat_Name__c', String.valueOf(log.Assigned_Beat_Name__c));
-                record.put('Worked_Beat_Name__c', String.valueOf(log.Worked_Beat_Name__c));
-                record.put('Beat_Switch_History__c', String.valueOf(log.Beat_Switch_History__c));
-                record.put('Distributor_Id__c', String.valueOf(log.Distributor_Id__c));
-                record.put('Distributor_Name__c', String.valueOf(log.Distributor_Name__c));
-                record.put('New_Calls__c', String.valueOf(log.New_Calls__c));
-                record.put('Collection_Calls__c', String.valueOf(log.Collection_Calls__c));
-                record.put('Stock_Calls__c', String.valueOf(log.Stock_Calls__c));
-                record.put('Total_Visits__c', String.valueOf(log.Total_Visits__c));
-                record.put('Outlets_Not_Visited__c', String.valueOf(log.Outlets_Not_Visited__c));
-                record.put('Total_Productive_Calls__c', String.valueOf(log.Total_Productive_Calls__c));
-                record.put('Prouctive_Calls_Made__c', String.valueOf(log.Prouctive_Calls_Made__c));
-                record.put('Total_Outlets__c', String.valueOf(log.Total_Outlets__c));
-                record.put('Distance_Travelled__c', String.valueOf(log.Distance_Travelled__c));
-                record.put('Distance_Travelled_by_Odometer__c', String.valueOf(log.Distance_Travelled_by_Odometer__c));
-                record.put('Total_Calls__c', String.valueOf(log.Total_Calls__c));
-                record.put('Non_PJP_Order_Calls__c', String.valueOf(log.Non_PJP_Order_Calls__c));
-                record.put('Total_Productive_Calls_Made__c', String.valueOf(log.Total_Productive_Calls_Made__c));
-                record.put('Non_PJP_Productive_Calls__c', String.valueOf(log.Non_PJP_Productive_Calls__c));
-                record.put('No_Of_Outlets_from_Non_PJP_Order__c', String.valueOf(log.No_Of_Outlets_from_Non_PJP_Order__c));
-                record.put('Total_No_of_Outlets__c', String.valueOf(log.Total_No_of_Outlets__c));
-                record.put('Calls_Made__c', String.valueOf(log.Calls_Made__c));
-                record.put('Return_Calls__c', String.valueOf(log.Return_Calls__c));
-                // Sum up minute_duration__c for all Visits
+                
                 Decimal totalVisitMinutes = 0;
                 for (Visit__c visit : log.Visits__r) {
-                    if(visit.minute_duration__c != null)
-                    {
+                    if (visit.minute_duration__c != null) {
                         totalVisitMinutes += visit.minute_duration__c;
                     }
-                    
                 }
                 
-                // Store total minutes as a string
-                record.put('TotalVisits', String.valueOf(totalVisitMinutes) + 'min');
+                record.put('TotalVisits', String.valueOf(totalVisitMinutes) + ' min');
             }
+            
+            // =====================================================
+            // HOLIDAY (Sunday)
+            // =====================================================
             else if (dayOfWeek == 'Sunday') {
+                
                 record.put('Status', 'Holiday');
+                record.put('TotalVisits', '0 min');
             }
-            // If no record exists, mark as 'Leave'
-            else {
+            
+            // =====================================================
+            // LEAVE
+            // =====================================================
+            else if (leaveDates.contains(currentDate)) {
+                
                 record.put('Status', 'Leave');
+                record.put('TotalVisits', '0 min');
+            }
+            
+            // =====================================================
+            // ABSENT
+            // =====================================================
+            else {
+                
+                record.put('Status', 'Absent');
                 record.put('TotalVisits', '0 min');
             }
             
@@ -1874,7 +1896,6 @@ public with sharing class userProfileLWC {
         dt.formattedUsersData = formattedAttendanceData;
         return dt;
     }
-    
     @AuraEnabled
     public static userData repeatDays(string ids){
         // Query existing Child_Beat__c records for the given owner and created this month

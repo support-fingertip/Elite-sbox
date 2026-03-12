@@ -191,4 +191,101 @@ public class InvoiceItemTriggerHandlerTest {
         insert testItems;
         Test.stopTest();
     }
+
+    // Test: Invoice insert without SF_Order__c but with matching Product_Mapping__c (covers executive assignment + hierarchy comparison)
+    @isTest
+    static void testInvoiceHeaderOwnerFromProductMapping() {
+        Account acc = [SELECT Id, SAP_Customer_Code__c FROM Account WHERE SAP_Customer_Code__c = '1133' LIMIT 1];
+        Area__c tr = [SELECT Id FROM Area__c WHERE Name = 'test11121' LIMIT 1];
+
+        Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+        User execUser1 = new User(
+            FirstName = 'Exec1', LastName = 'User1', Email = 'execuser1@test.com',
+            Username = 'execuser1' + System.currentTimeMillis() + '@test.com',
+            Alias = 'eu1', Employee_Code__c = 'EXHC01', ProfileId = p.Id,
+            TimeZoneSidKey = 'Asia/Kolkata', LocaleSidKey = 'en_US',
+            EmailEncodingKey = 'UTF-8', LanguageLocaleKey = 'en_US', IsActive = true
+        );
+        User execUser2 = new User(
+            FirstName = 'Exec2', LastName = 'User2', Email = 'execuser2@test.com',
+            Username = 'execuser2' + System.currentTimeMillis() + '@test.com',
+            Alias = 'eu2', Employee_Code__c = 'EXHC02', ProfileId = p.Id,
+            TimeZoneSidKey = 'Asia/Kolkata', LocaleSidKey = 'en_US',
+            EmailEncodingKey = 'UTF-8', LanguageLocaleKey = 'en_US', IsActive = true
+        );
+        insert new List<User>{execUser1, execUser2};
+
+        // Two mappings for same customer+plant pair to cover hierarchy comparison loop
+        Product_Mapping__c pm1 = new Product_Mapping__c(
+            Customer__c = acc.Id, Exectuive__c = execUser1.Id,
+            Area__c = tr.Id, Chanel__c = 'CPD',
+            Parent_Depot__c = '1400', Child_Depot__c = '1480'
+        );
+        Product_Mapping__c pm2 = new Product_Mapping__c(
+            Customer__c = acc.Id, Exectuive__c = execUser2.Id,
+            Area__c = tr.Id, Chanel__c = 'CPD',
+            Parent_Depot__c = '1400', Child_Depot__c = '1480'
+        );
+        insert new List<Product_Mapping__c>{pm1, pm2};
+
+        Test.startTest();
+        Invoice__c inv = new Invoice__c(
+            Invoice_No__c = 'INV-HEADER-PM',
+            Store__c = acc.Id,
+            Customer_SAP_Code__c = '1133',
+            Delivery_Plant__c = '1480',
+            Status__c = 'Raised',
+            Customer_Name__c = 'Test Customer'
+        );
+        insert inv;
+        Test.stopTest();
+
+        Invoice__c result = [SELECT OwnerId FROM Invoice__c WHERE Invoice_No__c = 'INV-HEADER-PM'];
+        System.assertNotEquals(null, result.OwnerId, 'Owner should be set from Product Mapping executive');
+    }
+
+    // Test: Invoice insert with SF_Order__c (covers order owner path + orderMap query)
+    @isTest
+    static void testInvoiceHeaderWithOrder() {
+        Account acc = [SELECT Id, SAP_Customer_Code__c FROM Account WHERE SAP_Customer_Code__c = '1122' LIMIT 1];
+
+        Order__c order = new Order__c(
+            Order_Type__c = 'Primary Order',
+            Account__c = acc.Id,
+            Order_Fulfillment_Status__c = 'Not Fulfilled',
+            Order_Date__c = Date.today()
+        );
+        insert order;
+
+        Test.startTest();
+        Invoice__c inv = new Invoice__c(
+            Invoice_No__c = 'INV-HEADER-ORD',
+            Store__c = acc.Id,
+            Customer_SAP_Code__c = '1122',
+            Delivery_Plant__c = '1480',
+            Status__c = 'Raised',
+            Customer_Name__c = 'Test Customer',
+            SF_Order__c = order.Id
+        );
+        insert inv;
+        Test.stopTest();
+    }
+
+    // Test: Invoice insert without SF_Order__c and no matching Product_Mapping (covers else-if condition but no PM match)
+    @isTest
+    static void testInvoiceHeaderNoMatchingMapping() {
+        Account acc = [SELECT Id, SAP_Customer_Code__c FROM Account WHERE SAP_Customer_Code__c = '1122' LIMIT 1];
+
+        Test.startTest();
+        Invoice__c inv = new Invoice__c(
+            Invoice_No__c = 'INV-HEADER-NOMATCH',
+            Store__c = acc.Id,
+            Customer_SAP_Code__c = '9999',
+            Delivery_Plant__c = '9999',
+            Status__c = 'Raised',
+            Customer_Name__c = 'No Match Customer'
+        );
+        insert inv;
+        Test.stopTest();
+    }
 }

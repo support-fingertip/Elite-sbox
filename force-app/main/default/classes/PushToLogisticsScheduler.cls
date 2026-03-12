@@ -2,6 +2,6 @@
 public class PushToLogisticsScheduler implements Schedulable {
     public void execute(SchedulableContext sc) {
         PushToLogisticsBatch batch = new PushToLogisticsBatch();
-        Database.executeBatch(batch);
+        Database.executeBatch(batch,5);
     }
 }

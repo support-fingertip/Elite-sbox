@@ -41,9 +41,10 @@ import getUsers from '@salesforce/apex/DMSPortalLwc.getUsers';
 import getSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getSecondaryCustomers';
 import getInvoicePdfUrl from '@salesforce/apex/DMSPortalLwc.getInvoicePdfUrl';
 import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockAdjustments';
+import getProductGalleryData from '@salesforce/apex/DMSPortalLwc.getProductGalleryData';
 import orgUrl from '@salesforce/label/c.orgUrl';
-const TAB_WIDTH = 135;     // realistic average width per tab
-const RESERVED_WIDTH = 250; // logo + profile + spacing
+const TAB_WIDTH = 165;     // realistic average width per tab
+const RESERVED_WIDTH = 350; // logo + profile + More button + spacing
 
 export default class NavigationComponent extends LightningElement {
     //Varible related to tab Function
@@ -65,7 +66,8 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Secondary Returns', label: 'Secondary Returns' },
         { id: 'Secondary Customers', label: 'Seondary Customers' },
         { id: 'Users', label: 'Users' },
-        { id: 'Stock Adjustment', label: 'Stock Adjustment' }
+        { id: 'Stock Adjustment', label: 'Stock Adjustment' },
+        { id: 'Product Gallery', label: 'Product Gallery' }
     ];
 
     //Variables related to data
@@ -167,6 +169,7 @@ export default class NavigationComponent extends LightningElement {
     showPrimaryGrn = false;
     showClaim = false;
     showStockAdjustment = false;
+    showProductGallery = false;
 
 
     showStock = false;
@@ -333,6 +336,13 @@ export default class NavigationComponent extends LightningElement {
     allUsers = [];
     searchKey = '';
     isShowSecondaryCustomers = false;
+
+    // Product Gallery
+    @track allProducts = [];
+    @track filteredProducts = [];
+    @track categoryOptions = [];
+    @track selectedCategory = '';
+    @track productSearchKey = '';
     invoiceIdToDownloadPdf = '';
     isShowNewAdjustStock = false;
 
@@ -472,6 +482,7 @@ export default class NavigationComponent extends LightningElement {
         this.isShowSecondaryCustomers = false;
         this.showStockAdjustment = false;
         this.isShowNewAdjustStock = false;
+        this.showProductGallery = false;
     }
 
     selectedTabFunction() {
@@ -551,6 +562,11 @@ export default class NavigationComponent extends LightningElement {
             case 'Stock Adjustment':
                 this.showStockAdjustment = true;
                 this.getStockAdjustmentsWithFilter();
+                break;
+
+            case 'Product Gallery':
+                this.showProductGallery = true;
+                this.getProductGalleryData();
                 break;
 
             default:
@@ -2577,6 +2593,66 @@ export default class NavigationComponent extends LightningElement {
 
     disconnectedCallback() {
         clearInterval(this.interval);
+    }
+
+    /** Product Gallery Methods */
+    getProductGalleryData() {
+        this.isSubPartLoad = true;
+        getProductGalleryData()
+            .then(products => {
+                const categorySet = new Set();
+                const mappedProducts = products.map(p => {
+                    const category = p.Product_Category1__r ? p.Product_Category1__r.Name : 'Uncategorized';
+                    categorySet.add(category);
+                    return {
+                        id: p.Id,
+                        name: p.Name,
+                        price: p.List_Price__c,
+                        mrp: p.MRP__c,
+                        category: category,
+                        channel: p.Channel__c,
+                        uom: p.UOM__c,
+                        taxPercent: p.Tax_Percent__c
+                    };
+                });
+                this.allProducts = mappedProducts;
+                this.filteredProducts = mappedProducts;
+                this.categoryOptions = [
+                    { label: 'All Categories', value: '' },
+                    ...[...categorySet].sort().map(c => ({ label: c, value: c }))
+                ];
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error('Error loading product gallery:', error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    handleProductCategoryChange(event) {
+        this.selectedCategory = event.detail.value;
+        this.filterProducts();
+    }
+
+    handleProductSearch(event) {
+        this.productSearchKey = event.target.value;
+        this.filterProducts();
+    }
+
+    filterProducts() {
+        let result = this.allProducts;
+        if (this.selectedCategory) {
+            result = result.filter(p => p.category === this.selectedCategory);
+        }
+        if (this.productSearchKey) {
+            const key = this.productSearchKey.toLowerCase();
+            result = result.filter(p => p.name && p.name.toLowerCase().includes(key));
+        }
+        this.filteredProducts = result;
+    }
+
+    get hasProducts() {
+        return this.filteredProducts && this.filteredProducts.length > 0;
     }
 
     openOrderItems(event) {

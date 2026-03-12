@@ -1,0 +1,121 @@
+<template>
+    <div class="reportee-view-container">
+        <!-- Error message -->
+        <template lwc:if={errorMessage}>
+            <p class="slds-text-color_error slds-p-around_small">{errorMessage}</p>
+        </template>
+
+        <!-- Subordinate List Section -->
+        <div class="slds-card slds-m-bottom_small">
+            <div class="slds-card__header slds-grid">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                    <div class="slds-media__body">
+                        <h2 class="slds-card__header-title">
+                            <span class="slds-text-heading_small">Select Subordinate</span>
+                        </h2>
+                    </div>
+                </header>
+            </div>
+            <div class="slds-card__body slds-card__body_inner">
+                <lightning-input
+                    type="search"
+                    label="Search Subordinate"
+                    variant="label-hidden"
+                    placeholder="Search by name..."
+                    value={searchTerm}
+                    onchange={handleSearch}>
+                </lightning-input>
+
+                <template lwc:if={isLoadingSubordinates}>
+                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                </template>
+
+                <template lwc:if={hasSubordinates}>
+                    <ul class="slds-has-list-interactions slds-m-top_x-small">
+                        <template for:each={filteredSubordinates} for:item="sub">
+                            <li key={sub.userId}
+                                class="slds-item slds-p-around_x-small subordinate-item"
+                                data-userid={sub.userId}
+                                onclick={handleSubordinateSelect}>
+                                <div class="slds-grid slds-grid_vertical-align-center">
+                                    <div class="slds-col">
+                                        <span class="slds-text-body_regular slds-text-heading_label">{sub.name}</span>
+                                        <span class="slds-text-body_small slds-text-color_weak"> — {sub.roleName}</span>
+                                    </div>
+                                    <div class="slds-col slds-no-flex">
+                                        <template lwc:if={sub.isActive}>
+                                            <span class="slds-badge slds-theme_success">Active</span>
+                                        </template>
+                                        <template lwc:else>
+                                            <span class="slds-badge slds-theme_error">Inactive</span>
+                                        </template>
+                                        <span class="slds-badge slds-m-left_xx-small">{sub.beatCount} Beats</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:else>
+                    <template lwc:if={isLoadingSubordinates}></template>
+                    <template lwc:else>
+                        <p class="slds-text-color_weak slds-m-top_small">No subordinates found.</p>
+                    </template>
+                </template>
+            </div>
+        </div>
+
+        <!-- Beat List Section -->
+        <template lwc:if={selectedSubordinateId}>
+            <div class="slds-card">
+                <div class="slds-card__header slds-grid">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <span class="slds-text-heading_small">Beats for {selectedSubordinateName}</span>
+                            </h2>
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body slds-card__body_inner">
+                    <template lwc:if={isLoadingBeats}>
+                        <lightning-spinner alternative-text="Loading beats" size="small"></lightning-spinner>
+                    </template>
+                    <template lwc:if={hasBeats}>
+                        <ul class="slds-has-list-interactions">
+                            <template for:each={beats} for:item="beat">
+                                <li key={beat.beatId} class="slds-item slds-p-around_x-small beat-item">
+                                    <div class="slds-grid slds-grid_vertical-align-center">
+                                        <div class="slds-col">
+                                            <div class="slds-text-body_regular"><strong>{beat.beatName}</strong></div>
+                                            <div class="slds-text-body_small slds-text-color_weak">
+                                                Customer: {beat.primaryCustomerName}
+                                            </div>
+                                            <div class="slds-text-body_small slds-text-color_weak">
+                                                Outlets: {beat.outletCount} &bull; Type: {beat.beatType}
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-no-flex">
+                                            <lightning-button
+                                                label="Start Visit"
+                                                variant="brand"
+                                                data-beatid={beat.beatId}
+                                                onclick={handleStartVisit}>
+                                            </lightning-button>
+                                        </div>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:else>
+                        <template lwc:if={isLoadingBeats}></template>
+                        <template lwc:else>
+                            <p class="slds-text-color_weak slds-m-top_small">No active beats found for this subordinate.</p>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

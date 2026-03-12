@@ -4,6 +4,7 @@
 * calling from  PushTologistics cmp,  AccountTriggerHandler
 */
 global class PostHandler {
+ 
     @AuraEnabled
     global static boolean sendOrder( string recId){
         order__c ord=[select id,ERP_Check__c,Status__c,Account__r.Customer_Type__c from order__c where id=:recId ];
@@ -21,8 +22,8 @@ global class PostHandler {
     }
     
     global static void orderPost( Order__c ordds){
-        ordds.ERP_Check__c=false;
-        update ordds;
+      //  ordds.ERP_Check__c=false;
+        //update ordds;
         
         list<string>odId= new list<string>();
         list< map<string,string>>hd=new list< map<string,string>>();
@@ -78,8 +79,14 @@ global class PostHandler {
         system.debug(orderWrapperJson);
         
         //AzureIntegrationController.sendListEmail(ordd.id);
-        AzureIntegrationController.sendOrderMaster(orderWrapperJson,ordd.id);  
-        //      
+     //   AzureIntegrationController.sendOrderMaster(orderWrapperJson,ordd.id);  
+        //    
+        system.debug('System.isBatch()>>'+System.isBatch());     
+        if (System.isBatch()) {
+            AzureIntegrationController.sendOrderfromBatch(orderWrapperJson, ordd.Id);
+        } else {
+            AzureIntegrationController.sendOrderMaster(orderWrapperJson, ordd.Id);
+        }  
     }
     
     public class OrderWrapper {
@@ -117,9 +124,9 @@ global class PostHandler {
         
     }  
     
-    global static void accPost( account accts, boolean isCreation){
+    global static void accPost( account accts, boolean isUpdation){
         AccountTriggerRecursion.skipAzureCall = true;   
-        if(!isCreation){
+        if(!isUpdation){
             accts.ERP_Check__c=false;   
         }
         else{
@@ -228,7 +235,7 @@ global class PostHandler {
         string accWrapperJson= JSON.serialize(addHeader);
         
         system.debug(accWrapperJson);
-        AzureIntegrationController.sendAccountMaster(accWrapperJson,acc.id,isCreation);  
+        AzureIntegrationController.sendAccountMaster(accWrapperJson,acc.id,isUpdation);  
         AccountTriggerRecursion.skipAzureCall = false;
     }
     

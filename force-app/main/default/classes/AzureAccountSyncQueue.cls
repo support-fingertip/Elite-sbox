@@ -1,11 +1,11 @@
 public class AzureAccountSyncQueue  implements Queueable, Database.AllowsCallouts {
 
     private Id accountId;
-    private boolean iscreation;
+    private boolean isupdation;
 
-    public AzureAccountSyncQueue(Id accId,boolean isNew) {
+    public AzureAccountSyncQueue(Id accId,boolean isupdation) {
         this.accountId = accId;
-        this.iscreation = isNew;
+        this.isupdation = isupdation;
     }
 
     public void execute(QueueableContext qc) {
@@ -15,6 +15,6 @@ public class AzureAccountSyncQueue  implements Queueable, Database.AllowsCallout
             WHERE Id = :accountId
         ];
 
-        PostHandler.accPost(acc,iscreation);
+        PostHandler.accPost(acc,isupdation);
     }
 }

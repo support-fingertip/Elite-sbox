@@ -171,6 +171,17 @@
     max-height: 500px; /* Adjust to a suitable height */
 }
 
+.dropdown-body-primary-vf{
+    max-height: 0;
+    overflow: hidden;
+    transition: 0.3s ease-out;
+}
+
+.dropdown-body-primary-vf.active {
+    transition:  0.4s ease-in;
+    max-height: 500px;
+}
+
 .dropdown-table{
     width: 100%;
     font-size: 12px;

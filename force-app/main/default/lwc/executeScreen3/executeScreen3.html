@@ -623,6 +623,165 @@
                                         </div>
                                     </div>
                                 </div>
+                                <template lwc:if={showPrimaryVisitFormCard}>
+                                    <div class="dropdown">
+                                        <div class="dropdown-head">
+                                            <div class="dropdown-head-left"
+                                                onclick={togglePrimaryVisitFormDropdown}>
+                                            
+                                                <i class="material-icons dropdown-head-nav-icon">
+                                                    <lightning-icon
+                                                        icon-name="utility:chevrondown"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class="chevron-icon-primary-vf">
+                                                    </lightning-icon>
+                                                </i>
+                                           
+                                                <h4 class="dropdown-head-title visitHeading">
+                                                    <img src={summeryIcons.visitform} width="15" height="15">
+                                                    &nbsp;&nbsp;
+                                                    Existing Primary Customer Form
+                                                </h4>
+                                            </div>
+                                            <div class="dropdown-head-right">
+                                                <template lwc:if={isInProgress}>
+                                                    <div onclick={openExistingPrimaryCustomerForm}>
+                                                        <lightning-icon
+                                                            icon-name="utility:forward"
+                                                            size="x-small"
+                                                            alternative-text>
+                                                        </lightning-icon>
+                                                    </div>
+                                                </template>
+                                                <template lwc:if={hasVisitFormRows}>
+                                                    <lightning-icon
+                                                        icon-name="utility:check"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="checkColor">
+                                                    </lightning-icon>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-icon
+                                                        icon-name="utility:clock"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="cloclColor">
+                                                    </lightning-icon>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-body-primary-vf">
+                                            <div class="dropdown-head">
+                                                <template lwc:if={hasVisitFormRows}>
+                                                    <table class="dropdown-table">
+                                                        <tbody>
+                                                            <tr>
+                                                                <template for:each={tableHeading.visitForm} for:item="item" for:index="index">
+                                                                    <th class="slds-border_top " key={item}><b>{item}</b></th>
+                                                                </template>
+                                                            </tr>
+                                                            <template for:each={visitFormRows} for:item="tar" for:index="index">
+                                                                <tr class="slds-border_top slds-border_bottom" key={tar.Id}>
+                                                                    <td>{tar.Name}</td>
+                                                                    <td>{tar.Customer_Name__c}</td>
+                                                                    <td>{tar.Product_Categories__c}</td>
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="slds-align_absolute-center">
+                                                        <b>Existing Primary Customer Form visit not created
+                                                        yet.</b>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    
+                                    </div>
+                                </template>
+                                <template lwc:if={showSecondaryVisitFormCard}>
+                                    <div class="dropdown">
+                                        <div class="dropdown-head">
+                                            <div class="dropdown-head-left"
+                                                onclick={togglePrimaryVisitFormDropdown}>
+                                                  
+                                                <i class="material-icons dropdown-head-nav-icon">
+                                                    <lightning-icon
+                                                        icon-name="utility:chevrondown"
+                                                        size="x-small"
+                                                        alternative-text
+                                                        class="chevron-icon-primary-vf">
+                                                    </lightning-icon>
+                                                </i>
+                                                <h4 class="dropdown-head-title visitHeading">
+                                                    <img src={summeryIcons.visitform} width="15" height="15">
+                                                    &nbsp;&nbsp;
+                                                    Existing Secondary Customer Form
+                                                </h4>
+                                            </div>
+                                            <div class="dropdown-head-right">
+                                                <template lwc:if={isInProgress}>
+                                                    <div onclick={openExistingSecondaryCustomerForm}>
+                                                        <lightning-icon
+                                                            icon-name="utility:forward"
+                                                            size="x-small"
+                                                            alternative-text>
+                                                        </lightning-icon>
+                                                    </div>
+                                                </template>
+                                                <template lwc:if={hasVisitFormRows}>
+                                                    <lightning-icon
+                                                        icon-name="utility:check"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="checkColor">
+                                                    </lightning-icon>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-icon
+                                                        icon-name="utility:clock"
+                                                        size="small"
+                                                        alternative-text
+                                                        class="cloclColor">
+                                                    </lightning-icon>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown-body-primary-vf">
+                                            <div class="dropdown-head">
+                                                <template lwc:if={hasVisitFormRows}>
+                                                    <table class="dropdown-table">
+                                                        <tbody>
+                                                            <tr>
+                                                                <template for:each={tableHeading.visitForm} for:item="item" for:index="index">
+                                                                    <th class="slds-border_top " key={item}><b>{item}</b></th>
+                                                                </template>
+                                                            </tr>
+                                                            <template for:each={visitFormRows} for:item="tar" for:index="index">
+                                                                <tr class="slds-border_top slds-border_bottom" key={tar.Id}>
+                                                                    <td>{tar.Name}</td>
+                                                                    <td>{tar.Customer_Name__c}</td>
+                                                                    <td>{tar.Product_Categories__c}</td>
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="slds-align_absolute-center">
+                                                        <b>Existing Secondary Customer Form visit not created
+                                                        yet.</b>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                 
+                                </template>
                                 <!--display Formats-->
                                 <div class="dropdown">
                                     <div class="dropdown-head">

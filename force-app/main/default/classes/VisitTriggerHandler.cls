@@ -11,25 +11,13 @@ public class VisitTriggerHandler {
                 uniqueFileIds.add(dl.UniqueFileId__c);
                 visitIdMap.put(dl.UniqueFileId__c, dl.Id);
             }
-             //From Google API Get the Distance
-            if(label.ActivateGMapAPI == 'True')
-            {  
-                if(dl.ClockIn_Latitude__c!=null && dl.Clockin_Longitude__c!=null && dl.Actual_Start_Time__c!=null){
-                    DistanceMatrixControllerForVisit.distanceCalculation(dl.Id);
-                }
-                
-            }
          	//When visit Disntance is Changed we are updating distance on Dailylog
             if (dl.Daily_log__c != null)
             {
                 dailyLogIdsToAddFirstVsit.add(dl.Daily_log__c);
-                if((dl.Distance__c != null) || (dl.Distance_Salesforce__c != null))
-                {
-                    dailyLogIds.add(dl.Daily_log__c);
-                }
             }
         }   
-        updateDailyLogs(dailyLogIds,dailyLogIdsToAddFirstVsit);
+        updateDailyLogs(dailyLogIdsToAddFirstVsit);
         
         CustomSharingService.linkFilesToRecords(uniqueFileIds, visitIdMap);
         
@@ -49,15 +37,6 @@ public class VisitTriggerHandler {
                 visitIdMap.put(dl.UniqueFileId__c, dl.Id);
             }
             
-            if ( dl.Daily_log__c != null &&
-                ((dl.Daily_log__c != oldmap.get(dl.Id).Daily_log__c) ||
-                 (dl.Distance__c != null && dl.Distance__c != oldmap.get(dl.Id).Distance__c)  ||
-                 (dl.Distance_Salesforce__c != null  && dl.Distance_Salesforce__c != oldmap.get(dl.Id).Distance_Salesforce__c)
-                )
-            ) 
-            {
-                dailyLogIds.add(dl.Daily_log__c);
-            }
             
             if((dl.Actual_End_Time__c != null && (dl.Actual_End_Time__c != oldmap.get(dl.Id).Actual_End_Time__c))
               ||( dl.Visit_Output__c != null &&  (dl.Visit_Output__c != oldmap.get(dl.Id).Visit_Output__c) ))
@@ -66,29 +45,12 @@ public class VisitTriggerHandler {
             }
         }
         
-        if(!dailyLogIds.isEmpty())
-        {
-            updateDailyLogs(dailyLogIds,new Set<Id>());
-        }
-     
        
         if(!visitSummaryLogIds.isEmpty())
         {
             updateVisitSummary(visitSummaryLogIds);
         }
         CustomSharingService.linkFilesToRecords(uniqueFileIds, visitIdMap);
-        
-    }
-	//For Rollup summary of Distance
-    public static void afterDelete(List<Visit__c> oldVisits) {
-        Set<Id> dailyLogIds = new Set<Id>();
-        for (Visit__c vis : oldVisits) {
-            if (vis.Daily_log__c != null &&  ((vis.Distance__c != null) || (vis.Distance_Salesforce__c != null)))
-            {
-                dailyLogIds.add(vis.Daily_log__c);
-            }
-        }
-        updateDailyLogs(dailyLogIds,new Set<Id>());
         
     }
     
@@ -107,7 +69,7 @@ public class VisitTriggerHandler {
             Location_Type__c locType,
             COUNT(Id) cnt
             FROM Visit__c
-            WHERE Daily_Log__c IN :dailyLogIds and Daily_Log__c!= null
+            WHERE Daily_Log__c IN :dailyLogIds
             GROUP BY Daily_Log__c, Visit_Output__c, Location_Type__c
         ];
         
@@ -156,13 +118,10 @@ public class VisitTriggerHandler {
             WHERE Daily_Log__c IN :dailyLogIds
             AND Child_Beat__c != null
         ]) {
-            if(v.Daily_Log__c != null)
-            {
-                if (!logToBeatIds.containsKey(v.Daily_Log__c)) {
-                    logToBeatIds.put(v.Daily_Log__c, new Set<Id>());
-                }
-                logToBeatIds.get(v.Daily_Log__c).add(v.Child_Beat__c);
+            if (!logToBeatIds.containsKey(v.Daily_Log__c)) {
+                logToBeatIds.put(v.Daily_Log__c, new Set<Id>());
             }
+            logToBeatIds.get(v.Daily_Log__c).add(v.Child_Beat__c);
         }
         
         // Step 2: Collect all beat Ids in one Set
@@ -184,22 +143,17 @@ public class VisitTriggerHandler {
         
         // Step 3: Sum per daily log
         for (Id logId : logToBeatIds.keySet()) {
-            if(logId != null)
-            {
-                
-                Decimal totalOutlets = 0;
-                for (Id beatId : logToBeatIds.get(logId)) {
-                    totalOutlets += (beatTotals.containsKey(beatId) ? beatTotals.get(beatId) : 0);
-                }
-                
-                Daily_Log__c log = logsToUpdateMap.containsKey(logId) 
-                    ? logsToUpdateMap.get(logId) 
-                    : new Daily_Log__c(Id = logId);
-                
-                log.Total_Outlets__c = totalOutlets;
-                logsToUpdateMap.put(logId, log);
-                
+            Decimal totalOutlets = 0;
+            for (Id beatId : logToBeatIds.get(logId)) {
+                totalOutlets += (beatTotals.containsKey(beatId) ? beatTotals.get(beatId) : 0);
             }
+            
+            Daily_Log__c log = logsToUpdateMap.containsKey(logId) 
+                ? logsToUpdateMap.get(logId) 
+                : new Daily_Log__c(Id = logId);
+            
+            log.Total_Outlets__c = totalOutlets;
+            logsToUpdateMap.put(logId, log);
         }
         // ------------------------------------
         // 3) Final update
@@ -211,7 +165,7 @@ public class VisitTriggerHandler {
     
 
     //Roll up summary of distance
-    public static void updateDailyLogs(Set<Id> dailyLogIds,Set<Id> dailyLogIdsToAddFirstVsit) {
+    public static void updateDailyLogs(Set<Id> dailyLogIds) {
         
         Map<Id, Daily_Log__c> logsToUpdateMap = new Map<Id, Daily_Log__c>();        
         if(!dailyLogIds.isEmpty())
@@ -227,8 +181,6 @@ public class VisitTriggerHandler {
             for (AggregateResult ar : totalDistance) {
                 logsToUpdateMap.put((Id) ar.get('Daily_log__c'), new Daily_Log__c(
                     Id = (Id) ar.get('Daily_log__c'),
-                    KMs_Travelled__c = (Double) ar.get('dis'),
-                    Distance_Salesforce__c = (Double) ar.get('disSalesforce'),
                     Total_Visits__c = (Integer) ar.get('VisitCount') 
                 ));
             }
@@ -236,11 +188,11 @@ public class VisitTriggerHandler {
         }
         
         //Only works on Inserting 
-        if(!dailyLogIdsToAddFirstVsit.isEmpty())
+        if(!dailyLogIds.isEmpty())
         {
             // Step 1: Get Daily Logs where First_Visit__c is still null
             Map<Id, Daily_Log__c> dailyLogsToUpdate = new Map<Id, Daily_Log__c>(
-                [SELECT Id, First_Visit__c FROM Daily_Log__c WHERE Id IN :dailyLogIdsToAddFirstVsit AND First_Visit__c = NULL]
+                [SELECT Id, First_Visit__c FROM Daily_Log__c WHERE Id IN :dailyLogIds AND First_Visit__c = NULL]
             );
      
             // Step 2: Get earliest Visit for those Daily Logs

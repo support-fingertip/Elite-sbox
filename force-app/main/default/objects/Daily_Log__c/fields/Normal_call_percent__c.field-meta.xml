@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Normal_call_percent__c</fullName>
     <externalId>false</externalId>
-    <formula>Normal_Call__c / TC__c</formula>
+    <formula>IF (TC__c =0, 0,  Total_Normal_Call__c  / TC__c)</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <label>Normal call percent</label>
     <precision>18</precision>

@@ -45,6 +45,8 @@ trigger BeatTrigger on Child_beat__c (after insert,before insert,before update,a
                     }
                 }
                 
+                BeatTriggerHandler.validateOwnerChangeProfile(Trigger.new, Trigger.oldMap);
+                
                 List<Child_beat__c> beats = new List<Child_beat__c>();
                 for(Child_beat__c beat: trigger.new){
                     if(beat.OwnerId != Trigger.oldMap.get(beat.Id).OwnerId){
@@ -85,6 +87,7 @@ trigger BeatTrigger on Child_beat__c (after insert,before insert,before update,a
                         }
                     }
                 }
+                BeatTriggerHandler.cascadeBeatItemStatus(Trigger.new, Trigger.oldMap);
             }
         }
     }

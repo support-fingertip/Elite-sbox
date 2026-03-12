@@ -6,96 +6,91 @@
     <required>false</required>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
-    <type>Picklist</type>
+    <type>MultiselectPicklist</type>
     <valueSet>
+        <controllingField>Product_Categories__c</controllingField>
         <restricted>true</restricted>
-        <valueSetDefinition>
-            <sorted>false</sorted>
-            <value>
-                <fullName>Cookies</fullName>
-                <default>false</default>
-                <label>Cookies</label>
-            </value>
-            <value>
-                <fullName>Traded Products</fullName>
-                <default>false</default>
-                <label>Traded Products</label>
-            </value>
-            <value>
-                <fullName>Cake</fullName>
-                <default>false</default>
-                <label>Cake</label>
-            </value>
-            <value>
-                <fullName>Millet</fullName>
-                <default>false</default>
-                <label>Millet</label>
-            </value>
-            <value>
-                <fullName>Milled Wheat Products</fullName>
-                <default>false</default>
-                <label>Milled Wheat Products</label>
-            </value>
-            <value>
-                <fullName>By Products-Wheat Milling</fullName>
-                <default>false</default>
-                <label>By Products-Wheat Milling</label>
-            </value>
-            <value>
-                <fullName>White Oats</fullName>
-                <default>false</default>
-                <label>White Oats</label>
-            </value>
-            <value>
-                <fullName>Bread</fullName>
-                <default>false</default>
-                <label>Bread</label>
-            </value>
-            <value>
-                <fullName>Bun</fullName>
-                <default>false</default>
-                <label>Bun</label>
-            </value>
-            <value>
-                <fullName>Mix</fullName>
-                <default>false</default>
-                <label>Mix</label>
-            </value>
-            <value>
-                <fullName>Flat Bread</fullName>
-                <default>false</default>
-                <label>Flat Bread</label>
-            </value>
-            <value>
-                <fullName>Flour</fullName>
-                <default>false</default>
-                <label>Flour</label>
-            </value>
-            <value>
-                <fullName>Puttupodi</fullName>
-                <default>false</default>
-                <label>Puttupodi</label>
-            </value>
-            <value>
-                <fullName>Rusk</fullName>
-                <default>false</default>
-                <label>Rusk</label>
-            </value>
-            <value>
-                <fullName>Whole Grain</fullName>
-                <default>false</default>
-                <label>Whole Grain</label>
-            </value>
-            <value>
-                <fullName>Rice</fullName>
-                <default>false</default>
-                <label>Rice</label>
-            </value>
-            <value>
-                <fullName>Whole Grain</fullName>
-                <default>false</default>
-                <label>Whole Grain</label>
-            </value>
-        </valueSetDefinition>
+        <valueSetName>Product_Group</valueSetName>
+        <valueSettings>
+            <controllingFieldValue>Bakery</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Cookies</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Bakery</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Cake</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Bakery</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Bread</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Bakery</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Bun</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Bakery</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Flat Bread</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Bakery</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Rusk</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Traded Products</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Millet</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Milled Wheat Products</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>By Products-Wheat Milling</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>White Oats</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Mix</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Flour</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Puttupodi</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Whole Grain</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Staple</controllingFieldValue>
+            <controllingFieldValue>Bakery &amp; Staple</controllingFieldValue>
+            <valueName>Rice</valueName>
+        </valueSettings>
     </valueSet>
+    <visibleLines>4</visibleLines>
 </CustomField>

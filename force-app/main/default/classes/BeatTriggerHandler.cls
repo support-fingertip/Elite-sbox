@@ -242,6 +242,74 @@ public without sharing class BeatTriggerHandler {
         
     }
     
+    public static void validateOwnerChangeProfile(List<Child_beat__c> newBeats, Map<Id, Child_beat__c> oldMap) {
+        // Skip validation if current user is System Administrator
+        String profileName = [SELECT Name FROM Profile WHERE Id = :UserInfo.getProfileId() LIMIT 1].Name;
+        if (profileName == 'System Administrator') return;
+
+        Set<Id> changedUserIds = new Set<Id>();
+        Map<Id, Id> beatOldUser = new Map<Id, Id>();
+        Map<Id, Id> beatNewUser = new Map<Id, Id>();
+
+        for (Child_beat__c beat : newBeats) {
+            Child_beat__c old = oldMap.get(beat.Id);
+            // Check both User__c and OwnerId changes
+            Boolean ownerChanged = (beat.OwnerId != old.OwnerId && beat.OwnerId != null && old.OwnerId != null);
+            if (ownerChanged && !beatOldUser.containsKey(beat.Id)) {
+                beatOldUser.put(beat.Id, old.OwnerId);
+                beatNewUser.put(beat.Id, beat.OwnerId);
+                changedUserIds.add(old.OwnerId);
+                changedUserIds.add(beat.OwnerId);
+            }
+        }
+
+        if (changedUserIds.isEmpty()) return;
+
+        Map<Id, String> userProfileMap = new Map<Id, String>();
+        for (User u : [SELECT Id, Profile.Name FROM User WHERE Id IN :changedUserIds]) {
+            userProfileMap.put(u.Id, u.Profile.Name);
+        }
+
+        for (Child_beat__c beat : newBeats) {
+            if (beatOldUser.containsKey(beat.Id)) {
+                String oldProfile = userProfileMap.get(beatOldUser.get(beat.Id));
+                String newProfile = userProfileMap.get(beatNewUser.get(beat.Id));
+                if (oldProfile != null && newProfile != null && oldProfile != newProfile) {
+                    beat.addError('Beat owner change is only allowed between users of the same profile. Cannot change from ' + oldProfile + ' to ' + newProfile + '.');
+                }
+            }
+        }
+    }
+
+    public static void cascadeBeatItemStatus(List<Child_beat__c> newBeats, Map<Id, Child_beat__c> oldMap) {
+        Set<Id> activatedBeatIds = new Set<Id>();
+        Set<Id> deactivatedBeatIds = new Set<Id>();
+
+        for (Child_beat__c beat : newBeats) {
+            if (oldMap.get(beat.Id).Active__c != beat.Active__c) {
+                if (beat.Active__c) activatedBeatIds.add(beat.Id);
+                else deactivatedBeatIds.add(beat.Id);
+            }
+        }
+
+        List<Junction_Beat__c> itemsToUpdate = new List<Junction_Beat__c>();
+
+        if (!activatedBeatIds.isEmpty()) {
+            for (Junction_Beat__c item : [SELECT Id FROM Junction_Beat__c WHERE Child_beat__c IN :activatedBeatIds AND Active__c = false]) {
+                item.Active__c = true;
+                itemsToUpdate.add(item);
+            }
+        }
+        if (!deactivatedBeatIds.isEmpty()) {
+            for (Junction_Beat__c item : [SELECT Id FROM Junction_Beat__c WHERE Child_beat__c IN :deactivatedBeatIds AND Active__c = true]) {
+                item.Active__c = false;
+                itemsToUpdate.add(item);
+            }
+        }
+
+        if (!itemsToUpdate.isEmpty()) Database.update(itemsToUpdate, false);
+    }
+
     public static void createSecMappings(List<Child_beat__c> beats){
         
         List<Junction_Beat__c> items = [select Id,Name,Child_Beat__c,Account__c,Beat_Primary_Customer__c,Beat_Substockiest__c,Beat_OwnerId__c,

@@ -1,5 +1,21 @@
 <aura:component controller="EmployeeeController"
-                implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >    
+    implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader"
+    access="global">
     <aura:attribute name="recordId" type="Id" />
-    <aura:handler name="init" value="{!this}" action="{!c.createUser}"></aura:handler>	
+    <aura:attribute name="beatOption" type="String" default="BEATS_ACTIVE" />
+    <aura:attribute name="beatOptions" type="List" default="[
+        {'label': 'Deactivate user with beats Active', 'value': 'BEATS_ACTIVE'},
+        {'label': 'Deactivate user with beats Inactive', 'value': 'BEATS_INACTIVE'}
+    ]" />
+
+    <div class="slds-p-around_medium">
+        <p class="slds-text-body_regular slds-m-bottom_small">Please choose how to handle beats for this user:</p>
+        <lightning:radioGroup name="beatOption" label="Beat Option" options="{!v.beatOptions}" value="{!v.beatOption}"
+            type="radio" variant="label-hidden" onchange="{!c.handleBeatOptionChange}" />
+    </div>
+
+    <div class="slds-align_absolute-center slds-m-top_medium slds-m-bottom_small">
+        <lightning:button label="Cancel" onclick="{!c.handleCancel}" class="slds-m-right_x-small" />
+        <lightning:button label="Confirm" variant="brand" onclick="{!c.handleConfirm}" />
+    </div>
 </aura:component>

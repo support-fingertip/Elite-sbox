@@ -1,0 +1,45 @@
+<aura:component controller="EmployeeeController"
+                implements="force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="userList" type="List" default="[]" />
+    <aura:attribute name="selectedUserId" type="String" default="" />
+    <aura:attribute name="isLoading" type="Boolean" default="true" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}"></aura:handler>
+
+    <aura:if isTrue="{!v.isLoading}">
+        <lightning:spinner alternativeText="Loading" size="medium" />
+    </aura:if>
+
+    <aura:if isTrue="{!!v.isLoading}">
+        <div class="slds-p-around_medium">
+            <p class="slds-text-heading_small slds-m-bottom_small">Select a user to share beats with:</p>
+
+            <aura:if isTrue="{!empty(v.userList)}">
+                <p class="slds-text-color_weak">No peer users found to share beats with.</p>
+            </aura:if>
+
+            <fieldset class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <aura:iteration items="{!v.userList}" var="user">
+                        <span class="slds-radio slds-m-bottom_x-small">
+                            <input type="radio" name="shareUser" id="{!user.userId}"
+                                value="{!user.userId}"
+                                onchange="{!c.handleUserSelect}" />
+                            <label class="slds-radio__label" for="{!user.userId}">
+                                <span class="slds-radio_faux"></span>
+                                <span class="slds-form-element__label">{!user.name} ({!user.profileName})</span>
+                            </label>
+                        </span>
+                    </aura:iteration>
+                </div>
+            </fieldset>
+
+            <div class="slds-m-top_medium">
+                <lightning:button label="Cancel" onclick="{!c.handleCancel}" />
+                <lightning:button label="Share Beats" variant="brand" onclick="{!c.handleShare}"
+                    disabled="{!!v.selectedUserId}" />
+            </div>
+        </div>
+    </aura:if>
+</aura:component>
