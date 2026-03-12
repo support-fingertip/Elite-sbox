@@ -47,7 +47,7 @@ trigger AccountTrigger on Account (before insert,after insert,before update,afte
                 }
             }
             if(accIds.size() > 0){
-                PJPItemHandler.deactivateBeats(accIds);
+                //PJPItemHandler.deactivateBeats(accIds);
             }
         }
        

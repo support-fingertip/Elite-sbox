@@ -4,7 +4,7 @@ export default class HelloWorld extends LightningElement {
     @track name = '';
 
     get greeting() {
-        return this.name ? Hello, ${this.name}! : 'Hello, World!';
+        return this.name ? `Hello, ${this.name}!` : 'Hello, World!';
     }
 
     handleNameChange(event) {

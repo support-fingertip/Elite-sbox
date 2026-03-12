@@ -6,11 +6,11 @@
     <picklistValues>
         <picklist>Customer_Type__c</picklist>
         <values>
-            <fullName>Primary Customer</fullName>
+            <fullName>Existing Primary Customer</fullName>
             <default>false</default>
         </values>
         <values>
-            <fullName>Secondary Customer</fullName>
+            <fullName>Existing Secondary Customer</fullName>
             <default>false</default>
         </values>
     </picklistValues>
@@ -3141,10 +3141,6 @@
         </values>
         <values>
             <fullName>White Oats</fullName>
-            <default>false</default>
-        </values>
-        <values>
-            <fullName>Whole Grain</fullName>
             <default>false</default>
         </values>
         <values>

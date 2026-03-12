@@ -1,3 +1,2 @@
 <design:component label="Share Beats">
-    <design:attribute name="recordId" label="Record ID" />
 </design:component>

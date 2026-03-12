@@ -1,4 +1,4 @@
-import { LightningElement,track,api} from 'lwc';
+import { LightningElement, track, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import GOOGLE_ICONS from '@salesforce/resourceUrl/googleIcons';
 import { NavigationMixin } from 'lightning/navigation';
@@ -8,17 +8,19 @@ import GET_APEX_DATA from '@salesforce/apex/beatPlannerlwc.getBeatData';
 import UPDATE_CURRENTBEAT_SWITCH_HISTORY from '@salesforce/apex/beatPlannerlwc.updateCurrentBeatAndSwitchHistory';
 import GET_PREVIEW_BEAT from '@salesforce/apex/beatPlannerlwc.getPreviewBeatCustomers';
 import getTodayVisitForms from '@salesforce/apex/VisitFormController.getTodayVisitForms';
+import getSubordinates from '@salesforce/apex/ReporteeViewController.getSubordinates';
+import getSubordinateBeats from '@salesforce/apex/ReporteeViewController.getSubordinateBeats';
 
 
 export default class BeatScreen extends NavigationMixin(LightningElement) {
     userId = Id;
     @api activeTab;
     googleIcons = {
-        beat : GOOGLE_ICONS + "/googleIcons/bike.png",
-        forward : GOOGLE_ICONS + "/googleIcons/forward.png",
+        beat: GOOGLE_ICONS + "/googleIcons/bike.png",
+        forward: GOOGLE_ICONS + "/googleIcons/forward.png",
         switch: GOOGLE_ICONS + "/googleIcons/swap.png",
         play: GOOGLE_ICONS + "/googleIcons/play.png",
-        account : GOOGLE_ICONS + "/googleIcons/apartment.png",
+        account: GOOGLE_ICONS + "/googleIcons/apartment.png",
     }
     @track visitForms = [];
     @track allVisitForms = [];
@@ -49,45 +51,63 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
     previewClass = 'slds-col slds-size_1-of-2';
     isShowBeatData = true;
     isTodayBeatExisted = false;
- 
-  
-    showReporteeView = false;
+
+
+    showReporteeView = true;
     @track selectedVisitFormId = null;
+
+    // Reportee View properties
+    @track reportees = [];
+    @track allReportees = [];
+    @track reporteeSearchTerm = '';
+    @track isLoadingReportees = false;
+
+    // Reportee Beat sub-view properties
+    @track selectedReporteeId = null;
+    @track selectedReporteeName = '';
+    @track reporteeBeats = [];
+    @track allReporteeBeats = [];
+    @track reporteeBeatSearchTerm = '';
+    @track isLoadingReporteeBeats = false;
+    @track isReporteeBeatView = false;
 
     handleVisitFormSelect(event) {
         this.selectedVisitFormId = event.detail.id;
     }
     // Getters for tab active state
-    get myBeatsTabActive()   { return this.activeTab === 'myBeats'; }
+    get myBeatsTabActive() { return this.activeTab === 'myBeats'; }
     get visitFormTabActive() { return this.activeTab === 'visitForm'; }
-    get reportTabActive()    { return this.activeTab === 'report'; }
+    get reportTabActive() { return this.activeTab === 'report'; }
 
     // Getters for tab CSS classes
-    get myBeatsTabClass()   { return this.activeTab === 'myBeats'   ? 'tab-item tab-item-active' : 'tab-item'; }
+    get myBeatsTabClass() { return this.activeTab === 'myBeats' ? 'tab-item tab-item-active' : 'tab-item'; }
     get visitFormTabClass() { return this.activeTab === 'visitForm' ? 'tab-item tab-item-active' : 'tab-item'; }
-    get reportTabClass()    { return this.activeTab === 'report'    ? 'tab-item tab-item-active' : 'tab-item'; }
+    get reportTabClass() { return this.activeTab === 'report' ? 'tab-item tab-item-active' : 'tab-item'; }
 
 
 
-    connectedCallback(){
-        this.isDesktop = FORM_FACTOR === 'Large'? true : false;
-        this.isPhone = FORM_FACTOR === 'Small'? true : false;
+    connectedCallback() {
+        this.isDesktop = FORM_FACTOR === 'Large' ? true : false;
+        this.isPhone = FORM_FACTOR === 'Small' ? true : false;
         if (FORM_FACTOR === 'Medium') this.isDesktop = true;
         this.loadingScreenSize = this.isDesktop ? 1 : 3;
         this.containerClass = this.isDesktop ? 'slds-modal__container ' : '';
         this.previewClass = this.isDesktop ? 'slds-col slds-size_1-of-2' : 'slds-col slds-size_1-of-1';
-       
-        if(this.activeTab == 'visitForm')
-        {
+
+        if (this.activeTab == 'visitForm') {
             this.fetchVisitForms();
             this.selectedVisitFormId = null;
         }
-        else if(this.activeTab == 'myBeats')
-        {
+        else if (this.activeTab == 'myBeats') {
+            this.getBeatData();
+        }
+        else if (this.activeTab == 'report') {
+            this.fetchReportees();
+            // Also load beat data to get isDayStarted status
             this.getBeatData();
         }
     }
-    @api handleDailyLogChange(){
+    @api handleDailyLogChange() {
         this.getBeatData();
     }
     getBeatData() {
@@ -97,44 +117,50 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         }
         this.isPageLoaded = true;
         GET_APEX_DATA({})
-        .then(result => {
-            console.log('result.beatDataList'+JSON.stringify(result.beatDataList));
-            this.beatData = result.beatDataList.map((item, index) => {
-                return {
-                    ...item,
-                    uiKey: item.beatId + '-' + index  // unique key for UI
-                };
-            });
+            .then(result => {
+                console.log('result.beatDataList' + JSON.stringify(result.beatDataList));
+                this.beatData = result.beatDataList.map((item, index) => {
+                    return {
+                        ...item,
+                        uiKey: item.beatId + '-' + index  // unique key for UI
+                    };
+                });
 
-            this.sortBeatData();
-            this.isDayStarted = result.isDayStarted;
-            this.isLeaveExisted =  result.isLeaveExisted;
-            // Set currentBeat using isCurrentBeat or fallback to istodayBeat
-            this.currentBeat = this.beatData.find(b => b.isCurrentBeat) || this.beatData.find(b => b.istodayBeat) || {};
-            this.originalBeatData = this.beatData;
-            this.isCurrentBeatExisted = result.currentBeatExisted;
-            this.isTodayBeatExisted = this.beatData.some(b => b.istodayBeat);
-            this.isPageLoaded = false;
-        })
-        .catch(error => {
-            this.isPageLoaded = false;
-            console.error(error);
-        });
+                this.sortBeatData();
+                this.isDayStarted = result.isDayStarted;
+                this.isLeaveExisted = result.isLeaveExisted;
+                // Set currentBeat using isCurrentBeat or fallback to istodayBeat
+                this.currentBeat = this.beatData.find(b => b.isCurrentBeat) || this.beatData.find(b => b.istodayBeat) || {};
+                this.originalBeatData = this.beatData;
+                this.isCurrentBeatExisted = result.currentBeatExisted;
+                this.isTodayBeatExisted = this.beatData.some(b => b.istodayBeat);
+                this.isPageLoaded = false;
+            })
+            .catch(error => {
+                this.isPageLoaded = false;
+                console.error(error);
+            });
     }
-        // Tab switch handler
+    // Tab switch handler
     handleTabSwitch(event) {
         this.activeTab = event.currentTarget.dataset.tab;
         if (this.activeTab === 'visitForm') {
             this.fetchVisitForms();
             this.selectedVisitFormId = null;
         }
-        else if(this.activeTab === 'myBeats')
-        {
+        else if (this.activeTab === 'myBeats') {
             this.getBeatData();
+        }
+        else if (this.activeTab === 'report') {
+            this.fetchReportees();
+            // Also load beat data to get isDayStarted status
+            if (this.isDayStarted === undefined) {
+                this.getBeatData();
+            }
         }
     }
     openMenu(event) {
-        const index1 = parseInt(event.currentTarget.dataset.index, 10); 
+        const index1 = parseInt(event.currentTarget.dataset.index, 10);
         this.beatData = this.beatData.map((item, i) => {
             return {
                 ...item,
@@ -150,59 +176,53 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         const itemId = event.currentTarget.dataset.id;
         const itemName = event.currentTarget.dataset.name;
         const beatname = event.currentTarget.dataset.beatname;
-        const pjpId =  event.currentTarget.dataset.pjpid;
-        if(itemName == 'Start_Beat')
-        {
-            const  message = { 
+        const pjpId = event.currentTarget.dataset.pjpid;
+        if (itemName == 'Start_Beat') {
+            const message = {
                 message: 'Start_Beat',
-                beatId : itemId,
-                beatName:beatname,
-                pjpId:pjpId
+                beatId: itemId,
+                beatName: beatname,
+                pjpId: pjpId
             };
             this.confirmationMessage = message;
             this.isShowConfirmation = true;
-            if(!this.isDesktop)
-            {
+            if (!this.isDesktop) {
                 this.isShowBeatData = false;
             }
         }
-        else if(itemName == 'Execute_Beat')
-        {
-            const  message = { 
+        else if (itemName == 'Execute_Beat') {
+            const message = {
                 message: 'Execute_Beat',
-                beatId : itemId,
-                beatName:beatname,
-                pjpId:pjpId
+                beatId: itemId,
+                beatName: beatname,
+                pjpId: pjpId
             };
             this.isPageLoaded = true;
             this.genericDispatchEvent(message);
         }
-        else if(itemName == 'Switch_Beat'){
-            const  message = { 
+        else if (itemName == 'Switch_Beat') {
+            const message = {
                 message: 'Switch_Beat',
-                beatId : itemId,
-                beatName:beatname,
-                pjpId:pjpId
+                beatId: itemId,
+                beatName: beatname,
+                pjpId: pjpId
             };
             this.confirmationMessage = message;
-         
-           this.isShowSwitchBeat = true;
+
+            this.isShowSwitchBeat = true;
         }
-        else if(itemName == 'Preview'){
+        else if (itemName == 'Preview') {
             this.openBeatPreview(itemId);
         }
     }
     //beat Switch Popup
-    handleInputChange(event)
-    {
-      this.beatSwitchReason = event.target.value;
+    handleInputChange(event) {
+        this.beatSwitchReason = event.target.value;
     }
 
     /**Switch Beat**/
-    closePopup()
-    {
-        if(!this.isDesktop)
-        {
+    closePopup() {
+        if (!this.isDesktop) {
             this.isShowBeatData = true;
         }
         this.beatSwitchReason = '';
@@ -210,83 +230,81 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         this.isLoading = false;
         this.isDisabled = false;
     }
-    switchBeat()
-    {
-        if (!navigator.onLine){
+    switchBeat() {
+        if (!navigator.onLine) {
             this.genericDispatchToastEvent('Error', 'No internet connection. Please check your network and try again.', 'error');
             return;
         }
-        if(!this.isDesktop)
-        {
+        if (!this.isDesktop) {
             this.isShowBeatData = false;
         }
-        if(!this.beatSwitchReason || this.beatSwitchReason.trim() == '')
-        {
+        if (!this.beatSwitchReason || this.beatSwitchReason.trim() == '') {
             this.genericDispatchToastEvent('Error', 'Please enter reason for switching beat.', 'error');
             return;
         }
         let currentBeatName = this.currentBeat.beatName;
         let switchBeatName = this.confirmationMessage.beatName;
-        let currentbeatId =  this.confirmationMessage.beatId;
+        let currentbeatId = this.confirmationMessage.beatId;
         let currentPJPId = this.confirmationMessage.pjpId;
         let reason = this.beatSwitchReason;
         let message = 'Beat swithced successfully';
         this.isLoading = true;
         this.isDisabled = true;
-        this.updateBeat(currentbeatId,message,currentBeatName,switchBeatName,reason,currentPJPId);
+        this.updateBeat(currentbeatId, message, currentBeatName, switchBeatName, reason, currentPJPId);
     }
 
     /**Confirmation Popup */
     handleConfirmationYes() {
-        if (!navigator.onLine){
+        if (!navigator.onLine) {
             this.genericDispatchToastEvent('Error', 'No internet connection. Please check your network and try again.', 'error');
             return;
         }
-       
+
         this.isShowConfirmation = false;
-        if(!this.isDesktop)
-        {
+        if (!this.isDesktop) {
             this.isShowBeatData = true;
         }
-        let currentbeatId =  this.confirmationMessage.beatId;
-        let currentPJPId = this.confirmationMessage.pjpId;
+
+        let currentbeatId = this.confirmationMessage.beatId;
+        let currentPJPId = this.confirmationMessage.pjpId || null;
         let message = 'Beat started successfully';
         this.isPageLoaded = true;
-        this.updateBeat(currentbeatId,message,'','','',currentPJPId);
+        this.updateBeat(currentbeatId, message, '', '', '', currentPJPId);
     }
     handleConfirmationNo() {
         this.isShowConfirmation = false;
-        if(!this.isDesktop)
-        {
+        if (!this.isDesktop) {
             this.isShowBeatData = true;
         }
     }
 
     /**Update Beat**/
-    updateBeat(beatId,message,currentBeatName,switchBeatName,reason,currentPJPId)
-    {
-        if (!navigator.onLine){
+    updateBeat(beatId, message, currentBeatName, switchBeatName, reason, currentPJPId) {
+        if (!navigator.onLine) {
             this.genericDispatchToastEvent('Error', 'No internet connection. Please check your network and try again.', 'error');
             return;
         }
 
-        UPDATE_CURRENTBEAT_SWITCH_HISTORY({beatId:beatId,currentBeatName:currentBeatName,switchBeatName:switchBeatName,reason:reason,currentPJPId:currentPJPId})
-        .then(result => {
-            this.isLoading = false;
-            this.isDisabled = false;
-            this.isPageLoaded = false;
-            this.isShowConfirmation = false;
-            this.isShowSwitchBeat = false;
-            this.genericDispatchToastEvent('Success ',message,'Success '); 
-            this.genericDispatchEvent(this.confirmationMessage);
-        })
-        .catch(error => {
-            this.isLoading = false;
-            console.error(error);
-        });
+        UPDATE_CURRENTBEAT_SWITCH_HISTORY({ beatId: beatId, currentBeatName: currentBeatName, switchBeatName: switchBeatName, reason: reason, currentPJPId: currentPJPId })
+            .then(result => {
+                this.isLoading = false;
+                this.isDisabled = false;
+                this.isPageLoaded = false;
+                this.isShowConfirmation = false;
+                this.isShowSwitchBeat = false;
+                this.beatSwitchReason = '';
+                this.genericDispatchToastEvent('Success ', message, 'Success ');
+                // Refresh beat data so isCurrentBeatExisted stays in sync
+                this.getBeatData();
+                this.genericDispatchEvent(this.confirmationMessage);
+            })
+            .catch(error => {
+                this.isLoading = false;
+                console.error(error);
+            });
     }
 
-    
+
     /**Search Beat */
     searchBeats(event) {
         const value = event.target.value || '';
@@ -349,36 +367,32 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
     }
 
 
-    closePreview()
-    {
+    closePreview() {
         this.isShowPreview = false;
-        if(!this.isDesktop)
-        {
+        if (!this.isDesktop) {
             this.isShowBeatData = true;
         }
     }
-    openBeatPreview(beatId)
-    {
-        if (!navigator.onLine){
+    openBeatPreview(beatId) {
+        if (!navigator.onLine) {
             this.genericDispatchToastEvent('Error', 'No internet connection. Please check your network and try again.', 'error');
             return;
         }
-        if(!this.isDesktop)
-        {
+        if (!this.isDesktop) {
             this.isShowBeatData = false;
         }
         this.isShowPreview = true;
         this.isLoading = true;
-        GET_PREVIEW_BEAT({beatId :beatId})
-        .then(result => {
-            console.log(JSON.stringify(result));
-            this.previewBeatList = result;
-            this.isLoading = false;
-        })
-        .catch(error => {
-            this.isLoading = false;
-            console.error(error);
-        });
+        GET_PREVIEW_BEAT({ beatId: beatId })
+            .then(result => {
+                console.log(JSON.stringify(result));
+                this.previewBeatList = result;
+                this.isLoading = false;
+            })
+            .catch(error => {
+                this.isLoading = false;
+                console.error(error);
+            });
 
     }
 
@@ -392,8 +406,8 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
                     CustomerType: vf.Customer_Type__c ? vf.Customer_Type__c : '',
                     VisitType: vf.Visit_Type__c,
                     Status: 'Completed',
-                    CreatedTime: vf.CreatedDate 
-                        ? new Date(vf.CreatedDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                    CreatedTime: vf.CreatedDate
+                        ? new Date(vf.CreatedDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                         : ''
                 }));
                 this.isPageLoaded = false;
@@ -408,7 +422,7 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
     handleSearch(event) {
         this.searchTerm = event.target.value;
         const term = this.searchTerm ? this.searchTerm.toLowerCase() : '';
-        if(term) {
+        if (term) {
             this.visitForms = this.allVisitForms.filter(form =>
                 (form.AccountName && form.AccountName.toLowerCase().includes(term)) ||
                 (form.VisitType && form.VisitType.toLowerCase().includes(term))
@@ -421,14 +435,167 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
 
     handleOutsideVisitClick(event) {
         const visitformId = event.currentTarget.dataset.id;
-        console.log('visitformId'+visitformId);
+        console.log('visitformId' + visitformId);
         const message = {
             message: 'visitformDetail',
             visitformid: visitformId
         };
         this.genericDispatchEvent(message);
     }
-    
+
+
+    /** Reportee View Methods */
+    fetchReportees() {
+        if (!navigator.onLine) {
+            this.genericDispatchToastEvent('Error', 'No internet connection. Please check your network and try again.', 'error');
+            return;
+        }
+        this.isLoadingReportees = true;
+        this.isReporteeBeatView = false;
+        this.selectedReporteeId = null;
+        getSubordinates()
+            .then(result => {
+                this.allReportees = result || [];
+                this.reportees = [...this.allReportees];
+                this.isLoadingReportees = false;
+                // Show the tab if reportees exist
+                this.showReporteeView = true;
+            })
+            .catch(error => {
+                this.allReportees = [];
+                this.reportees = [];
+                this.isLoadingReportees = false;
+                console.error('Error fetching reportees:', error);
+            });
+    }
+
+    handleReporteeSearch(event) {
+        const term = event.target.value ? event.target.value.toLowerCase().trim() : '';
+        this.reporteeSearchTerm = event.target.value;
+        if (term) {
+            this.reportees = this.allReportees.filter(r =>
+                (r.name && r.name.toLowerCase().includes(term)) ||
+                (r.employeeCode && r.employeeCode.toLowerCase().includes(term)) ||
+                (r.roleName && r.roleName.toLowerCase().includes(term))
+            );
+        } else {
+            this.reportees = [...this.allReportees];
+        }
+    }
+
+    get filteredReportees() {
+        return this.reportees;
+    }
+
+    get hasReportees() {
+        return this.reportees && this.reportees.length > 0;
+    }
+
+    // When a reportee card is clicked, load their beats (same style as My Beats)
+    handleReporteeClick(event) {
+        const userId = event.currentTarget.dataset.userid;
+        const reportee = this.allReportees.find(r => r.userId === userId);
+        this.selectedReporteeId = userId;
+        this.selectedReporteeName = reportee ? reportee.name : '';
+        this.reporteeBeatSearchTerm = '';
+        this.isReporteeBeatView = true;
+        this.isLoadingReporteeBeats = true;
+
+        getSubordinateBeats({ subordinateUserId: userId })
+            .then(result => {
+                this.allReporteeBeats = (result || []).map((beat, index) => ({
+                    ...beat,
+                    uiKey: beat.beatId + '-' + index
+                }));
+                this.reporteeBeats = [...this.allReporteeBeats];
+                this.isLoadingReporteeBeats = false;
+            })
+            .catch(error => {
+                this.allReporteeBeats = [];
+                this.reporteeBeats = [];
+                this.isLoadingReporteeBeats = false;
+                console.error('Error fetching reportee beats:', error);
+            });
+    }
+
+    // Back to reportee list from beat sub-view
+    handleBackToReportees() {
+        this.isReporteeBeatView = false;
+        this.selectedReporteeId = null;
+        this.selectedReporteeName = '';
+        this.reporteeBeats = [];
+        this.allReporteeBeats = [];
+    }
+
+    // Back to My Beats tab from reportee list
+    handleBackToMyBeats() {
+        this.activeTab = 'myBeats';
+        this.getBeatData();
+    }
+
+    // Search within reportee's beats
+    handleReporteeBeatSearch(event) {
+        const term = event.target.value ? event.target.value.toLowerCase().trim() : '';
+        this.reporteeBeatSearchTerm = event.target.value;
+        if (term) {
+            this.reporteeBeats = this.allReporteeBeats.filter(b =>
+                (b.beatName && b.beatName.toLowerCase().includes(term)) ||
+                (b.primaryCustomerName && b.primaryCustomerName.toLowerCase().includes(term))
+            );
+        } else {
+            this.reporteeBeats = [...this.allReporteeBeats];
+        }
+    }
+
+    get hasReporteeBeats() {
+        return this.reporteeBeats && this.reporteeBeats.length > 0;
+    }
+
+    // When a reportee's beat card is clicked, show confirmation modal (same as My Beats)
+    handleReporteeBeatClick(event) {
+        if (!this.isDayStarted) {
+            this.genericDispatchToastEvent('Error', 'Please start your day before checking in to a visit.', 'error');
+            return;
+        }
+        if (this.isLeaveExisted) {
+            this.genericDispatchToastEvent('Error', 'You have a leave applied. Cannot check in to a visit.', 'error');
+            return;
+        }
+        if (!navigator.onLine) {
+            this.genericDispatchToastEvent('Error', 'No internet connection. Please check your network and try again.', 'error');
+            return;
+        }
+        const beatId = event.currentTarget.dataset.beatid;
+        const beatName = event.currentTarget.dataset.beatname;
+        const action = event.currentTarget.dataset.action;
+
+        if (action === 'Switch_Beat') {
+            // Current beat exists — open Switch Beat popup with reason
+            const message = {
+                message: 'Switch_Beat',
+                beatId: beatId,
+                beatName: beatName,
+                pjpId: null,
+                isReporteeBeat: true
+            };
+            this.confirmationMessage = message;
+            this.isShowSwitchBeat = true;
+        } else {
+            // No current beat — open Start Beat confirmation
+            const message = {
+                message: 'Start_Beat',
+                beatId: beatId,
+                beatName: beatName,
+                pjpId: null,
+                isReporteeBeat: true
+            };
+            this.confirmationMessage = message;
+            this.isShowConfirmation = true;
+            if (!this.isDesktop) {
+                this.isShowBeatData = false;
+            }
+        }
+    }
 
     /**Helper Methods */
     genericDispatchEvent(message) {
@@ -465,28 +632,28 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
     }
 
 
-    async handleConfirmClick(msg,variant,label,message,theme) {
+    async handleConfirmClick(msg, variant, label, message, theme) {
         const result = await LightningConfirm.open({
-            message:msg,
+            message: msg,
             variant: variant,
-            theme:theme,
+            theme: theme,
             label: label
         });
-    
+
         if (result) {
-            this.genericDispatchEvent(message); 
-             this.isOutletScreen = false;
-        } else { 
-            return result ; 
-        } 
+            this.genericDispatchEvent(message);
+            this.isOutletScreen = false;
+        } else {
+            return result;
+        }
     }
-    handleBlur(event){
+    handleBlur(event) {
         //const index = parseInt(event.currentTarget.dataset.index, 10);
         setTimeout(() => {
             this.closeAllMenus();
-        },1000);
+        }, 1000);
     }
-    genericDispatchToastEvent(title,message,variant){
+    genericDispatchToastEvent(title, message, variant) {
         this.dispatchEvent(
             new ShowToastEvent({
                 title: title,

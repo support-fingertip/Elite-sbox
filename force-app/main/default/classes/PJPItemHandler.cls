@@ -175,7 +175,7 @@ public without sharing class PJPItemHandler {
 
         Set<Id> ownerIds = new Set<Id>();
         for (PJP_Item__c item : items) {
-            if (item.OwnerId != currentUserId) ownerIds.add(item.OwnerId);
+            if (item.OwnerId__c != currentUserId) ownerIds.add(item.OwnerId__c);
         }
 
         Set<Id> subordinateIds = new Set<Id>();
@@ -184,8 +184,8 @@ public without sharing class PJPItemHandler {
         }
 
         for (PJP_Item__c item : items) {
-            if (item.OwnerId != currentUserId) {
-                if (isAdmin || subordinateIds.contains(item.OwnerId)) {
+            if (item.OwnerId__c != currentUserId) {
+                if (isAdmin || subordinateIds.contains(item.OwnerId__c)) {
                     item.Status__c = 'Approved';
                 }
             }
