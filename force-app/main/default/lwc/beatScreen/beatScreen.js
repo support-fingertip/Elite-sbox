@@ -53,7 +53,7 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
     isTodayBeatExisted = false;
 
 
-    showReporteeView = true;
+    @api showReporteeView = false;
     @track selectedVisitFormId = null;
 
     // Reportee View properties

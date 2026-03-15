@@ -77,7 +77,7 @@
 
                             <!-- Beat Screen View -->
                             <template lwc:if={isBeatViewScreen}>
-                                <c-beat-screen active-tab={beatScreenTab}
+                                <c-beat-screen active-tab={beatScreenTab} show-reportee-view={showReporteeView}
                                     onprocessbeatevent={handleBeatCustomEvent}></c-beat-screen>
                             </template>
 
@@ -85,7 +85,7 @@
                             <template lwc:if={Outlet}>
                                 <c-outlet-screen2 is-desktop={isDesktop} screen-height={screenHeight}
                                     current-beat-id={currentBeatId} onmycustomevent={handleCustomEvent}
-                                    is-parent-comp="true" onbeatcheck={handleBeatCheck}></c-outlet-screen2>
+                                    is-parent-comp="true" onvisitformcheck={handleVisitFormCheck} onbeatcheck={handleBeatCheck}></c-outlet-screen2>
                             </template>
 
                             <!-- Execute Screen -->

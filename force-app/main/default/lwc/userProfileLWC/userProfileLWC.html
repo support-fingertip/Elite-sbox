@@ -448,6 +448,38 @@
                                                                     </template>
                                                                 </template>
                                                             </div>
+
+                                                            <!-- Shared Beats in Calendar Sidebar -->
+                                                            <template lwc:if={hasSharedBeats}>
+                                                                <h3
+                                                                    class="slds-text-heading_small slds-m-top_medium slds-m-bottom_x-small">
+                                                                    Shared Beats</h3>
+                                                                <div class="accounts-container">
+                                                                    <template for:each={sharedBeats} for:item="account">
+                                                                        <div key={account.beatId} class="account-item"
+                                                                            data-id={account.beatId}>
+                                                                            <span
+                                                                                class="beat-info">{account.orderNumber}.
+                                                                                {account.beatName}</span>
+
+                                                                            <template
+                                                                                lwc:if={account.mainBeat.Primary_Customer__c}>
+                                                                                <span class="primary-customer">
+                                                                                    Primary Customer:
+                                                                                    {account.mainBeat.Primary_Customer__r.Name}
+                                                                                </span>
+                                                                                <template
+                                                                                    lwc:if={account.mainBeat.Sub_Stockist__c}>
+                                                                                    <span class="sec-customer">
+                                                                                        Substockist:
+                                                                                        {account.mainBeat.Sub_Stockist__r.Name}
+                                                                                    </span>
+                                                                                </template>
+                                                                            </template>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
                                                         </div>
                                                     </lightning-card>
                                                 </div>
@@ -869,6 +901,37 @@
                                             </div>
                                         </template>
                                     </div>
+
+                                    <!-- Shared Beats Section -->
+                                    <template lwc:if={hasSharedBeats}>
+                                        <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_x-small">
+                                            Shared Beats</h3>
+                                        <div class="beats-container">
+                                            <template for:each={sharedBeats} for:item="beat">
+                                                <div key={beat.beatId} class="beat" data-id={beat.beatId}>
+                                                    <span class="beat-info">{beat.orderNumber}. {beat.beatName}</span>
+
+                                                    <template lwc:if={beat.mainBeat.Primary_Customer__c}>
+                                                        <span class="primary-customer">
+                                                            Primary Customer: {beat.mainBeat.Primary_Customer__r.Name}
+                                                        </span>
+                                                        <template lwc:if={beat.mainBeat.Sub_Stockist__c}>
+                                                            <span class="sec-customer">
+                                                                Substockist: {beat.mainBeat.Sub_Stockist__r.Name}
+                                                            </span>
+                                                        </template>
+                                                    </template>
+                                                    <template if:true={showCustomers}>
+                                                        <template for:each={beat.accountList} for:item="store">
+                                                            <div key={store.accId} class="store">
+                                                                {store.orderNumber}. {store.accName}
+                                                            </div>
+                                                        </template>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
                                 </template>
 
                                 <template lwc:if={isAddVisit}>

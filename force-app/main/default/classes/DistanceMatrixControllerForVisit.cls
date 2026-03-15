@@ -138,7 +138,7 @@ public class DistanceMatrixControllerForVisit
     @future(callout=true)
     public static void distanceCalculationForDailyRouteOld(String dailyLogId){
         if(dailyLogId==null) return;
-        Daily_Log__c dl = [SELECT Id, Clock_In_Location__Latitude__s, Clock_In_Location__Longitude__s, Clock_Out_Location__Latitude__s, Clock_Out_Location__Longitude__s, KMs_Travelled__c, Today_Day_Travelled_Distance_KM__c,
+        Daily_Log__c dl = [SELECT Id, Clock_In_Location__Latitude__s, Clock_In_Location__Longitude__s, Clock_Out_Location__Latitude__s, Clock_Out_Location__Longitude__s, KMs_Travelled__c,
                             (SELECT Id,ClockIn_Latitude__c,Clockin_Longitude__c,Actual_Start_Time__c FROM Visits__r WHERE ClockIn_Latitude__c!=null AND Clockin_Longitude__c!=null ORDER BY Actual_Start_Time__c ASC)
                             FROM Daily_Log__c WHERE Id = :dailyLogId LIMIT 1];
 
@@ -269,7 +269,7 @@ public class DistanceMatrixControllerForVisit
             SELECT Id,
             Clock_In_Location__Latitude__s, Clock_In_Location__Longitude__s,
             Clock_Out_Location__Latitude__s, Clock_Out_Location__Longitude__s,
-            KMs_Travelled__c, Today_Day_Travelled_Distance_KM__c,
+            KMs_Travelled__c,
             (SELECT Id, ClockIn_Latitude__c, Clockin_Longitude__c, CreatedDate
              FROM Visits__r
              WHERE ClockIn_Latitude__c != null AND Clockin_Longitude__c != null
@@ -468,6 +468,7 @@ public class DistanceMatrixControllerForVisit
                 System.debug('Failed to update Daily_Log__c: ' + e.getMessage());
             }
         } else {
+            System.enqueueJob(new EODReportQueueableMail(dl.Id));
             System.debug('Grand total distance is 0 or no successful API responses. Skipping update.');
         }
     }

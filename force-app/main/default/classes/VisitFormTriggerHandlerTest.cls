@@ -1,79 +1,97 @@
 @isTest
 public class VisitFormTriggerHandlerTest {
-    @testSetup
-    static void setup() {
-        // Create Daily_Log__c records (only required fields)
-        List<Daily_Log__c> logs = new List<Daily_Log__c>();
-        for (Integer i = 0; i < 2; i++) {
-            logs.add(new Daily_Log__c());
-        }
-        insert logs;
 
-        // Create Visit_Form__c records linked to Daily_Log__c (required fields)
-        List<Visit_Form__c> visitForms = new List<Visit_Form__c>();
-        for (Daily_Log__c log : logs) {
-            visitForms.add(new Visit_Form__c(
-                Daily_Log__c = log.Id,
-                Geo_Location__Latitude__s = 28.6139,
-                Geo_Location__Longitude__s = 77.2090
-            ));
-        }
-        insert visitForms;
-    }
-
-    @isTest
-    static void testAfterInsert() {
-        // Create a single Daily_Log__c and Visit_Form__c to avoid multiple batch jobs
+    // Create Daily Log record
+    static Daily_Log__c createDailyLog(){
         Daily_Log__c log = new Daily_Log__c();
         insert log;
-        Visit_Form__c visitForm = new Visit_Form__c(
-            Daily_Log__c = log.Id,
+        return log;
+    }
+
+    // Create Visit Form record
+    static Visit_Form__c createVisitForm(Id dailyLogId){
+
+        Visit_Form__c vf = new Visit_Form__c(
+            Daily_Log__c = dailyLogId,
             Geo_Location__Latitude__s = 28.6139,
             Geo_Location__Longitude__s = 77.2090
         );
-        insert visitForm;
-        Test.startTest();
-        VisitFormTriggerHandler.afterInsert(new List<Visit_Form__c>{visitForm});
-        Test.stopTest();
-        // Assert Daily_Log__c fields updated
-        log = [SELECT Total_Visit_form_Calls__c FROM Daily_Log__c WHERE Id = :log.Id];
-        System.assertEquals(1, log.Total_Visit_form_Calls__c);
+
+        return vf;
     }
 
     @isTest
-    static void testAfterDelete() {
-        // Create a single Daily_Log__c and Visit_Form__c to avoid multiple batch jobs
-        Daily_Log__c log = new Daily_Log__c();
-        insert log;
-        Visit_Form__c visitForm = new Visit_Form__c(
-            Daily_Log__c = log.Id,
-            Geo_Location__Latitude__s = 28.6139,
-            Geo_Location__Longitude__s = 77.2090
-        );
-        insert visitForm;
-        delete visitForm;
+    static void testAfterInsert(){
+
+        Daily_Log__c log = createDailyLog();
+
+        List<Visit_Form__c> visitList = new List<Visit_Form__c>();
+
+        visitList.add(createVisitForm(log.Id));
+        visitList.add(createVisitForm(log.Id));
+        visitList.add(createVisitForm(log.Id));
+
         Test.startTest();
-        VisitFormTriggerHandler.afterDelete(new List<Visit_Form__c>{visitForm});
+        insert visitList;
         Test.stopTest();
-        // Assert Daily_Log__c fields reset
-        log = [SELECT Total_Visit_form_Calls__c FROM Daily_Log__c WHERE Id = :log.Id];
-        System.assertEquals(0, log.Total_Visit_form_Calls__c);
+
+        Daily_Log__c updatedLog = [
+            SELECT Total_Visit_form_Calls__c,
+                   First_Visit_Form_Visit__c,
+                   Last_Visit_Form_Visit__c
+            FROM Daily_Log__c
+            WHERE Id = :log.Id
+        ];
+
+        System.assertEquals(3, updatedLog.Total_Visit_form_Calls__c);
+        System.assertNotEquals(null, updatedLog.First_Visit_Form_Visit__c);
+        System.assertNotEquals(null, updatedLog.Last_Visit_Form_Visit__c);
     }
 
     @isTest
-    static void testCoverageForPrivateMethod() {
-        // Create a single Daily_Log__c and Visit_Form__c to avoid multiple batch jobs
-        Daily_Log__c log = new Daily_Log__c();
-        insert log;
-        Visit_Form__c visitForm = new Visit_Form__c(
-            Daily_Log__c = log.Id,
-            Geo_Location__Latitude__s = 28.6139,
-            Geo_Location__Longitude__s = 77.2090
-        );
-        insert visitForm;
+    static void testAfterDelete(){
+
+        Daily_Log__c log = createDailyLog();
+
+        Visit_Form__c vf1 = createVisitForm(log.Id);
+        Visit_Form__c vf2 = createVisitForm(log.Id);
+
+        insert new List<Visit_Form__c>{vf1, vf2};
+
         Test.startTest();
-        VisitFormTriggerHandler.afterInsert(new List<Visit_Form__c>{visitForm});
+        delete vf1;
         Test.stopTest();
-        // No assertion needed, just coverage
+
+        Daily_Log__c updatedLog = [
+            SELECT Total_Visit_form_Calls__c
+            FROM Daily_Log__c
+            WHERE Id = :log.Id
+        ];
+
+        System.assertEquals(1, updatedLog.Total_Visit_form_Calls__c);
     }
+
+    @isTest
+    static void testAfterUndelete(){
+
+        Daily_Log__c log = createDailyLog();
+
+        Visit_Form__c vf = createVisitForm(log.Id);
+
+        insert vf;
+        delete vf;
+
+        Test.startTest();
+        undelete vf;
+        Test.stopTest();
+
+        Daily_Log__c updatedLog = [
+            SELECT Total_Visit_form_Calls__c
+            FROM Daily_Log__c
+            WHERE Id = :log.Id
+        ];
+
+        System.assertEquals(1, updatedLog.Total_Visit_form_Calls__c);
+    }
+
 }

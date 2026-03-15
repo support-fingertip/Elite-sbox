@@ -41,10 +41,9 @@ import getUsers from '@salesforce/apex/DMSPortalLwc.getUsers';
 import getSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getSecondaryCustomers';
 import getInvoicePdfUrl from '@salesforce/apex/DMSPortalLwc.getInvoicePdfUrl';
 import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockAdjustments';
-import getProductGalleryData from '@salesforce/apex/DMSPortalLwc.getProductGalleryData';
 import orgUrl from '@salesforce/label/c.orgUrl';
-const TAB_WIDTH = 165;     // realistic average width per tab
-const RESERVED_WIDTH = 350; // logo + profile + More button + spacing
+const TAB_WIDTH = 145;     // realistic average width per tab
+const RESERVED_WIDTH = 300; // logo + profile + More button + spacing
 
 export default class NavigationComponent extends LightningElement {
     //Varible related to tab Function
@@ -61,6 +60,9 @@ export default class NavigationComponent extends LightningElement {
         { id: 'GRN', label: 'GRNs' },
         { id: 'Claims', label: 'Claims' },
         { id: 'Stock', label: 'Stock' },
+        { id: 'Credit Note', label: 'Secondary Credit Notes' },
+        { id: 'Debit Note', label: 'Secondary Debit Notes' },
+        { id: 'Secondary Receipt', label: 'Secondary Receipts' },
         { id: 'Secondary Orders', label: 'Secondary Orders' },
         { id: 'Secondary Invoices', label: 'Secondary Invoices' },
         { id: 'Secondary Returns', label: 'Secondary Returns' },
@@ -69,6 +71,7 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Stock Adjustment', label: 'Stock Adjustment' },
         { id: 'Product Gallery', label: 'Product Gallery' }
     ];
+    @track showSecondaryReceipt = false;
 
     //Variables related to data
     @track isNewDataUpload = false;
@@ -174,6 +177,7 @@ export default class NavigationComponent extends LightningElement {
 
     showStock = false;
     showCreditNote = false;
+    showDebitNote = false;
 
     showCreatePrimaryGrn = false;
 
@@ -337,12 +341,7 @@ export default class NavigationComponent extends LightningElement {
     searchKey = '';
     isShowSecondaryCustomers = false;
 
-    // Product Gallery
-    @track allProducts = [];
-    @track filteredProducts = [];
-    @track categoryOptions = [];
-    @track selectedCategory = '';
-    @track productSearchKey = '';
+
     invoiceIdToDownloadPdf = '';
     isShowNewAdjustStock = false;
 
@@ -406,11 +405,8 @@ export default class NavigationComponent extends LightningElement {
     }
     /*  Calculate based on screen width */
     calculateTabs() {
-        const width = window.innerWidth - RESERVED_WIDTH;
-        const count = Math.floor(width / TAB_WIDTH);
-
-        // Minimum tabs safety
-        this.visibleTabCount = Math.max(3, count);
+        // Always show 9 tabs in the header
+        this.visibleTabCount = 9;
     }
     toggleMoreMenu(event) {
         event.stopPropagation();
@@ -454,6 +450,8 @@ export default class NavigationComponent extends LightningElement {
         this.showClaim = false;
         this.showStock = false;
         this.showCreditNote = false;
+        this.showDebitNote = false;
+        this.showSecondaryReceipt = false;
 
         this.showSecondaryOrders = false;
         this.showSecoundaryInvoices = false;
@@ -489,6 +487,10 @@ export default class NavigationComponent extends LightningElement {
         this.resetAllFlags();
 
         switch (this.selectedTab) {
+            case 'Secondary Receipt':
+                this.showSecondaryReceipt = true;
+                // TODO: Call data method for Secondary Receipt if needed, e.g. this.getSecondaryReceiptData();
+                break;
 
             case 'Home':
                 this.showHome = true;
@@ -535,6 +537,10 @@ export default class NavigationComponent extends LightningElement {
                 this.getCreditData();
                 break;
 
+            case 'Debit Note':
+                this.showDebitNote = true;
+                break;
+
             case 'Secondary Orders':
                 this.showSecondaryOrders = true;
                 this.getSecoundaryOrderData();
@@ -566,7 +572,6 @@ export default class NavigationComponent extends LightningElement {
 
             case 'Product Gallery':
                 this.showProductGallery = true;
-                this.getProductGalleryData();
                 break;
 
             default:
@@ -2595,65 +2600,7 @@ export default class NavigationComponent extends LightningElement {
         clearInterval(this.interval);
     }
 
-    /** Product Gallery Methods */
-    getProductGalleryData() {
-        this.isSubPartLoad = true;
-        getProductGalleryData()
-            .then(products => {
-                const categorySet = new Set();
-                const mappedProducts = products.map(p => {
-                    const category = p.Product_Category1__r ? p.Product_Category1__r.Name : 'Uncategorized';
-                    categorySet.add(category);
-                    return {
-                        id: p.Id,
-                        name: p.Name,
-                        price: p.List_Price__c,
-                        mrp: p.MRP__c,
-                        category: category,
-                        channel: p.Channel__c,
-                        uom: p.UOM__c,
-                        taxPercent: p.Tax_Percent__c
-                    };
-                });
-                this.allProducts = mappedProducts;
-                this.filteredProducts = mappedProducts;
-                this.categoryOptions = [
-                    { label: 'All Categories', value: '' },
-                    ...[...categorySet].sort().map(c => ({ label: c, value: c }))
-                ];
-                this.isSubPartLoad = false;
-            })
-            .catch(error => {
-                console.error('Error loading product gallery:', error);
-                this.isSubPartLoad = false;
-            });
-    }
 
-    handleProductCategoryChange(event) {
-        this.selectedCategory = event.detail.value;
-        this.filterProducts();
-    }
-
-    handleProductSearch(event) {
-        this.productSearchKey = event.target.value;
-        this.filterProducts();
-    }
-
-    filterProducts() {
-        let result = this.allProducts;
-        if (this.selectedCategory) {
-            result = result.filter(p => p.category === this.selectedCategory);
-        }
-        if (this.productSearchKey) {
-            const key = this.productSearchKey.toLowerCase();
-            result = result.filter(p => p.name && p.name.toLowerCase().includes(key));
-        }
-        this.filteredProducts = result;
-    }
-
-    get hasProducts() {
-        return this.filteredProducts && this.filteredProducts.length > 0;
-    }
 
     openOrderItems(event) {
         const orderId = event.currentTarget.dataset.id; // Use currentTarget instead of target

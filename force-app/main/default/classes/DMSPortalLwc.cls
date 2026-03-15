@@ -1,5 +1,17 @@
 public without sharing class DMSPortalLwc
 {
+        // Wrapper for Secondary Receipt
+        public class SecondaryReceipt {
+            @AuraEnabled public String receiptNo;
+            @AuraEnabled public String receiptId;
+            @AuraEnabled public String customerName;
+            @AuraEnabled public String customerId;
+            @AuraEnabled public String paymentDate;
+            @AuraEnabled public String paymentMode;
+            @AuraEnabled public String referenceNumber;
+            @AuraEnabled public String remarks;
+            @AuraEnabled public Decimal totalAmount;
+        }
     //Graph Data
     @AuraEnabled
     public static GraphData getGraphData(){
@@ -598,35 +610,34 @@ public without sharing class DMSPortalLwc
     @AuraEnabled
     public static DmsData allCreditNoteData(Date frmDate, date toDate,string status){
         DmsData dt = new DmsData();
-        List<Credit_Note__c> creditNotesList = new List<Credit_Note__c>();
-        String query = 'SELECT Id, Name,Claim__c,Claim__r.Name,	Credit_Date__c,Customer__c,Customer__r.Name,Status__c,'+
-            'Primary_Return__c,Primary_Return__r.Name,Total_Credit_Amount__c '+
-            'FROM Credit_Note__c WHERE Credit_Date__c >= :frmDate AND Credit_Date__c <= :toDate ';
+        List<Secondary_Credit_Note__c> creditNotesList = new List<Secondary_Credit_Note__c>();
+        String query = 'SELECT Id, Secondary_Credit_Note_Name__c, Claim__c, Claim__r.Name, Credit_Date__c, Customer__c, Customer__r.Name, Status__c, Reason__c, Amount__c, Description__c '+
+            'FROM Secondary_Credit_Note__c WHERE Credit_Date__c >= :frmDate AND Credit_Date__c <= :toDate ';
         if (status != 'All' && status != '' && status != null) {
             query += ' AND Status__c = :status';
         }
         
         creditNotesList = Database.query(query);
         List<CreditNote> CreditNoteDataList = new List<CreditNote>();
-        for(Credit_Note__c i:creditNotesList){
+        for(Secondary_Credit_Note__c i:creditNotesList){
             date Dateval = i.Credit_Date__c;
             String formattedDate = Dateval != null ? DateTime.newInstance(Dateval.year(),Dateval.month(),Dateval.day()).format('dd/MM/yyyy') : '';
             CreditNote creditNote = new CreditNote();
-            creditNote.creditNoteNo = i.Name;
+            creditNote.creditNoteNo = i.Secondary_Credit_Note_Name__c;
             creditNote.creditNoteId = i.Id;
             creditNote.customerName = i.Customer__r.Name;
             creditNote.customerId = i.Customer__c;
             creditNote.claimNo = i.Claim__r.Name;
             creditNote.claimId = i.Claim__c;
-            creditNote.primaryReturnNo = i.Primary_Return__c;
-            creditNote.primaryReturnId = i.Primary_Return__r.Name;
-            creditNote.creditDate =formattedDate;
+            creditNote.creditDate = formattedDate;
             creditNote.status = i.Status__c;
-            creditNote.creditAmount = i.Total_Credit_Amount__c;
+            creditNote.reason = i.Reason__c;
+            creditNote.creditAmount = i.Amount__c;
             CreditNoteDataList.add(creditNote);
         }
         dt.totalCreditNoteData = CreditNoteDataList;
-        dt.statusOptions = getStatusOptions('Credit_Note__c', 'Status__c');
+        dt.statusOptions = getStatusOptions('Secondary_Credit_Note__c', 'Status__c');
+        dt.reasonOptions = getStatusOptions('Secondary_Credit_Note__c', 'Reason__c');
         return dt;
     }
 
@@ -634,13 +645,65 @@ public without sharing class DMSPortalLwc
     public static void saveCreditNote(String creditNoteJson) {
         Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(creditNoteJson);
 
-        Credit_Note__c cn = new Credit_Note__c();
+        Secondary_Credit_Note__c cn = new Secondary_Credit_Note__c();
         cn.Customer__c = (String) data.get('customerId');
         cn.Credit_Date__c = Date.valueOf((String) data.get('noteDate'));
-        cn.Credit_Amount__c = Decimal.valueOf(String.valueOf(data.get('amount')));
-        cn.Status__c = 'New';
+        cn.Amount__c = Decimal.valueOf(String.valueOf(data.get('amount')));
+        cn.Reason__c = (String) data.get('reason');
+        if (data.get('description') != null) {
+            cn.Description__c = (String) data.get('description');
+        }
 
         insert cn;
+    }
+
+    //Secondary Debit Notes
+    @AuraEnabled
+    public static DmsData allDebitNoteData(Date frmDate, date toDate, String status){
+        DmsData dt = new DmsData();
+        List<Secondary_Debit_Note__c> debitNotesList = new List<Secondary_Debit_Note__c>();
+        String query = 'SELECT Id, Name__c, Note_Date__c, Customer__c, Customer__r.Name, Distributor__c, Distributor__r.Name, Status__c, Reason__c, Amount__c, Description__c, Secondary_Invoice__c, Secondary_Invoice__r.Name '+
+            'FROM Secondary_Debit_Note__c WHERE Note_Date__c >= :frmDate AND Note_Date__c <= :toDate ';
+        if (status != 'All' && status != '' && status != null) {
+            query += ' AND Status__c = :status';
+        }
+        
+        debitNotesList = Database.query(query);
+        List<DebitNote> DebitNoteDataList = new List<DebitNote>();
+        for(Secondary_Debit_Note__c i : debitNotesList){
+            date Dateval = i.Note_Date__c;
+            String formattedDate = Dateval != null ? DateTime.newInstance(Dateval.year(),Dateval.month(),Dateval.day()).format('dd/MM/yyyy') : '';
+            DebitNote debitNote = new DebitNote();
+            debitNote.debitNoteNo = i.Name__c;
+            debitNote.debitNoteId = i.Id;
+            debitNote.customerName = i.Customer__r.Name;
+            debitNote.customerId = i.Customer__c;
+            debitNote.noteDate = formattedDate;
+            debitNote.status = i.Status__c;
+            debitNote.reason = i.Reason__c;
+            debitNote.amount = i.Amount__c;
+            DebitNoteDataList.add(debitNote);
+        }
+        dt.totalDebitNoteData = DebitNoteDataList;
+        dt.statusOptions = getStatusOptions('Secondary_Debit_Note__c', 'Status__c');
+        dt.reasonOptions = getStatusOptions('Secondary_Debit_Note__c', 'Reason__c');
+        return dt;
+    }
+
+    @AuraEnabled
+    public static void saveDebitNote(String debitNoteJson) {
+        Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(debitNoteJson);
+
+        Secondary_Debit_Note__c dn = new Secondary_Debit_Note__c();
+        dn.Customer__c = (String) data.get('customerId');
+        dn.Note_Date__c = Date.valueOf((String) data.get('noteDate'));
+        dn.Amount__c = Decimal.valueOf(String.valueOf(data.get('amount')));
+        dn.Reason__c = (String) data.get('reason');
+        if (data.get('description') != null) {
+            dn.Description__c = (String) data.get('description');
+        }
+
+        insert dn;
     }
     
     //Secoundary Invoices
@@ -2048,10 +2111,52 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public List<DistributorStock> totalDistributorStockData; 
         @AuraEnabled public List<Product_Category__c> productCategories;
         @AuraEnabled public List<CreditNote> totalCreditNoteData;
+        @AuraEnabled public List<DebitNote> totalDebitNoteData;
         @AuraEnabled public List<SecInvData> totalSecoundaryInvoiceData;
         @AuraEnabled public List<SReturnData> totalSecoundaryReturnData;
+        @AuraEnabled public List<SecondaryReceipt> totalSecondaryReceiptData;
         @AuraEnabled public String orderItemId;//added newly can remove
         @AuraEnabled public String orgUrl;
+        @AuraEnabled public List<Map<String, String>> reasonOptions;
+    }
+
+    @AuraEnabled
+    public static DmsData allSecondaryReceiptData(Date frmDate, Date toDate, String status) {
+        DmsData dt = new DmsData();
+        List<Secondary_Receipt__c> receiptList = [SELECT Id, Name, Payment_Date__c, Customer__c, Customer__r.Name, Payment_Mode__c, Reference_Number__c, Remarks__c, Total_Amount__c
+                                                  FROM Secondary_Receipt__c
+                                                  WHERE Payment_Date__c >= :frmDate AND Payment_Date__c <= :toDate];
+        List<SecondaryReceipt> receiptDataList = new List<SecondaryReceipt>();
+        for (Secondary_Receipt__c i : receiptList) {
+            String formattedDate = i.Payment_Date__c != null ? 
+                DateTime.newInstance(i.Payment_Date__c.year(), i.Payment_Date__c.month(), i.Payment_Date__c.day()).format('dd/MM/yyyy') : '';
+            SecondaryReceipt rec = new SecondaryReceipt();
+            rec.receiptNo = i.Name;
+            rec.receiptId = i.Id;
+            rec.customerName = i.Customer__r != null ? i.Customer__r.Name : '';
+            rec.customerId = i.Customer__c;
+            rec.paymentDate = formattedDate;
+            rec.paymentMode = i.Payment_Mode__c;
+            rec.referenceNumber = i.Reference_Number__c;
+            rec.remarks = i.Remarks__c;
+            rec.totalAmount = i.Total_Amount__c;
+            receiptDataList.add(rec);
+        }
+        dt.totalSecondaryReceiptData = receiptDataList;
+        return dt;
+    }
+
+    @AuraEnabled
+    public static void saveSecondaryReceipt(String receiptJson) {
+        Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(receiptJson);
+        Secondary_Receipt__c rec = new Secondary_Receipt__c();
+        rec.Customer__c = (String) data.get('customerId');
+        rec.Payment_Date__c = Date.valueOf((String) data.get('paymentDate'));
+        rec.Payment_Mode__c = (String) data.get('paymentMode');
+        rec.Reference_Number__c = (String) data.get('referenceNumber');
+        rec.Remarks__c = (String) data.get('remarks');
+        rec.Total_Amount__c = Decimal.valueOf(String.valueOf(data.get('totalAmount')));
+        insert rec;
     }
     public class OrdData {
         @AuraEnabled public String itemName;
@@ -2164,7 +2269,18 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public String primaryReturnId;
         @AuraEnabled public String creditDate;
         @AuraEnabled public String status;
+        @AuraEnabled public String reason;
         @AuraEnabled public decimal creditAmount;
+    }
+    public class DebitNote{
+        @AuraEnabled public String debitNoteNo;
+        @AuraEnabled public String debitNoteId;
+        @AuraEnabled public String customerName;
+        @AuraEnabled public String customerId;
+        @AuraEnabled public String noteDate;
+        @AuraEnabled public String status;
+        @AuraEnabled public String reason;
+        @AuraEnabled public decimal amount;
     }
     public class SecInvData {
         @AuraEnabled public String name;
@@ -2236,8 +2352,62 @@ public without sharing class DMSPortalLwc
             }
         }
         System.debug('accountId: ' + accountId);
-        List<Product__c> products = beatPlannerlwc.getProducts(accountId, 'Primary Customer');
-        System.debug('products: ' + products);
+
+        if (accountId == null) {
+            System.debug('No accountId found for community user');
+            return new List<Product__c>();
+        }
+
+        // Find sales channels mapped to this distributor account
+        Set<String> channelSet = new Set<String>();
+        List<Product_Mapping__c> mappings = [
+            SELECT Chanel__c 
+            FROM Product_Mapping__c 
+            WHERE Customer__c = :accountId
+        ];
+        for (Product_Mapping__c pm : mappings) {
+            if (pm.Chanel__c != null) {
+                channelSet.add(pm.Chanel__c);
+            }
+        }
+        System.debug('channelSet from mappings: ' + channelSet);
+
+        if (channelSet.isEmpty()) {
+            System.debug('No sales channels found for account: ' + accountId);
+            return new List<Product__c>();
+        }
+
+        // Get active SKU IDs for those sales channels
+        Set<Id> skuIds = new Set<Id>();
+        List<Sales_Channel_To_SKU__c> channels = [
+            SELECT SKU__c 
+            FROM Sales_Channel_To_SKU__c 
+            WHERE Sales_Channel__c IN :channelSet 
+            AND SKU__r.Is_Active__c = true
+        ];
+        for (Sales_Channel_To_SKU__c ch : channels) {
+            skuIds.add(ch.SKU__c);
+        }
+        System.debug('skuIds count: ' + skuIds.size());
+
+        if (skuIds.isEmpty()) {
+            return new List<Product__c>();
+        }
+
+        // Query products with price books for this account
+        List<Product__c> products = [
+            SELECT Id, Name, Channel__c, Category__c, Product_Category_Name__c, Product_Category1__c,
+            Product_Category1__r.Name, List_Price__c, MRP__c, Tax_Percent__c,
+            Tax_Class__c, CreatedDate, UOM__c, Selling_Category__c, Product_Image_Url__c,
+            (SELECT Id, Unit_Price__c, MRP__c, UOM__c, Customer__c, 
+             Customer_Type__c, Region__c, Secondary_Customer_Category__c
+             FROM Price_Books__r WHERE Customer__c = :accountId)
+            FROM Product__c 
+            WHERE Is_Active__c = true 
+            AND Id IN :skuIds
+            ORDER BY Channel__c ASC
+        ];
+        System.debug('products count: ' + products.size());
         return products;
     }
 }

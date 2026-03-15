@@ -18,7 +18,13 @@ global with sharing class beatPlannerlwc {
         
         User currentUser = [SELECT Id,Name,Is_SSA_DSM__c,Is_Promoter__c,Profile.Name FROM User WHERE Id = :UserInfo.getUserId()];
         db.currentUser = currentUser;
-        
+        // Query Custom Metadata records for Employee_Creation_Access__mdt
+        List<Employee_Creation_Access__mdt> metadataRecordsList = [
+            SELECT Show_Reportee_View__c
+            FROM Employee_Creation_Access__mdt where Label =:currentUser.Profile.Name
+            ORDER BY Hierarchy_Number__c ASC
+        ];
+        db.showRepoteeView = !metadataRecordsList.isEmpty() ? metadataRecordsList[0].Show_Reportee_View__c : false;
         db.travelType = extractPicklistValues('Daily_Log__c','Travel_Type__c'); 
         db.vehicleUsed = extractPicklistValues('Daily_Log__c','Vehicle_Used__c'); 
         db.purposeofVisit = extractPicklistValues('Daily_Log__c','Purpose_of_Visit__c'); 
@@ -2531,55 +2537,109 @@ global with sharing class beatPlannerlwc {
         }
     }
     
-    public static List<Product_Mapping__c> getProductMappins(string accountId){
+    
+    public static List<Product_Mapping__c> getProductMappins(String accountId) {
         Id currentUserId = UserInfo.getUserId();
         User us = [SELECT Id, Name, Sales_Channel__c FROM User WHERE Id = :currentUserId];
         
         Set<String> salesChannelList = new Set<String>();
-        if(us.Sales_Channel__c != null)
-        {
+        if (String.isNotBlank(us.Sales_Channel__c)) {
             salesChannelList.addAll(us.Sales_Channel__c.split(';'));
         }
         
-        List<Product_Mapping__c> prodMapping = new List<Product_Mapping__c>();
-        Set<String> channelSet = new Set<String>();
-        Set<String> primaryCustomerIds = new Set<String>();
+        // 1) Primary query: current user + account
+        List<Product_Mapping__c> prodMapping = [
+            SELECT Chanel__c, Primary_Customer__c, Order_Type__c, Division__c,
+            Distribution_Channel__c, Parent_Depot__c, Child_Depot__c
+            FROM Product_Mapping__c
+            WHERE Exectuive__c = :currentUserId
+            AND Customer__c = :accountId
+        ];
         
-        List<Product_Mapping__c> prodMappingsFromPrimary = new List<Product_Mapping__c>();
+        if (!prodMapping.isEmpty()) return prodMapping;
         
-        prodMappingsFromPrimary = [SELECT Chanel__c, Primary_Customer__c,Order_Type__c,Division__c,Distribution_Channel__c,Parent_Depot__c,Child_Depot__c 
-                                                            FROM Product_Mapping__c 
-                                                            WHERE Exectuive__c = :currentUserId 
-                                                            AND Customer__c = :accountId];
+        // 2) If nothing found -> get subordinate user ids and query again
+        Set<Id> subordinateUserIds = RoleHeirarchyUtility.getRoleSubordinateUsers(currentUserId);
+        subordinateUserIds.remove(currentUserId); 
         
-        // If no results, try broader query (just account and sales channels)
-        if(prodMappingsFromPrimary.isEmpty() && !salesChannelList.isEmpty()) {
-            prodMappingsFromPrimary = [
+        if (!subordinateUserIds.isEmpty()) {
+            prodMapping = [
                 SELECT Chanel__c, Primary_Customer__c, Order_Type__c, Division__c,
-                Distribution_Channel__c, Parent_Depot__c, Child_Depot__c 
-                FROM Product_Mapping__c 
-                WHERE Customer__c = :accountId 
-                AND Chanel__c IN :salesChannelList
-                AND Chanel__c != null LIMIT 1
+                Distribution_Channel__c, Parent_Depot__c, Child_Depot__c
+                FROM Product_Mapping__c
+                WHERE Exectuive__c IN :subordinateUserIds
+                AND Customer__c = :accountId
             ];
+            
+            if (!prodMapping.isEmpty()) return prodMapping;
         }
         
-        // Populate channelSet and primaryCustomerIds
-        for(Product_Mapping__c prodMap : prodMappingsFromPrimary) {
-            if (prodMap.Chanel__c != null) {
-                prodMapping.add(prodMap);
-            }
+        // 3) Still nothing -> final fallback (sales channel based) LIMIT 1
+        if (!salesChannelList.isEmpty()) {
+            prodMapping = [
+                SELECT Chanel__c, Primary_Customer__c, Order_Type__c, Division__c,
+                Distribution_Channel__c, Parent_Depot__c, Child_Depot__c
+                FROM Product_Mapping__c
+                WHERE Customer__c = :accountId
+                AND Chanel__c IN :salesChannelList
+                AND Chanel__c != null
+                LIMIT 1
+            ];
+            if (!prodMapping.isEmpty()) return prodMapping;
         }
         
-        if (!prodMapping.isEmpty()) {
-            return prodMapping;
-        }else{
-            return null;
-        } 
-        
-        
+        // Prefer returning empty list over null (callers avoid null checks)
+        return new List<Product_Mapping__c>();
     }
-    
+    /* public static List<Product_Mapping__c> getProductMappins1(string accountId){
+Id currentUserId = UserInfo.getUserId();
+User us = [SELECT Id, Name, Sales_Channel__c FROM User WHERE Id = :currentUserId];
+
+Set<String> salesChannelList = new Set<String>();
+if(us.Sales_Channel__c != null)
+{
+salesChannelList.addAll(us.Sales_Channel__c.split(';'));
+}
+
+List<Product_Mapping__c> prodMapping = new List<Product_Mapping__c>();
+Set<String> channelSet = new Set<String>();
+Set<String> primaryCustomerIds = new Set<String>();
+
+List<Product_Mapping__c> prodMappingsFromPrimary = new List<Product_Mapping__c>();
+
+prodMappingsFromPrimary = [SELECT Chanel__c, Primary_Customer__c,Order_Type__c,Division__c,Distribution_Channel__c,Parent_Depot__c,Child_Depot__c 
+FROM Product_Mapping__c 
+WHERE Exectuive__c = :currentUserId 
+AND Customer__c = :accountId];
+
+// If no results, try broader query (just account and sales channels)
+if(prodMappingsFromPrimary.isEmpty() && !salesChannelList.isEmpty()) {
+prodMappingsFromPrimary = [
+SELECT Chanel__c, Primary_Customer__c, Order_Type__c, Division__c,
+Distribution_Channel__c, Parent_Depot__c, Child_Depot__c 
+FROM Product_Mapping__c 
+WHERE Customer__c = :accountId 
+AND Chanel__c IN :salesChannelList
+AND Chanel__c != null LIMIT 1
+];
+}
+
+// Populate channelSet and primaryCustomerIds
+for(Product_Mapping__c prodMap : prodMappingsFromPrimary) {
+if (prodMap.Chanel__c != null) {
+prodMapping.add(prodMap);
+}
+}
+
+if (!prodMapping.isEmpty()) {
+return prodMapping;
+}else{
+return null;
+} 
+
+
+}
+    */    
     public static Set<String> getPDPDays(string accountId,string customerType) {
         
         Id currentUserId = UserInfo.getUserId();
@@ -3696,6 +3756,7 @@ return getTaskData(objectId);
         @AuraEnabled public List<SchemeStrategy> scheme { get; set; }
         @AuraEnabled public List<schemeData> schemessss{get;set;}
         @AuraEnabled public String primaryCustmerId{get;set;}
+        @AuraEnabled public Boolean showRepoteeView{get;set;}
         public data() {
             outData = new List<outstanding>();
             ordData = new List<Orders>();

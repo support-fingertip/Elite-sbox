@@ -361,6 +361,10 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>DistanceCalculationQueueableTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>DistanceMatrixControllerForVisit</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -617,6 +621,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>LeaveCreateOverrideCtrlTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>LeavesTriggerHandler</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -782,6 +790,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ProductControllerGRIDVIEW</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>ProductGalleryController</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
@@ -3960,6 +3972,11 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Employee_Creation_Access__mdt.Required_Approvers__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Employee_Creation_Access__mdt.Show_Reportee_View__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8873,6 +8890,96 @@
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Claim__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Credit_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Customer__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Description__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Not_in_Use__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Reason__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Credit_Note__c.Secondary_Credit_Note_Name__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Status__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Debit_Note__c.Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Debit_Note__c.Customer__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Debit_Note__c.Description__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Debit_Note__c.Distributor__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Debit_Note__c.Name__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Debit_Note__c.Note_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Debit_Note__c.Reason__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Debit_Note__c.Secondary_Invoice__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Debit_Note__c.Status__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice_Item__c.HSN_Code__c</field>
         <readable>true</readable>
@@ -9015,6 +9122,46 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Secondary_Invoice__c.Total_Tax__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Receipt_Item__c.Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Receipt__c.Customer__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Receipt__c.Distributor__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Receipt__c.Payment_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Receipt__c.Payment_Mode__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Receipt__c.Reference_Number__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Receipt__c.Remarks__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Receipt__c.Total_Amount__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -11335,10 +11482,22 @@
         <layout>Scheme__c-Scheme Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
+        <layout>Secondary_Credit_Note__c-Secondary Credit Note Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Secondary_Debit_Note__c-Secondary Debit Note Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
         <layout>Secondary_Invoice_Item__c-Secondary Invoice Item Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
         <layout>Secondary_Invoice__c-Secondary Invoice Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Secondary_Receipt_Item__c-Secondary Receipt Item Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Secondary_Receipt__c-Secondary Receipt Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
         <layout>Secondary_Retrun__c-Secondary Return Layout</layout>
@@ -11802,7 +11961,23 @@
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>
+        <tab>Secondary_Credit_Note__c</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Secondary_Debit_Note__c</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
         <tab>Secondary_Invoice__c</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Secondary_Receipt_Item__c</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Secondary_Receipt__c</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>

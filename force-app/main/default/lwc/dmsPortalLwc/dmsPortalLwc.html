@@ -883,83 +883,20 @@
                 </template>
             </template>
 
+
             <!--Credit Note Tab-->
             <template lwc:if={showCreditNote}>
-                <template lwc:if={isSubPartLoad}>
-                    <div class="no-scroll">
-                        <c-loading-screen></c-loading-screen>
-                    </div>
-                </template>
-                <template lwc:else>
-                    <div class="orders layouts" id="CreditNoteLayout">
-                        <div class="order-head">
-                            <h3 class="order-title">Credit Notes</h3>
+                <c-new-credit-note></c-new-credit-note>
+            </template>
 
-                            <div class="order-filters">
-                                <lightning-input type="date" class="custominputfieldSize" label="From Date"
-                                    name="fromDate" value={creditNoteFilter.fromDate} onchange={handleClaimhange}>
-                                </lightning-input>
-                                <lightning-input type="date" class="custominputfieldSize" label="To Date" name="toDate"
-                                    value={creditNoteFilter.toDate} onchange={handleCreditChange}>
-                                </lightning-input>
-                                <lightning-combobox name="status" label="Time Frame" value={creditNoteFilter.status}
-                                    placeholder="Select Status" options={creditNoteFilter.statusVal}
-                                    onchange={handleCreditChange} class="comboboxClass">
-                                </lightning-combobox>
-                                <lightning-input type="search" label="Search" class="custominputfieldSize"
-                                    placeholder="Claim or Primary Return" name="serchCust"
-                                    value={creditNoteFilter.srchVal} onchange={handleCreditSearch}>
-                                </lightning-input>
-                            </div>
-                        </div>
-                        <table class="contacts-table">
-                            <thead>
-                                <tr>
-                                    <th>Credit No.</th>
-                                    <th>Claim No.</th>
-                                    <th>Primary Return No.</th>
-                                    <th>Status</th>
-                                    <th>Credit Date</th>
-                                    <th>Credit Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template lwc:if={creditNoteFilter.isDataExisted}>
-                                    <template for:each={creditNoteFilter.allCreditNoteData} for:item="row">
-                                        <tr key={row.claimName}>
-                                            <td onclick={openRecord} data-id={row.creditNoteId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
-                                                {row.creditNoteNo}
-                                            </td>
-                                            <td onclick={openRecord} data-id={row.claimId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
-                                                {row.claimNo}
-                                            </td>
-                                            <td onclick={openRecord} data-id={row.primaryReturnId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;">
-                                                {row.primaryReturnNo}
-                                            </td>
-                                            <td>{row.status}</td>
-                                            <td>{row.creditDate}</td>
-                                            <td>{row.creditAmount}</td>
-                                        </tr>
-                                    </template>
-                                </template>
-                                <template lwc:else>
-                                    <tr>
-                                        <td colspan="7">
-                                            <div class="slds-truncate" style="text-align:center">
-                                                <span style="color:red;padding:10px;font-size:large">No
-                                                    records found!</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
+            <!--Debit Note Tab-->
+            <template lwc:if={showDebitNote}>
+                <c-new-debit-note></c-new-debit-note>
+            </template>
 
-                    </div>
-                </template>
+            <!--Secondary Receipt Tab-->
+            <template lwc:if={showSecondaryReceipt}>
+                <c-new-secondary-receipt></c-new-secondary-receipt>
             </template>
 
             <!-- secondary orders-->
@@ -1679,61 +1616,7 @@
 
             <!--Product Gallery Tab-->
             <template lwc:if={showProductGallery}>
-                <template lwc:if={isSubPartLoad}>
-                    <div class="no-scroll">
-                        <c-loading-screen></c-loading-screen>
-                    </div>
-                </template>
-                <template lwc:else>
-                    <div class="orders layouts" id="ProductGalleryLayout">
-                        <div class="order-head">
-                            <h3 class="order-title">Product Gallery</h3>
-                            <div class="order-filters">
-                                <lightning-combobox name="category" label="Category"
-                                    class="custominputfieldSize" value={selectedCategory}
-                                    placeholder="Select Category" options={categoryOptions}
-                                    onchange={handleProductCategoryChange}>
-                                </lightning-combobox>
-                                <lightning-input type="search" label="Search"
-                                    class="custominputfieldSize" placeholder="Product Name"
-                                    name="productSearch" value={productSearchKey}
-                                    onchange={handleProductSearch}>
-                                </lightning-input>
-                            </div>
-                        </div>
-
-                        <template lwc:if={hasProducts}>
-                            <div class="product-grid">
-                                <template for:each={filteredProducts} for:item="product">
-                                    <div key={product.id} class="product-card">
-                                        <div class="product-icon-wrapper">
-                                            <lightning-icon icon-name="standard:product" size="large"></lightning-icon>
-                                        </div>
-                                        <div class="product-info">
-                                            <h3 class="product-name" title={product.name}>{product.name}</h3>
-                                            <p class="product-category">{product.category}</p>
-                                            <p class="product-channel">{product.channel}</p>
-                                            <div class="product-price-row">
-                                                <span class="product-price">&#8377; {product.price}</span>
-                                                <template lwc:if={product.mrp}>
-                                                    <span class="product-mrp">MRP: &#8377; {product.mrp}</span>
-                                                </template>
-                                            </div>
-                                            <template lwc:if={product.uom}>
-                                                <p class="product-uom">{product.uom}</p>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <template lwc:else>
-                            <div class="slds-align_absolute-center" style="padding: 40px;">
-                                <span style="color:red; font-size:large;">No products found!</span>
-                            </div>
-                        </template>
-                    </div>
-                </template>
+                <c-product-gallery-lwc></c-product-gallery-lwc>
             </template>
 
         </div>

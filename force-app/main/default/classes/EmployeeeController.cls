@@ -1001,7 +1001,29 @@ public class EmployeeeController {
                 Database.insert(sharesToInsert, false);
             }
 
-            return 'Success: Beats shared successfully';
+            // Share Child_beat__c records as well
+            List<Child_beat__Share> beatSharesToInsert = new List<Child_beat__Share>();
+            Set<Id> existingBeatIds = new Set<Id>();
+            for (Child_beat__Share s : [SELECT ParentId FROM Child_beat__Share WHERE ParentId IN :sourceBeats AND UserOrGroupId = :targetUserId]) {
+                existingBeatIds.add(s.ParentId);
+            }
+
+            for (Child_beat__c beat : sourceBeats) {
+                if (!existingBeatIds.contains(beat.Id)) {
+                    Child_beat__Share beatShare = new Child_beat__Share();
+                    beatShare.ParentId = beat.Id;
+                    beatShare.UserOrGroupId = targetUserId;
+                    beatShare.AccessLevel = 'Edit'; // or 'Read' if only read access is needed
+                    beatShare.RowCause = Schema.Child_beat__Share.RowCause.Manual;
+                    beatSharesToInsert.add(beatShare);
+                }
+            }
+
+            if (!beatSharesToInsert.isEmpty()) {
+                Database.insert(beatSharesToInsert, false);
+            }
+
+            return 'Success: Beats and accounts shared successfully';
         } catch (Exception ex) {
             return 'Error: ' + ex.getMessage();
         }
