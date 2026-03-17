@@ -256,7 +256,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
             return;
         }
 
-        if (!this.productCategory) {
+        /*if (!this.productCategory) {
             this.showToast('Error', 'Please select Product Category', 'error');
             return;
         }
@@ -271,12 +271,12 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
         if (!this.generalRemarks) {
             this.showToast('Error', 'Please enter general remarks', 'error');
             return;
-        }
+        }*/
         if (!this.address) {
             this.showToast('Error', 'Please enter address', 'error');
             return;
         }
-        if (!this.state) {
+       /* if (!this.state) {
             this.showToast('Error', 'Please select State', 'error');
             return;
         }
@@ -288,19 +288,18 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
             this.showToast('Error', 'Please enter pinCode', 'error');
             return;
         }
-        // Pin Code must be exactly 6 digits
-        if (!/^\d{6}$/.test(this.pinCode)) {
-            this.showToast('Error', 'Pin Code must be exactly 6 digits', 'error');
-            return;
-        }
-
         if (!this.contactNumber) {
             this.showToast('Error', 'Please enter Contact Number', 'error');
             return;
-        }
+        }*/
 
+        // Pin Code must be exactly 6 digits
+        if (this.pinCode && !/^\d{6}$/.test(this.pinCode)) {
+            this.showToast('Error', 'Pin Code must be exactly 6 digits', 'error');
+            return;
+        }
         // Contact Number must be exactly 10 digits
-        if (!/^\d{10}$/.test(this.contactNumber)) {
+        if ( this.contactNumber &&  !/^\d{10}$/.test(this.contactNumber)) {
             this.showToast('Error', 'Contact Number must be exactly 10 digits', 'error');
             return;
         }

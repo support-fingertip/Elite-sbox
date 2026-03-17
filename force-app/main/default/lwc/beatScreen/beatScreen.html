@@ -226,6 +226,71 @@
                                 <p class="slds-text-color_weak">No Beats Found</p>
                             </div>
                         </template>
+
+                        <!-- ══════════════════════════════════
+                                SHARED BEATS SECTION
+                        ══════════════════════════════════ -->
+                        <template lwc:if={hasSharedBeatData}>
+                            <div class="shared-beats-section slds-m-top_medium">
+                                <h3 class="shared-beats-header">
+                                    <lightning-icon icon-name="utility:share" size="x-small" alternative-text="Shared"
+                                        class="slds-m-right_x-small"></lightning-icon>
+                                    Shared Beats
+                                </h3>
+                                <template for:each={sharedBeatData} for:item="item" for:index="index">
+                                    <div class="route-outlets" key={item.uiKey}>
+                                        <div class="borderLine slds-m-top_small">
+                                            <div class="route-outlet">
+                                                <div class="route-left">
+                                                    <div class="outlet-title">
+                                                        <span class="icon-wrapper">
+                                                            <img src={googleIcons.beat} class="custom-icon" width="20"
+                                                                height="20" />
+                                                        </span>&nbsp;
+                                                        <div class="beat-name-wrapper">
+                                                            <b>{item.beatName}</b>
+                                                        </div>
+                                                    </div>
+                                                    <div class="outlet-title" style="padding-left:14px">
+                                                        &nbsp;&nbsp; Owner : &nbsp; {item.ownerName}
+                                                    </div>
+                                                </div>
+                                                <div class="outlet-icon">
+                                                    <template if:false={isLeaveExisted}>
+                                                        <template lwc:if={isDayStarted}>
+                                                            <!-- Start shared beat if no current beat exists -->
+                                                            <template if:false={isCurrentBeatExisted}>
+                                                                <div class="icon-container">
+                                                                    <div onclick={handleOnclickMenu}
+                                                                        data-id={item.beatId} data-pjpid={item.pjpId}
+                                                                        data-index={index} data-name="Start_Beat"
+                                                                        data-beatname={item.beatName}>
+                                                                        <img src={googleIcons.play} width="23"
+                                                                            height="23">
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <!-- Switch to shared beat if current beat exists -->
+                                                            <template if:true={isCurrentBeatExisted}>
+                                                                <div class="icon-container">
+                                                                    <div onclick={handleOnclickMenu}
+                                                                        data-id={item.beatId} data-pjpid={item.pjpId}
+                                                                        data-index={index} data-name="Switch_Beat"
+                                                                        data-beatname={item.beatName}>
+                                                                        <img src={googleIcons.switch} width="23"
+                                                                            height="23">
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                        </template>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
                     </template>
                 </template>
 

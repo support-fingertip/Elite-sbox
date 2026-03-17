@@ -1,0 +1,120 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="no-scroll">
+            <c-loading-screen></c-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="orders layouts" id="secondaryCustomerLedgerLayout">
+            <div class="order-head">
+                <h3 class="order-title">Secondary Customer Ledger</h3>
+                <div class="order-filters">
+                    <button class="actionButton" onclick={handleExportCsv}
+                        style="background-color: #28a745; color: white; display: flex; align-items: center; padding: 6px 12px; border-radius: 4px;margin-top: 27px;">
+                        <span style="display: flex; align-items: center;">
+                            Export CSV
+                            <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                size="x-small"
+                                style="margin-left: 4px; --slds-c-icon-color-foreground-default: white;">
+                            </lightning-icon>
+                        </span>
+                    </button>
+
+                    <lightning-combobox 
+                        name="customer" 
+                        label="Customer" 
+                        class="custominputfieldSize"
+                        value={selectedCustomer} 
+                        placeholder="Select Customer" 
+                        options={customerOptions}
+                        onchange={handleCustomerChange}>
+                    </lightning-combobox>
+
+                    <lightning-combobox 
+                        name="status" 
+                        label="Status" 
+                        class="custominputfieldSize"
+                        value={status} 
+                        placeholder="Select Status" 
+                        options={statusOptions}
+                        onchange={handleStatusChange}>
+                    </lightning-combobox>
+
+                    <lightning-input 
+                        type="date" 
+                        class="custominputfieldSize" 
+                        label="From Date"
+                        name="fromDate" 
+                        value={fromDate} 
+                        onchange={handleFromDateChange}>
+                    </lightning-input>
+
+                    <lightning-input 
+                        type="date" 
+                        class="custominputfieldSize" 
+                        label="To Date" 
+                        name="toDate"
+                        value={toDate} 
+                        onchange={handleToDateChange}>
+                    </lightning-input>
+
+                    <lightning-input 
+                        type="search" 
+                        label="Search" 
+                        class="custominputfieldSize"
+                        placeholder="Search by description or amount" 
+                        name="searchCust" 
+                        value={srchVal}
+                        onchange={handleSearchChange}>
+                    </lightning-input>
+
+                    <lightning-button 
+                        label="Generate Ledger" 
+                        variant="brand" 
+                        onclick={handleGenerateLedger}
+                        style="margin-top: 27px;">
+                    </lightning-button>
+                </div>
+            </div>
+
+            <template lwc:if={hasLedgerData}>
+                <table class="contacts-table">
+                    <thead>
+                        <tr>
+                            <th style="width:5%">S.No.</th>
+                            <th style="width:15%">Transaction Date</th>
+                            <th style="width:20%">Description</th>
+                            <th style="width:15%">Reference No</th>
+                            <th style="width:12%">Debit (₹)</th>
+                            <th style="width:12%">Credit (₹)</th>
+                            <th style="width:15%">Balance (₹)</th>
+                            <th style="width:10%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={allLedgerData} for:item="record">
+                            <tr key={record.Id}>
+                                <td style="width:5%">{record.rowIndex}</td>
+                                <td style="width:15%">{record.transactionDate}</td>
+                                <td style="width:20%">{record.description}</td>
+                                <td style="width:15%">{record.referenceNo}</td>
+                                <td style="width:12%;text-align:right;">{record.debitAmount}</td>
+                                <td style="width:12%;text-align:right;">{record.creditAmount}</td>
+                                <td style="width:15%;text-align:right;font-weight:bold;">{record.balance}</td>
+                                <td style="width:10%">{record.status}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+            <template lwc:else>
+                <div class="slds-align_absolute-center" style="padding: 40px; flex-direction: column;">
+                    <span style="color:red; font-size:large;">No records found!</span>
+                    <template lwc:if={errorMessage}>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">{errorMessage}</p>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

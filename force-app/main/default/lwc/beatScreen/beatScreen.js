@@ -32,6 +32,8 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
     isPhone = false;
     @track beatData = [];
     @track originalBeatData = [];
+    @track sharedBeatData = [];
+    @track originalSharedBeatData = [];
     isDayStarted;
     isLeaveExisted = false;
 
@@ -53,7 +55,8 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
     isTodayBeatExisted = false;
 
 
-    @api showReporteeView = false;
+    //showReporteeView = true;
+    @api showReporteeView;
     @track selectedVisitFormId = null;
 
     // Reportee View properties
@@ -134,6 +137,16 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
                 this.originalBeatData = this.beatData;
                 this.isCurrentBeatExisted = result.currentBeatExisted;
                 this.isTodayBeatExisted = this.beatData.some(b => b.istodayBeat);
+
+                // Shared beats
+                this.sharedBeatData = (result.sharedBeatDataList || []).map((item, index) => {
+                    return {
+                        ...item,
+                        uiKey: item.beatId + '-shared-' + index
+                    };
+                });
+                this.originalSharedBeatData = this.sharedBeatData;
+
                 this.isPageLoaded = false;
             })
             .catch(error => {
@@ -360,10 +373,25 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         console.log(
             this.beatData.map(b => b.beatId)
         );
+
+        // Also filter shared beats
+        if (!searchTerm) {
+            this.sharedBeatData = [...this.originalSharedBeatData];
+        } else {
+            this.sharedBeatData = this.originalSharedBeatData.filter(bt =>
+                bt &&
+                bt.beatName &&
+                bt.beatName.toLowerCase().includes(searchTerm)
+            );
+        }
     }
 
     get hasBeatData() {
         return this.beatData && this.beatData.length > 0;
+    }
+
+    get hasSharedBeatData() {
+        return this.sharedBeatData && this.sharedBeatData.length > 0;
     }
 
 

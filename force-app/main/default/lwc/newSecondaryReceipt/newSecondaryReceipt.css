@@ -1,11 +1,35 @@
-:host {
-    display: block;
-    background: transparent;
-    margin: 0;
-    padding: 0;
-    border: none;
+/* Modal for receipt detail */
+.receipt-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 }
-
+.receipt-detail-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    min-width: 320px;
+    max-width: 90vw;
+}
+/* Blue clickable link for receipt number */
+.receipt-link {
+    color: #0070d2;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 500;
+}
+/* Anchor suggestion dropdown to input field */
+.customer-search-container {
+    position: relative;
+}
 /* Base styles */
 .orders {
     z-index: 2;
@@ -21,17 +45,17 @@
 }
 
 .order-title {
-    margin: 0;
-    text-align: left;
+    margin: 0 0 20px 0;
+    text-align: center;
     font-size: 30px;
     color: #02323e;
     font-weight: bold;
+    width: 95%;
 }
 
 .order-head {
-    margin: 10px 0;
-    margin-bottom: 20px;
-    width: 90%;
+    margin: 5px 0 20px 0;
+    width: 95%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -162,47 +186,78 @@
     text-align: center;
 }
 
-/* Custom Table Styles for Empty State */
-.custom-table-container {
-    width: 95%;
-    margin: 0 auto;
-    background: #fff;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    overflow: hidden;
-    margin-top: 2rem;
-}
-
-.custom-table {
-    width: 100%;
+/* Contacts table matching Primary Invoices */
+.contacts-table {
+    width: 90%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 1.3rem;
-    background: #fff;
-    border-radius: 16px 16px 0 0;
+    border-radius: 10px;
+    border: none;
     overflow: hidden;
+    background-color: #fff;
+    display: block;
+    max-height: 65vh;
 }
-
-.custom-table th {
-    background: #04343e;
+.contacts-table th,
+.contacts-table td {
     color: #fff;
-    padding: 18px 12px;
-    font-weight: 600;
+    border: none;
     text-align: left;
-    border-right: 1px solid #fff;
-    font-size: 1.2rem;
+    font-size: 14px;
+    padding: 15px;
+    border-bottom: 1px solid #ccc;
 }
-.custom-table th:first-child {
-    border-radius: 16px 0 0 0;
-}
-.custom-table th:last-child {
-    border-radius: 0 16px 0 0;
+.contacts-table th:last-child,
+.contacts-table td:last-child {
     border-right: none;
 }
-.custom-table td {
-    padding: 16px 12px;
-    text-align: center;
-    font-size: 1.1rem;
+.contacts-table th {
+    background-color: #02323e;
+    font-weight: 400;
+    font-size: 16px;
+    position: sticky;
+    z-index: 1;
+}
+.contacts-table td {
+    font-size: 14px;
+    color: #404040;
+}
+.contacts-table tbody {
+    display: block;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+.contacts-table thead,
+.contacts-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+.contacts-table tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+.contacts-table tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+.contacts-table tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+.contacts-table tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+.contacts-table tr:last-child td {
+    border: none;
+}
+.contacts-table tr th:nth-child(2),
+.contacts-table tr th:nth-child(3),
+.contacts-table tr th:nth-child(4),
+.contacts-table tr th:nth-child(5),
+.contacts-table tr th:nth-child(6),
+.contacts-table tr th:nth-child(7),
+.contacts-table tr th:nth-child(8),
+.contacts-table tr th:nth-child(9),
+.contacts-table tr th:nth-child(10) {
+    border-left: #fff 1px solid;
 }
 .no-records {
     color: #ff0f0f;
@@ -211,12 +266,10 @@
     font-size: 1.5rem;
     padding: 32px 0;
 }
-
 /* Gradient background for page */
 .orders {
     background: linear-gradient(90deg, #a8d5c6 0%, #e07a7a 50%, #ff0f0f 100%);
 }
-
 /* Suggestion Box for Customer Search */
 .suggestion-box {
     position: absolute;
@@ -231,120 +284,17 @@
     max-height: 200px;
     overflow-y: auto;
 }
-
 .suggestion-box .slds-listbox__option:hover {
     background-color: #f3f3f3;
 }
-
-/* Responsive adjustments */
 @media (max-width: 1200px) {
-
-    .grid-header,
-    .grid-row {
-        grid-template-columns: 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.7fr 0.8fr 0.8fr;
+    .contacts-table th,
+    .contacts-table td {
         font-size: 12px;
     }
 }
-
 @media (max-width: 768px) {
-    .invoice-grid-container {
+    .contacts-table {
         overflow-x: auto;
     }
-
-    .grid-header,
-    .grid-row {
-        min-width: 900px;
-    }
-}
-
-/* Input field size matching Primary Invoices */
-.custominputfieldSize {
-    font-size: 14px;
-    margin-bottom: 0px;
-}
-
-/* Contacts table matching Primary Invoices */
-.contacts-table {
-    width: 90%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: 10px;
-    border: none;
-    overflow: hidden;
-    background-color: #fff;
-    display: block;
-    max-height: 65vh;
-}
-
-.contacts-table th,
-.contacts-table td {
-    color: #fff;
-    border: none;
-    text-align: left;
-    font-size: 14px;
-    padding: 15px;
-    border-bottom: 1px solid #ccc;
-}
-
-.contacts-table th:last-child,
-.contacts-table td:last-child {
-    border-right: none;
-}
-
-.contacts-table th {
-    background-color: #02323e;
-    font-weight: 400;
-    font-size: 16px;
-    position: sticky;
-    z-index: 1;
-}
-
-.contacts-table td {
-    font-size: 14px;
-    color: #404040;
-}
-
-.contacts-table tbody {
-    display: block;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.contacts-table thead,
-.contacts-table tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-}
-
-.contacts-table tr:first-child th:first-child {
-    border-top-left-radius: 10px;
-}
-
-.contacts-table tr:first-child th:last-child {
-    border-top-right-radius: 10px;
-}
-
-.contacts-table tr:last-child td:first-child {
-    border-bottom-left-radius: 10px;
-}
-
-.contacts-table tr:last-child td:last-child {
-    border-bottom-right-radius: 10px;
-}
-
-.contacts-table tr:last-child td {
-    border: none;
-}
-
-.contacts-table tr th:nth-child(2),
-.contacts-table tr th:nth-child(3),
-.contacts-table tr th:nth-child(4),
-.contacts-table tr th:nth-child(5),
-.contacts-table tr th:nth-child(6),
-.contacts-table tr th:nth-child(7),
-.contacts-table tr th:nth-child(8),
-.contacts-table tr th:nth-child(9),
-.contacts-table tr th:nth-child(10) {
-    border-left: #fff 1px solid;
 }

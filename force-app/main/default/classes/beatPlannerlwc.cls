@@ -1103,8 +1103,7 @@ global with sharing class beatPlannerlwc {
             WHERE PJP__r.User__c = :currentUserId AND Date__c >= TODAY AND Date__c <= :System.today().addDays(dayLimit)
             AND Status__c ='Approved' and Beat__r.Active__c = true
         ];
-        
-        
+
         if (pjpItemsList.size() < dayLimit) {
             Integer remainingRecordsNeeded = dayLimit - pjpItemsList.size();
             
@@ -1143,19 +1142,17 @@ global with sharing class beatPlannerlwc {
             if (item.Beat__c != null) {
                 String formattedDate = DateTime.newInstance(item.Date__c.year(), item.Date__c.month(), item.Date__c.day()).format('dd/MM/yyyy');
                 BeatData data = new BeatData();
-                if(item.Beat__c!= null)
-                {
-                    data.beatId = item.Beat__c;
-                    data.beatName = item.Beat__r.Name;
-                    data.pjpDate = formattedDate;
-                    data.pjpId = item.Id;
-                    data.istodayBeat = item.Date__c == Date.today();
-                    data.isCurrentBeat = item.Id == currentPjpItemId;
-                    data.openPopup = false;
-                    beatDataList.add(data);
-                }
+                data.beatId = item.Beat__c;
+                data.beatName = item.Beat__r.Name;
+                data.pjpDate = formattedDate;
+                data.pjpId = item.Id;
+                data.istodayBeat = item.Date__c == Date.today();
+                data.isCurrentBeat = item.Id == currentPjpItemId;
+                data.openPopup = false;
+                beatDataList.add(data);
             }
         }
+
         
         List<Leaves__c> lv = [
             SELECT Id, Name
@@ -1170,8 +1167,48 @@ global with sharing class beatPlannerlwc {
         
         dt.isLeaveExisted = !lv.isEmpty();
         dt.beatDataList = beatDataList;
-        dt.isDayStarted = !logs.isEmpty() && logs[0].Day_ended_time__c == null;    
+        dt.isDayStarted = !logs.isEmpty() && logs[0].Day_ended_time__c == null;
+        
+        // Fetch shared beats
+        dt.sharedBeatDataList = getSharedBeatData(currentUserId);
+        
         return dt;
+    }
+    
+    private static List<BeatData> getSharedBeatData(Id currentUserId) {
+        List<BeatData> sharedBeats = new List<BeatData>();
+        
+        List<Child_beat__Share> beatShares = [SELECT ParentId FROM Child_beat__Share 
+                                              WHERE UserOrGroupId = :currentUserId 
+                                              AND RowCause = 'Manual'];
+        
+        if (beatShares.isEmpty()) {
+            return sharedBeats;
+        }
+        
+        Set<Id> sharedBeatIds = new Set<Id>();
+        for (Child_beat__Share bs : beatShares) {
+            sharedBeatIds.add(bs.ParentId);
+        }
+        
+        List<Child_Beat__c> childBeats = [SELECT Id, Name, Owner.Name
+                                          FROM Child_Beat__c
+                                          WHERE Id IN :sharedBeatIds AND Active__c = true AND OwnerId != :currentUserId];
+        
+        for (Child_Beat__c cb : childBeats) {
+            BeatData data = new BeatData();
+            data.beatId = cb.Id;
+            data.beatName = cb.Name;
+            data.pjpDate = '';
+            data.pjpId = null;
+            data.istodayBeat = false;
+            data.isCurrentBeat = false;
+            data.openPopup = false;
+            data.ownerName = cb.Owner.Name;
+            sharedBeats.add(data);
+        }
+        
+        return sharedBeats;
     } 
     @AuraEnabled
     public static void updateCurrentBeatAndSwitchHistory(string beatId,string currentBeatName,string switchBeatName,string reason,string currentPJPId) {
@@ -3834,6 +3871,7 @@ return getTaskData(objectId);
         @AuraEnabled public Map<String, Decimal> productIdWithMrp = new Map<String, Decimal>();
         @AuraEnabled public list<Order__c> orderList { get; set; }
         @AuraEnabled public list<BeatData> beatDataList { get; set; }
+        @AuraEnabled public list<BeatData> sharedBeatDataList { get; set; }
         @AuraEnabled public boolean currentBeatExisted { get; set; }
         @AuraEnabled public boolean isUomDisabled { get; set; }
         @AuraEnabled public boolean isDesktopAllowed { get; set; }
@@ -4246,5 +4284,6 @@ return getTaskData(objectId);
         @AuraEnabled public Boolean openPopup;
         @AuraEnabled public String pjpDate;
         @AuraEnabled public String pjpId;
+        @AuraEnabled public String ownerName;
     }
 }
