@@ -2147,6 +2147,13 @@ public without sharing class DMSPortalLwc
     }
 
     @AuraEnabled
+    public static List<Secondary_Receipt_Item__c> getSecondaryReceiptItemsByReceiptId(String receiptId) {
+        return [SELECT Id, Name, Secondary_Receipt__c, Secondary_Invoice__c, Secondary_Invoice__r.Name, Amount__c
+                FROM Secondary_Receipt_Item__c
+                WHERE Secondary_Receipt__c = :receiptId];
+    }
+
+    @AuraEnabled
     public static void saveSecondaryReceipt(String receiptJson) {
         Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(receiptJson);
         Secondary_Receipt__c rec = new Secondary_Receipt__c();
