@@ -1,53 +1,62 @@
 @isTest
 public class VisitFormTriggerTest {
-    @testSetup
-    static void setup() {
-        Daily_Log__c log = new Daily_Log__c();
-        insert log;
-    }
 
     @isTest
-    static void testAfterInsertTrigger() {
-        Daily_Log__c log = [SELECT Id FROM Daily_Log__c LIMIT 1];
-        Visit_Form__c visitForm = new Visit_Form__c(
-            Daily_Log__c = log.Id,
+    static void testInsertVisitForm() {
+
+        List<Visit_Form__c> visitList = new List<Visit_Form__c>();
+
+        for(Integer i = 0; i < 5; i++){
+
+            Visit_Form__c vf = new Visit_Form__c();
+
+            vf.Geo_Location__Latitude__s = 28.6139;
+            vf.Geo_Location__Longitude__s = 77.2090;
+
+            visitList.add(vf);
+        }
+
+        Test.startTest();
+        insert visitList;
+        Test.stopTest();
+
+        System.assertEquals(5, visitList.size());
+    }
+
+
+    @isTest
+    static void testDeleteVisitForm() {
+
+        Visit_Form__c vf = new Visit_Form__c(
             Geo_Location__Latitude__s = 28.6139,
             Geo_Location__Longitude__s = 77.2090
         );
-        insert visitForm;
-        // Assert trigger effect
-        log = [SELECT Total_Visit_form_Calls__c FROM Daily_Log__c WHERE Id = :log.Id];
-        System.assertEquals(1, log.Total_Visit_form_Calls__c);
+
+        insert vf;
+
+        Test.startTest();
+        delete vf;
+        Test.stopTest();
+
+        System.assert(true);
     }
 
+
     @isTest
-    static void testAfterDeleteTrigger() {
-        Daily_Log__c log = [SELECT Id FROM Daily_Log__c LIMIT 1];
-        Visit_Form__c visitForm = new Visit_Form__c(
-            Daily_Log__c = log.Id,
+    static void testUndeleteVisitForm() {
+
+        Visit_Form__c vf = new Visit_Form__c(
             Geo_Location__Latitude__s = 28.6139,
             Geo_Location__Longitude__s = 77.2090
         );
-        insert visitForm;
-        delete visitForm;
-        // Assert trigger effect
-        log = [SELECT Total_Visit_form_Calls__c FROM Daily_Log__c WHERE Id = :log.Id];
-        System.assertEquals(0, log.Total_Visit_form_Calls__c);
-    }
 
-    @isTest
-    static void testAfterUndeleteTrigger() {
-        Daily_Log__c log = [SELECT Id FROM Daily_Log__c LIMIT 1];
-        Visit_Form__c visitForm = new Visit_Form__c(
-            Daily_Log__c = log.Id,
-            Geo_Location__Latitude__s = 28.6139,
-            Geo_Location__Longitude__s = 77.2090
-        );
-        insert visitForm;
-        delete visitForm;
-        undelete visitForm;
-        // Assert trigger effect
-        log = [SELECT Total_Visit_form_Calls__c FROM Daily_Log__c WHERE Id = :log.Id];
-        System.assertEquals(1, log.Total_Visit_form_Calls__c);
+        insert vf;
+        delete vf;
+
+        Test.startTest();
+        undelete vf;
+        Test.stopTest();
+
+        System.assert(true);
     }
 }

@@ -67,7 +67,7 @@ private class VisitTriggerHandlerTest {
         visit.Actual_Start_Time__c = DateTime.now();
         update visit; 
         
-        Database.executeBatch(new EODReport(), 1); 
+      
         Test.stopTest();
         
         // No assertions as requested

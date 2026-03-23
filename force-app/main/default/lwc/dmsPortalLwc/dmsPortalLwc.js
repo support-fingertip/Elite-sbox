@@ -41,10 +41,11 @@ import getUsers from '@salesforce/apex/DMSPortalLwc.getUsers';
 import getSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getSecondaryCustomers';
 import getInvoicePdfUrl from '@salesforce/apex/DMSPortalLwc.getInvoicePdfUrl';
 import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockAdjustments';
-import getProductGalleryData from '@salesforce/apex/DMSPortalLwc.getProductGalleryData';
+import getSecondaryLedger from '@salesforce/apex/DMSPortalLwc.getSecondaryLedger';
+import getOpeningBalance from '@salesforce/apex/DMSPortalLwc.getOpeningBalance';
 import orgUrl from '@salesforce/label/c.orgUrl';
-const TAB_WIDTH = 165;     // realistic average width per tab
-const RESERVED_WIDTH = 350; // logo + profile + More button + spacing
+const TAB_WIDTH = 145;     // realistic average width per tab
+const RESERVED_WIDTH = 300; // logo + profile + More button + spacing
 
 export default class NavigationComponent extends LightningElement {
     //Varible related to tab Function
@@ -61,14 +62,19 @@ export default class NavigationComponent extends LightningElement {
         { id: 'GRN', label: 'GRNs' },
         { id: 'Claims', label: 'Claims' },
         { id: 'Stock', label: 'Stock' },
+        { id: 'Credit Note', label: 'Secondary Credit Notes' },
+        { id: 'Debit Note', label: 'Secondary Debit Notes' },
+        { id: 'Secondary Receipt', label: 'Secondary Receipts' },
         { id: 'Secondary Orders', label: 'Secondary Orders' },
         { id: 'Secondary Invoices', label: 'Secondary Invoices' },
         { id: 'Secondary Returns', label: 'Secondary Returns' },
         { id: 'Secondary Customers', label: 'Seondary Customers' },
+        { id: 'Secondary Customer Ledger', label: 'Secondary Customer Ledger' },
         { id: 'Users', label: 'Users' },
         { id: 'Stock Adjustment', label: 'Stock Adjustment' },
         { id: 'Product Gallery', label: 'Product Gallery' }
     ];
+    @track showSecondaryReceipt = false;
 
     //Variables related to data
     @track isNewDataUpload = false;
@@ -87,11 +93,14 @@ export default class NavigationComponent extends LightningElement {
     @track hasSecondaryInvoiceItems = false;
 
 
-    @track showSecondaryReturnItems = false
+    @track showSecondaryReturnItems = false;
     @track secondaryReturnItems = [];
     @track selectedSecondaryReturnNo = '';
     @track selectedSecondaryReturnId = null;
     @track hasSecondaryReturnItems = false;
+
+    // Secondary Customer Ledger Tab
+    @track showSecondaryCustomerLedger = false;
 
 
     @track orderItems = [];      // List of order items with Tax_Amount__c field
@@ -174,6 +183,7 @@ export default class NavigationComponent extends LightningElement {
 
     showStock = false;
     showCreditNote = false;
+    showDebitNote = false;
 
     showCreatePrimaryGrn = false;
 
@@ -326,6 +336,26 @@ export default class NavigationComponent extends LightningElement {
         isshowData: false
     };
 
+    @track secondaryCustomerLedgerFilter = {
+        fromDate: '',
+        toDate: '',
+        selectedCustomerId: '',
+        selectedCustomerName: '',
+        srchVal: '',
+        status: '',
+        statusVal: [
+            { label: 'All', value: '' },
+            { label: 'Pending', value: 'Pending' },
+            { label: 'Paid', value: 'Paid' },
+            { label: 'Partial', value: 'Partial' }
+        ],
+        customerOptions: [],
+        allLedgerData: [],
+        originalLedgerData: [],
+        openingBalance: 0,
+        isDataExisted: false
+    };
+
     isSubPartLoad = false;
     isPageLoaded = false;
     isDesktop = false;
@@ -337,12 +367,7 @@ export default class NavigationComponent extends LightningElement {
     searchKey = '';
     isShowSecondaryCustomers = false;
 
-    // Product Gallery
-    @track allProducts = [];
-    @track filteredProducts = [];
-    @track categoryOptions = [];
-    @track selectedCategory = '';
-    @track productSearchKey = '';
+
     invoiceIdToDownloadPdf = '';
     isShowNewAdjustStock = false;
 
@@ -371,6 +396,7 @@ export default class NavigationComponent extends LightningElement {
     }
 
     connectedCallback() {
+        // Merge both connectedCallbacks
         try {
             this.calculateTabs();
             this.resizeHandler = this.calculateTabs.bind(this);
@@ -378,26 +404,30 @@ export default class NavigationComponent extends LightningElement {
             this.isDesktop = FORM_FACTOR === 'Large' ? true : false;
             this.isPhone = FORM_FACTOR === 'Small' ? true : false;
             if (FORM_FACTOR === 'Medium') this.isDesktop = true;
-            isPageLoaded = true;
+            this.isPageLoaded = true;
             this.containerClass = this.isDesktop ? 'slds-modal__container' : 'mobilePopup';
             this.disablePullToRefresh();
-
         } catch (error) {
             console.error('Error in connectedCallback:', error);
         }
-
         loadScript(this, XLSX)
             .then(() => {
-                this.xlsxJsLibrary = window.XLSX;  // Make sure the XLSX object is available globally
+                this.xlsxJsLibrary = window.XLSX;
                 console.log('XLSX library loaded successfully!');
             })
             .catch((error) => {
                 console.error('Error loading XLSX library', error);
             });
+        // Carousel logic from second connectedCallback
+        this.startCarousel && this.startCarousel();
     }
 
     disconnectedCallback() {
+        // Merge both disconnectedCallbacks
         window.removeEventListener('resize', this.resizeHandler);
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
     }
     renderedCallback() {
         if (!this.visibleTabCount) {
@@ -406,11 +436,8 @@ export default class NavigationComponent extends LightningElement {
     }
     /*  Calculate based on screen width */
     calculateTabs() {
-        const width = window.innerWidth - RESERVED_WIDTH;
-        const count = Math.floor(width / TAB_WIDTH);
-
-        // Minimum tabs safety
-        this.visibleTabCount = Math.max(3, count);
+        // Always show 9 tabs in the header
+        this.visibleTabCount = 9;
     }
     toggleMoreMenu(event) {
         event.stopPropagation();
@@ -454,6 +481,8 @@ export default class NavigationComponent extends LightningElement {
         this.showClaim = false;
         this.showStock = false;
         this.showCreditNote = false;
+        this.showDebitNote = false;
+        this.showSecondaryReceipt = false;
 
         this.showSecondaryOrders = false;
         this.showSecoundaryInvoices = false;
@@ -483,92 +512,86 @@ export default class NavigationComponent extends LightningElement {
         this.showStockAdjustment = false;
         this.isShowNewAdjustStock = false;
         this.showProductGallery = false;
+        this.showSecondaryCustomerLedger = false;
     }
 
     selectedTabFunction() {
         this.resetAllFlags();
 
         switch (this.selectedTab) {
-
+            case 'Secondary Receipt':
+                this.showSecondaryReceipt = true;
+                break;
             case 'Home':
                 this.showHome = true;
                 break;
-
             case 'Orders':
                 this.showOrders = true;
                 this.showPrimaryOrders = true;
                 this.getOrderData();
                 break;
-
             case 'Invoices':
                 this.showPrimaryInvoices = true;
                 this.getInvoiceData();
                 break;
-
             case 'Returns':
                 this.showPrimaryReturn = true;
                 this.getPrimaryReturnData();
                 break;
-
             case 'Payments':
                 this.showPrimaryPayments = true;
                 this.getPrimaryPaymemtsData();
                 break;
-
             case 'GRN':
                 this.showPrimaryGrn = true;
                 this.getGRNsData();
                 break;
-
             case 'Claims':
                 this.showClaim = true;
                 this.getClaimData();
                 break;
-
             case 'Stock':
                 this.showStock = true;
                 this.getStockData();
                 break;
-
             case 'Credit Note':
                 this.showCreditNote = true;
                 this.getCreditData();
                 break;
-
+            case 'Debit Note':
+                this.showDebitNote = true;
+                break;
             case 'Secondary Orders':
                 this.showSecondaryOrders = true;
                 this.getSecoundaryOrderData();
                 break;
-
             case 'Secondary Invoices':
                 this.showSecoundaryInvoices = true;
                 this.getSecoundaryInvoiceData();
                 break;
-
             case 'Secondary Returns':
                 this.showSecoundaryReturn = true;
                 this.getSecoundaryReturnData();
                 break;
-
             case 'Users':
                 this.showusers = true;
                 this.getUserData();
                 break;
-
             case 'Secondary Customers':
                 this.isShowSecondaryCustomers = true;
                 this.getCustomerData();
+                break;
+            case 'Secondary Customer Ledger':
+                this.showSecondaryCustomerLedger = true;
+                //this.getSecondaryLedgerData();
                 break;
             case 'Stock Adjustment':
                 this.showStockAdjustment = true;
                 this.getStockAdjustmentsWithFilter();
                 break;
-
             case 'Product Gallery':
                 this.showProductGallery = true;
-                this.getProductGalleryData();
                 break;
-
             default:
                 break;
         }
@@ -784,7 +807,183 @@ export default class NavigationComponent extends LightningElement {
             this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
     }
 
+    /**-----Secondary Customer Ledger-----**/
+    getSecondaryLedgerData() {
+        const today = new Date();
+        const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const formatDate = (date) => date.toLocaleDateString('en-CA');
+        this.secondaryCustomerLedgerFilter.fromDate = formatDate(firstDate);
+        this.secondaryCustomerLedgerFilter.toDate = formatDate(lastDate);
+        this.secondaryCustomerLedgerFilter.status = '';
+        
+        // Load customers and ledger data
+        this.loadLedgerCustomers();
+    }
 
+    loadLedgerCustomers() {
+        this.isSubPartLoad = true;
+        
+        getSecondaryCustomers({
+            status: 'All'
+        })
+            .then(result => {
+                console.log('Ledger Customers:', JSON.stringify(result.customerData));
+                const customers = result.customerData || [];
+                this.secondaryCustomerLedgerFilter.customerOptions = customers.map(c => ({
+                    label: c.secondaryCustomerName,
+                    value: c.Id
+                }));
+                
+                // If customers exist, select the first one by default
+                if (customers.length > 0) {
+                    this.secondaryCustomerLedgerFilter.selectedCustomerId = customers[0].Id;
+                    this.secondaryCustomerLedgerFilter.selectedCustomerName = customers[0].secondaryCustomerName;
+                }
+                
+                // Now fetch ledger data
+                this.fetchLedgerData();
+            })
+            .catch(error => {
+                console.error('Error loading ledger customers:', error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    fetchLedgerData() {
+        const { fromDate, toDate, selectedCustomerId } = this.secondaryCustomerLedgerFilter;
+        
+        if (!selectedCustomerId) {
+            this.secondaryCustomerLedgerFilter.allLedgerData = [];
+            this.secondaryCustomerLedgerFilter.isDataExisted = false;
+            this.isSubPartLoad = false;
+            return;
+        }
+
+        // Get opening balance
+        getOpeningBalance({
+            customerId: selectedCustomerId,
+            asOfDate: fromDate
+        })
+            .then(openingBalResult => {
+                console.log('Opening Balance:', openingBalResult);
+                this.secondaryCustomerLedgerFilter.openingBalance = openingBalResult.balance || 0;
+                
+                // Now get ledger transactions
+                return getSecondaryLedger({
+                    customerId: selectedCustomerId,
+                    fromDate: fromDate,
+                    toDate: toDate,
+                    status: this.secondaryCustomerLedgerFilter.status
+                });
+            })
+            .then(ledgerResult => {
+                console.log('Ledger Data:', JSON.stringify(ledgerResult));
+                
+                const ledgerData = ledgerResult.ledgerData || [];
+                
+                // Calculate running balance
+                let runningBalance = this.secondaryCustomerLedgerFilter.openingBalance;
+                const processedData = ledgerData.map((entry, index) => {
+                    // Determine if debit or credit
+                    const isDebit = entry.transactionType === 'Invoice' || entry.transactionType === 'Debit Note';
+                    const isCredit = entry.transactionType === 'Receipt' || entry.transactionType === 'Return' || entry.transactionType === 'Credit Note';
+                    
+                    const debitAmount = isDebit ? (entry.amount || 0) : 0;
+                    const creditAmount = isCredit ? (entry.amount || 0) : 0;
+                    
+                    runningBalance = runningBalance + debitAmount - creditAmount;
+                    
+                    return {
+                        ...entry,
+                        sNo: index + 1,
+                        debit: debitAmount,
+                        credit: creditAmount,
+                        balance: runningBalance
+                    };
+                });
+                
+                this.secondaryCustomerLedgerFilter.allLedgerData = processedData;
+                this.secondaryCustomerLedgerFilter.originalLedgerData = processedData;
+                this.secondaryCustomerLedgerFilter.isDataExisted = processedData.length > 0;
+                this.secondaryCustomerLedgerFilter.statusVal = ledgerResult.statusOptions || this.secondaryCustomerLedgerFilter.statusVal;
+                
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error('Error fetching ledger data:', error);
+                this.isSubPartLoad = false;
+            });
+    }
+
+    handleLedgerCustomerChange(event) {
+        this.secondaryCustomerLedgerFilter.selectedCustomerId = event.detail.value;
+        const customer = this.secondaryCustomerLedgerFilter.customerOptions.find(
+            c => c.value === event.detail.value
+        );
+        this.secondaryCustomerLedgerFilter.selectedCustomerName = customer ? customer.label : '';
+        this.secondaryCustomerLedgerFilter.srchVal = '';
+        this.fetchLedgerData();
+    }
+
+    handleLedgerFromDateChange(event) {
+        this.secondaryCustomerLedgerFilter.fromDate = event.target.value;
+        this.secondaryCustomerLedgerFilter.srchVal = '';
+        this.fetchLedgerData();
+    }
+
+    handleLedgerToDateChange(event) {
+        this.secondaryCustomerLedgerFilter.toDate = event.target.value;
+        this.secondaryCustomerLedgerFilter.srchVal = '';
+        this.fetchLedgerData();
+    }
+
+    handleLedgerStatusChange(event) {
+        this.secondaryCustomerLedgerFilter.status = event.target.value;
+        this.secondaryCustomerLedgerFilter.srchVal = '';
+        this.fetchLedgerData();
+    }
+
+    handleLedgerSearch(event) {
+        const txt = event.target.value;
+        console.log('Ledger Search Value: ' + txt);
+
+        this.secondaryCustomerLedgerFilter = { ...this.secondaryCustomerLedgerFilter, srchVal: txt };
+
+        if (txt.length > 0) {
+            const dataUpdate = this.secondaryCustomerLedgerFilter.originalLedgerData.filter(rec =>
+                (rec.transactionNo && rec.transactionNo.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.description && rec.description.toLowerCase().includes(txt.toLowerCase())) ||
+                (rec.referenceNo && rec.referenceNo.toLowerCase().includes(txt.toLowerCase()))
+            );
+            this.secondaryCustomerLedgerFilter = {
+                ...this.secondaryCustomerLedgerFilter,
+                allLedgerData: dataUpdate,
+                isDataExisted: dataUpdate.length !== 0
+            };
+        } else {
+            this.secondaryCustomerLedgerFilter = {
+                ...this.secondaryCustomerLedgerFilter,
+                allLedgerData: this.secondaryCustomerLedgerFilter.originalLedgerData,
+                isDataExisted: this.secondaryCustomerLedgerFilter.originalLedgerData.length !== 0 ? true : false
+            };
+        }
+    }
+
+    downloadLedgerPdf() {
+        console.log('Download Ledger PDF');
+        // TODO: Implement PDF download functionality
+    }
+
+    exportLedgerCsv() {
+        console.log('Export Ledger to CSV');
+        // TODO: Implement CSV export functionality
+    }
+
+    printLedger() {
+        console.log('Print Ledger');
+        // TODO: Implement print functionality
+    }
 
 
     /**------Order Data------**/
@@ -2082,21 +2281,7 @@ export default class NavigationComponent extends LightningElement {
 
     // Make Payment - Multiple invoices allowed
 
-    makePaymemt() {
-        const selectedInvoices = this.InvFilter.allInvData.filter(row => row.isSelected);
-        if (selectedInvoices.length === 0) {
-            this.showToast('Error', 'Please select at least one invoice.', 'Error');
-            return;
-        }
-        // Map selected invoices and set payableAmount to null
-        this.paymentItems = selectedInvoices.map(invoice => ({
-            ...invoice,
-            payableAmount: null
-        }));
-
-        this.showPaymentModal = true;
-
-    }
+    // Removed duplicate makePaymemt() here (keep the more complete one below)
     closePayment() {
         this.showPaymentModal = false;
         this.paymentItems = [];
@@ -2217,16 +2402,13 @@ export default class NavigationComponent extends LightningElement {
             this.showToast('Error', 'Please select at least one invoice.', 'error');
             return;
         }
-
         // Set invoice list and total
         this.selectedInvoices = selectedInvoices;
         this.selectedTotalAmount = selectedInvoices.reduce(
             (sum, inv) => sum + parseFloat(inv.Amount || 0), 0
         );
-
         console.log('Selected Invoices:', this.selectedInvoices);
         console.log('Total Amount:', this.selectedTotalAmount);
-
         //  Open modal
         this.showModal = true;
     }
@@ -2595,65 +2777,7 @@ export default class NavigationComponent extends LightningElement {
         clearInterval(this.interval);
     }
 
-    /** Product Gallery Methods */
-    getProductGalleryData() {
-        this.isSubPartLoad = true;
-        getProductGalleryData()
-            .then(products => {
-                const categorySet = new Set();
-                const mappedProducts = products.map(p => {
-                    const category = p.Product_Category1__r ? p.Product_Category1__r.Name : 'Uncategorized';
-                    categorySet.add(category);
-                    return {
-                        id: p.Id,
-                        name: p.Name,
-                        price: p.List_Price__c,
-                        mrp: p.MRP__c,
-                        category: category,
-                        channel: p.Channel__c,
-                        uom: p.UOM__c,
-                        taxPercent: p.Tax_Percent__c
-                    };
-                });
-                this.allProducts = mappedProducts;
-                this.filteredProducts = mappedProducts;
-                this.categoryOptions = [
-                    { label: 'All Categories', value: '' },
-                    ...[...categorySet].sort().map(c => ({ label: c, value: c }))
-                ];
-                this.isSubPartLoad = false;
-            })
-            .catch(error => {
-                console.error('Error loading product gallery:', error);
-                this.isSubPartLoad = false;
-            });
-    }
 
-    handleProductCategoryChange(event) {
-        this.selectedCategory = event.detail.value;
-        this.filterProducts();
-    }
-
-    handleProductSearch(event) {
-        this.productSearchKey = event.target.value;
-        this.filterProducts();
-    }
-
-    filterProducts() {
-        let result = this.allProducts;
-        if (this.selectedCategory) {
-            result = result.filter(p => p.category === this.selectedCategory);
-        }
-        if (this.productSearchKey) {
-            const key = this.productSearchKey.toLowerCase();
-            result = result.filter(p => p.name && p.name.toLowerCase().includes(key));
-        }
-        this.filteredProducts = result;
-    }
-
-    get hasProducts() {
-        return this.filteredProducts && this.filteredProducts.length > 0;
-    }
 
     openOrderItems(event) {
         const orderId = event.currentTarget.dataset.id; // Use currentTarget instead of target

@@ -85,7 +85,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5); /* Overlay to darken the background */
-    z-index: 999; /* Ensure the overlay is above everything */
+    z-index: 99999; /* Ensure the overlay is above everything */
 }
 
 .sidebar-content {
@@ -96,7 +96,7 @@
     height: 100%;
     background-color: #ffffff;
     padding: 20px;
-    z-index: 1000;
+    z-index: 100000;
     box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
 }
 

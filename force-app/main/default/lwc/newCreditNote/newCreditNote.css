@@ -1,8 +1,16 @@
-/* Main Container */
+:host {
+    display: block;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* Base styles */
 .orders {
     z-index: 2;
     top: 100px;
-    padding: 20px;
+    padding-bottom: 20px;
     color: #000;
     width: 100%;
     display: flex;
@@ -12,200 +20,38 @@
     background: var(--root-bg-linear-gradient), var(--root-bg-image);
 }
 
-/* Header Section */
-.order-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 0 2rem;
-    margin-bottom: 1rem;
-}
-
 .order-title {
     margin: 0;
-    font-size: 24px;
-    font-weight: bold;
+    text-align: left;
+    font-size: 30px;
     color: #02323e;
-    padding-left: 10px;
-}
-
-/* Search Container for relative positioning */
-.search-container {
-    position: relative;
-}
-
-/* Suggestion Box Styles */
-.suggestion-box {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #d8dde6;
-    border-radius: 0.25rem;
-    z-index: 9999;
-    max-height: 250px;
-    overflow-y: auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    margin-top: 2px;
-}
-
-.suggestion-item {
-    cursor: pointer;
-    padding: 0.5rem 0.75rem;
-    transition: background-color 0.15s ease;
-}
-
-.suggestion-item:hover {
-    background-color: #f3f3f3;
-}
-
-.suggestion-item:focus {
-    outline: 2px solid #0176d3;
-    outline-offset: -2px;
-    background-color: #f3f3f3;
-}
-
-/* Table Container */
-.table-container {
-    background: #ffffff;
-    border: 1px solid #d8dde6;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-/* Table Header */
-.table-header {
     font-weight: bold;
-    background-color: #fafaf9;
-    border-bottom: 2px solid #dddbda;
+}
+
+.order-head {
+    margin: 10px 0;
+    margin-bottom: 20px;
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
 }
 
-/* Table Rows */
-.table-row {
+.customer-info-grid {
+    flex: 1;
+}
+
+.order-filters {
+    display: flex;
+    flex-direction: row;
     align-items: center;
-    border-bottom: 1px solid #e5e5e5;
-    transition: background-color 0.15s ease;
+    gap: 10px;
 }
 
-.table-row:hover {
-    background-color: #fafafa;
-}
-
-.table-row:last-child {
-    border-bottom: none;
-}
-
-/* Column Width Definitions */
-.col-product {
-    flex: 0 0 25%;
-    max-width: 25%;
-    min-width: 0;
-}
-
-.col-quantity {
-    flex: 0 0 10%;
-    max-width: 10%;
-    min-width: 0;
-}
-
-.col-unit-price {
-    flex: 0 0 10%;
-    max-width: 10%;
-    min-width: 0;
-}
-
-.col-amount {
-    flex: 0 0 12%;
-    max-width: 12%;
-    min-width: 0;
-}
-
-.col-uom {
-    flex: 0 0 10%;
-    max-width: 10%;
-    min-width: 0;
-}
-
-.col-reason {
-    flex: 0 0 18%;
-    max-width: 18%;
-    min-width: 0;
-}
-
-.col-actions {
-    flex: 0 0 5%;
-    max-width: 5%;
-    min-width: 0;
-    text-align: right;
-}
-
-/* Input Field Adjustments */
-lightning-input {
-    margin-top: 0;
-}
-
-/* Remove extra padding from columns in rows */
-.table-row .slds-col {
-    padding-right: 0.5rem;
-}
-
-/* Combobox adjustments */
-.reason-combobox {
-    width: 100%;
-}
-
-/* Button Icons */
-lightning-button-icon {
-    vertical-align: middle;
-}
-
-/* Responsive Padding */
-.slds-p-around_medium {
-    padding: 1rem;
-}
-
-/* Additional Utility Classes */
-.boarderbox {
-    background: #ffffff;
-    border: 1px solid #d8dde6;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
-    padding: 10px;
-}
-
-/* Scrollbar Styling for Suggestion Box */
-.suggestion-box::-webkit-scrollbar {
-    width: 6px;
-}
-
-.suggestion-box::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 0 0.25rem 0.25rem 0;
-}
-
-.suggestion-box::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
-}
-
-.suggestion-box::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Loading State */
-.slds-is-loading {
-    opacity: 0.6;
-    pointer-events: none;
-}
-/* Action Buttons */
 .actionButton {
     display: inline;
     margin: 5px;
-    float: right;
     font-size: 14.5px;
     background-color: #28a745;
     color: white;
@@ -223,11 +69,10 @@ lightning-button-icon {
 .actionButton1 {
     display: inline;
     margin: 5px;
-    float: right;
     font-size: 14.5px;
     background-color: white;
     color: black;
-    border: 1px solid #d8dde6;
+    border: 1px solid #ccc;
     width: 122px;
     border-radius: 4px;
     cursor: pointer;
@@ -235,5 +80,270 @@ lightning-button-icon {
 }
 
 .actionButton1:hover {
+    background-color: #f8f9fa;
+}
+
+/* Grid Container */
+.invoice-grid-container {
+    width: 95%;
+    background-color: #fff;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Grid Layout */
+.invoice-grid {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Grid Header */
+.grid-header {
+    display: grid;
+    grid-template-columns: 5% 1.5fr 1fr 1fr 1fr 0.8fr 1fr 1fr;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 12px 0;
+    border-bottom: 2px solid #ccc;
+}
+
+.grid-header .grid-cell {
+    padding: 8px 12px;
+    text-align: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.grid-header .grid-cell:last-child {
+    border-right: none;
+}
+
+/* Grid Rows */
+.grid-row {
+    display: grid;
+    grid-template-columns: 5% 1.5fr 1fr 1fr 1fr 0.8fr 1fr 1fr;
+    border-bottom: 1px solid #e5e5e5;
+    transition: background-color 0.2s;
+}
+
+.grid-row:hover {
+    background-color: #f8f9fa;
+}
+
+.grid-row:last-child {
+    border-bottom: none;
+}
+
+/* Grid Cells */
+.grid-cell {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+}
+
+.grid-cell:last-child {
+    border-right: none;
+}
+
+.grid-row .grid-cell {
+    font-size: 13px;
+}
+
+/* Input field styling within grid */
+.grid-cell lightning-input {
+    width: 100%;
+}
+
+.grid-cell lightning-input input {
+    text-align: center;
+}
+
+/* Custom Table Styles for Empty State */
+.custom-table-container {
+    width: 95%;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 1.3rem;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+}
+
+.custom-table th {
+    background: #04343e;
+    color: #fff;
+    padding: 18px 12px;
+    font-weight: 600;
+    text-align: left;
+    border-right: 1px solid #fff;
+    font-size: 1.2rem;
+}
+.custom-table th:first-child {
+    border-radius: 16px 0 0 0;
+}
+.custom-table th:last-child {
+    border-radius: 0 16px 0 0;
+    border-right: none;
+}
+.custom-table td {
+    padding: 16px 12px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+.no-records {
+    color: #ff0f0f;
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.5rem;
+    padding: 32px 0;
+}
+
+/* Gradient background for page */
+.orders {
+    background: linear-gradient(90deg, #a8d5c6 0%, #e07a7a 50%, #ff0f0f 100%);
+}
+
+/* Suggestion Box for Customer Search */
+.suggestion-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.suggestion-box .slds-listbox__option:hover {
     background-color: #f3f3f3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+
+    .grid-header,
+    .grid-row {
+        grid-template-columns: 1fr 1.2fr 0.8fr 0.8fr 0.8fr 0.7fr 0.8fr 0.8fr;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .invoice-grid-container {
+        overflow-x: auto;
+    }
+
+    .grid-header,
+    .grid-row {
+        min-width: 900px;
+    }
+}
+
+/* Input field size matching Primary Invoices */
+.custominputfieldSize {
+    font-size: 14px;
+    margin-bottom: 0px;
+}
+
+/* Contacts table matching Primary Invoices */
+.contacts-table {
+    width: 90%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    border: none;
+    overflow: hidden;
+    background-color: #fff;
+    display: block;
+    max-height: 65vh;
+}
+
+.contacts-table th,
+.contacts-table td {
+    color: #fff;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    padding: 15px;
+    border-bottom: 1px solid #ccc;
+}
+
+.contacts-table th:last-child,
+.contacts-table td:last-child {
+    border-right: none;
+}
+
+.contacts-table th {
+    background-color: #02323e;
+    font-weight: 400;
+    font-size: 16px;
+    position: sticky;
+    z-index: 1;
+}
+
+.contacts-table td {
+    font-size: 14px;
+    color: #404040;
+}
+
+.contacts-table tbody {
+    display: block;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.contacts-table thead,
+.contacts-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.contacts-table tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.contacts-table tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+
+.contacts-table tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+
+.contacts-table tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+.contacts-table tr:last-child td {
+    border: none;
+}
+
+.contacts-table tr th:nth-child(2),
+.contacts-table tr th:nth-child(3),
+.contacts-table tr th:nth-child(4),
+.contacts-table tr th:nth-child(5),
+.contacts-table tr th:nth-child(6),
+.contacts-table tr th:nth-child(7),
+.contacts-table tr th:nth-child(8),
+.contacts-table tr th:nth-child(9),
+.contacts-table tr th:nth-child(10) {
+    border-left: #fff 1px solid;
 }

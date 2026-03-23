@@ -135,6 +135,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
     visitFormSecondaryCustomerId = '';
     visitFormVisitId = '';
     visitFormReturnScreen = 3.8;
+    showReporteeView = false;
 
     //detect if LWC is running in mobile publisher
     isMobilePublisher = window.navigator.userAgent.indexOf('CommunityHybridContainer') > 0;
@@ -240,6 +241,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
                 this.vehicleUsedOptions = result.vehicleUsed || [];
                 this.travelTypeOptions = result.travelType || [];
                 this.isLeaveExisted = result.isLeaveExisted;
+                this.showReporteeView = result.showRepoteeView;
                 this.isPageLoaded = false;
             })
             .catch(error => {
@@ -694,12 +696,33 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
     }
 
     NewvisitformbuttonClick() {
-        this.resetAllScreen();
-        this.screen = 3.7;
-        this.isVisitFormScreen = true;
-        this.isShowNewVisitButton = false;
-        this.outletPage = true;
-        this.header = 'Visit Forms';
+        if (!navigator.onLine) {
+            this.showToast('Error', 'No internet connection. Please check your network and try again.', 'error');
+            return;
+        }
+        if(this.Outlet)
+        {
+            setTimeout(() => {
+                const childComp = this.template.querySelector('c-outlet-screen2');
+                if (childComp) {
+                    // Wait for child to emit event
+                    childComp.validateInprogressVisitForVisitForm();
+                    this.isShowNewVisitButton = true;
+                } else {
+                    console.error('Child component not found');
+                }
+            }, 0);
+        }
+        else
+        {
+            this.resetAllScreen();
+            this.screen = 3.7;
+            this.isVisitFormScreen = true;
+            this.isShowNewVisitButton = false;
+            this.outletPage = true;
+            this.header = 'Visit Forms';
+        }
+
     }
 
     /**Switch Beat**/
@@ -719,6 +742,8 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
             }
         }, 0);
     }
+
+    
 
     /**Visit Data */
     visitCreate() {
@@ -786,6 +811,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
     handleBeatCheck(event) {
         this.resetAllScreen();
         this.isShowBackButton = false;
+        this.beatScreenTab = 'myBeats';
         if (event.detail.canSwitch) {
             this.isBeatViewScreen = true;
             this.header = 'Beats';
@@ -793,7 +819,24 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
             this.isBeatViewScreen = false;
             this.Outlet = true;
             this.isVisitCreate = true;
+        }
+    }
 
+    handleVisitFormCheck(event) {
+        this.resetAllScreen();
+        this.isShowBackButton = false;
+        this.beatScreenTab = 'myBeats';
+        if (event.detail.canCreate) {
+            this.resetAllScreen();
+            this.screen = 3.7;
+            this.isVisitFormScreen = true;
+            this.isShowNewVisitButton = false;
+            this.outletPage = true;
+            this.header = 'Visit Forms';
+        } else {
+            this.isBeatViewScreen = false;
+            this.Outlet = true;
+            this.isVisitCreate = true;
         }
     }
 
@@ -1161,6 +1204,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
             this.screen = 1;
             this.isShowBackButton = false;
             this.isVisitCreate = true;
+            this.isShowNewVisitButton = true;
         }
         else if (sc == 2.2) {
             this.Outlet = true;
@@ -1168,6 +1212,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
             this.screen = 2;
             this.isShowBackButton = false;
             this.isVisitCreate = true;
+            this.isShowNewVisitButton = true;
         }
         else if (sc == 3) {
             this.Outlet = true;
@@ -1176,6 +1221,7 @@ export default class BeatPlannerLWC extends NavigationMixin(LightningElement) {
             this.isShowBackButton = false;
             this.isVisitHeader = true;
             this.isVisitCreate = true;
+            this.isShowNewVisitButton = true;
         }
         else if (sc == 3.2) {
             this.header = this.VisitListName;

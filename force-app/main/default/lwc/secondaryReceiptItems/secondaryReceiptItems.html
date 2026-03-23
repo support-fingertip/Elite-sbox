@@ -1,0 +1,41 @@
+<template>
+    <div class="orders layouts" id="SecondaryReceiptItemsLayout">
+        <h3 class="order-title">Secondary Invoice Items for Receipt: {receiptNo}</h3>
+        <button class="actionButton" onclick={handleBack}>Back to Receipts</button>
+        <table class="contacts-table" style="margin-top: 20px; width: 100%">
+            <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th>Product Name</th>
+                    <th>SKU Code</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Tax %</th>
+                    <th>Tax Amount</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template if:true={items}>
+                    <template for:each={items} for:item="item" for:index="index">
+                        <tr key={item.Id}>
+                            <td>{index + 1}</td>
+                            <td>{item.Product_Name__c}</td>
+                            <td>{item.SKU_Code__c}</td>
+                            <td>{item.Quantity__c}</td>
+                            <td>₹{item.Unit_Price__c}</td>
+                            <td>{item.Tax_Percent__c}%</td>
+                            <td>₹{item.Tax_Amount__c}</td>
+                            <td>₹{item.Total_Amount__c}</td>
+                        </tr>
+                    </template>
+                </template>
+                <template if:false={items}>
+                    <tr>
+                        <td colspan="8" style="text-align:center; color:red; padding:10px; font-size:large;">No items found!</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+</template>

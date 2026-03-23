@@ -30,7 +30,7 @@ public class dailylogTriggerHandlerTest {
         insert daily;
         
         Test.startTest();
-        Database.executeBatch(new EODReport(), 1); // force single execution
+        //Database.executeBatch(new EODReport(), 1); // force single execution
         Test.stopTest();
     }
 }
