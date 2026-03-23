@@ -27,7 +27,7 @@ public class CustomSharingService {
         }
         
         if (!shareRecords.isEmpty()) {
-            insert shareRecords;
+            Database.insert(shareRecords, false);
         }
         
     }
@@ -633,11 +633,7 @@ public class CustomSharingService {
         }
 
         if (!sharesToInsert.isEmpty()) {
-            try {
-                insert sharesToInsert;
-            } catch (Exception e) {
-                System.debug('Error sharing customer access to hierarchy: ' + e.getMessage());
-            }
+            Database.insert(sharesToInsert, false);
         }
     }
 
