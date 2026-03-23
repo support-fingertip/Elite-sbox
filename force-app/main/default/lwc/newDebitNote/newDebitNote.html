@@ -7,12 +7,10 @@
     <template lwc:else>
         <!-- New Debit Note Form -->
         <template if:true={showNewDebitNoteForm}>
-            <div class="orders layouts" id="NewDebitNoteLayout">
-                <div class="slds-grid slds-wrap slds-gutters slds-p-around_medium" style="margin-top: 1.5rem; align-items: center;">
-                    <div class="slds-col" style="flex: 0 0 auto;">
-                        <h3 class="order-title" style="width: auto; margin-bottom: 0;">New Secondary Debit Note</h3>
-                    </div>
-                    <div class="slds-col" style="flex: 1 1 auto; min-width: 350px; max-width: 500px; margin-left: 2rem;">
+            <div class="orders layouts" style=" min-height: 100vh;" id="NewDebitNoteLayout">
+                <div class="receipt-header-bar">
+                    <h3 class="order-title1">New Secondary Debit Note</h3>
+                        <div class="customer-search-container">
                         <div style="position: relative;">
                             <lightning-input label="Search Secondary Customers" type="search" required
                                 value={customerSearch} onchange={handleCustomerSearch} onfocus={handleCustomerFocus}>
@@ -38,7 +36,7 @@
                             </template>
                         </div>
                     </div>
-                    <div class="slds-col" style="flex: 0 0 auto; margin-left: 2rem; display: flex; gap: 1rem;">
+                    <div class="header-actions">
                         <button class="actionButton" onclick={handleSave}>Save</button>
                         <button class="actionButton1" onclick={handleCancel}>Cancel</button>
                     </div>
@@ -46,7 +44,7 @@
                 <div class="invoice-grid-container" style="padding: 1.5rem;">
                     <div class="slds-grid slds-wrap slds-gutters">
                         <div class="slds-col slds-size_1-of-3 slds-p-around_small">
-                            <lightning-input type="date" label="Note Date" value={noteDate} disabled></lightning-input>
+                            <lightning-input type="date" label="Note Date" value={noteDate} onchange={handleNoteDateChange}></lightning-input>
                         </div>
                         <div class="slds-col slds-size_1-of-3 slds-p-around_small">
                             <lightning-combobox label="Reason" value={reason} options={reasonOptions}
@@ -57,7 +55,7 @@
                             <lightning-input type="number" label="Amount" value={amount}
                                 onchange={handleAmountChange} required></lightning-input>
                         </div>
-                        <div class="slds-col slds-size_2-of-3 slds-p-around_small">
+                        <div class="slds-col slds-size_1-of-1 slds-p-around_small">
                             <lightning-textarea label="Description" value={description}
                                 onchange={handleDescriptionChange} placeholder="Enter description..."></lightning-textarea>
                         </div>
@@ -112,7 +110,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template if:true={debitNotes}>
+                        <template if:true={showDebitNotes}>
                             <template for:each={debitNotes} for:item="note">
                                 <tr key={note.id}>
                                     <td style="width:5%">{note.rowIndex}</td>
@@ -124,7 +122,7 @@
                                 </tr>
                             </template>
                         </template>
-                        <template if:false={debitNotes}>
+                        <template if:false={showDebitNotes}>
                             <tr>
                                 <td colspan="6" style="text-align:center; color:red; padding:10px; font-size:large;">
                                     No records found!

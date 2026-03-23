@@ -39,11 +39,6 @@
     display: flex;
     width: 100%;
     position: relative;
-    z-index: 1;
-}
-
-c-new-credit-note {
-    position: relative;
     z-index: 2;
 }
 
@@ -176,7 +171,7 @@ c-new-credit-note {
     display: flex;
     align-items: center;
     position: relative;
-    z-index: 100001;
+    z-index: 2;
 }
 
 @media screen and (max-width: 1200px) {
@@ -307,7 +302,7 @@ background: var(--root-bg-linear-gradient), var(--root-bg-image);
 .order-head {
     margin: 10px 0;
     margin-bottom: 20px;
-    width: 90%;
+    width: 95%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -344,7 +339,7 @@ lightning-combobox,
     margin-bottom: 0px;
 }
 .contacts-table {
-width: 90%;
+width: 95%;
 border-collapse: separate;
 border-spacing: 0;
 border-radius: 10px;

@@ -832,17 +832,17 @@
                             <thead>
                                 <tr>
                                     <th style="width:15%">SKU</th>
-                                    <th style="width:7.22%">GRN Sal Qty</th>
-                                    <th style="width:7.22%">GRN Non-Sal Qty</th>
-                                    <th style="width:7.22%">Sec Inv Qty</th>
-                                    <th style="width:7.22%">Prim Rtn Qty</th>
-                                    <th style="width:7.22%">Sec Rtn Sal Qty</th>
-                                    <th style="width:7.22%">Sec Rtn Non-Sal Qty</th>
-                                    <th style="width:7.22%">Sal → Non-Sal Qty</th>
-                                    <th style="width:7.22%">Non-Sal → Sal Qty</th>
-                                    <th style="width:7.22%">WO Qty</th>
-                                    <th style="width:10%">Avail Sal Qty</th>
-                                    <th style="width:10%">Avail Non-Sal Qty</th>
+                                    <th style="width:7.22%">GRN Sale Qty</th>
+                                    <th style="width:7.22%">GRN Non-Sale Qty</th>
+                                    <th style="width:7.22%">Secondary Invoice Qty</th>
+                                    <th style="width:7.22%">Primary Return Qty</th>
+                                    <th style="width:7.22%">Secondary Return Sale Qty</th>
+                                    <th style="width:7.22%">Secondary Return Non-Sale Qty</th>
+                                    <th style="width:7.22%">Sale → Non-Sale Qty</th>
+                                    <th style="width:7.22%">Non-Sale → Sale Qty</th>
+                                    <th style="width:7.22%">Written Off Qty</th>
+                                    <th style="width:10%">Available Sale Qty</th>
+                                    <th style="width:10%">Available Non-Sale Qty</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1617,6 +1617,11 @@
             <!--Product Gallery Tab-->
             <template lwc:if={showProductGallery}>
                 <c-product-gallery-lwc></c-product-gallery-lwc>
+            </template>
+
+             <!--showSecondaryCustomerLedger Tab-->
+            <template lwc:if={showSecondaryCustomerLedger}>
+                <c-secondary-customer-ledger></c-secondary-customer-ledger>
             </template>
 
         </div>

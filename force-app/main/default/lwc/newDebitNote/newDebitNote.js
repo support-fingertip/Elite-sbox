@@ -25,6 +25,7 @@ export default class NewDebitNote extends LightningElement {
     @track searchSecondaryCustomerName = '';
     @track filteredListCustomers = [];
     @track showListCustomerSuggestions = false;
+    showDebitNotes = false;
 
     isPageLoaded = false;
     isSubPartLoad = false;
@@ -67,6 +68,7 @@ export default class NewDebitNote extends LightningElement {
                     amount: note.amount
                 }));
                 this.debitNotes = [...this.originalDebitNotes];
+                this.showDebitNotes = this.debitNotes.length >0 ? true : false ;
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -121,6 +123,7 @@ export default class NewDebitNote extends LightningElement {
             filtered = filtered.filter(n => n.customerName && n.customerName.toLowerCase().includes(key));
         }
         this.debitNotes = filtered.length > 0 ? filtered : null;
+        this.showDebitNotes = filtered.length > 0  ? true : false ;
     }
 
     handleCustomerFocus() {
@@ -173,6 +176,12 @@ export default class NewDebitNote extends LightningElement {
     handleDescriptionChange(event) {
         this.description = event.detail.value;
     }
+
+    handleNoteDateChange(event) {
+    this.noteDate = event.detail.value;
+}
+
+
 
     handleSave() {
         if (!this.selectedCustomerId) {

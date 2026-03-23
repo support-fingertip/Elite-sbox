@@ -7,19 +7,21 @@
     <template lwc:else>
         <!-- New Credit Note Form -->
         <template if:true={showNewCreditNoteForm}>
-            <div class="orders layouts" id="NewCreditNoteLayout">
-                <div class="order-head slds-grid slds-wrap slds-gutters slds-p-around_medium" style="margin-top: 1.5rem;">
+            <div class="orders layouts" style=" min-height: 100vh;" id="NewCreditNoteLayout">
+               <div class="order-head slds-grid slds-wrap slds-gutters slds-p-around_medium" style="margin-top: 1.5rem; align-items: center;">
+
                     <!-- Title -->
-                    <div class="slds-col slds-size_1-of-3">
-                        <h3 class="order-title" style="width: auto;">New Secondary Credit Note</h3>
+                    <div class="slds-size_1-of-3 slds-text-align_left">
+                        <h3 class="order-title">Secondary Credit Note</h3>
                     </div>
 
                     <!-- Customer Search -->
-                    <div class="slds-col slds-size_1-of-3">
+                    <div class="slds-size_1-of-3 slds-text-align_left">
                         <div style="position: relative;">
                             <lightning-input label="Search Secondary Customers" type="search" required
                                 value={customerSearch} onchange={handleCustomerSearch} onfocus={handleCustomerFocus}>
                             </lightning-input>
+
                             <template if:true={showCustomerSuggestions}>
                                 <div class="suggestion-box" role="listbox">
                                     <ul class="slds-listbox slds-listbox_vertical">
@@ -27,9 +29,11 @@
                                             <li key={cust.value} class="slds-listbox__item">
                                                 <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
                                                     onclick={selectCustomer} data-id={cust.value} style="cursor: pointer;">
+                                                    
                                                     <span class="slds-media__figure slds-listbox__option-icon">
                                                         <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
                                                     </span>
+
                                                     <span class="slds-media__body">
                                                         <span class="slds-truncate" title={cust.label}>{cust.label}</span>
                                                     </span>
@@ -43,17 +47,18 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="slds-col slds-size_1-of-3 slds-text-align_right">
+                    <div class=" slds-size_1-of-3 slds-text-align_right">
                         <button class="actionButton" onclick={handleSave}>Save</button>
                         <button class="actionButton1" onclick={handleCancel}>Cancel</button>
                     </div>
+
                 </div>
 
                 <div class="invoice-grid-container" style="padding: 1.5rem;">
                     <div class="slds-grid slds-wrap slds-gutters">
                         <!-- Note Date -->
                         <div class="slds-col slds-size_1-of-3 slds-p-around_small">
-                            <lightning-input type="date" label="Note Date" value={noteDate} disabled></lightning-input>
+                           <lightning-input type="date" label="Note Date" value={noteDate} onchange={handleNoteDateChange}></lightning-input>
                         </div>
 
                         <!-- Reason Picklist -->
@@ -70,7 +75,7 @@
                         </div>
 
                         <!-- Description -->
-                        <div class="slds-col slds-size_2-of-3 slds-p-around_small">
+                        <div class="slds-col slds-size_1-of-1 slds-p-around_small">
                             <lightning-textarea label="Description" value={description}
                                 onchange={handleDescriptionChange} placeholder="Enter description..."></lightning-textarea>
                         </div>
@@ -126,7 +131,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template if:true={creditNotes}>
+                        <template if:true={showCreditNotes}>
                             <template for:each={creditNotes} for:item="note">
                                 <tr key={note.id}>
                                     <td style="width:5%;">{note.rowIndex}</td>
@@ -138,7 +143,7 @@
                                 </tr>
                             </template>
                         </template>
-                        <template if:false={creditNotes}>
+                        <template if:false={showCreditNotes}>
                             <tr>
                                 <td colspan="6" style="text-align:center; color:red; padding:10px; font-size:large;">
                                     No records found!

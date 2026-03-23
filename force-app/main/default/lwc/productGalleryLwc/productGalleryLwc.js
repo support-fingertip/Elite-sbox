@@ -54,6 +54,7 @@ export default class ProductGalleryLwc extends LightningElement {
                     return {
                         id: p.Id,
                         name: p.Name,
+                        sku: p.SKU_Code__c || '',
                         price: p.List_Price__c,
                         mrp: p.MRP__c,
                         category: p.Category__c || 'Uncategorized',

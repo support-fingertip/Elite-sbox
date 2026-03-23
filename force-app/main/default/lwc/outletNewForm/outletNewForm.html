@@ -57,8 +57,7 @@
                             value={customerBusinessType}
                             options={businessTypeOptions}
                             data-field="customerBusinessType"
-                            onchange={handleChange}
-                            required>
+                            onchange={handleChange}>
                         </lightning-combobox>
                     </div>
 
@@ -69,8 +68,7 @@
                             value={productCategory}
                             options={categoryOptions}
                             data-field="productCategory"
-                            onchange={handleChange}
-                            required>
+                            onchange={handleChange}>
                         </lightning-combobox>
                     </div>
 
@@ -79,7 +77,6 @@
                         <div class="field">
                             <label class="label">
                                 Product Group
-                                <span class="required">*</span>
                             </label>
                             <lightning-checkbox-group
                                 options={filteredGroupOptions}
@@ -146,8 +143,7 @@
                             label="General Remarks"
                             value={generalRemarks}
                             data-field="generalRemarks"
-                            onchange={handleChange}
-                            required>
+                            onchange={handleChange}>
                         </lightning-textarea>
                     </div>
 
@@ -167,8 +163,7 @@
                             value={state}
                             options={stateOptions}
                             data-field="state"
-                            onchange={handleChange}
-                            required>
+                            onchange={handleChange}>
                         </lightning-combobox>
                     </div>
                     <div class="field">
@@ -177,8 +172,7 @@
                             value={district}
                             options={filteredDistrictOptions}
                             data-field="district"
-                            onchange={handleChange}
-                            required>
+                            onchange={handleChange}>
                         </lightning-combobox>
                     </div>
                     <!-- Pin Code -->
@@ -191,8 +185,7 @@
                             message-when-pattern-mismatch="Pin Code must be exactly 6 digits"
                             value={pinCode}
                             data-field="pinCode"
-                            onchange={handleChange}
-                            required>
+                            onchange={handleChange}>
                         </lightning-input>
                     </div>
 
@@ -206,8 +199,7 @@
                             message-when-pattern-mismatch="Contact Number must be exactly 10 digits"
                             value={contactNumber}
                             data-field="contactNumber"
-                            onchange={handleChange}
-                            required>
+                            onchange={handleChange}>
                         </lightning-input>
                     </div>
 

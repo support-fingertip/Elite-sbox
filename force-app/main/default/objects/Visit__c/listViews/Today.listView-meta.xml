@@ -15,6 +15,7 @@
     <columns>Distance_Salesforce__c</columns>
     <columns>Distance__c</columns>
     <columns>Owner_Name__c</columns>
+    <columns>CREATEDBY_USER</columns>
     <filterScope>Everything</filterScope>
     <filters>
         <field>Planned_Start_Time__c</field>
