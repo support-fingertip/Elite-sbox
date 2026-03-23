@@ -1126,7 +1126,7 @@ export default class NavigationComponent extends LightningElement {
 
             this.ordFilter = {
                 ...this.ordFilter,
-                allordData: indexedData,
+                allordData: uniqueOrders,
                 isOrderDataExisted: uniqueOrders.length !== 0
             };
 
@@ -2918,20 +2918,6 @@ export default class NavigationComponent extends LightningElement {
     //================================================================================
     // PRIMARY INVOICES AS CSV
 
-    @track Primaryinvoices = [];
-
-    @wire(getPrimaryInvoices, {
-        status: '$InvFilter.status',
-        frmDate: '$InvFilter.fromDate',
-        toDate: '$InvFilter.toDate'
-    })
-    wiredInvoices({ error, data }) {
-        if (data) {
-            this.Primaryinvoices = data; // Assuming DmsData contains the list of invoices
-        } else if (error) {
-            console.error('Error fetching Primary invoices', error);
-        }
-    }
 
 
 
@@ -2942,29 +2928,24 @@ export default class NavigationComponent extends LightningElement {
             alert('Please provide both From Date and To Date.');
             return;
         }
-
-        if (this.Primaryinvoices.length === 0) {
+        var invoices = this.InvFilter.allInvData
+        if (invoices.length === 0) {
             // Show toast message if no invoices are found
             this.showToast('No Data Found', 'No primary invoices found for the selected filters.', 'error');
             return;
         }
 
         // Define CSV header with fields as per the invoice data
-        const header = ['Invoice Name', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Total Amount'];
+        const header = ['SAP Inv No','SF Inv No.', 'Invoice Date', 'Total Quantity', 'Total Tax', 'Total Amount'];
 
         // Map invoices to CSV rows
-        const rows = this.Primaryinvoices.map(invoice => [
-
-            invoice.Name,
-            // invoice.Store__r ? invoice.Store__r.Name : '',  // Store Name (Ensure it's checked for null)
-            invoice.Invoice_Date__c,
-            invoice.Status__c,
-            invoice.Total_Quantity__c,
-            invoice.Total_Tax__c,
-            invoice.Grand_Total__c,
-
-
-
+        const rows = invoices.map(invoice => [
+            invoice.invoiceNo,
+            invoice.name,
+            invoice.InvDate,
+            invoice.TotalQuantity,
+            invoice.tax,
+            invoice.Amount
         ]);
 
         // Create CSV content

@@ -56,7 +56,9 @@ export default class SecondaryCustomerLedger extends LightningElement {
             .then(result => {
                 this.filteredCustomers = result.map(acc => ({
                     label: acc.Name,
-                    value: acc.Id
+                    value: acc.Id,
+                    landmark: acc.Land_Mark__c,
+                    street: acc.Street__c
                 }));
                 this.showCustomerSuggestions = this.filteredCustomers.length > 0;
             })
@@ -101,7 +103,7 @@ export default class SecondaryCustomerLedger extends LightningElement {
         this.srchVal = event.detail.value;
     }
 
-    handleGenerateLedger() {
+   handleGenerateLedger() {
         if (!this.selectedCustomerId) {
             this.showToast('Validation Error', 'Please select a Customer', 'error');
             return;
@@ -116,92 +118,105 @@ export default class SecondaryCustomerLedger extends LightningElement {
         this.allLedgerData = [];
         this.isDataExisted = false;
 
-        // Step 1: Fetch opening balance (sum of all transactions BEFORE fromDate)
+        // Step 1: Fetch opening balance
         getOpeningBalance({
             customerId: this.selectedCustomerId,
             asOfDate: this.fromDate
         })
-            .then(openingBalResult => {
-                const openingBalance = openingBalResult ? (openingBalResult.balance || 0) : 0;
-                console.log('Opening Balance:', openingBalance);
+        .then(openingBalResult => {
+            const openingBalance = Number(openingBalResult?.balance) || 0;
+            console.log('Opening Balance:', openingBalance);
 
-                // Step 2: Fetch ledger transactions within the date range
-                return getSecondaryLedger({
-                    customerId: this.selectedCustomerId,
-                    fromDate: this.fromDate,
-                    toDate: this.toDate,
-                    status: this.status
-                }).then(ledgerResult => ({ openingBalance, ledgerResult }));
-            })
-            .then(({ openingBalance, ledgerResult }) => {
-                const ledgerData = ledgerResult ? (ledgerResult.ledgerData || []) : [];
-                console.log('Ledger entries fetched:', ledgerData.length);
-                this.showCustomerSuggestions = false;
-                // Step 3: Build the opening balance row (always shown as first row)
-                const openingRow = {
-                    uniqueKey: 'opening-balance',
-                    rowIndex: '1',
-                    transactionDate: this.fromDate,
-                    description: 'Opening Balance',
-                    transactionNo: 'Opening Balance',
-                    referenceNo: '-',
-                    debitAmount: openingBalance > 0 ? this.formatAmount(openingBalance) : '',
-                    creditAmount: openingBalance < 0 ? this.formatAmount(Math.abs(openingBalance)) : '',
-                    balance: this.formatAmount(openingBalance),
-                    isOpeningBalance: true,
-                    rowClass: 'opening-balance-row'
+            // Step 2: Fetch ledger transactions
+            return getSecondaryLedger({
+                customerId: this.selectedCustomerId,
+                fromDate: this.fromDate,
+                toDate: this.toDate,
+                status: this.status
+            }).then(ledgerResult => ({ openingBalance, ledgerResult }));
+        })
+        .then(({ openingBalance, ledgerResult }) => {
+            const ledgerData = ledgerResult?.ledgerData || [];
+            console.log('Ledger entries fetched:', ledgerData.length);
+
+            this.showCustomerSuggestions = false;
+
+            // Step 3: Opening Balance Row
+            const openingRow = {
+                uniqueKey: 'opening-balance',
+                rowIndex: '1',
+                transactionDate: this.fromDate,
+                description: 'Opening Balance',
+                transactionNo: 'Opening Balance',
+                referenceNo: '-',
+                debitAmount: openingBalance > 0 ? this.formatAmount(openingBalance) : '',
+                creditAmount: openingBalance < 0 ? this.formatAmount(Math.abs(openingBalance)) : '',
+                balance: this.formatAmount(openingBalance),
+                isOpeningBalance: true,
+                rowClass: 'opening-balance-row'
+            };
+
+            // Step 4: Process ledger entries
+            let runningBalance = Number(openingBalance) || 0;
+
+            const processedData = ledgerData.map((entry, index) => {
+
+                const isDebit = entry.transactionType === 'Secondary Invoice' ||
+                                entry.transactionType === 'Invoice' ||
+                                entry.transactionType === 'Debit Note';
+
+                const isCredit = entry.transactionType === 'Receipt' ||
+                                entry.transactionType === 'Return' ||
+                                entry.transactionType === 'Credit Note';
+
+                const amount = Number(entry.amount) || 0;
+
+                const debitAmt  = isDebit  ? amount : 0;
+                const creditAmt = isCredit ? amount : 0;
+
+                // Correct running balance
+                runningBalance = Number(runningBalance) + debitAmt - creditAmt;
+
+                return {
+                    ...entry,
+                    uniqueKey: (entry.transactionNo || 'txn') + '-' + index,
+                    rowIndex: index + 2,
+                    debitAmount:  debitAmt  > 0 ? this.formatAmount(debitAmt)  : '',
+                    creditAmount: creditAmt > 0 ? this.formatAmount(creditAmt) : '',
+                    balance: this.formatAmount(runningBalance),
+                    isOpeningBalance: false,
+                    rowClass: ''
                 };
-
-                // Step 4: Process each ledger entry with running balance
-                let runningBalance = openingBalance;
-
-                const processedData = ledgerData.map((entry, index) => {
-                    const isDebit = entry.transactionType === 'Secondary Invoice' ||
-                                     entry.transactionType === 'Invoice' ||
-                                    entry.transactionType === 'Debit Note';
-                    const isCredit = entry.transactionType === 'Receipt' ||
-                                     entry.transactionType === 'Return' ||
-                                     entry.transactionType === 'Credit Note';
-
-                    const debitAmt  = isDebit  ? (entry.amount || 0) : 0;
-                    const creditAmt = isCredit ? (entry.amount || 0) : 0;
-
-                    // Running balance: add debits, subtract credits
-                    runningBalance = runningBalance + debitAmt - creditAmt;
-
-                    return {
-                        ...entry,
-                        uniqueKey: entry.transactionNo + '-' + index,
-                        rowIndex: index + 2,
-                        debitAmount:  debitAmt  > 0 ? this.formatAmount(debitAmt)  : '',
-                        creditAmount: creditAmt > 0 ? this.formatAmount(creditAmt) : '',
-                        balance: this.formatAmount(runningBalance),
-                        isOpeningBalance: false,
-                        rowClass: ''
-                    };
-                });
-
-                // Step 5: Combine opening balance row + transaction rows
-                this.allLedgerData = [openingRow, ...processedData];
-                this.isDataExisted = processedData.length > 0;
-
-                if (!this.isDataExisted) {
-                    this.errorMessage = 'No ledger data found for the selected criteria';
-                }
-
-                this.isLoading = false;
-            })
-            .catch(error => {
-                console.error('Error fetching ledger data:', error);
-                this.errorMessage = 'Failed to fetch ledger data: ' + (error.body?.message || error.message || 'Unknown error');
-                this.isLoading = false;
             });
+
+            // Step 5: Combine data
+            this.allLedgerData = [openingRow, ...processedData];
+            this.isDataExisted = processedData.length > 0;
+
+            if (!this.isDataExisted) {
+                this.errorMessage = 'No ledger data found for the selected criteria';
+            }
+
+            this.isLoading = false;
+        })
+        .catch(error => {
+            console.error('Error fetching ledger data:', error);
+            this.errorMessage = 'Failed to fetch ledger data: ' + 
+                (error.body?.message || error.message || 'Unknown error');
+            this.isLoading = false;
+        });
     }
 
-    // Format number to 2 decimal places with comma separation
+
+    // Safe formatter (prevents NaN)
     formatAmount(value) {
-        if (value === null || value === undefined || value === '') return '';
-        return Number(value).toLocaleString('en-IN', {
+        const num = Number(value);
+
+        if (isNaN(num)) {
+            return '0.00';
+        }
+
+        return num.toLocaleString('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });

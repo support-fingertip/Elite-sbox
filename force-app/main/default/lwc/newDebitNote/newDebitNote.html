@@ -7,12 +7,10 @@
     <template lwc:else>
         <!-- New Debit Note Form -->
         <template if:true={showNewDebitNoteForm}>
-            <div class="orders layouts" id="NewDebitNoteLayout">
-                <div class="slds-grid slds-wrap slds-gutters slds-p-around_medium" style="margin-top: 1.5rem; align-items: center;">
-                    <div class="slds-col" style="flex: 0 0 auto;">
-                        <h3 class="order-title" style="width: auto; margin-bottom: 0;">New Secondary Debit Note</h3>
-                    </div>
-                    <div class="slds-col" style="flex: 1 1 auto; min-width: 350px; max-width: 500px; margin-left: 2rem;">
+            <div class="orders layouts" style=" min-height: 100vh;" id="NewDebitNoteLayout">
+                <div class="receipt-header-bar">
+                    <h3 class="order-title1">New Secondary Debit Note</h3>
+                        <div class="customer-search-container">
                         <div style="position: relative;">
                             <lightning-input label="Search Secondary Customers" type="search" required
                                 value={customerSearch} onchange={handleCustomerSearch} onfocus={handleCustomerFocus}>
@@ -38,7 +36,7 @@
                             </template>
                         </div>
                     </div>
-                    <div class="slds-col" style="flex: 0 0 auto; margin-left: 2rem; display: flex; gap: 1rem;">
+                    <div class="header-actions">
                         <button class="actionButton" onclick={handleSave}>Save</button>
                         <button class="actionButton1" onclick={handleCancel}>Cancel</button>
                     </div>

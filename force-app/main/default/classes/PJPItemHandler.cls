@@ -186,6 +186,7 @@ public without sharing class PJPItemHandler {
         for (PJP_Item__c item : items) {
             if (item.OwnerId__c != currentUserId) {
                 if (isAdmin || subordinateIds.contains(item.OwnerId__c)) {
+                    item.Beat__c = item.Assigned_Beat__c;
                     item.Status__c = 'Approved';
                 }
             }

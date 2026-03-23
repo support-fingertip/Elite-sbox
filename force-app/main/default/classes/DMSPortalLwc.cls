@@ -1312,7 +1312,7 @@ public without sharing class DMSPortalLwc {
         }
         
         return [
-            select Id,Name from Account where Id IN: CustomerIds
+            select Id,Name,Land_Mark__c,Street__c from Account where Id IN: CustomerIds
         ]; 
         
         
@@ -2482,14 +2482,21 @@ public without sharing class DMSPortalLwc {
     }
     
     // Wrapper class for ledger entry
-    public class LedgerEntry {
-        @AuraEnabled public String transactionType;      // Invoice, Receipt, Return, Credit Note, Debit Note
-        @AuraEnabled public Date transactionDate;
-        @AuraEnabled public String transactionNo;        // Doc number
-        @AuraEnabled public String description;
-        @AuraEnabled public String referenceNo;          // Doc number (human-readable)
+    public class LedgerEntry implements Comparable {
+        @AuraEnabled public String  transactionType;
+        @AuraEnabled public Date    transactionDate;
+        @AuraEnabled public String  transactionNo;
+        @AuraEnabled public String  description;
+        @AuraEnabled public String  referenceNo;
         @AuraEnabled public Decimal amount;
-        @AuraEnabled public String status;
+        @AuraEnabled public String  status;
+        
+        public Integer compareTo(Object compareTo) {
+            Date otherDate = ((LedgerEntry) compareTo).transactionDate;
+            if (transactionDate == otherDate) return 0;
+            if (transactionDate == null || transactionDate < otherDate) return -1;
+            return 1;
+        }
     }
     
     // Wrapper class for secondary ledger result
