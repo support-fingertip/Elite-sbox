@@ -14,6 +14,9 @@
     --float-button-bg-color: #fff;
     --float-button-text-color: #858585;
 }
+.text-right {
+    text-align: right;
+}
 
 .custom1 {
     overflow :hidden;
@@ -601,4 +604,55 @@ height: 33px;
   height: auto;
   object-fit: contain;
   margin: 0 auto;
+}
+
+.exportBtn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    height: 34px;
+}
+
+.exportBtn:hover {
+    background-color: #218838;
+}
+
+
+.download-dropdown {
+    position: relative;
+}
+.download-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    border: 1px solid #d8dde6;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 180px;
+    margin-top: 4px;
+}
+.download-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+}
+.download-menu li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+}
+.download-menu li:hover {
+    background-color: #f0f4ff;
 }

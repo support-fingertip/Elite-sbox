@@ -225,7 +225,9 @@ export default class SecondaryReturns extends LightningElement {
             .then(result => {
                 this.filteredCustomers = result.map(acc => ({
                     label: acc.Name,
-                    value: acc.Id
+                    value: acc.Id,
+                    landmark: acc.Land_Mark__c,
+                    street: acc.Street__c
                 }));
                 this.customerOptions = this.filteredCustomers;
                 this.showCustomerSuggestions = this.filteredCustomers.length > 0;

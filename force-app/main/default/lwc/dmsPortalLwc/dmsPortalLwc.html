@@ -1416,6 +1416,33 @@
                                 <lightning-input type="search" label="Search Customer" placeholder="Name / Code / Phone"
                                     value={searchKey} onchange={handleCustomerSearch}>
                                 </lightning-input>
+
+                                <!-- Download Dropdown -->
+                                <div class="btn-wrapper download-dropdown">
+                                    <button class="exportBtn" onclick={toggleCustomerDownloadMenu}>
+                                        <span style="display:flex; align-items:center; gap:6px;">
+                                            Download
+                                            <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                                size="x-small" style="--slds-c-icon-color-foreground-default: white;">
+                                            </lightning-icon>
+                                        </span>
+                                    </button>
+                                    <template lwc:if={showCustomerDownloadMenu}>
+                                        <div class="download-menu">
+                                            <ul>
+                                                <li onclick={handleCustomerExportCsv}>
+                                                    <lightning-icon icon-name="doctype:csv" size="x-small"></lightning-icon>
+                                                    Download CSV
+                                                </li>
+                                                <li onclick={handleCustomerExportXlsx}>
+                                                    <lightning-icon icon-name="doctype:excel" size="x-small"></lightning-icon>
+                                                    Download Excel
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </template>
+                                </div>
+
                             </div>
                         </div>
 
@@ -1429,9 +1456,9 @@
                                     <th style="width:10%">Customer Category</th>
                                     <th style="width:10%">Customer Status</th>
                                     <th style="width:10%">Primary Phone</th>
-                                    <th style="width:10%">State</th>
-                                    <th style="width:10%">District</th>
                                     <th style="width:10%">Beat Name</th>
+                                    <th style="width:10%">District</th>
+                                    <th style="width:10%">Outstanding</th>
  
                                 </tr>
                             </thead>
@@ -1448,9 +1475,9 @@
                                             <td style="width:10%">{cust.customerCategory}</td>
                                             <td style="width:10%">{cust.status}</td>
                                             <td style="width:10%">{cust.primaryPhoneNumber}</td>
-                                            <td style="width:10%">{cust.state}</td>
-                                            <td style="width:10%">{cust.district}</td>
                                             <td style="width:10%">{cust.beatName}</td>
+                                            <td style="width:10%">{cust.district}</td>
+                                            <td class="text-right" style="width:10%">{cust.outStanding}</td>
                                         </tr>
                                     </template>
                                 </template>

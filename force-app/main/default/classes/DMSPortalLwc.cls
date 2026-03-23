@@ -1865,7 +1865,8 @@ public without sharing class DMSPortalLwc {
             'Primary_Customer__r.Name, ' +
             'Customer__r.Secondary_Customer_Category__c, ' +
             'Customer__r.Customer_Status__c, ' +
-            'Sub_Stockiest__r.Name ' +
+            'Sub_Stockiest__r.Name ,' +
+            'Customer__r.Secondary_Outstanding_Amount__c ' +
             'FROM Product_Mapping__c ' +
             'WHERE Primary_Customer__c = :accountId ' +
             'AND Is_Executive_Active__c = true ' +
@@ -1913,6 +1914,7 @@ public without sharing class DMSPortalLwc {
             d.customerType =  pm.Customer__r.Secondary_Customer_Type__c;
             d.customerCategory =  pm.Customer__r.Secondary_Customer_Category__c;
             d.status = pm.Customer__r.Customer_Status__c;
+            d.outStanding=  pm.Customer__r.Secondary_Outstanding_Amount__c != null ? pm.Customer__r.Secondary_Outstanding_Amount__c : 0;
             d.beatName = outletToBeatNames.containsKey(pm.Customer__c)
                 ? String.join(new List<String>(outletToBeatNames.get(pm.Customer__c)), ';')
                 : '';
@@ -2141,6 +2143,7 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String status;
         @AuraEnabled public String customerType;
         @AuraEnabled public String customerCategory;
+        @AuraEnabled public decimal outStanding;
     }
     
     
@@ -2479,7 +2482,7 @@ public without sharing class DMSPortalLwc {
     // Wrapper class for opening balance
     public class OpeningBalanceResult {
         @AuraEnabled public Decimal balance;
-    }
+    } 
     
     // Wrapper class for ledger entry
     public class LedgerEntry implements Comparable {

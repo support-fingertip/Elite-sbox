@@ -27,6 +27,15 @@
                                                     </span>
                                                     <span class="slds-media__body">
                                                         <span class="slds-truncate" title={cust.label}>{cust.label}</span>
+                                                         <template if:true={cust.landmark}>
+                                                            <span> | </span>
+                                                            <span class="slds-truncate" title={cust.landmark}>{cust.landmark}</span>
+                                                        </template>
+
+                                                        <template if:true={cust.street}>
+                                                            <span> | </span>
+                                                            <span class="slds-truncate" title={cust.street}>{cust.street}</span>
+                                                        </template>
                                                     </span>
                                                 </div>
                                             </li>
