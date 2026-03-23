@@ -39,7 +39,12 @@
     display: flex;
     width: 100%;
     position: relative;
-    z-index: 10000;
+    z-index: 1;
+}
+
+c-new-credit-note {
+    position: relative;
+    z-index: 2;
 }
 
 .navbar {
