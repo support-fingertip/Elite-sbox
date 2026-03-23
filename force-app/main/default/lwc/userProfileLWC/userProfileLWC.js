@@ -39,7 +39,7 @@ import VISIT_SUMMARY from '@salesforce/apex/userProfileLWC.getBeatVisitSummaries
 
 export default class UserProfileLWC extends NavigationMixin(LightningElement) {
     @api recordId;
-     @track fromDate;
+    @track fromDate;
     @track toDate;
     @track mapMarkers = [];
     isPageLoaded = false; isDesktop = false; isPhone = false;
@@ -70,7 +70,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
 
     usersDetail;
     LoggedInUserData;
-    targetLineChart; selectedId; beatPlan = []; VisitData = []; masterBeatPlan = []; newPJPRecord = {};
+    targetLineChart; selectedId; beatPlan = []; sharedBeats = []; VisitData = []; masterBeatPlan = []; newPJPRecord = {};
     @track filteredBeatOptions = [];
     @track filterBeatData = {
         beatSearchKeyword: '',
@@ -136,10 +136,10 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
         statusVal: [],
         allordData: [],
         originalOrdData: [],
-        totalOrderAmount : 0,
-        primaryOrderAmount : 0,
-        secondaryOrderAmount : 0,
-        totalNoOfOrders : 0
+        totalOrderAmount: 0,
+        primaryOrderAmount: 0,
+        secondaryOrderAmount: 0,
+        totalNoOfOrders: 0
     };
     @track InvFilter = {
         fromDate: '',
@@ -149,20 +149,20 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
         statusVal: [],
         allInvData: [],
         originalInvData: [],
-        totalAmount : 0,
-        totalNoOfInvoices : 0
+        totalAmount: 0,
+        totalNoOfInvoices: 0
     };
     @track visitSummary = {
         fromDate: '',
         toDate: '',
-        BeatSummary :[],
-        DailyOutletSummary :[],
+        BeatSummary: [],
+        DailyOutletSummary: [],
         OutletEntryWorked: [],
         OutletEntryNotWorked: [],
-        showBeatSummary:false,
-        showDailyOutletSummary:false,
-        showOutletEntry:false,
-        outletCount:0
+        showBeatSummary: false,
+        showDailyOutletSummary: false,
+        showOutletEntry: false,
+        outletCount: 0
     };
     @track expFilter = {
         fromDate: '',
@@ -198,9 +198,9 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
     employeeId;
     objectName = 'Employee';
     dataUploadObjectName = '';
-    userSearchText ='';
-    userList =[];
-    searchedUserList =[];
+    userSearchText = '';
+    userList = [];
+    searchedUserList = [];
     showUsers = false;
     isReadOnly = false;
     isSharing = false;
@@ -248,7 +248,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
                         };
                         this.selectedName = result.SelectedUser.Id;
                         this.userSearchText = result.SelectedUser.Name;
-                        
+
                         this.selectedId = result.SelectedUser.Id;
                         if (result.SelectedUser.IsActive == false || !result.SelectedUser) {
                             this.selectedUserActive = result.SelectedUser.IsActive;
@@ -296,11 +296,13 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
         })
             .then(result => {
                 this.beatPlan = result.jDbeatList;
+                this.sharedBeats = result.sharedBeatList || [];
                 this.junctionBeats = result.JunctionList;
                 this.HolidayList = result.HolidayList;
                 this.calenderBeat = result.calenderBeat;
                 this.beatPlan.sort((a, b) => a.orderNumber - b.orderNumber);
                 console.log('beatPlanssss:' + JSON.stringify(this.beatPlan))
+                console.log('sharedBeats:' + JSON.stringify(this.sharedBeats))
 
                 // alert(JSON.stringify(this.calenderBeat))
 
@@ -739,6 +741,10 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
 
     get isNotDSM() {
         return !this.isDSM;
+    }
+
+    get hasSharedBeats() {
+        return this.sharedBeats && this.sharedBeats.length > 0;
     }
 
     get isPJPNotSubmitted() {
@@ -1634,7 +1640,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
         }
         else {
 
-            if (this.beatPlan && this.beatPlan.length != 0) {
+            if ((this.beatPlan && this.beatPlan.length != 0) || (this.sharedBeats && this.sharedBeats.length != 0)) {
                 this.isCalenderShow = false;
                 this.isBeatPlanView = false;
                 this.isButtonFunctions = false;
@@ -1653,7 +1659,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
         }
         else {
 
-            if (this.beatPlan && this.beatPlan.length != 0) {
+            if ((this.beatPlan && this.beatPlan.length != 0) || (this.sharedBeats && this.sharedBeats.length != 0)) {
                 this.isCalenderShow = false;
                 this.isBeatPlanView = false;
                 this.isButtonFunctions = false;
@@ -1755,7 +1761,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
     }
 
     handleViewCal() {
-        if (this.beatPlan && this.beatPlan.length != 0) {
+        if ((this.beatPlan && this.beatPlan.length != 0) || (this.sharedBeats && this.sharedBeats.length != 0)) {
 
             this.generateCalendar();
             this.isHoliday = false;
@@ -2214,7 +2220,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
                 const objName = objData[i];
                 if (
                     (objName.Name && objName.Name.toLowerCase().includes(searchValueName.toLowerCase())) ||
-                    (objName.Employee_Code__c && objName.Employee_Code__c.toLowerCase().includes(searchValueName.toLowerCase())) 
+                    (objName.Employee_Code__c && objName.Employee_Code__c.toLowerCase().includes(searchValueName.toLowerCase()))
                 ) {
                     searchedData.push(objName);
                     if (searchedData.length >= 50) break;
@@ -2225,7 +2231,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
         } else {
             this.showUsers = true;
             this.searchedUserList = this.userList;
-            this.userSearchText ='';
+            this.userSearchText = '';
             this.isReadOnly = false;
         }
     }
@@ -2247,7 +2253,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
         this.isDSM = this.nameSelected.profile === 'DSM' || this.nameSelected.profile === 'SSA';
         if (userId != null) {
             this.selectedId = userId;
-         //   alert('this.selectedId>'+this.selectedId);
+            //   alert('this.selectedId>'+this.selectedId);
             if (this.recordId) {
                 this.employeeId = this.recordId;
                 this.objectName = 'Employee';
@@ -2260,7 +2266,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
             //this.getGraphData();
             this.selectedTabFunction();
         }
-   
+
     }
 
 
@@ -2489,7 +2495,7 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
     getVisitData() {
 
         const today = new Date();
-       // const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        // const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
         //const lastDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         const firstDate = today;
         const lastDate = today;
@@ -2704,8 +2710,8 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
             var ordUpdate = [];
             for (let i = 0; i < this.InvFilter.originalInvData.length; i++) {
                 const inv = this.InvFilter.originalInvData[i];
-                if ((inv.accName && inv.accName.toLowerCase().indexOf(txt.toLowerCase()) !== -1) || 
-                  (inv.customerCode && inv.customerCode.toLowerCase().indexOf(txt.toLowerCase()) !== -1)  ) {
+                if ((inv.accName && inv.accName.toLowerCase().indexOf(txt.toLowerCase()) !== -1) ||
+                    (inv.customerCode && inv.customerCode.toLowerCase().indexOf(txt.toLowerCase()) !== -1)) {
                     ordUpdate.push(inv);
                 }
             }
@@ -2969,29 +2975,29 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
     }
 
     reshareAccountAccess() {
-       this.isSharing = true;
+        this.isSharing = true;
         shareAccounts({
             recId: this.employeeId,
             objectName: this.objectName,
         })
-        .then(result => {
-            console.log(result);
-            this.isSharing = false;
-            this.genericToastDispatchEvent(
-                'Success',
-                'Customers shared successfully',
-                'success'
-            );
-        })
-        .catch(error => {
-            console.error(error);
-            this.isSharing = false;
-            this.genericToastDispatchEvent(
-                'Error',
-                error?.body?.message || 'An unexpected error occurred',
-                'error'
-            );
-        });
+            .then(result => {
+                console.log(result);
+                this.isSharing = false;
+                this.genericToastDispatchEvent(
+                    'Success',
+                    'Customers shared successfully',
+                    'success'
+                );
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSharing = false;
+                this.genericToastDispatchEvent(
+                    'Error',
+                    error?.body?.message || 'An unexpected error occurred',
+                    'error'
+                );
+            });
     }
 
     /**Visit Summary */
@@ -3006,40 +3012,40 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
     }
     getvisitSummaryData() {
         this.isSubPartLoad = true;
-        const {fromDate, toDate } = this.visitSummary;
+        const { fromDate, toDate } = this.visitSummary;
         VISIT_SUMMARY({
             userId: this.selectedId,
             startDate: fromDate,
             endDate: toDate
         })
-        .then(result => {
+            .then(result => {
 
-            // Assign directly from response map
-            this.visitSummary.DailyOutletSummary = result|| [];
+                // Assign directly from response map
+                this.visitSummary.DailyOutletSummary = result || [];
 
 
-            this.visitSummary.showDailyOutletSummary = this.visitSummary.DailyOutletSummary.length > 0;
-        
-            if (this.visitSummary && this.visitSummary.DailyOutletSummary) {
-                
-                this.visitSummary.outletCount = this.visitSummary.DailyOutletSummary.length;
- 
-            } else {
-                this.visitSummary.outletCount = 0;
-            }
-    
-            this.isSubPartLoad = false;
-        })
-        .catch(error => {
-            console.error(error);
-            this.isSubPartLoad = false;
-        });
+                this.visitSummary.showDailyOutletSummary = this.visitSummary.DailyOutletSummary.length > 0;
+
+                if (this.visitSummary && this.visitSummary.DailyOutletSummary) {
+
+                    this.visitSummary.outletCount = this.visitSummary.DailyOutletSummary.length;
+
+                } else {
+                    this.visitSummary.outletCount = 0;
+                }
+
+                this.isSubPartLoad = false;
+            })
+            .catch(error => {
+                console.error(error);
+                this.isSubPartLoad = false;
+            });
     }
     handleVisitSummaryChange(event) {
         this.visitSummary[event.target.name] = event.target.value;
         this.getvisitSummaryData();
     }
-    
+
 
 
     /**Helper Methods */
@@ -3072,58 +3078,58 @@ export default class UserProfileLWC extends NavigationMixin(LightningElement) {
     }
 
     async loadVisits() {
-    if (!this.fromDate || !this.toDate) {
-        alert('Please select both From Date and To Date');
-        return;
-    }
-    console.log('Employee Id is ', this.recordId);
+        if (!this.fromDate || !this.toDate) {
+            alert('Please select both From Date and To Date');
+            return;
+        }
+        console.log('Employee Id is ', this.recordId);
 
-    this.isSubPartLoad = true; // show loader
+        this.isSubPartLoad = true; // show loader
 
-    try {
-        const data = await getVisits({
-            ids: this.selectedId,
-            fromDate: this.fromDate,
-            toDate: this.toDate
-        });
-        console.log('Fetched visits data:', JSON.stringify(data));
+        try {
+            const data = await getVisits({
+                ids: this.selectedId,
+                fromDate: this.fromDate,
+                toDate: this.toDate
+            });
+            console.log('Fetched visits data:', JSON.stringify(data));
 
-        // Group visits by lat/lng
-        const grouped = {};
-        data
-            .filter(v => v.ClockIn_Latitude__c && v.Clockin_Longitude__c)
-            .forEach(v => {
-                const key = v.ClockIn_Latitude__c + ',' + v.Clockin_Longitude__c;
-                if (!grouped[key]) {
-                    grouped[key] = [];
-                }
-                grouped[key].push(v);
+            // Group visits by lat/lng
+            const grouped = {};
+            data
+                .filter(v => v.ClockIn_Latitude__c && v.Clockin_Longitude__c)
+                .forEach(v => {
+                    const key = v.ClockIn_Latitude__c + ',' + v.Clockin_Longitude__c;
+                    if (!grouped[key]) {
+                        grouped[key] = [];
+                    }
+                    grouped[key].push(v);
+                });
+
+            // Build markers from grouped data
+            this.mapMarkers = Object.keys(grouped).map(key => {
+                const [lat, lng] = key.split(',');
+                const visits = grouped[key];
+                return {
+                    location: {
+                        Latitude: parseFloat(lat),
+                        Longitude: parseFloat(lng)
+                    },
+                    title: visits.map(v => v.Name).join(', '),
+                    description: visits
+                        .map(v => `Visit Date: ${v.Visit_Date__c}, Visit for: ${v.Visit_for__c}`)
+                        .join('<br/>')
+                };
             });
 
-        // Build markers from grouped data
-        this.mapMarkers = Object.keys(grouped).map(key => {
-            const [lat, lng] = key.split(',');
-            const visits = grouped[key];
-            return {
-                location: {
-                    Latitude: parseFloat(lat),
-                    Longitude: parseFloat(lng)
-                },
-                title:visits.map(v => v.Name).join(', '),
-                description: visits
-                    .map(v => `Visit Date: ${v.Visit_Date__c}, Visit for: ${v.Visit_for__c}`)
-                    .join('<br/>')
-            };
-        });
-
-        console.log('Final mapMarkers:', JSON.stringify(this.mapMarkers));
-        console.log('Number of markers:', this.mapMarkers.length);
-    } catch (error) {
-        console.error('Error fetching visits:', error);
-        this.mapMarkers = [];
-    } finally {
-        this.isSubPartLoad = false; // hide loader after success/error
-    }
+            console.log('Final mapMarkers:', JSON.stringify(this.mapMarkers));
+            console.log('Number of markers:', this.mapMarkers.length);
+        } catch (error) {
+            console.error('Error fetching visits:', error);
+            this.mapMarkers = [];
+        } finally {
+            this.isSubPartLoad = false; // hide loader after success/error
+        }
     }
 
 

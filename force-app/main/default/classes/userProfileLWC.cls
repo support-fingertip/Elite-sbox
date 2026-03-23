@@ -53,6 +53,7 @@ public with sharing class userProfileLWC {
         @AuraEnabled public List<chBeatVisitWrapper> chBeatVisitList;
         @AuraEnabled public List<JnBeatWrapper> beatList;
         @AuraEnabled public List<jDBeatVisitWrapper> jDbeatList;
+        @AuraEnabled public List<jDBeatVisitWrapper> sharedBeatList;
         @AuraEnabled public List<jDBeatVisitWrapper> HolidayList;
         @AuraEnabled public List<DateGroup> junctionBeat { get; set; }
         @AuraEnabled public List<dateWiseExpenseWrapper> dateWiseExpenses { get; set; }
@@ -516,6 +517,9 @@ public with sharing class userProfileLWC {
             dt.jDbeatList = pjpViewBeatData(ids);
         }
         
+        // Fetch shared beats for the user
+        dt.sharedBeatList = getSharedBeats(ids);
+        
         dt.HolidayList = holidayBeatData(ids);
         List<Calendar_beat__c> beats = [SELECT Id,Start_Month__c,Next_Start_Date__c,Approval_Status__c,Recurring_Frequency__c,
                                         Next_PJP_Run__c,Last_PJP_Run__c FROM Calendar_beat__c
@@ -609,6 +613,93 @@ public with sharing class userProfileLWC {
         }
         
         return beatList;
+    }
+    
+    // Get beats shared with the user via Child_beat__Share
+    public static List<jDBeatVisitWrapper> getSharedBeats(String ids) {
+        List<jDBeatVisitWrapper> sharedBeatList = new List<jDBeatVisitWrapper>();
+        
+        if (String.isBlank(ids)) {
+            return sharedBeatList;
+        }
+        
+        // Get beat IDs shared with this user (exclude owned beats)
+        List<Child_beat__Share> beatShares = [SELECT ParentId FROM Child_beat__Share 
+                                              WHERE UserOrGroupId = :ids 
+                                              AND RowCause = 'Manual'];
+        
+        if (beatShares.isEmpty()) {
+            return sharedBeatList;
+        }
+        
+        Set<Id> sharedBeatIds = new Set<Id>();
+        for (Child_beat__Share bs : beatShares) {
+            sharedBeatIds.add(bs.ParentId);
+        }
+        
+        // Fetch the shared Child_Beat__c records (exclude owned ones)
+        List<Child_Beat__c> childBeats = [SELECT Id, Name, isRepeat__c, Order_Number__c, Beat_Type__c,
+                                          Primary_Customer__c, Sub_Stockist__c, Primary_Customer__r.Name, Sub_Stockist__r.Name,
+                                          Owner.Name
+                                          FROM Child_Beat__c
+                                          WHERE Id IN :sharedBeatIds AND Active__c = true AND OwnerId != :ids];
+        
+        if (childBeats.isEmpty()) {
+            return sharedBeatList;
+        }
+        
+        // Collect Child_Beat__c IDs
+        Set<Id> childBeatIds = new Set<Id>();
+        for (Child_Beat__c cb : childBeats) {
+            childBeatIds.add(cb.Id);
+        }
+        
+        // Fetch Junction_Beat__c records related to shared Child_Beat__c
+        List<Junction_Beat__c> junctionBeats = [SELECT Id, Name, Visit_Date__c, Child_Beat__c, Child_Beat__r.Name,
+                                                Account__c, Account__r.Name, isRepeat__c, Order_Number__c
+                                                FROM Junction_Beat__c
+                                                WHERE Child_Beat__c IN :childBeatIds AND Active__c = true 
+                                                ORDER BY Order_Number__c ASC NULLS LAST];
+        
+        Map<Id, List<Junction_Beat__c>> childToJunctionMap = new Map<Id, List<Junction_Beat__c>>();
+        for (Junction_Beat__c jb : junctionBeats) {
+            if (!childToJunctionMap.containsKey(jb.Child_Beat__c)) {
+                childToJunctionMap.put(jb.Child_Beat__c, new List<Junction_Beat__c>());
+            }
+            childToJunctionMap.get(jb.Child_Beat__c).add(jb);
+        }
+        
+        Integer orderNum = 1;
+        for (Child_Beat__c cb : childBeats) {
+            jDBeatVisitWrapper wrapper = new jDBeatVisitWrapper(cb.Id, cb.Name, null, '', cb.isRepeat__c,
+                                                                orderNum, null, null);
+            wrapper.mainBeat = cb;
+            wrapper.accountList = new List<accData>();
+            
+            if (childToJunctionMap.containsKey(cb.Id)) {
+                for (Junction_Beat__c jb : childToJunctionMap.get(cb.Id)) {
+                    String formattedDate = jb.Visit_Date__c != null ? jb.Visit_Date__c.format() : '';
+                    wrapper.beatDate = jb.Visit_Date__c;
+                    wrapper.formattedDate = formattedDate;
+                    
+                    if (jb.Account__c != null) {
+                        accData acc = new accData();
+                        acc.accId = jb.Account__c;
+                        acc.accName = jb.Account__r != null ? jb.Account__r.Name : '';
+                        acc.JuncId = jb.Id;
+                        acc.JuncName = jb.Name;
+                        acc.isRepeat = jb.isRepeat__c;
+                        acc.orderNumber = (Integer)jb.Order_Number__c;
+                        wrapper.accountList.add(acc);
+                    }
+                }
+            }
+            
+            sharedBeatList.add(wrapper);
+            orderNum++;
+        }
+        
+        return sharedBeatList;
     }
     
     public static List<jDBeatVisitWrapper> calViewBeatData(String ids) {
