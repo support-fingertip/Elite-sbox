@@ -44,6 +44,8 @@ import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockAdjustmen
 import getSecondaryLedger from '@salesforce/apex/DMSPortalLwc.getSecondaryLedger';
 import getOpeningBalance from '@salesforce/apex/DMSPortalLwc.getOpeningBalance';
 import orgUrl from '@salesforce/label/c.orgUrl';
+import { loadScript } from 'lightning/platformResourceLoader';
+import SHEETJS from '@salesforce/resourceUrl/SheetJS';
 const TAB_WIDTH = 145;     // realistic average width per tab
 const RESERVED_WIDTH = 300; // logo + profile + More button + spacing
 
@@ -196,6 +198,7 @@ export default class NavigationComponent extends LightningElement {
 
 
     @track hideOrders = false;
+    showCustomerDownloadMenu = false;
 
 
     @track ordFilter = {
@@ -805,6 +808,127 @@ export default class NavigationComponent extends LightningElement {
         // Show / hide data
         this.secoundaryCustomerFilter.isshowData =
             this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
+    }
+
+    handleCustomerExportCsv() {
+        this.showCustomerDownloadMenu = false;
+        const data = this.secoundaryCustomerFilter.originalSecondaryCustomers;
+
+        if (!data || data.length === 0) {
+            this.showToast('Export Error', 'No customer data to export', 'error');
+            return;
+        }
+
+        try {
+            const headers = [
+                'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
+                'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
+                'District', 'Outstanding'
+            ];
+
+            const rows = data.map(cust => [
+                cust.sNumber               || '',
+                cust.secondaryCustomerName || '',
+                cust.secondaryCustomerCode || '',
+                cust.customerType          || '',
+                cust.customerCategory      || '',
+                cust.status                || '',
+                cust.primaryPhoneNumber    || '',
+                cust.beatName              || '',
+                cust.district              || '',
+                cust.outStanding           || ''
+            ]);
+
+            const csvContent = [headers, ...rows]
+                .map(row =>
+                    row.map(cell =>
+                        '"' + String(cell).replace(/"/g, '""') + '"'
+                    ).join(',')
+                )
+                .join('\r\n');
+
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/plain' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `SecondaryCustomers_${new Date().toISOString().slice(0,10)}.csv`;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+        } catch (error) {
+            console.error('CSV Export Error:', error);
+            this.showToast('Export Error', 'Failed to export CSV: ' + error.message, 'error');
+        }
+    }
+    toggleCustomerDownloadMenu() {
+        this.showCustomerDownloadMenu = !this.showCustomerDownloadMenu;
+    }
+    handleCustomerExportXlsx() {
+        this.showCustomerDownloadMenu = false;
+        const data = this.secoundaryCustomerFilter.originalSecondaryCustomers;
+
+        if (!data || data.length === 0) {
+            this.showToast('Export Error', 'No customer data to export', 'error');
+            return;
+        }
+
+        // If SheetJS is loaded use it, otherwise fall back to CSV with .csv extension
+        const XLSX = window.XLSX;
+
+        if (XLSX) {
+            try {
+                const headers = [
+                    'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
+                    'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
+                    'District', 'Outstanding'
+                ];
+
+                const rows = data.map(cust => [
+                    cust.sNumber               || '',
+                    cust.secondaryCustomerName || '',
+                    cust.secondaryCustomerCode || '',
+                    cust.customerType          || '',
+                    cust.customerCategory      || '',
+                    cust.status                || '',
+                    cust.primaryPhoneNumber    || '',
+                    cust.beatName              || '',
+                    cust.district              || '',
+                    cust.outStanding           || ''
+                ]);
+
+                const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+                // Column widths
+                ws['!cols'] = [
+                    { wch: 6  },  // S.No.
+                    { wch: 25 },  // Customer Name
+                    { wch: 15 },  // Customer Code
+                    { wch: 15 },  // Customer Type
+                    { wch: 18 },  // Customer Category
+                    { wch: 12 },  // Status
+                    { wch: 14 },  // Primary Phone
+                    { wch: 18 },  // Beat Name
+                    { wch: 14 },  // District
+                    { wch: 14 }   // Outstanding
+                ];
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Secondary Customers');
+                XLSX.writeFile(wb, `SecondaryCustomers_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+            } catch (error) {
+                console.error('XLSX Export Error:', error);
+                this.showToast('Export Error', 'Failed to export Excel: ' + error.message, 'error');
+            }
+
+        } else {
+            // SheetJS not loaded — fall back to CSV (opens in Excel perfectly)
+            this.handleCustomerExportCsv();
+            this.showToast('Info', 'Downloaded as CSV — opens in Excel', 'info');
+        }
     }
 
     /**-----Secondary Customer Ledger-----**/

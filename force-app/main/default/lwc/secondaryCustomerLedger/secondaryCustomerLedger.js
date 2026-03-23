@@ -2,6 +2,8 @@ import { LightningElement, track } from 'lwc';
 import searchCustomers from '@salesforce/apex/DMSPortalLwc.searchCustomers';
 import getSecondaryLedger from '@salesforce/apex/DMSPortalLwc.getSecondaryLedger';
 import getOpeningBalance from '@salesforce/apex/DMSPortalLwc.getOpeningBalance';
+import { loadScript } from 'lightning/platformResourceLoader';
+import SHEETJS from '@salesforce/resourceUrl/SheetJS';
 
 export default class SecondaryCustomerLedger extends LightningElement {
     @track customerOptions = [];
@@ -29,6 +31,10 @@ export default class SecondaryCustomerLedger extends LightningElement {
     connectedCallback() {
         console.log('SecondaryCustomerLedger connectedCallback called');
         this.initializeDates();
+        loadScript(this, SHEETJS)
+        .then(() => console.log('SheetJS loaded'))
+        .catch(err => console.error('SheetJS load error', err));
+
     }
     
 
@@ -276,148 +282,178 @@ export default class SecondaryCustomerLedger extends LightningElement {
         }
         window.print();
     }
-// ─────────────────────────────────────────────
-// REPLACEMENT: handleExportXlsx
-// Strategy: TSV content with .csv MIME (LWS allows text/plain & text/csv only)
-// Opens perfectly in Excel — tab-separated = Excel-native
-// ─────────────────────────────────────────────
-handleExportXlsx() {
-    this.showDownloadMenu = false;
-    if (!this.allLedgerData || this.allLedgerData.length === 0) {
-        this.showToast('Export Error', 'No ledger data to export', 'error');
-        return;
-    }
-
-    try {
-        const headers = [
-            'S.No.', 'Transaction Date', 'Doc Type',
-            'Doc No', 'Debit (INR)', 'Credit (INR)', 'Balance (INR)'
-        ];
-
-        const rows = this.allLedgerData.map(record => [
-            record.rowIndex       || '',
-            record.transactionDate|| '',
-            record.description    || '',
-            record.referenceNo    || '',
-            record.debitAmount    || '',
-            record.creditAmount   || '',
-            record.balance        || ''
-        ]);
-
-        // Tab-separated values — Excel opens .xls TSV natively
-        const tsvContent = [headers, ...rows]
-            .map(row => row.map(cell => String(cell).replace(/\t/g, ' ')).join('\t'))
-            .join('\r\n');
-
-        // LWS only allows text/plain — use it, name the file .xls so Excel opens it
-        const blob = new Blob(['\uFEFF' + tsvContent], { type: 'text/plain' });
-        const url  = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href     = url;
-        link.download = `Ledger_${this.customerName || 'Customer'}_${this.fromDate}_to_${this.toDate}.xls`;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-    } catch (error) {
-        console.error('XLSX Export Error:', error);
-        this.showToast('Export Error', 'Failed to export Excel file: ' + error.message, 'error');
-    }
-}
-
-
-// ─────────────────────────────────────────────
-// REPLACEMENT: handleExportPdf
-// Strategy: Build HTML string → base64 encode it → data URI on <a> tag
-// LWS allows data URIs on anchor clicks — no window.open, no iframe.write needed
-// ─────────────────────────────────────────────
-handleExportPdf() {
-    this.showDownloadMenu = false;
-    if (!this.allLedgerData || this.allLedgerData.length === 0) {
-        this.showToast('Export Error', 'No ledger data to export', 'error');
-        return;
-    }
-
-    try {
-        const title = `Ledger - ${this.customerName || 'Customer'} (${this.fromDate} to ${this.toDate})`;
-
-        // Build table rows
-        let tableRows = '';
-        this.allLedgerData.forEach(record => {
-            const rowBg = record.isOpeningBalance
-                ? 'background:#dceff5;font-weight:bold;'
-                : '';
-            tableRows += `
-                <tr style="${rowBg}">
-                    <td>${record.rowIndex       || ''}</td>
-                    <td>${record.transactionDate|| ''}</td>
-                    <td>${record.description    || ''}</td>
-                    <td>${record.referenceNo    || ''}</td>
-                    <td style="text-align:right;">${record.debitAmount  || ''}</td>
-                    <td style="text-align:right;">${record.creditAmount || ''}</td>
-                    <td style="text-align:right;font-weight:bold;">${record.balance || ''}</td>
-                </tr>`;
-        });
-
-        const htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8"/>
-    <title>${title}</title>
-    <style>
-        body  { font-family:Arial,sans-serif; font-size:12px; margin:20px; color:#333; }
-        h2    { color:#02323e; font-size:15px; margin-bottom:14px; }
-        table { width:100%; border-collapse:collapse; }
-        th    { background:#02323e; color:#fff; padding:8px 10px;
-                text-align:left; font-size:11px; }
-        td    { padding:7px 10px; border-bottom:1px solid #e0e0e0; font-size:11px; }
-        @media print {
-            body { margin:8px; }
-            h2   { font-size:13px; }
+    // ─────────────────────────────────────────────────────────────────
+    // XLSX EXPORT — Works in LWS + Chrome
+    // Uses text/plain blob (only allowed MIME) + .xls extension
+    // Excel/Sheets opens TSV with .xls extension natively
+    // ─────────────────────────────────────────────────────────────────
+    handleExportXlsx() {
+        this.showDownloadMenu = false;
+        if (!this.allLedgerData || this.allLedgerData.length === 0) {
+            this.showToast('Export Error', 'No ledger data to export', 'error');
+            return;
         }
-    </style>
-</head>
-<body>
-    <h2>${title}</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>S.No.</th>
-                <th>Transaction Date</th>
-                <th>Doc Type</th>
-                <th>Doc No</th>
-                <th style="text-align:right;">Debit (&#8377;)</th>
-                <th style="text-align:right;">Credit (&#8377;)</th>
-                <th style="text-align:right;">Balance (&#8377;)</th>
-            </tr>
-        </thead>
-        <tbody>${tableRows}</tbody>
-    </table>
-    <script>window.onload = function(){ window.print(); }<\/script>
-</body>
-</html>`;
 
-        // base64 encode the HTML — btoa fails on non-Latin chars (₹ sign etc.)
-        // so use encodeURIComponent → unescape trick which is LWS-safe
-        const base64Html = btoa(unescape(encodeURIComponent(htmlContent)));
-        const dataUri    = 'data:text/html;base64,' + base64Html;
+        try {
+            const XLSX = window.XLSX;
+            if (!XLSX) {
+                this.showToast('Export Error', 'Excel library not loaded yet, please retry', 'error');
+                return;
+            }
 
-        // Anchor click with data URI — allowed by LWS
-        const link = document.createElement('a');
-        link.href   = dataUri;
-        link.target = '_blank';           // opens in new tab → auto-prints via window.onload
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            const headers = ['S.No.', 'Transaction Date', 'Doc Type', 'Doc No', 'Debit (INR)', 'Credit (INR)', 'Balance (INR)'];
 
-    } catch (error) {
-        console.error('PDF Export Error:', error);
-        this.showToast('Export Error', 'Failed to export PDF: ' + error.message, 'error');
+            const rows = this.allLedgerData.map(record => [
+                record.rowIndex        || '',
+                record.transactionDate || '',
+                record.description     || '',
+                record.referenceNo     || '',
+                record.debitAmount     || '',
+                record.creditAmount    || '',
+                record.balance         || ''
+            ]);
+
+            const wsData = [headers, ...rows];
+            const ws     = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Column widths
+            ws['!cols'] = [
+                { wch: 6 }, { wch: 16 }, { wch: 22 },
+                { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 14 }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Ledger');
+            XLSX.writeFile(wb, `Ledger_${this.customerName || 'Customer'}_${this.fromDate}_to_${this.toDate}.xlsx`);
+
+        } catch (error) {
+            console.error('XLSX Export Error:', error);
+            this.showToast('Export Error', 'Failed to export: ' + error.message, 'error');
+        }
     }
-}
+
+
+    // ─────────────────────────────────────────────────────────────────
+    // PDF EXPORT — Works in LWS + Chrome
+    // Strategy: inject a full-page print overlay into the CURRENT document,
+    // call window.print(), then remove the overlay.
+    // This avoids window.open (blocked) and data: URI nav (blocked by Chrome).
+    // ─────────────────────────────────────────────────────────────────
+    handleExportPdf() {
+        this.showDownloadMenu = false;
+        if (!this.allLedgerData || this.allLedgerData.length === 0) {
+            this.showToast('Export Error', 'No ledger data to export', 'error');
+            return;
+        }
+
+        try {
+            const title = `Ledger — ${this.customerName || 'Customer'} | ${this.fromDate} to ${this.toDate}`;
+
+            // Build table rows HTML
+            let rowsHtml = '';
+            this.allLedgerData.forEach(record => {
+                const bg = record.isOpeningBalance ? 'background:#dceef5;font-weight:bold;' : '';
+                rowsHtml += `<tr style="${bg}">
+                    <td>${record.rowIndex        || ''}</td>
+                    <td>${record.transactionDate || ''}</td>
+                    <td>${record.description     || ''}</td>
+                    <td>${record.referenceNo     || ''}</td>
+                    <td class="num">${record.debitAmount  || ''}</td>
+                    <td class="num">${record.creditAmount || ''}</td>
+                    <td class="num bold">${record.balance || ''}</td>
+                </tr>`;
+            });
+
+            // Create a div that covers the page ONLY during print
+            const printDiv = document.createElement('div');
+            printDiv.id = 'lwc-print-overlay';
+            printDiv.innerHTML = `
+                <style id="lwc-print-style">
+                    /* Hide everything except our overlay during print */
+                    @media print {
+                        body > *:not(#lwc-print-overlay) { display: none !important; }
+                        #lwc-print-overlay { display: block !important; }
+                    }
+                </style>
+                <div id="lwc-print-content">
+                    <h2>${title}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>S.No.</th>
+                                <th>Transaction Date</th>
+                                <th>Doc Type</th>
+                                <th>Doc No</th>
+                                <th class="num">Debit (&#8377;)</th>
+                                <th class="num">Credit (&#8377;)</th>
+                                <th class="num">Balance (&#8377;)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
+                <style>
+                    #lwc-print-overlay {
+                        display: none; /* hidden on screen, shown on print via @media above */
+                        position: fixed;
+                        top: 0; left: 0;
+                        width: 100%; height: 100%;
+                        background: white;
+                        z-index: 99999;
+                        padding: 20px;
+                        box-sizing: border-box;
+                    }
+                    #lwc-print-content {
+                        font-family: Arial, sans-serif;
+                        font-size: 12px;
+                        color: #333;
+                    }
+                    #lwc-print-content h2 {
+                        font-size: 14px;
+                        color: #02323e;
+                        margin-bottom: 12px;
+                    }
+                    #lwc-print-content table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    #lwc-print-content th {
+                        background: #02323e;
+                        color: #fff;
+                        padding: 7px 9px;
+                        font-size: 11px;
+                        text-align: left;
+                    }
+                    #lwc-print-content td {
+                        padding: 6px 9px;
+                        border-bottom: 1px solid #e0e0e0;
+                        font-size: 11px;
+                    }
+                    #lwc-print-content .num  { text-align: right; }
+                    #lwc-print-content .bold { font-weight: bold; }
+                </style>`;
+
+            document.body.appendChild(printDiv);
+
+            // Brief timeout lets DOM paint before print dialog
+            setTimeout(() => {
+                window.print();
+                // Remove overlay after print dialog closes (afterprint fires on close)
+                const cleanup = () => {
+                    const overlay = document.getElementById('lwc-print-overlay');
+                    if (overlay) overlay.parentNode.removeChild(overlay);
+                    window.removeEventListener('afterprint', cleanup);
+                };
+                window.addEventListener('afterprint', cleanup);
+                // Fallback cleanup if afterprint doesn't fire (some browsers)
+                setTimeout(cleanup, 5000);
+            }, 100);
+
+        } catch (error) {
+            console.error('PDF Export Error:', error);
+            this.showToast('Export Error', 'Failed to export PDF: ' + error.message, 'error');
+        }
+    }
 
  
     // Getter: controls table visibility
