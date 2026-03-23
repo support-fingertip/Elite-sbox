@@ -302,7 +302,7 @@ background: var(--root-bg-linear-gradient), var(--root-bg-image);
 .order-head {
     margin: 10px 0;
     margin-bottom: 20px;
-    width: 90%;
+    width: 95%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -339,7 +339,7 @@ lightning-combobox,
     margin-bottom: 0px;
 }
 .contacts-table {
-width: 90%;
+width: 95%;
 border-collapse: separate;
 border-spacing: 0;
 border-radius: 10px;

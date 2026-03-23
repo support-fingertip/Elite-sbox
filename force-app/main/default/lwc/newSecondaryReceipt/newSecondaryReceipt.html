@@ -7,132 +7,264 @@
     <template lwc:else>
         <!-- New Secondary Receipt Form -->
         <template if:true={showNewSecondaryReceiptForm}>
+            <template lwc:if={isPageLoaded}>
+                <div style="margin:40px">
+                    <c-on-loading-screen></c-on-loading-screen>
+                </div>
+            </template>
+            <template lwc:else>
             <div class="orders layouts" id="NewSecondaryReceiptLayout">
-                <div class="slds-grid slds-wrap slds-gutters slds-p-around_medium" style="margin-top: 1.5rem; align-items: center;">
-                    <div class="slds-col" style="flex: 0 0 auto;">
-                        <h3 class="order-title" style="width: auto; margin-bottom: 0;">New Secondary Receipt</h3>
+                <!-- Header Bar -->
+                <div class="receipt-header-bar">
+                    <h3 class="order-title1">New Secondary Receipt</h3>
+
+                    <div class="customer-search-container">
+                        <lightning-input
+                            label="Search Secondary Customers"
+                            type="search"
+                            required
+                            value={customerSearch}
+                            onchange={handleCustomerSearch}
+                            onfocus={handleCustomerFocus}>
+                        </lightning-input>
+                        <template if:true={showCustomerSuggestions}>
+                            <div class="suggestion-box" role="listbox">
+                                <ul class="slds-listbox slds-listbox_vertical">
+                                    <template for:each={filteredCustomers} for:item="cust">
+                                        <li key={cust.value} class="slds-listbox__item">
+                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                onclick={selectCustomer} data-id={cust.value} style="cursor: pointer;">
+                                                <span class="slds-media__figure slds-listbox__option-icon">
+                                                    <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
+                                                </span>
+                                                <span class="slds-media__body">
+                                                    <span class="slds-truncate" title={cust.label}>{cust.label}</span>
+                                                </span>
+                                            </div>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
                     </div>
-                    <div class="slds-col" style="flex: 1 1 auto; min-width: 350px; max-width: 500px; margin-left: 2rem;">
-                        <div style="position: relative;">
-                            <lightning-input label="Search Secondary Customers" type="search" required
-                                value={customerSearch} onchange={handleCustomerSearch} onfocus={handleCustomerFocus}>
-                            </lightning-input>
-                            <template if:true={showCustomerSuggestions}>
-                                <div class="suggestion-box" role="listbox">
-                                    <ul class="slds-listbox slds-listbox_vertical">
-                                        <template for:each={filteredCustomers} for:item="cust">
-                                            <li key={cust.value} class="slds-listbox__item">
-                                                <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
-                                                    onclick={selectCustomer} data-id={cust.value} style="cursor: pointer;">
-                                                    <span class="slds-media__figure slds-listbox__option-icon">
-                                                        <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
-                                                    </span>
-                                                    <span class="slds-media__body">
-                                                        <span class="slds-truncate" title={cust.label}>{cust.label}</span>
-                                                    </span>
-                                                </div>
-                                            </li>
-                                        </template>
-                                    </ul>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                    <div class="slds-col" style="flex: 0 0 auto; margin-left: 2rem; display: flex; gap: 1rem;">
+
+                    <div class="header-actions">
                         <button class="actionButton" onclick={handleSave}>Save</button>
                         <button class="actionButton1" onclick={handleCancel}>Cancel</button>
                     </div>
                 </div>
-                <div class="invoice-grid-container" style="padding: 1.5rem;">
-                    <div class="slds-grid slds-wrap slds-gutters">
-                        <div class="slds-col slds-size_1-of-2 slds-p-around_small">
-                            <lightning-input type="date" label="Payment Date" value={paymentDate} onchange={handlePaymentDateChange} required></lightning-input>
+                <template if:true={showinvoices}>
+                    <!-- Form Card -->
+                    <div class="form-card">
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                                <lightning-input type="date" label="Payment Date" value={paymentDate} onchange={handlePaymentDateChange} required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                                <lightning-combobox label="Payment Mode" value={paymentMode} options={paymentModeOptions}
+                                    onchange={handlePaymentModeChange} placeholder="Select Payment Mode" required>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                                <lightning-input type="text" label="Reference Number" value={referenceNumber} onchange={handleReferenceNumberChange}></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                                <lightning-input type="number" label="Amount" value={totalAmount} onchange={handleTotalAmountChange} required></lightning-input>
+                                <template if:true={amountMessage}>
+                                    <div class="amount-message">{amountMessage}</div>
+                                </template>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-p-around_small">
+                                <lightning-textarea label="Remarks" value={remarks} onchange={handleRemarksChange} placeholder="Enter remarks..."></lightning-textarea>
+                            </div>
                         </div>
-                        <div class="slds-col slds-size_1-of-2 slds-p-around_small">
-                            <lightning-combobox label="Payment Mode" value={paymentMode} options={paymentModeOptions}
-                                onchange={handlePaymentModeChange} placeholder="Select Payment Mode" required>
-                            </lightning-combobox>
+                    </div>
+                    <!-- Pending Invoices Card -->
+                    <div class="form-card" style="margin-top: 0.75rem;">
+                        <div class="pending-invoices-header">
+                            <h4 class="pending-invoices-title">Pending Invoices</h4>
+                          
                         </div>
-                        <div class="slds-col slds-size_1-of-2 slds-p-around_small">
-                            <lightning-input type="text" label="Reference Number" value={referenceNumber} onchange={handleReferenceNumberChange}></lightning-input>
+                        <div style="overflow-x: auto;">
+                            <table class="contacts-table" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Invoice no.</th>
+                                        <th>Date</th>
+                                        <th>Invoice amt (₹)</th>
+                                        <th>Already paid (₹)</th>
+                                        <th>Pending (₹)</th>
+                                        <th>Paying now (₹)</th>
+                                        <th>Balance (₹)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template if:true={pendingInvoices}>
+                                        <template for:each={pendingInvoices} for:item="inv" for:index="index">
+                                            <tr key={inv.InvId}>
+                                                <td><b>{inv.name}</b></td>
+                                                <td>{inv.InvDate}</td>
+                                                <td>₹{inv.invoiceAmount}</td>
+                                                <td>₹{inv.alreadyPaid}</td>
+                                                <td class="pending-amt">₹{inv.pendingAmount}</td>
+                                                <td>
+                                                    <input type="number" class="paying-input" disabled data-index={index} value={inv.payingNow} min="0" max={inv.pending} onchange={handlePayingNowChange} />
+                                                </td>
+                                                <td>₹{inv.balance}</td>
+                                            </tr>
+                                        </template>
+                                    </template>
+                                    <template if:false={pendingInvoices}>
+                                        <tr>
+                                            <td colspan="7" class="no-records">No pending invoices found!</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="slds-col slds-size_1-of-2 slds-p-around_small">
-                            <lightning-textarea label="Remarks" value={remarks} onchange={handleRemarksChange} placeholder="Enter remarks..."></lightning-textarea>
+                    </div>
+                </template>
+                <template if:false={showinvoices}>
+                <div class="empty-state slds-box slds-text-align_center ">
+                    <lightning-icon
+                        icon-name="standard:person_account"
+                        size="large"
+                        class="slds-m-bottom_small">
+                    </lightning-icon>
+                    <h2 class="slds-text-heading_small slds-m-bottom_x-small">No customer selected</h2>
+                    <p class="slds-text-color_weak">
+                        Search and select a secondary customer above to load receipt details
+                    </p>
+
+                    <!-- Placeholder Metric Tiles -->
+                    <div class="slds-grid slds-gutters slds-m-top_medium slds-grid_align-center">
+                        <div class="slds-col">
+                        <div class="metric-tile slds-box">
+                            <p class="tile-label">RECEIPT DATE</p>
+                            <p class="tile-value">—</p>
+                        </div>
+                        </div>
+                        <div class="slds-col">
+                        <div class="metric-tile slds-box">
+                            <p class="tile-label">AMOUNT</p>
+                            <p class="tile-value">—</p>
+                        </div>
+                        </div>
+                        <div class="slds-col">
+                        <div class="metric-tile slds-box">
+                            <p class="tile-label">PAYMENT MODE</p>
+                            <p class="tile-value">—</p>
+                        </div>
                         </div>
                     </div>
                 </div>
+                </template>
             </div>
+            </template>
         </template>
 
-        <!-- Secondary Receipt List -->
+        <!-- Secondary Receipt List or Items Page Switch -->
         <template if:false={showNewSecondaryReceiptForm}>
-            <div class="orders layouts" id="InvoiceLayout">
-                <h3 class="order-title">Secondary Receipts</h3>
-                <div class="order-head">
-                    <div class="order-filters">
-                        <button class="actionButton" style="margin-top:30px; width:auto; padding:0 12px; white-space:nowrap; background-color: #28a745; color: white;" onclick={handleNewSecondaryReceipt}>
-                            New Secondary Receipt
-                        </button>
-                        <button class="actionButton" onclick={downloadReceiptsAsCSV}
-                            style="background-color: #28a745; color: white; margin-top:30px; align-items: center; padding: 6px 12px; border-radius: 4px;">
-                            <span style="align-items: center;">
-                                <lightning-icon icon-name="utility:download" alternative-text="Download"
-                                    size="x-small"
-                                    style="margin-left: 4px; --slds-c-icon-color-foreground-default: white;">
-                                </lightning-icon>
-                            </span>
-                        </button>
-                        <lightning-input type="date" class="custominputfieldSize" label="From Date"
-                            name="fromDate" value={fromDate} onchange={handleFromDateChange}>
-                        </lightning-input>
-                        <lightning-input type="date" class="custominputfieldSize" label="To Date"
-                            name="toDate" value={toDate} onchange={handleToDateChange}>
-                        </lightning-input>
-                        <lightning-input type="search" label="Receipt No" class="custominputfieldSize"
-                            placeholder="Search by Receipt No" value={searchReceiptNo}
-                            onchange={handleSearchReceiptNo}>
-                        </lightning-input>
-                        <lightning-input type="search" label="Customer Name" class="custominputfieldSize"
-                            placeholder="Search Customer" value={searchSecondaryCustomerName}
-                            onchange={handleListCustomerSearch}>
-                        </lightning-input>
+            <template if:true={showReceiptItemsPage}>
+                <div class="orderslayouts"  id="SecondaryReceiptItemsLayout">
+                    <div class="order-head">
+                        <h3 class="order-title1">Secondary Receipt Items: {selectedReceiptNo}</h3>
+                        <div class="order-filters">
+                            <button class="actionButton" onclick={handleBackToReceipts}>Back to Receipts</button>
+                        </div>
                     </div>
-                </div>
-
-                <table class="contacts-table" style="margin-top: 20px;">
-                    <thead>
-                        <tr>
-                            <th style="width:5%;">S.No.</th>
-                            <th style="width:20%;">Receipt No</th>
-                            <th style="width:25%;">Customer Name</th>
-                            <th style="width:20%;">Reason</th>
-                            <th style="width:15%;">Date</th>
-                            <th style="width:15%;">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template if:true={receipts}>
-                            <template for:each={receipts} for:item="rec">
-                                <tr key={rec.id}>
-                                    <td style="width:5%">{rec.rowIndex}</td>
-                                    <td style="width:20%">{rec.receiptNo}</td>
-                                    <td style="width:25%">{rec.customerName}</td>
-                                    <td style="width:20%">{rec.paymentMode}</td>
-                                    <td style="width:15%">{rec.paymentDate}</td>
-                                    <td style="width:15%">{rec.referenceNumber}</td>
+                    <table class="contacts-table">
+                        <thead>
+                            <tr>
+                                <th style="width:5%">S.No.</th>
+                                <th style="width:30%">Receipt Item No</th>
+                                <th style="width:30%">Date</th>
+                                <th style="width:35%">Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template if:true={hasReceiptItems}>
+                                <template for:each={receiptItems} for:item="item">
+                                    <tr key={item.Id}>
+                                        <td style="width:5%">{item.rowIndex}</td>
+                                        <td style="width:30%">{item.Name}</td>
+                                        <td style="width:30%">{item.CreatedDate}</td>
+                                        <td style="width:35%">₹{item.Amount}</td>
+                                    </tr>
+                                </template>
+                            </template>
+                            <template if:false={hasReceiptItems}>
+                                <tr>
+                                    <td colspan="7" class="no-records" style="text-align:center; color:red; padding:10px;font-size:large;" >No items found for this receipt!</td>
                                 </tr>
                             </template>
-                        </template>
-                        <template if:false={receipts}>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <template if:false={showReceiptItemsPage}>
+                <div class="orderslayouts" id="InvoiceLayout">
+                    <h3 class="order-title">Secondary Receipts</h3>
+                    <div class="order-head">
+                        <div class="list-filters-row">
+                            <button class="actionButton" onclick={handleNewSecondaryReceipt}>New Secondary Receipt</button>
+                            <button class="actionButton download-btn" onclick={downloadReceiptsAsCSV}>
+                                <lightning-icon icon-name="utility:download" alternative-text="Download" size="x-small"
+                                    style="--slds-c-icon-color-foreground-default: white;">
+                                </lightning-icon>
+                            </button>
+                            <lightning-input type="date" class="custominputfieldSize" label="From Date"
+                                name="fromDate" value={fromDate} onchange={handleFromDateChange}>
+                            </lightning-input>
+                            <lightning-input type="date" class="custominputfieldSize" label="To Date"
+                                name="toDate" value={toDate} onchange={handleToDateChange}>
+                            </lightning-input>
+                            <lightning-input type="search" label="Receipt No" class="custominputfieldSize"
+                                placeholder="Search by Receipt No" value={searchReceiptNo} onchange={handleSearchReceiptNo}>
+                            </lightning-input>
+                            <lightning-input type="search" label="Customer Name" class="custominputfieldSize"
+                                placeholder="Search Customer" value={searchSecondaryCustomerName} onchange={handleListCustomerSearch}>
+                            </lightning-input>
+                        </div>
+                    </div>
+                    <table class="contacts-table" style="margin-top: 20px;" width="100px">
+                        <thead>
                             <tr>
-                                <td colspan="6" style="text-align:center; color:red; padding:10px; font-size:large;">
-                                    No records found!
-                                </td>
+                                <th style="width:5%">S.No.</th>
+                                <th style="width:20%">Receipt No</th>
+                                <th style="width:25%">Customer Name</th>
+                                <th style="width:10%">Payment Mode</th>
+                                <th style="width:10%">Payment Date</th>
+                                <th style="width:15%">Reference No</th>
+                                <th style="width:15%">Amount</th>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            <template if:true={receipts}>
+                                <template for:each={receipts} for:item="rec">
+                                    <tr key={rec.id}>
+                                        <td style="width:5%">{rec.rowIndex}</td>
+                                        <td style="width:20%">
+                                            <span   style="cursor: pointer; color: blue; text-decoration: underline;width:15%"  onclick={handleReceiptClick} data-id={rec.id}>{rec.receiptNo}</span>
+                                        </td>
+                                        <td style="width:25%">{rec.customerName}</td>
+                                        <td style="width:10%">{rec.paymentMode}</td>
+                                        <td style="width:10%">{rec.paymentDate}</td>
+                                        <td style="width:15%">{rec.referenceNumber}</td>
+                                        <td style="width:15%">{rec.totalAmount}</td>
+                                    </tr>
+                                </template>
+                            </template>
+                            <template if:false={receipts}>
+                                <tr>
+                                    <td colspan="6" class="no-records">No records found!</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
         </template>
     </template>
     <c-custom-toast auto-close-time="8000"></c-custom-toast>

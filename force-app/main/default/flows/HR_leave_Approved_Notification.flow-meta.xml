@@ -113,11 +113,19 @@
         <connector>
             <targetReference>Get_Notification_Id</targetReference>
         </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>ApprovalStatus__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Leave Approved</stringValue>
+            </value>
+        </filters>
         <object>Leaves__c</object>
         <recordTriggerType>Create</recordTriggerType>
         <triggerType>RecordAfterSave</triggerType>
     </start>
-    <status>Obsolete</status>
+    <status>Active</status>
     <textTemplates>
         <name>Notificationbody</name>
         <isViewedAsPlainText>true</isViewedAsPlainText>

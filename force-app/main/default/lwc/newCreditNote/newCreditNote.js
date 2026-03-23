@@ -15,6 +15,7 @@ export default class NewCreditNote extends LightningElement {
     @track reason = '';
     @track amount = null;
     @track description = '';
+    showCreditNotes = false;
 
     // List view properties
     @track creditNotes = [];
@@ -67,6 +68,7 @@ export default class NewCreditNote extends LightningElement {
                     amount: note.creditAmount
                 }));
                 this.creditNotes = [...this.originalCreditNotes];
+                this.showCreditNotes = this.creditNotes.length >0 ? true : false ;
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -121,6 +123,7 @@ export default class NewCreditNote extends LightningElement {
             filtered = filtered.filter(n => n.customerName && n.customerName.toLowerCase().includes(key));
         }
         this.creditNotes = filtered.length > 0 ? filtered : null;
+        this.showCreditNotes = filtered.length >0 ? true : false ;
     }
 
     handleCustomerFocus() {
@@ -174,7 +177,13 @@ export default class NewCreditNote extends LightningElement {
 
     handleDescriptionChange(event) {
         this.description = event.detail.value;
+    
     }
+
+
+    handleNoteDateChange(event) {
+    this.noteDate = event.detail.value;
+}
 
     handleSave() {
         if (!this.selectedCustomerId) {

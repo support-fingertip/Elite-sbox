@@ -11,8 +11,30 @@ public with sharing class LeavesTriggerHandler {
     }
     
     public static void handleAfterInsert(List<Leaves__c> newLeaves) {
-        submitForApproval(newLeaves);
-        sendRequestEmail(newLeaves); 
+      
+        Set<Id> autoApprovedLeaves = new Set<Id>();
+        Set<Id> approvalRequiredLeaves = new Set<Id>();
+        for(Leaves__c lv: newLeaves)
+        {
+            if(lv.ApprovalStatus__c == 'Leave Approved')
+            {
+                autoApprovedLeaves.add(lv.Id);
+            }
+            else
+            {
+                approvalRequiredLeaves.add(lv.Id);
+            }
+        }
+        
+        if(!approvalRequiredLeaves.isEmpty())
+        {
+             submitForApproval(approvalRequiredLeaves);
+        }
+        if(!autoApprovedLeaves.isEmpty())
+        {
+            system.debug('autoApprovedLeaves'+autoApprovedLeaves);
+            sendRequestEmailAndNotification(autoApprovedLeaves);
+        }
     }
     
     public static void handleBeforeUpdate(List<Leaves__c> newLeaves, Map<Id, Leaves__c> oldMap) {
@@ -24,6 +46,7 @@ public with sharing class LeavesTriggerHandler {
         List<Leaves__c> cancelledLeaves = new List<Leaves__c>();
         List<Leaves__c> approvedLeaves = new List<Leaves__c>();
         List<Leaves__c> cancellationApprovedLeaves = new List<Leaves__c>();
+        List<Leaves__c> submittedForApproval = new List<Leaves__c>();
         
         for (Leaves__c leave : newLeaves) {
             Leaves__c oldLeave = oldMap.get(leave.Id);
@@ -45,6 +68,12 @@ public with sharing class LeavesTriggerHandler {
                 oldLeave.Leave_Cancellation_Status__c != 'Cancellation Approved') {
                     cancellationApprovedLeaves.add(leave);
                 }
+            
+            // Scenario 5: Cancellation Approved
+            if (leave.ApprovalStatus__c == 'Submitted for Approval' &&
+                oldLeave.ApprovalStatus__c != 'Submitted for Approval') {
+                    submittedForApproval.add(leave);
+                }
         }
         
         if (!cancelledLeaves.isEmpty()) {
@@ -55,6 +84,9 @@ public with sharing class LeavesTriggerHandler {
         }
         if (!cancellationApprovedLeaves.isEmpty()) {
             sendCancellationApprovedEmail(cancellationApprovedLeaves);
+        }
+        if (!submittedForApproval.isEmpty()) {
+            sendRequestEmail(submittedForApproval);
         }
     }
     
@@ -104,20 +136,20 @@ public with sharing class LeavesTriggerHandler {
         }
     }
     
-    private static void submitForApproval(List<Leaves__c> leaves) {
+    private static void submitForApproval(Set<Id> leaves) {
         List<Approval.ProcessSubmitRequest> requests = new List<Approval.ProcessSubmitRequest>();
         Map<Id, Leaves__c> fullRecords = new Map<Id, Leaves__c>([
             SELECT Id, Approver__c, User__c, User__r.ManagerId ,ApprovalStatus__c
             FROM Leaves__c WHERE Id IN :leaves
         ]);
         
-        for (Leaves__c leave : leaves) {
-            Leaves__c record = fullRecords.get(leave.Id);
+        for (Id leave : leaves) {
+            Leaves__c record = fullRecords.get(leave);
             Id targetApprover = record.Approver__c != null ? record.Approver__c : record.User__r.ManagerId;
             if (targetApprover != null && record.ApprovalStatus__c != 'Leave Approved') {
                 Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
                 req.setComments('Automated submission: Leave request sent to Manager.');
-                req.setObjectId(leave.Id);
+                req.setObjectId(leave);
                 req.setNextApproverIds(new Id[] { targetApprover });
                 req.setSubmitterId(record.User__c); 
                 requests.add(req);
@@ -145,6 +177,15 @@ public with sharing class LeavesTriggerHandler {
             FROM Leaves__c
             WHERE Id IN :leaves
         ]);
+        
+        // Set sender using Org-Wide Email Address (Name = "System Admin Email")
+        OrgWideEmailAddress owea = [
+            SELECT Id 
+            FROM OrgWideEmailAddress 
+            WHERE DisplayName = 'Elite Admin' 
+            LIMIT 1
+        ];
+   
         
         for (Leaves__c leave : leaves) {
             
@@ -199,6 +240,7 @@ public with sharing class LeavesTriggerHandler {
                     'Leave Request: ' + record.User__r.Name +
                     ' (' + startDate + ' to ' + endDate + ')'
                 );
+                l1Mail.setOrgWideEmailAddressId(owea.Id);
                 
                 String l1Name = record.Approver__r != null
                     ? record.Approver__r.Name
@@ -231,6 +273,15 @@ public with sharing class LeavesTriggerHandler {
             Type_of_Leave__c, No_of_Days__c ,HR_Email__c,Leave_Approver_L1_Email__c,  Approver__r.Name, HR__r.Name
             FROM Leaves__c WHERE Id IN :leaves
         ]);
+        
+        // Set sender using Org-Wide Email Address (Name = "System Admin Email")
+        OrgWideEmailAddress owea = [
+            SELECT Id 
+            FROM OrgWideEmailAddress 
+            WHERE DisplayName = 'Elite Admin' // or use Address = 'admin@yourdomain.com'
+            LIMIT 1
+        ];
+     
         
         for (Leaves__c leave : leaves) {
             Leaves__c record = details.get(leave.Id);
@@ -290,6 +341,7 @@ public with sharing class LeavesTriggerHandler {
                         'Leave Cancellation Request: ' + record.User__r.Name +
                         ' (' + startDate + ' to ' + endDate + ')'
                     );
+                    l1Mail.setOrgWideEmailAddressId(owea.Id);
                     
                     String l1Name = record.Approver__r != null
                         ? record.Approver__r.Name
@@ -333,6 +385,15 @@ public with sharing class LeavesTriggerHandler {
             WHERE Id IN :leaves
         ]);
         
+        // Set sender using Org-Wide Email Address (Name = "System Admin Email")
+        OrgWideEmailAddress owea = [
+            SELECT Id 
+            FROM OrgWideEmailAddress 
+            WHERE DisplayName = 'Elite Admin' // or use Address = 'admin@yourdomain.com'
+            LIMIT 1
+        ];
+
+        
         for (Leaves__c leave : leaves) {
             Leaves__c record = details.get(leave.Id);
             if (record == null) continue;
@@ -348,6 +409,7 @@ public with sharing class LeavesTriggerHandler {
                     'Leave Approved: ' + record.User__r.Name +
                     ' (' + startDate + ' to ' + endDate + ')'
                 );
+                hrMail.setOrgWideEmailAddressId(owea.Id);
                 String hrName = record.HR__r != null ? record.HR__r.Name : 'HR';
                 hrMail.setPlainTextBody(
                     'Dear ' + hrName + ',\n\n' +
@@ -367,6 +429,7 @@ public with sharing class LeavesTriggerHandler {
                 empMail.setSubject(
                     'Your Leave Has Been Approved (' + startDate + ' to ' + endDate + ')'
                 );
+                empMail.setOrgWideEmailAddressId(owea.Id);
                 empMail.setPlainTextBody(
                     'Dear ' + record.User__r.Name + ',\n\n' +
                     'We are pleased to inform you that your leave request has been APPROVED.\n\n' +
@@ -403,6 +466,15 @@ public with sharing class LeavesTriggerHandler {
             WHERE Id IN :leaves
         ]);
         
+        // Set sender using Org-Wide Email Address (Name = "System Admin Email")
+        OrgWideEmailAddress owea = [
+            SELECT Id 
+            FROM OrgWideEmailAddress 
+            WHERE DisplayName = 'Elite Admin' // or use Address = 'admin@yourdomain.com'
+            LIMIT 1
+        ];
+   
+        
         for (Leaves__c leave : leaves) {
             Leaves__c record = details.get(leave.Id);
             if (record == null) continue;
@@ -418,6 +490,7 @@ public with sharing class LeavesTriggerHandler {
                     'Leave Cancellation Approved: ' + record.User__r.Name +
                     ' (' + startDate + ' to ' + endDate + ')'
                 );
+                hrMail.setOrgWideEmailAddressId(owea.Id);
                 String hrName = record.HR__r != null ? record.HR__r.Name : 'HR';
                 hrMail.setPlainTextBody(
                     'Dear ' + hrName + ',\n\n' +
@@ -438,6 +511,7 @@ public with sharing class LeavesTriggerHandler {
                 empMail.setSubject(
                     'Your Leave Cancellation Has Been Approved (' + startDate + ' to ' + endDate + ')'
                 );
+                empMail.setOrgWideEmailAddressId(owea.Id);
                 empMail.setPlainTextBody(
                     'Dear ' + record.User__r.Name + ',\n\n' +
                     'We are pleased to inform you that your leave cancellation request has been APPROVED.\n\n' +
@@ -454,4 +528,114 @@ public with sharing class LeavesTriggerHandler {
             try { Messaging.sendEmail(emails); } catch (Exception e) { System.debug('Email Error: ' + e.getMessage()); }
         }
     }
+    
+    
+    private static void sendRequestEmailAndNotification(Set<Id> leaves) {
+        
+        List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
+        
+        Map<Id, Leaves__c> details = new Map<Id, Leaves__c>([
+            SELECT Id,
+            User__r.Name,
+            From_Date__c,
+            To_Date__c,
+            Reason_for_Leave__c,
+            Leave_Approver_L1_Email__c,
+            Approver__r.Name,
+            HR_Email__c,
+            HR__r.Name,
+            Owner_Email__c,
+            Type_of_Leave__c
+            FROM Leaves__c
+            WHERE Id IN :leaves
+        ]);
+        
+        // Set sender using Org-Wide Email Address (Name = "System Admin Email")
+        OrgWideEmailAddress owea = [
+            SELECT Id 
+            FROM OrgWideEmailAddress 
+            WHERE DisplayName = 'Elite Admin' 
+            LIMIT 1
+        ];
+        
+        
+        for (Id leave : leaves) {
+            
+            Leaves__c record = details.get(leave);
+            if (record == null) continue;
+            
+            String startDate = record.From_Date__c != null
+                ? record.From_Date__c.format()
+                : 'N/A';
+            
+            String endDate = record.To_Date__c != null
+                ? record.To_Date__c.format()
+                : 'N/A';
+            
+            // ===============================
+            //send Email Owner_Email__c
+            // ===============================
+            if (String.isNotBlank(record.Owner_Email__c)) {
+                system.debug('record.Owner_Email__c'+record.Owner_Email__c);
+                
+                Messaging.SingleEmailMessage hrMail = new Messaging.SingleEmailMessage();
+                hrMail.setToAddresses(new List<String>{ record.Owner_Email__c });
+                
+                hrMail.setSubject(
+                    'Leave Approved: ' + record.User__r.Name +
+                    ' (' + startDate + ' to ' + endDate + ')'
+                );
+                
+                String executive =  record.User__r != null ? record.User__r.Name : 'Executive';
+                
+                hrMail.setPlainTextBody(
+                    'Dear ' + record.User__r.Name + ',\n\n' +
+                    'We are pleased to inform you that your leave request has been APPROVED.\n\n' +
+                    'Leave Type : ' + record.Type_of_Leave__c + '\n' +
+                    'Start Date : ' + startDate + '\n' +
+                    'End Date   : ' + endDate + '\n\n' +
+                    'Please ensure a smooth handover before your leave.\n\n'
+                );
+                
+                emails.add(hrMail);
+            }
+            
+            // =============================
+            //  Send Email to L1 Approver
+            // ===============================
+            if (String.isNotBlank(record.Leave_Approver_L1_Email__c)) {
+                
+                Messaging.SingleEmailMessage l1Mail = new Messaging.SingleEmailMessage();
+                l1Mail.setToAddresses(new List<String>{ record.Leave_Approver_L1_Email__c });
+                
+                l1Mail.setSubject(
+                    'Leave Approved: ' + record.User__r.Name +
+                    ' (' + startDate + ' to ' + endDate + ')'
+                );
+                l1Mail.setOrgWideEmailAddressId(owea.Id);
+                
+                String l1Name = record.Approver__r != null
+                    ? record.Approver__r.Name
+                    : 'Approver';
+                
+                l1Mail.setPlainTextBody(
+                    'Dear ' + l1Name + ',\n\n' +
+                    'This is to inform you that the leave request of ' + record.User__r.Name + ' has been APPROVED.\n\n' +
+                    'Leave Type : ' + record.Type_of_Leave__c + '\n' +
+                    'Start Date : ' + startDate + '\n' +
+                    'End Date   : ' + endDate + '\n\n' +
+                    'Please update your records accordingly.\n\n'
+                );
+                
+                emails.add(l1Mail);
+            }
+        }
+        
+        if (!emails.isEmpty()) {
+            system.debug('emails'+emails);
+            Messaging.sendEmail(emails);
+        }
+    }
+    
+    
 }
