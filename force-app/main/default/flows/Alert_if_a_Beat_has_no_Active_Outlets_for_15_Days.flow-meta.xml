@@ -157,7 +157,7 @@
         </schedule>
         <triggerType>Scheduled</triggerType>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <variables>
         <name>BeatOwnerIDs</name>
         <dataType>String</dataType>
