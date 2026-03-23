@@ -56,10 +56,14 @@ public without sharing class ProductMappingTriggerHandler {
         
         // Step 3: Map UserId → EmployeeId (for Exectuive__c fallback)
         Map<Id, Id> employeetoUserMap = new Map<Id, Id>();
+        Set<Id> activeUserIds = new Set<Id>();
         if (!exeIds.isEmpty()) {
             List<Employee__c> employeeList = [SELECT Id, User__c FROM Employee__c WHERE User__c IN :exeIds];
             for (Employee__c emp : employeeList) {
                 if (emp.User__c != null) { employeetoUserMap.put(emp.User__c, emp.Id); }
+            }
+            for (User u : [SELECT Id FROM User WHERE Id IN :exeIds AND IsActive = true]) {
+                activeUserIds.add(u.Id);
             }
         }
         
@@ -204,7 +208,9 @@ public without sharing class ProductMappingTriggerHandler {
                 // All validations passed. Now we applying sharing and assignments
                 if (pm.Customer__c != null) {
                     pm.OwnerId = pm.Exectuive__c;
-                    sharesToInsert.add(CustomSharingService.buildAccountShare(pm.Customer__c, pm.Exectuive__c));
+                    if (activeUserIds.contains(pm.Exectuive__c)) {
+                        sharesToInsert.add(CustomSharingService.buildAccountShare(pm.Customer__c, pm.Exectuive__c));
+                    }
                 }
             }
             

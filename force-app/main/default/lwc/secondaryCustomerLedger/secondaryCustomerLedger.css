@@ -104,45 +104,6 @@
     background-color: #218838;
 }
 
-/* ── Download Dropdown ── */
-.download-dropdown {
-    position: relative;
-}
-
-.download-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: #fff;
-    border: 1px solid #d8dde6;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
-    min-width: 190px;
-    margin-top: 4px;
-}
-
-.download-menu ul {
-    list-style: none;
-    margin: 0;
-    padding: 4px 0;
-}
-
-.download-menu li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 13px;
-    color: #333;
-    transition: background-color 0.15s;
-}
-
-.download-menu li:hover {
-    background-color: #f0f4ff;
-}
-
 /* ── Table ── */
 .table-wrapper {
     width: 95%;
@@ -226,4 +187,37 @@
     width: 100%;
     background: white;
     border-radius: 8px;
+}
+
+.download-dropdown {
+    position: relative;
+}
+.download-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    border: 1px solid #d8dde6;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 180px;
+    margin-top: 4px;
+}
+.download-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+}
+.download-menu li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+}
+.download-menu li:hover {
+    background-color: #f0f4ff;
 }

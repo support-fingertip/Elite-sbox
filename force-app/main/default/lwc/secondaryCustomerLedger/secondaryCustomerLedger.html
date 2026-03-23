@@ -9,6 +9,7 @@
             <div class="order-head">
                 <h3 class="order-title">Secondary Customer Ledger</h3>
             </div>
+
             <div class="filter-bar">
                 <!-- Customer Search -->
                 <div class="customer-search-container">
@@ -34,10 +35,12 @@
                                             </span>
                                            <span class="slds-media__body">
                                                 <span class="slds-truncate" title={cust.label}>{cust.label}</span>
+
                                                 <template if:true={cust.landmark}>
                                                     <span> | </span>
                                                     <span class="slds-truncate" title={cust.landmark}>{cust.landmark}</span>
                                                 </template>
+
                                                 <template if:true={cust.street}>
                                                     <span> | </span>
                                                     <span class="slds-truncate" title={cust.street}>{cust.street}</span>
@@ -50,6 +53,7 @@
                         </div>
                     </template>
                 </div>
+
                 <!-- From Date -->
                 <lightning-input
                     type="date"
@@ -59,6 +63,7 @@
                     value={fromDate}
                     onchange={handleFromDateChange}>
                 </lightning-input>
+
                 <!-- To Date -->
                 <lightning-input
                     type="date"
@@ -68,6 +73,7 @@
                     value={toDate}
                     onchange={handleToDateChange}>
                 </lightning-input>
+
                 <!-- Generate Button -->
                 <div class="btn-wrapper">
                     <lightning-button
@@ -76,39 +82,39 @@
                         onclick={handleGenerateLedger}>
                     </lightning-button>
                 </div>
-                <!-- Download Dropdown -->
+
+                  <!-- Download Dropdown -->
                 <div class="btn-wrapper download-dropdown">
                     <button class="exportBtn" onclick={toggleDownloadMenu}>
                         <span style="display:flex; align-items:center; gap:6px;">
                             Download
-                            <lightning-icon
-                                icon-name="utility:chevrondown"
-                                alternative-text="Download options"
-                                size="xx-small"
-                                style="--slds-c-icon-color-foreground-default: white;">
+                            <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                size="x-small" style="--slds-c-icon-color-foreground-default: white;">
                             </lightning-icon>
                         </span>
                     </button>
                     <template lwc:if={showDownloadMenu}>
                         <div class="download-menu">
                             <ul>
-                                <li onclick={handleExportCsv} data-type="csv">
+                                <li onclick={handleExportCsv}>
                                     <lightning-icon icon-name="doctype:csv" size="x-small"></lightning-icon>
-                                    <span>Download CSV</span>
+                                    Download CSV
                                 </li>
-                                <li onclick={handleExportXlsx} data-type="xlsx">
+                                <li onclick={handleExportXlsx}>
                                     <lightning-icon icon-name="doctype:excel" size="x-small"></lightning-icon>
-                                    <span>Download XLSX</span>
+                                    Download XLSX
                                 </li>
-                                <li onclick={handleExportPdf} data-type="pdf">
+                                <li onclick={handleExportPdf}>
                                     <lightning-icon icon-name="doctype:pdf" size="x-small"></lightning-icon>
-                                    <span>Download PDF</span>
+                                    Download PDF
                                 </li>
                             </ul>
                         </div>
                     </template>
                 </div>
             </div>
+          
+
             <!-- Ledger Table -->
             <template lwc:if={hasLedgerData}>
                 <div class="table-wrapper">
@@ -140,6 +146,7 @@
                     </table>
                 </div>
             </template>
+
             <!-- Empty State -->
             <template lwc:else>
                 <div class="empty-state">

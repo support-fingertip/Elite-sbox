@@ -119,23 +119,39 @@ public class EmployeeCustomerAssignmentTriggerHandler
         Set<Id> primaryCustomerIds = new Set<Id>();
         Map<Id, Id> primaryCustomerToExecutiveMap = new Map<Id, Id>();
         Map<Id, Id> primaryCustomerToEmployeeMap = new Map<Id, Id>();
-        
+
         Set<Id> customerIdToRunAutoMappings = new Set<Id>();
-        
+
+        // Collect executive Ids to check active status
+        Set<Id> executiveIds = new Set<Id>();
+        for (Employee_Customer_Assignment__c mapping : newPrimaryAssignments) {
+            if (mapping.Executive__c != null) {
+                executiveIds.add(mapping.Executive__c);
+            }
+        }
+        Set<Id> activeUserIds = new Set<Id>();
+        if (!executiveIds.isEmpty()) {
+            for (User u : [SELECT Id FROM User WHERE Id IN :executiveIds AND IsActive = true]) {
+                activeUserIds.add(u.Id);
+            }
+        }
+
         //Step 1: Getting Primary Customer Ids and Customer Employee Map
         for (Employee_Customer_Assignment__c mapping : newPrimaryAssignments) {
             if (mapping.Customer__c != null) {
                 primaryCustomerIds.add(mapping.Customer__c);
                 if (mapping.Executive__c != null) {
                     primaryCustomerToExecutiveMap.put(mapping.Customer__c, mapping.Executive__c);
-                    sharesToInsert.add(CustomSharingService.buildAccountShare(mapping.Customer__c, mapping.Executive__c));
+                    if (activeUserIds.contains(mapping.Executive__c)) {
+                        sharesToInsert.add(CustomSharingService.buildAccountShare(mapping.Customer__c, mapping.Executive__c));
+                    }
                 } else if (mapping.Employee__c != null) {
                     primaryCustomerToEmployeeMap.put(mapping.Customer__c, mapping.Employee__c);
                 }
-                
+
                 if(mapping.Cloned_From_Customer_Deactivation__c == false && mapping.Cloned_From_Employee_Replacement__c == false)
                 {
-                    customerIdToRunAutoMappings.add(mapping.Customer__c); 
+                    customerIdToRunAutoMappings.add(mapping.Customer__c);
                 }
             }
         }
