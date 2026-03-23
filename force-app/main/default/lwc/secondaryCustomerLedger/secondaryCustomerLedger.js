@@ -1,4 +1,6 @@
 import { LightningElement, track } from 'lwc';
+import { loadScript } from 'lightning/platformResourceLoader';
+import XLSX_LIB from '@salesforce/resourceUrl/xlsxLibrary';
 import searchCustomers from '@salesforce/apex/DMSPortalLwc.searchCustomers';
 import getSecondaryLedger from '@salesforce/apex/DMSPortalLwc.getSecondaryLedger';
 import getOpeningBalance from '@salesforce/apex/DMSPortalLwc.getOpeningBalance';
@@ -25,10 +27,19 @@ export default class SecondaryCustomerLedger extends LightningElement {
     customerSearch = '';
     customerName = '';
     showDownloadMenu = false;
+    xlsxLoaded = false;
 
     connectedCallback() {
         console.log('SecondaryCustomerLedger connectedCallback called');
         this.initializeDates();
+        loadScript(this, XLSX_LIB)
+            .then(() => {
+                this.xlsxLoaded = true;
+                console.log('XLSX library loaded successfully');
+            })
+            .catch(error => {
+                console.error('Failed to load XLSX library:', error);
+            });
     }
     
 
@@ -277,9 +288,7 @@ export default class SecondaryCustomerLedger extends LightningElement {
         window.print();
     }
 // ─────────────────────────────────────────────
-// REPLACEMENT: handleExportXlsx
-// Strategy: TSV content with .csv MIME (LWS allows text/plain & text/csv only)
-// Opens perfectly in Excel — tab-separated = Excel-native
+// Export XLSX — uses SheetJS loaded via loadScript
 // ─────────────────────────────────────────────
 handleExportXlsx() {
     this.showDownloadMenu = false;
@@ -287,8 +296,13 @@ handleExportXlsx() {
         this.showToast('Export Error', 'No ledger data to export', 'error');
         return;
     }
+    if (!this.xlsxLoaded || !window.XLSX) {
+        this.showToast('Export Error', 'XLSX library not loaded yet. Please wait a moment and try again.', 'error');
+        return;
+    }
 
     try {
+        const xlsxLib = window.XLSX;
         const headers = [
             'S.No.', 'Transaction Date', 'Doc Type',
             'Doc No', 'Debit (INR)', 'Credit (INR)', 'Balance (INR)'
@@ -304,17 +318,25 @@ handleExportXlsx() {
             record.balance        || ''
         ]);
 
-        // Tab-separated values — Excel opens .xls TSV natively
-        const tsvContent = [headers, ...rows]
-            .map(row => row.map(cell => String(cell).replace(/\t/g, ' ')).join('\t'))
-            .join('\r\n');
+        const wsData = [headers, ...rows];
+        const ws = xlsxLib.utils.aoa_to_sheet(wsData);
 
-        // LWS only allows text/plain — use it, name the file .xls so Excel opens it
-        const blob = new Blob(['\uFEFF' + tsvContent], { type: 'text/plain' });
+        // Auto-size columns
+        ws['!cols'] = headers.map((h, i) => {
+            const maxLen = Math.max(h.length, ...rows.map(r => String(r[i] || '').length));
+            return { wch: maxLen + 2 };
+        });
+
+        const wb = xlsxLib.utils.book_new();
+        xlsxLib.utils.book_append_sheet(wb, ws, 'Ledger');
+
+        // Generate XLSX as array buffer and download via Blob
+        const wbout = xlsxLib.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
         const url  = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href     = url;
-        link.download = `Ledger_${this.customerName || 'Customer'}_${this.fromDate}_to_${this.toDate}.xls`;
+        link.download = `Ledger_${this.customerName || 'Customer'}_${this.fromDate}_to_${this.toDate}.xlsx`;
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
@@ -329,9 +351,7 @@ handleExportXlsx() {
 
 
 // ─────────────────────────────────────────────
-// REPLACEMENT: handleExportPdf
-// Strategy: Build HTML string → base64 encode it → data URI on <a> tag
-// LWS allows data URIs on anchor clicks — no window.open, no iframe.write needed
+// Export PDF — opens printable HTML via Blob URL (LWS-safe, no popup block)
 // ─────────────────────────────────────────────
 handleExportPdf() {
     this.showDownloadMenu = false;
@@ -341,7 +361,7 @@ handleExportPdf() {
     }
 
     try {
-        const title = `Ledger - ${this.customerName || 'Customer'} (${this.fromDate} to ${this.toDate})`;
+        const title = 'Ledger - ' + (this.customerName || 'Customer') + ' (' + this.fromDate + ' to ' + this.toDate + ')';
 
         // Build table rows
         let tableRows = '';
@@ -349,69 +369,65 @@ handleExportPdf() {
             const rowBg = record.isOpeningBalance
                 ? 'background:#dceff5;font-weight:bold;'
                 : '';
-            tableRows += `
-                <tr style="${rowBg}">
-                    <td>${record.rowIndex       || ''}</td>
-                    <td>${record.transactionDate|| ''}</td>
-                    <td>${record.description    || ''}</td>
-                    <td>${record.referenceNo    || ''}</td>
-                    <td style="text-align:right;">${record.debitAmount  || ''}</td>
-                    <td style="text-align:right;">${record.creditAmount || ''}</td>
-                    <td style="text-align:right;font-weight:bold;">${record.balance || ''}</td>
-                </tr>`;
+            tableRows +=
+                '<tr style="' + rowBg + '">' +
+                    '<td>' + (record.rowIndex || '') + '</td>' +
+                    '<td>' + (record.transactionDate || '') + '</td>' +
+                    '<td>' + (record.description || '') + '</td>' +
+                    '<td>' + (record.referenceNo || '') + '</td>' +
+                    '<td style="text-align:right;">' + (record.debitAmount || '') + '</td>' +
+                    '<td style="text-align:right;">' + (record.creditAmount || '') + '</td>' +
+                    '<td style="text-align:right;font-weight:bold;">' + (record.balance || '') + '</td>' +
+                '</tr>';
         });
 
-        const htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8"/>
-    <title>${title}</title>
-    <style>
-        body  { font-family:Arial,sans-serif; font-size:12px; margin:20px; color:#333; }
-        h2    { color:#02323e; font-size:15px; margin-bottom:14px; }
-        table { width:100%; border-collapse:collapse; }
-        th    { background:#02323e; color:#fff; padding:8px 10px;
-                text-align:left; font-size:11px; }
-        td    { padding:7px 10px; border-bottom:1px solid #e0e0e0; font-size:11px; }
-        @media print {
-            body { margin:8px; }
-            h2   { font-size:13px; }
+        const htmlContent =
+            '<!DOCTYPE html><html><head><meta charset="UTF-8"/>' +
+            '<title>' + title + '</title>' +
+            '<style>' +
+                'body{font-family:Arial,sans-serif;font-size:12px;margin:20px;color:#333;}' +
+                'h2{color:#02323e;font-size:15px;margin-bottom:14px;}' +
+                'table{width:100%;border-collapse:collapse;}' +
+                'th{background:#02323e;color:#fff;padding:8px 10px;text-align:left;font-size:11px;}' +
+                'td{padding:7px 10px;border-bottom:1px solid #e0e0e0;font-size:11px;}' +
+                '@media print{body{margin:8px;}h2{font-size:13px;}@page{size:landscape;margin:10mm;}}' +
+            '</style></head><body>' +
+            '<h2>' + title + '</h2>' +
+            '<table><thead><tr>' +
+                '<th>S.No.</th><th>Transaction Date</th><th>Doc Type</th><th>Doc No</th>' +
+                '<th style="text-align:right;">Debit (\u20B9)</th>' +
+                '<th style="text-align:right;">Credit (\u20B9)</th>' +
+                '<th style="text-align:right;">Balance (\u20B9)</th>' +
+            '</tr></thead><tbody>' + tableRows + '</tbody></table>' +
+            '</body></html>';
+
+        // Create Blob URL — same-origin, not blocked like data: URIs
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        const printWindow = window.open(blobUrl, '_blank');
+
+        if (printWindow) {
+            printWindow.onload = function() {
+                printWindow.focus();
+                printWindow.print();
+            };
+            // Clean up blob URL after delay
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        } else {
+            // Fallback: download as HTML file if popup blocked
+            URL.revokeObjectURL(blobUrl);
+            const downloadBlob = new Blob([htmlContent], { type: 'text/plain' });
+            const downloadUrl = URL.createObjectURL(downloadBlob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = 'Ledger_' + (this.customerName || 'Customer') + '_' + this.fromDate + '_to_' + this.toDate + '.html';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(downloadUrl);
+            this.showToast('Info', 'PDF print was blocked. HTML file downloaded instead — open it and press Ctrl+P to print as PDF.', 'info');
         }
-    </style>
-</head>
-<body>
-    <h2>${title}</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>S.No.</th>
-                <th>Transaction Date</th>
-                <th>Doc Type</th>
-                <th>Doc No</th>
-                <th style="text-align:right;">Debit (&#8377;)</th>
-                <th style="text-align:right;">Credit (&#8377;)</th>
-                <th style="text-align:right;">Balance (&#8377;)</th>
-            </tr>
-        </thead>
-        <tbody>${tableRows}</tbody>
-    </table>
-    <script>window.onload = function(){ window.print(); }<\/script>
-</body>
-</html>`;
-
-        // base64 encode the HTML — btoa fails on non-Latin chars (₹ sign etc.)
-        // so use encodeURIComponent → unescape trick which is LWS-safe
-        const base64Html = btoa(unescape(encodeURIComponent(htmlContent)));
-        const dataUri    = 'data:text/html;base64,' + base64Html;
-
-        // Anchor click with data URI — allowed by LWS
-        const link = document.createElement('a');
-        link.href   = dataUri;
-        link.target = '_blank';           // opens in new tab → auto-prints via window.onload
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
 
     } catch (error) {
         console.error('PDF Export Error:', error);
