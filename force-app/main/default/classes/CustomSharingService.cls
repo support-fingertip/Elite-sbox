@@ -27,7 +27,7 @@ public class CustomSharingService {
         }
         
         if (!shareRecords.isEmpty()) {
-            insert shareRecords;
+            Database.insert(shareRecords, false);
         }
         
     }
@@ -101,10 +101,14 @@ public class CustomSharingService {
     
     public static void shareAccounts(List<AccountShare> shares) {
         if (!shares.isEmpty()) {
-            try {
-                insert shares;
-            } catch (Exception e) {
-                System.debug('Error inserting account shares: ' + e.getMessage());
+            List<Database.SaveResult> results = Database.insert(shares, false);
+            for (Integer i = 0; i < results.size(); i++) {
+                if (!results[i].isSuccess()) {
+                    for (Database.Error err : results[i].getErrors()) {
+                        System.debug('Error inserting account share for AccountId: ' + shares[i].AccountId +
+                            ', UserOrGroupId: ' + shares[i].UserOrGroupId + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                    }
+                }
             }
         }
     }
@@ -629,11 +633,7 @@ public class CustomSharingService {
         }
 
         if (!sharesToInsert.isEmpty()) {
-            try {
-                insert sharesToInsert;
-            } catch (Exception e) {
-                System.debug('Error sharing customer access to hierarchy: ' + e.getMessage());
-            }
+            Database.insert(sharesToInsert, false);
         }
     }
 

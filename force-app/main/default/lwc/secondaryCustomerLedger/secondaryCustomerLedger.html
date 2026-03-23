@@ -83,21 +83,37 @@
                     </lightning-button>
                 </div>
 
-                <!-- Export CSV -->
-                <div class="btn-wrapper">
-                    <button class="exportBtn" onclick={handleExportCsv}>
+                  <!-- Download Dropdown -->
+                <div class="btn-wrapper download-dropdown">
+                    <button class="exportBtn" onclick={toggleDownloadMenu}>
                         <span style="display:flex; align-items:center; gap:6px;">
-                            Export CSV
-                            <lightning-icon
-                                icon-name="utility:download"
-                                alternative-text="Download"
-                                size="x-small"
-                                style="--slds-c-icon-color-foreground-default: white;">
+                            Download
+                            <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                size="x-small" style="--slds-c-icon-color-foreground-default: white;">
                             </lightning-icon>
                         </span>
                     </button>
+                    <template lwc:if={showDownloadMenu}>
+                        <div class="download-menu">
+                            <ul>
+                                <li onclick={handleExportCsv}>
+                                    <lightning-icon icon-name="doctype:csv" size="x-small"></lightning-icon>
+                                    Download CSV
+                                </li>
+                                <li onclick={handleExportXlsx}>
+                                    <lightning-icon icon-name="doctype:excel" size="x-small"></lightning-icon>
+                                    Download XLSX
+                                </li>
+                                <li onclick={handleExportPdf}>
+                                    <lightning-icon icon-name="doctype:pdf" size="x-small"></lightning-icon>
+                                    Download PDF
+                                </li>
+                            </ul>
+                        </div>
+                    </template>
                 </div>
             </div>
+          
 
             <!-- Ledger Table -->
             <template lwc:if={hasLedgerData}>
