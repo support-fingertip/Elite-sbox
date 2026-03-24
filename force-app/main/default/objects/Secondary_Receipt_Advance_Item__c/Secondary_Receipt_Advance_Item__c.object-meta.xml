@@ -153,14 +153,14 @@
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <externalSharingModel>ControlledByParent</externalSharingModel>
-    <label>Secondary Credit Note</label>
+    <label>Secondary Receipt Advance Item</label>
     <nameField>
-        <displayFormat>CN-{0000}</displayFormat>
-        <label>Secondary Credit Note Name</label>
+        <displayFormat>SA-{0000}</displayFormat>
+        <label>Secondary_Receipt_Advance_Item Name</label>
         <trackHistory>false</trackHistory>
         <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>Secondary Credit Notes</pluralLabel>
+    <pluralLabel>Secondary Receipt Advance Item</pluralLabel>
     <searchLayouts></searchLayouts>
     <sharingModel>ControlledByParent</sharingModel>
     <visibility>Public</visibility>

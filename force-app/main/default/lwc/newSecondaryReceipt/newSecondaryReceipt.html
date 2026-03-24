@@ -39,6 +39,15 @@
                                                 </span>
                                                 <span class="slds-media__body">
                                                     <span class="slds-truncate" title={cust.label}>{cust.label}</span>
+                                                    <template if:true={cust.landmark}>
+                                                        <span> | </span>
+                                                        <span class="slds-truncate" title={cust.landmark}>{cust.landmark}</span>
+                                                    </template>
+
+                                                    <template if:true={cust.street}>
+                                                        <span> | </span>
+                                                        <span class="slds-truncate" title={cust.street}>{cust.street}</span>
+                                                    </template>
                                                 </span>
                                             </div>
                                         </li>
@@ -57,22 +66,16 @@
                     <!-- Form Card -->
                     <div class="form-card">
                         <div class="slds-grid slds-wrap slds-gutters">
-                            <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                            <div class="slds-col slds-size_1-of-3 slds-p-around_small">
                                 <lightning-input type="date" label="Payment Date" value={paymentDate} onchange={handlePaymentDateChange} required></lightning-input>
                             </div>
-                            <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                            <div class="slds-col slds-size_1-of-3 slds-p-around_small">
                                 <lightning-combobox label="Payment Mode" value={paymentMode} options={paymentModeOptions}
                                     onchange={handlePaymentModeChange} placeholder="Select Payment Mode" required>
                                 </lightning-combobox>
                             </div>
-                            <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                            <div class="slds-col slds-size_1-of-3 slds-p-around_small">
                                 <lightning-input type="text" label="Reference Number" value={referenceNumber} onchange={handleReferenceNumberChange}></lightning-input>
-                            </div>
-                            <div class="slds-col slds-size_1-of-4 slds-p-around_small">
-                                <lightning-input type="number" label="Amount" value={totalAmount} onchange={handleTotalAmountChange} required></lightning-input>
-                                <template if:true={amountMessage}>
-                                    <div class="amount-message">{amountMessage}</div>
-                                </template>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-p-around_small">
                                 <lightning-textarea label="Remarks" value={remarks} onchange={handleRemarksChange} placeholder="Enter remarks..."></lightning-textarea>
@@ -83,12 +86,12 @@
                     <div class="form-card" style="margin-top: 0.75rem;">
                         <div class="pending-invoices-header">
                             <h4 class="pending-invoices-title">Pending Invoices</h4>
-                          
                         </div>
                         <div style="overflow-x: auto;">
                             <table class="contacts-table" style="width: 100%;">
                                 <thead>
                                     <tr>
+                                        <th>S.No.</th>
                                         <th>Invoice no.</th>
                                         <th>Date</th>
                                         <th>Invoice amt (₹)</th>
@@ -102,13 +105,14 @@
                                     <template if:true={pendingInvoices}>
                                         <template for:each={pendingInvoices} for:item="inv" for:index="index">
                                             <tr key={inv.InvId}>
+                                                <td><b>{inv.rowIndex}</b></td>
                                                 <td><b>{inv.name}</b></td>
                                                 <td>{inv.InvDate}</td>
                                                 <td>₹{inv.invoiceAmount}</td>
                                                 <td>₹{inv.alreadyPaid}</td>
                                                 <td class="pending-amt">₹{inv.pendingAmount}</td>
                                                 <td>
-                                                    <input type="number" class="paying-input" disabled data-index={index} value={inv.payingNow} min="0" max={inv.pending} onchange={handlePayingNowChange} />
+                                                    <input type="number" class="paying-input"  data-index={index} value={inv.payingNow} min="0" max={inv.pending} onchange={handlePayingNowChange} />
                                                 </td>
                                                 <td>₹{inv.balance}</td>
                                             </tr>
@@ -122,6 +126,67 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    <!-- Pending Debit Notes Card -->
+                    <template if:true={hasPendingDebitNotes}>
+                        <div class="form-card" style="margin-top: 0.75rem;">
+                            <div class="pending-invoices-header">
+                                <h4 class="pending-invoices-title">Pending Debit Notes</h4>
+                            </div>
+                            <div style="overflow-x: auto;">
+                                <table class="contacts-table" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>S.No.</th>
+                                            <th>Debit Note</th>
+                                            <th>Date</th>
+                                            <th>Amount (₹)</th>
+                                            <th>Paid (₹)</th>
+                                            <th>Pending (₹)</th>
+                                            <th>Paying now (₹)</th>
+                                            <th>Balance (₹)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={pendingDebitNotes} for:item="dn" for:index="index">
+                                            <tr key={dn.debitNoteId}>
+                                                <td><b>{dn.rowIndex}</b></td>
+                                                <td><b>{dn.name}</b></td>
+                                                <td>{dn.noteDate}</td>
+                                                <td>₹{dn.amount}</td>
+                                                <td>₹{dn.paidAmount}</td>
+                                                <td class="pending-amt">₹{dn.pendingAmount}</td>
+                                                <td>
+                                                    <input type="number" class="paying-input"  data-index={index} value={dn.payingNow} min="0" max={dn.pendingAmount} onchange={handleDebitNotePayingNowChange} />
+                                                </td>
+                                                <td>₹{dn.balance}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </template>
+
+    
+
+                    <!-- Summary Card -->
+                    <div class="form-card" style="margin-top: 0.75rem;">
+                        <div class="pending-invoices-header">
+                            <h4 class="pending-invoices-title">Payment Summary</h4>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-gutters slds-p-around_small">
+                            <div class="slds-col slds-size_1-of-3">
+                                <p><strong>Invoice Amount:</strong> ₹{invoicePayingTotal}</p>
+                            </div>
+                            <div class="slds-col slds-size_1-of-3">
+                                <p><strong>Debit Note Amount:</strong> ₹{debitNotePayingTotal}</p>
+                            </div>
+                            <div class="slds-col slds-size_1-of-3">
+                                <p><strong>Net Amount:</strong> ₹{netAmount}</p>
+                            </div>
+                        </div> 
                     </div>
                 </template>
                 <template if:false={showinvoices}>
@@ -177,9 +242,10 @@
                         <thead>
                             <tr>
                                 <th style="width:5%">S.No.</th>
-                                <th style="width:30%">Receipt Item No</th>
-                                <th style="width:30%">Date</th>
-                                <th style="width:35%">Amount (₹)</th>
+                                <th style="width:25%">Receipt Item No</th>
+                                <th style="width:20%">Type</th>
+                                <th style="width:25%">Doc. No.</th>
+                                <th style="width:20%">Amount (₹)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -187,9 +253,11 @@
                                 <template for:each={receiptItems} for:item="item">
                                     <tr key={item.Id}>
                                         <td style="width:5%">{item.rowIndex}</td>
-                                        <td style="width:30%">{item.Name}</td>
-                                        <td style="width:30%">{item.CreatedDate}</td>
-                                        <td style="width:35%">₹{item.Amount}</td>
+                                        <td style="width:25%">{item.name}</td>
+                                        <td style="width:20%">₹{item.itemType}</td>
+                                        <td style="width:25%">{item.docNo}</td>
+                                        <td style="width:20%">₹{item.amount}</td>
+                                       
                                     </tr>
                                 </template>
                             </template>
