@@ -1,8 +1,9 @@
 import { LightningElement, track } from 'lwc';
 import searchCustomers from '@salesforce/apex/DMSPortalLwc.searchCustomers';
-import saveSecondaryReceipt from '@salesforce/apex/DMSPortalLwc.saveSecondaryReceipt';
+import saveSecondaryReceiptWithDetails from '@salesforce/apex/DMSPortalLwc.saveSecondaryReceiptWithDetails';
 import allSecondaryReceiptData from '@salesforce/apex/DMSPortalLwc.allSecondaryReceiptData';
 import getPendingSecondaryInvoicesByCustomer from '@salesforce/apex/DMSPortalLwc.getPendingSecondaryInvoicesByCustomer';
+import getPendingDebitNotesByCustomer from '@salesforce/apex/DMSPortalLwc.getPendingDebitNotesByCustomer';
 import getSecondaryReceiptItemsByReceiptId from '@salesforce/apex/DMSPortalLwc.getSecondaryReceiptItemsByReceiptId';
 
 export default class NewSecondaryReceipt extends LightningElement {
@@ -10,6 +11,7 @@ export default class NewSecondaryReceipt extends LightningElement {
     @track selectedReceiptId = null;
     @track selectedReceiptNo = null;
     @track pendingInvoices = [];
+    @track pendingDebitNotes = [];
     @track payingNowMap = {};
     @track amountMessage = '';
     @track showNewSecondaryReceiptForm = false;
@@ -23,9 +25,35 @@ export default class NewSecondaryReceipt extends LightningElement {
 
     get isAutoFillDisabled() {
         const enteredAmount = parseFloat(this.totalAmount) || 0;
-        const totalPending = this.pendingInvoices.reduce((sum, inv) => sum + (inv.pendingAmount || 0), 0);
+        const totalPending = this.totalPendingAll;
         return enteredAmount > totalPending && totalPending > 0;
     }
+
+    get totalPendingAll() {
+        const invPending = this.pendingInvoices.reduce((sum, inv) => sum + (inv.pendingAmount || 0), 0);
+        const dnPending = this.pendingDebitNotes.reduce((sum, dn) => sum + (dn.pendingAmount || 0), 0);
+        return invPending + dnPending;
+    }
+
+
+    get invoicePayingTotal() {
+        return this.pendingInvoices.reduce((sum, inv) => sum + (inv.payingNow || 0), 0);
+    }
+
+    get debitNotePayingTotal() {
+        return this.pendingDebitNotes.reduce((sum, dn) => sum + (dn.payingNow || 0), 0);
+    }
+
+
+    get netAmount() {
+        return this.invoicePayingTotal + this.debitNotePayingTotal;
+    }
+
+    get hasPendingDebitNotes() {
+        return this.pendingDebitNotes && this.pendingDebitNotes.length > 0;
+    }
+
+
 
     closeReceiptDetail() {
         this.selectedReceipt = null;
@@ -47,20 +75,22 @@ export default class NewSecondaryReceipt extends LightningElement {
         this.isSubPartLoad = true;
         getSecondaryReceiptItemsByReceiptId({ receiptId: receiptId })
             .then(result => {
-               this.receiptItems = result.map((item, index) => ({
-                    rowIndex: index + 1,
-                    Name: item.Name,
-                    CreatedDate: item.CreatedDate 
-                        ? new Date(item.CreatedDate).toLocaleDateString('en-GB').replace(/\//g, '-') 
-                        : '',
-                    Amount: item.Amount__c
+                this.receiptItems = result.map((item, index) => ({
+                    rowIndex  : index + 1,
+                    name      : item.name,
+                    docNo     : item.docNo,
+                    createdDate: item.createdDate,
+                    amount    : item.amount,
+                    itemType  : item.itemType
                 }));
-                 this.isSubPartLoad = false;
+                this.isSubPartLoad = false;
                 this.hasReceiptItems = this.receiptItems.length > 0;
             })
             .catch(error => {
+                console.error('Error fetching receipt items:', error);
                 this.receiptItems = [];
                 this.hasReceiptItems = false;
+                this.isSubPartLoad = false;
             });
     }
 
@@ -259,16 +289,15 @@ export default class NewSecondaryReceipt extends LightningElement {
     }
     handleTotalAmountChange(event) {
         this.totalAmount = event.target.value;
-        // Validation: entered amount should not exceed total pending amount
+        // Validation: entered amount should not exceed total pending amount (invoices + debit notes)
         const enteredAmount = parseFloat(this.totalAmount) || 0;
-        const totalPending = this.pendingInvoices.reduce((sum, inv) => sum + (inv.pendingAmount || 0), 0);
+        const totalPending = this.totalPendingAll;
         if (enteredAmount > totalPending && totalPending > 0) {
             this.amountMessage = 'Entered amount exceeds pending amount. Please check and enter a valid amount.';
         } else {
             this.handleAutoFillOldestFirst();
             this.amountMessage = '';
         }
-    
     }
     handleRemarksChange(event) {
         this.remarks = event.target.value;
@@ -297,7 +326,9 @@ export default class NewSecondaryReceipt extends LightningElement {
             .then(result => {
                 this.filteredCustomers = result.map(acc => ({
                     label: acc.Name,
-                    value: acc.Id
+                    value: acc.Id,
+                    landmark: acc.Land_Mark__c,
+                    street: acc.Street__c
                 }));
                 this.customerOptions = this.filteredCustomers;
                 this.showCustomerSuggestions = this.filteredCustomers.length > 0;
@@ -316,34 +347,68 @@ export default class NewSecondaryReceipt extends LightningElement {
         this.customerName = selected ? selected.label : '';
         this.showCustomerSuggestions = false;
         this.showinvoices = true;
-        // Fetch pending invoices for this customer
+
+
+        // Clear stale data immediately before new fetch
+        this.pendingInvoices = [];
+        this.pendingDebitNotes = [];
+        this.availableAdvances = [];
+        this.payingNowMap = {};
+
+        // Fetch pending invoices, debit notes, and advances for this customer
         if (this.selectedCustomerId) {
             this.isPageLoaded = true;
-            getPendingSecondaryInvoicesByCustomer({ customerId: this.selectedCustomerId })
-                .then(result => {
-                 
-                    // Log the raw Apex result for debugging property names
-                    console.log('Apex raw result:', result);
-                    this.pendingInvoices = result.map(inv => ({
-                        InvId: inv.InvId,
-                        name: inv.name,
-                        InvDate: inv.InvDate,
-                        invoiceAmount: inv.Amount != null ? inv.Amount : 0, // Grand Total (Invoice Amount)
-                        alreadyPaid: inv.paidAmount != null ? inv.paidAmount : 0, // Paid Invoice Amount
-                        pendingAmount: inv.pendingAmount != null ? inv.pendingAmount : 0, // Pending Amount
-                        payingNow: 0,
-                        balance: inv.pendingAmount != null ? Math.round((inv.pendingAmount + Number.EPSILON) * 100) / 100 : 0
-                    }));
-                    this.payingNowMap = {};
-                    this.isPageLoaded = false;
-                })
-                .catch(error => {
-                    console.error('Apex error for pending invoices:', error);
-                    this.pendingInvoices = [];
-                    this.payingNowMap = {};
-                });
+            const custId = this.selectedCustomerId;
+
+            // Fetch all three in parallel
+            Promise.all([
+                getPendingSecondaryInvoicesByCustomer({ customerId: custId }),
+                getPendingDebitNotesByCustomer({ customerId: custId })
+            ])
+            .then(([invoiceResult, debitNoteResult]) => {
+               // Map invoices
+            this.pendingInvoices = invoiceResult.map((inv, index) => ({
+                rowIndex: index + 1,
+                InvId: inv.InvId,
+                name: inv.name,
+                InvDate: inv.InvDate,
+                invoiceAmount: inv.Amount != null ? inv.Amount : 0,
+                alreadyPaid: inv.paidAmount != null ? inv.paidAmount : 0,
+                pendingAmount: inv.pendingAmount != null ? inv.pendingAmount : 0,
+                payingNow: 0,
+                balance: inv.pendingAmount != null ? Math.round((inv.pendingAmount + Number.EPSILON) * 100) / 100 : 0
+            }));
+            this.payingNowMap = {};
+
+            // Map debit notes
+            this.pendingDebitNotes = debitNoteResult.map((dn, index) => ({
+                rowIndex: index + 1,
+                debitNoteId: dn.debitNoteId,
+                name: dn.name,
+                noteDate: dn.noteDate,
+                amount: dn.amount != null ? dn.amount : 0,
+                paidAmount: dn.paidAmount != null ? dn.paidAmount : 0,
+                pendingAmount: dn.pendingAmount != null ? dn.pendingAmount : 0,
+                reason: dn.reason,
+                payingNow: 0,
+                balance: dn.pendingAmount != null ? Math.round((dn.pendingAmount + Number.EPSILON) * 100) / 100 : 0
+            }));
+
+
+                this.isPageLoaded = false;
+            })
+            .catch(error => {
+                console.error('Error fetching customer data:', error);
+                this.pendingInvoices = [];
+                this.pendingDebitNotes = [];
+                this.availableAdvances = [];
+                this.payingNowMap = {};
+                this.isPageLoaded = false;
+            });
         } else {
             this.pendingInvoices = [];
+            this.pendingDebitNotes = [];
+            this.availableAdvances = [];
             this.payingNowMap = {};
         }
     }
@@ -352,11 +417,10 @@ export default class NewSecondaryReceipt extends LightningElement {
         const index = event.target.dataset.index;
         const value = parseFloat(event.target.value) || 0;
         this.payingNowMap[index] = value;
-        // Optionally update balance in UI
         this.pendingInvoices = this.pendingInvoices.map((inv, i) => {
             if (i == index) {
                 const payingNow = value;
-                let balance = (inv.pending || 0) - payingNow;
+                let balance = (inv.pendingAmount || 0) - payingNow;
                 balance = Math.round((balance + Number.EPSILON) * 100) / 100;
                 return { ...inv, payingNow, balance };
             }
@@ -364,27 +428,52 @@ export default class NewSecondaryReceipt extends LightningElement {
         });
     }
 
+    handleDebitNotePayingNowChange(event) {
+        const index = event.target.dataset.index;
+        const value = parseFloat(event.target.value) || 0;
+        this.pendingDebitNotes = this.pendingDebitNotes.map((dn, i) => {
+            if (i == index) {
+                const payingNow = value;
+                let balance = (dn.pendingAmount || 0) - payingNow;
+                balance = Math.round((balance + Number.EPSILON) * 100) / 100;
+                return { ...dn, payingNow, balance };
+            }
+            return dn;
+        });
+    }
+
+    handleAdvanceApplyingNowChange(event) {
+        const index = event.target.dataset.index;
+        const value = parseFloat(event.target.value) || 0;
+        this.availableAdvances = this.availableAdvances.map((adv, i) => {
+            if (i == index) {
+                const applyingNow = value;
+                let remaining = (adv.availableAmount || 0) - applyingNow;
+                remaining = Math.round((remaining + Number.EPSILON) * 100) / 100;
+                return { ...adv, applyingNow, remaining };
+            }
+            return adv;
+        });
+    }
+
     handleAutoFillOldestFirst() {
         let amountLeft = parseFloat(this.totalAmount) || 0;
-        // Sort invoices by date ascending (oldest first)
-        let sorted = [...this.pendingInvoices].sort((a, b) => {
-            const parseDate = (d) => {
-                if (!d) return new Date(0);
-                if (d.includes('/')) {
-                    const [day, month, year] = d.split('/').map(Number);
-                    return new Date(year, month - 1, day);
-                } else if (d.includes('-')) {
-                    const [year, month, day] = d.split('-').map(Number);
-                    return new Date(year, month - 1, day);
-                }
-                return new Date(d);
-            };
-            return parseDate(a.InvDate) - parseDate(b.InvDate);
-        });
+        const parseDate = (d) => {
+            if (!d) return new Date(0);
+            if (d.includes('/')) {
+                const [day, month, year] = d.split('/').map(Number);
+                return new Date(year, month - 1, day);
+            } else if (d.includes('-')) {
+                const [year, month, day] = d.split('-').map(Number);
+                return new Date(year, month - 1, day);
+            }
+            return new Date(d);
+        };
 
-        // Allocate amount to oldest invoices first
-        let allocation = [];
-        for (let inv of sorted) {
+        // Sort and allocate to invoices (oldest first)
+        let sortedInv = [...this.pendingInvoices].sort((a, b) => parseDate(a.InvDate) - parseDate(b.InvDate));
+        let invAllocation = [];
+        for (let inv of sortedInv) {
             let pay = 0;
             if (amountLeft > 0) {
                 pay = Math.min(inv.pendingAmount, amountLeft);
@@ -392,23 +481,40 @@ export default class NewSecondaryReceipt extends LightningElement {
             }
             let balance = inv.pendingAmount - pay;
             balance = Math.round((balance + Number.EPSILON) * 100) / 100;
-            allocation.push({ ...inv, payingNow: pay, balance });
+            invAllocation.push({ ...inv, payingNow: pay, balance });
         }
-
-        // Map allocation back to original UI order
         this.pendingInvoices = this.pendingInvoices.map(inv => {
-            const found = allocation.find(a => a.InvId === inv.InvId);
+            const found = invAllocation.find(a => a.InvId === inv.InvId);
             return found ? found : inv;
         });
-        // Optionally, update payingNowMap for consistency
         this.payingNowMap = {};
         this.pendingInvoices.forEach((inv, idx) => {
             this.payingNowMap[idx] = inv.payingNow;
         });
+
+        // Allocate remaining to debit notes (oldest first)
+        let sortedDn = [...this.pendingDebitNotes].sort((a, b) => parseDate(a.noteDate) - parseDate(b.noteDate));
+        let dnAllocation = [];
+        for (let dn of sortedDn) {
+            let pay = 0;
+            if (amountLeft > 0) {
+                pay = Math.min(dn.pendingAmount, amountLeft);
+                amountLeft -= pay;
+            }
+            let balance = dn.pendingAmount - pay;
+            balance = Math.round((balance + Number.EPSILON) * 100) / 100;
+            dnAllocation.push({ ...dn, payingNow: pay, balance });
+        }
+        this.pendingDebitNotes = this.pendingDebitNotes.map(dn => {
+            const found = dnAllocation.find(a => a.debitNoteId === dn.debitNoteId);
+            return found ? found : dn;
+        });
     }
 
-    // You should update handleSave to use the new fields and call saveSecondaryReceipt
     handleCancel() {
+        this.reset();
+    }
+    reset() {
         this.showNewSecondaryReceiptForm = false;
         this.customerSearch = '';
         this.selectedCustomerId = '';
@@ -421,59 +527,96 @@ export default class NewSecondaryReceipt extends LightningElement {
         this.referenceNumber = '';
         this.totalAmount = null;
         this.remarks = '';
+        this.pendingDebitNotes = [];
+        this.availableAdvances = [];
         this.loadReceipts();
     }
 
     handleSave() {
         // Validate required fields
-        if (!this.selectedCustomerId || !this.paymentDate || !this.paymentMode || !this.totalAmount) {
-            // Show error toast (implement as needed)
+        if (!this.selectedCustomerId || !this.paymentDate || !this.paymentMode) {
             this.showToast('Validation Error', 'Please select all required fields.', 'error');
             return;
         }
-        const totalPending = this.pendingInvoices.reduce((sum, inv) => sum + (inv.pendingAmount || 0), 0);
-        if(this.totalAmount > totalPending)
-        {
-            this.showToast('Validation Error', 'Total Amount is greater than pending', 'error');
-            return;
+
+        // Invoices
+        for (let item of this.pendingInvoices) {
+            if (item.payingNow > 0 && item.payingNow > item.pendingAmount) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${item.rowIndex} - Invoice "${item.name}": Paying amount ${item.payingNow} cannot exceed pending amount ${item.pendingAmount}.`,
+                    'error'
+                );
+                return;
+            }
         }
 
+        // Debit Notes
+        for (let dn of this.pendingDebitNotes) {
+            if (dn.payingNow > 0 && dn.payingNow > dn.pendingAmount) {
+                this.showToast(
+                    'Validation Error',
+                    `Row ${dn.rowIndex} - Debit Note "${dn.name}": Paying amount ${dn.payingNow} cannot exceed pending amount ${dn.pendingAmount}.`,
+                    'error'
+                );
+                return;
+            }
+        }
+   
 
-
-       
         const receiptData = {
             sobjectType: 'Secondary_Receipt__c',
             Customer__c: this.selectedCustomerId,
             Payment_Date__c: this.paymentDate,
             Payment_Mode__c: this.paymentMode,
             Reference_Number__c: this.referenceNumber,
-            Total_Amount__c: this.totalAmount,
+            Total_Amount__c: this.netAmount,
             Remarks__c: this.remarks
         };
-        const recipetItems = [];
+
+        // Build invoice receipt items
+        const receiptItems = [];
         for (let item of this.pendingInvoices) {
-            // Add this line to inspect the data
-            recipetItems.push({
-                sobjectType: 'Secondary_Receipt_Item__c',
-                Secondary_Invoice__c: item.InvId,
-                Amount__c:  item.payingNow
-            });
+            if (item.payingNow > 0) {
+                receiptItems.push({
+                    sobjectType: 'Secondary_Receipt_Item__c',
+                    Secondary_Invoice__c: item.InvId,
+                    Amount__c: item.payingNow
+                });
+            }
         }
+
+        // Build debit note receipt items
+        const debitItems = [];
+        for (let dn of this.pendingDebitNotes) {
+            if (dn.payingNow > 0) {
+                debitItems.push({
+                    sobjectType: 'Secondary_Receipt_Debit_Item__c',
+                    Secondary_Debit_Note__c: dn.debitNoteId,
+                    Amount__c: dn.payingNow
+                });
+            }
+        }
+
+        // Build advance receipt items
+
+
         this.isPageLoaded = true;
-        saveSecondaryReceipt({ 
+        saveSecondaryReceiptWithDetails({
             receiptData: receiptData,
-            recipetItems : recipetItems
-              })
+            receiptItems: receiptItems,
+            debitItems: debitItems
+        })
             .then(() => {
                 this.isPageLoaded = false;
                 this.showNewSecondaryReceiptForm = false;
                 this.showToast('Success', 'Receipt created successfully', 'Success');
-                this.initReceiptList();
-                // Show success toast (implement as needed)
+                this.reset();
             })
             .catch(error => {
-                // Show error toast (implement as needed)
+                this.isPageLoaded = false;
                 console.error('Error saving receipt:', error);
+                this.showToast('Error', 'Error saving receipt. Please try again.', 'error');
             });
     }
 

@@ -7,7 +7,7 @@
         <label>Information</label>
         <layoutColumns>
             <layoutItems>
-                <behavior>Required</behavior>
+                <behavior>Readonly</behavior>
                 <field>Name</field>
             </layoutItems>
             <layoutItems>
@@ -17,10 +17,6 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Amount__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Readonly</behavior>
-                <field>Secondary_Credit_Note_Name__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>

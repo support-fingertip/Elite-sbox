@@ -155,9 +155,10 @@
     <externalSharingModel>ControlledByParent</externalSharingModel>
     <label>Secondary Credit Note</label>
     <nameField>
+        <displayFormat>CN-{0000}</displayFormat>
         <label>Secondary Credit Note Name</label>
         <trackHistory>false</trackHistory>
-        <type>Text</type>
+        <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Secondary Credit Notes</pluralLabel>
     <searchLayouts></searchLayouts>

@@ -155,12 +155,12 @@
     <externalSharingModel>ControlledByParent</externalSharingModel>
     <label>Secondary Receipt Advance Item</label>
     <nameField>
-        <displayFormat>SRAI-{00000}</displayFormat>
-        <label>Secondary Receipt Advance Item Name</label>
+        <displayFormat>SA-{0000}</displayFormat>
+        <label>Secondary_Receipt_Advance_Item Name</label>
         <trackHistory>false</trackHistory>
         <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>Secondary Receipt Advance Items</pluralLabel>
+    <pluralLabel>Secondary Receipt Advance Item</pluralLabel>
     <searchLayouts></searchLayouts>
     <sharingModel>ControlledByParent</sharingModel>
     <visibility>Public</visibility>

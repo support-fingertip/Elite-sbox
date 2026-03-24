@@ -155,9 +155,10 @@
     <externalSharingModel>ControlledByParent</externalSharingModel>
     <label>Secondary Debit Note</label>
     <nameField>
+        <displayFormat>DN-{00000}</displayFormat>
         <label>Secondary Debit Note Name</label>
         <trackHistory>false</trackHistory>
-        <type>Text</type>
+        <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Secondary Debit Notes</pluralLabel>
     <searchLayouts></searchLayouts>

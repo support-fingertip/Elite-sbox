@@ -6,7 +6,7 @@
     <referenceTo>Secondary_Debit_Note__c</referenceTo>
     <relationshipLabel>Secondary Receipt Debit Items</relationshipLabel>
     <relationshipName>Secondary_Receipt_Debit_Items</relationshipName>
-    <relationshipOrder>1</relationshipOrder>
+    <relationshipOrder>0</relationshipOrder>
     <reparentableMasterDetail>false</reparentableMasterDetail>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>

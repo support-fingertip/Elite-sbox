@@ -8926,31 +8926,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Secondary_Advance_Receipt__c.Advance_date__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Secondary_Advance_Receipt__c.Amount__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Secondary_Advance_Receipt__c.Distributor__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Secondary_Advance_Receipt__c.Mode_of_Payment__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Secondary_Advance_Receipt__c.Remarks__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
         <field>Secondary_Credit_Note__c.Amount__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -8981,11 +8956,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Secondary_Credit_Note__c.Secondary_Credit_Note_Name__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
         <field>Secondary_Credit_Note__c.Status__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -9006,12 +8976,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Secondary_Debit_Note__c.Name__c</field>
+        <field>Secondary_Debit_Note__c.Note_Date__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Secondary_Debit_Note__c.Note_Date__c</field>
+        <field>Secondary_Debit_Note__c.Paid_Amount__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Debit_Note__c.Pending_Amount__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -9182,6 +9157,16 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice__c.Total_Tax__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Receipt_Advance_Item__c.Amount__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Receipt_Debit_Item__c.Amount__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -11648,9 +11633,6 @@
         <layout>ScorecardMetric-Scorecard Metric Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
-        <layout>Secondary_Advance_Receipt__c-Secondary Advance Receipt Layout</layout>
-    </layoutAssignments>
-    <layoutAssignments>
         <layout>Secondary_Credit_Note__c-Secondary Credit Note Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
@@ -11661,6 +11643,12 @@
     </layoutAssignments>
     <layoutAssignments>
         <layout>Secondary_Invoice__c-Secondary Invoice Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Secondary_Receipt_Advance_Item__c-Secondary Receipt Advance Item Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Secondary_Receipt_Debit_Item__c-Secondary Receipt Debit Item Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
         <layout>Secondary_Receipt_Item__c-Secondary Receipt Item Layout</layout>
@@ -12163,10 +12151,6 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>Scheme__c</tab>
-        <visibility>Hidden</visibility>
-    </tabVisibilities>
-    <tabVisibilities>
-        <tab>Secondary_Advance_Receipt__c</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>

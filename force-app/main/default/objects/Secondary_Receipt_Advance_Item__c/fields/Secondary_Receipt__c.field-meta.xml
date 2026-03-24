@@ -4,8 +4,8 @@
     <externalId>false</externalId>
     <label>Secondary Receipt</label>
     <referenceTo>Secondary_Receipt__c</referenceTo>
-    <relationshipLabel>Secondary Receipt Advance Items</relationshipLabel>
-    <relationshipName>Secondary_Receipt_Advance_Items</relationshipName>
+    <relationshipLabel>Secondary Receipt Advance Item</relationshipLabel>
+    <relationshipName>Secondary_Receipt_Advance_Item</relationshipName>
     <relationshipOrder>0</relationshipOrder>
     <reparentableMasterDetail>false</reparentableMasterDetail>
     <trackHistory>false</trackHistory>
