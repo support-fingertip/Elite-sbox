@@ -656,3 +656,18 @@ height: 33px;
 .download-menu li:hover {
     background-color: #f0f4ff;
 }
+
+.aging-report-btn {
+    background-color: #0070d2;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.aging-report-btn:hover {
+    background-color: #005fb2;
+}

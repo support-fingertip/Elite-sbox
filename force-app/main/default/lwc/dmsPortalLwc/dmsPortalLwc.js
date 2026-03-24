@@ -104,6 +104,11 @@ export default class NavigationComponent extends LightningElement {
     // Secondary Customer Ledger Tab
     @track showSecondaryCustomerLedger = false;
 
+    // Secondary Customer Aging Report
+    @track showSecondaryCustomerAgingReport = false;
+    @track selectedAgingCustomerId = '';
+    @track selectedAgingCustomerName = '';
+
 
     @track orderItems = [];      // List of order items with Tax_Amount__c field
     @track totalTaxAmount = 0;   // Total tax amount calculated
@@ -516,6 +521,7 @@ export default class NavigationComponent extends LightningElement {
         this.isShowNewAdjustStock = false;
         this.showProductGallery = false;
         this.showSecondaryCustomerLedger = false;
+        this.showSecondaryCustomerAgingReport = false;
     }
 
     selectedTabFunction() {
@@ -808,6 +814,19 @@ export default class NavigationComponent extends LightningElement {
         // Show / hide data
         this.secoundaryCustomerFilter.isshowData =
             this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
+    }
+
+    handleViewAgingReport(event) {
+        this.selectedAgingCustomerId = event.currentTarget.dataset.id;
+        this.selectedAgingCustomerName = event.currentTarget.dataset.name;
+        this.isShowSecondaryCustomers = false;
+        this.showSecondaryCustomerAgingReport = true;
+    }
+
+    handleAgingReportBack() {
+        this.showSecondaryCustomerAgingReport = false;
+        this.isShowSecondaryCustomers = true;
+        this.getCustomerData();
     }
 
     handleCustomerExportCsv() {
