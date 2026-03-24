@@ -2862,4 +2862,97 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public Decimal availableAmount;
         @AuraEnabled public String modeOfPayment;
     }
+
+    // Aging Report wrapper classes
+    public class AgingBucket {
+        @AuraEnabled public String label;
+        @AuraEnabled public Decimal invoiceAmount;
+        @AuraEnabled public Decimal debitNoteAmount;
+        @AuraEnabled public Decimal totalAmount;
+    }
+
+    public class AgingReportData {
+        @AuraEnabled public List<AgingBucket> buckets;
+        @AuraEnabled public Decimal totalInvoicePending;
+        @AuraEnabled public Decimal totalDebitNotePending;
+        @AuraEnabled public Decimal totalAgingAmount;
+    }
+
+    @AuraEnabled
+    public static AgingReportData getSecondaryCustomerAgingReport(String customerId) {
+        AgingReportData report = new AgingReportData();
+        report.totalInvoicePending = 0;
+        report.totalDebitNotePending = 0;
+        report.totalAgingAmount = 0;
+
+        // Initialize buckets: 0-15, 16-30, 31-45, 45+
+        List<AgingBucket> buckets = new List<AgingBucket>();
+        String[] labels = new String[]{ '0-15', '16-30', '31-45', '45+' };
+        for (String lbl : labels) {
+            AgingBucket b = new AgingBucket();
+            b.label = lbl;
+            b.invoiceAmount = 0;
+            b.debitNoteAmount = 0;
+            b.totalAmount = 0;
+            buckets.add(b);
+        }
+
+        Date today = Date.today();
+
+        // Query pending invoices
+        List<Secondary_Invoice__c> invoices = [
+            SELECT Id, Invoice_Date__c, Pending_Amount__c
+            FROM Secondary_Invoice__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+        ];
+
+        for (Secondary_Invoice__c inv : invoices) {
+            Integer daysDiff = inv.Invoice_Date__c.daysBetween(today);
+            Integer bucketIndex;
+            if (daysDiff <= 15) {
+                bucketIndex = 0;
+            } else if (daysDiff <= 30) {
+                bucketIndex = 1;
+            } else if (daysDiff <= 45) {
+                bucketIndex = 2;
+            } else {
+                bucketIndex = 3;
+            }
+            buckets[bucketIndex].invoiceAmount += inv.Pending_Amount__c;
+            report.totalInvoicePending += inv.Pending_Amount__c;
+        }
+
+        // Query pending debit notes
+        List<Secondary_Debit_Note__c> debitNotes = [
+            SELECT Id, Note_Date__c, Pending_Amount__c
+            FROM Secondary_Debit_Note__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+        ];
+
+        for (Secondary_Debit_Note__c dn : debitNotes) {
+            Integer daysDiff = dn.Note_Date__c.daysBetween(today);
+            Integer bucketIndex;
+            if (daysDiff <= 15) {
+                bucketIndex = 0;
+            } else if (daysDiff <= 30) {
+                bucketIndex = 1;
+            } else if (daysDiff <= 45) {
+                bucketIndex = 2;
+            } else {
+                bucketIndex = 3;
+            }
+            buckets[bucketIndex].debitNoteAmount += dn.Pending_Amount__c;
+            report.totalDebitNotePending += dn.Pending_Amount__c;
+        }
+
+        // Calculate totals per bucket
+        for (AgingBucket b : buckets) {
+            b.totalAmount = b.invoiceAmount + b.debitNoteAmount;
+        }
+
+        report.buckets = buckets;
+        report.totalAgingAmount = report.totalInvoicePending + report.totalDebitNotePending;
+
+        return report;
+    }
 }

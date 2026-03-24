@@ -1,0 +1,67 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="loading-container">
+            <c-loading-screen></c-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="orders layouts">
+            <!-- Header -->
+            <div class="report-header">
+                <div class="header-left">
+                    <button class="back-btn" onclick={handleBack}>
+                        <lightning-icon icon-name="utility:back" size="x-small"
+                            style="--slds-c-icon-color-foreground-default: white;">
+                        </lightning-icon>
+                        <span>Back</span>
+                    </button>
+                    <h3 class="report-title">Aging Report: {customerName}</h3>
+                </div>
+                <div class="header-right">
+                    <button class="download-btn" onclick={handleDownloadCSV}>
+                        <lightning-icon icon-name="utility:download" size="x-small"
+                            style="--slds-c-icon-color-foreground-default: white;">
+                        </lightning-icon>
+                        <span>Download</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aging Buckets Table -->
+            <div class="report-card">
+                <table class="aging-table">
+                    <thead>
+                        <tr>
+                            <th class="th-left">Age Bucket</th>
+                            <th class="th-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={agingBuckets} for:item="bucket">
+                            <tr key={bucket.label}>
+                                <td class="td-left">{bucket.label}</td>
+                                <td class="td-right">{bucket.formattedTotal}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Breakdown -->
+            <div class="report-card summary-card">
+                <h4 class="summary-title">Payment Summary</h4>
+                <div class="slds-grid slds-wrap slds-gutters slds-p-around_small">
+                    <div class="slds-col slds-size_1-of-3">
+                        <p><strong>Invoice Pending:</strong> {formattedInvoicePending}</p>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <p><strong>Debit Note Pending:</strong> {formattedDebitNotePending}</p>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <p><strong>Total Aging Amount:</strong> {formattedTotalAging}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

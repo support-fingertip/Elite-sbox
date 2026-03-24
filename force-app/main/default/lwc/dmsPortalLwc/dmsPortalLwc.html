@@ -1449,17 +1449,17 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-                                    <th style="width:5%">S.No.</th>
-                                    <th style="width:15%">Customer Name</th>
-                                    <th style="width:10%">Customer Code</th>
-                                    <th style="width:10%">Customer Type</th>
-                                    <th style="width:10%">Customer Category</th>
-                                    <th style="width:10%">Customer Status</th>
-                                    <th style="width:10%">Primary Phone</th>
-                                    <th style="width:10%">Beat Name</th>
-                                    <th style="width:10%">District</th>
-                                    <th style="width:10%">Outstanding</th>
- 
+                                    <th style="width:4%">S.No.</th>
+                                    <th style="width:13%">Customer Name</th>
+                                    <th style="width:9%">Customer Code</th>
+                                    <th style="width:9%">Customer Type</th>
+                                    <th style="width:9%">Customer Category</th>
+                                    <th style="width:9%">Customer Status</th>
+                                    <th style="width:9%">Primary Phone</th>
+                                    <th style="width:9%">Beat Name</th>
+                                    <th style="width:9%">District</th>
+                                    <th style="width:9%">Outstanding</th>
+                                    <th style="width:11%">Action</th>
                                 </tr>
                             </thead>
 
@@ -1468,16 +1468,19 @@
                                     <template for:each={secoundaryCustomerFilter.originalSecondaryCustomers}
                                         for:item="cust">
                                         <tr key={cust.secondaryCustomerId}>
-                                            <td style="width:5%">{cust.sNumber}</td>
-                                            <td style="width:15%">{cust.secondaryCustomerName}</td>
-                                            <td style="width:10%">{cust.secondaryCustomerCode}</td>
-                                            <td style="width:10%">{cust.customerType}</td>
-                                            <td style="width:10%">{cust.customerCategory}</td>
-                                            <td style="width:10%">{cust.status}</td>
-                                            <td style="width:10%">{cust.primaryPhoneNumber}</td>
-                                            <td style="width:10%">{cust.beatName}</td>
-                                            <td style="width:10%">{cust.district}</td>
-                                            <td class="text-right" style="width:10%">{cust.outStanding}</td>
+                                            <td style="width:4%">{cust.sNumber}</td>
+                                            <td style="width:13%">{cust.secondaryCustomerName}</td>
+                                            <td style="width:9%">{cust.secondaryCustomerCode}</td>
+                                            <td style="width:9%">{cust.customerType}</td>
+                                            <td style="width:9%">{cust.customerCategory}</td>
+                                            <td style="width:9%">{cust.status}</td>
+                                            <td style="width:9%">{cust.primaryPhoneNumber}</td>
+                                            <td style="width:9%">{cust.beatName}</td>
+                                            <td style="width:9%">{cust.district}</td>
+                                            <td class="text-right" style="width:9%">{cust.outStanding}</td>
+                                            <td style="width:11%">
+                                                <button class="aging-report-btn" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewAgingReport}>View Aging Report</button>
+                                            </td>
                                         </tr>
                                     </template>
                                 </template>
@@ -1493,6 +1496,15 @@
                         </table>
                     </div>
                 </template>
+            </template>
+
+            <!-- Secondary Customer Aging Report -->
+            <template lwc:if={showSecondaryCustomerAgingReport}>
+                <c-secondary-customer-aging-report
+                    customer-id={selectedAgingCustomerId}
+                    customer-name={selectedAgingCustomerName}
+                    onback={handleAgingReportBack}>
+                </c-secondary-customer-aging-report>
             </template>
 
             <template lwc:if={showReports}>
