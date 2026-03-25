@@ -4,6 +4,7 @@
     <columns>NAME</columns>
     <columns>Off__c</columns>
     <columns>Sales_Channel__c</columns>
+    <columns>Customer_Category__c</columns>
     <columns>Type__c</columns>
     <columns>IsActive__c</columns>
     <filterScope>Everything</filterScope>
