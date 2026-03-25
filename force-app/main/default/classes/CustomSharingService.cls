@@ -411,12 +411,28 @@ public class CustomSharingService {
 
             // Update Employee Customer Assignments
             if (!assignmentsToUpdate.isEmpty()) {
-                database.update(assignmentsToUpdate, false);
+                System.debug('Customer Transfer - Updating ' + assignmentsToUpdate.size() + ' Employee Customer Assignments');
+                List<Database.SaveResult> ecaResults = database.update(assignmentsToUpdate, false);
+                for (Integer i = 0; i < ecaResults.size(); i++) {
+                    if (!ecaResults[i].isSuccess()) {
+                        for (Database.Error err : ecaResults[i].getErrors()) {
+                            System.debug('Customer Transfer Error - Assignment Id: ' + assignmentsToUpdate[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                        }
+                    }
+                }
             }
 
-            // Update Primary Product Mappings first, then secondary will follow
+            // Update Product Mappings
             if (!mappingsToUpdate.isEmpty()) {
-                database.update(mappingsToUpdate, false);
+                System.debug('Customer Transfer - Updating ' + mappingsToUpdate.size() + ' Product Mappings');
+                List<Database.SaveResult> pmResults = database.update(mappingsToUpdate, false);
+                for (Integer i = 0; i < pmResults.size(); i++) {
+                    if (!pmResults[i].isSuccess()) {
+                        for (Database.Error err : pmResults[i].getErrors()) {
+                            System.debug('Customer Transfer Error - Mapping Id: ' + mappingsToUpdate[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                        }
+                    }
+                }
             }
         }
 
@@ -483,7 +499,15 @@ public class CustomSharingService {
 
             // Update Sub Stockist mappings
             if (!subMappingsToUpdate.isEmpty()) {
-                database.update(subMappingsToUpdate, false);
+                System.debug('Customer Transfer - Updating ' + subMappingsToUpdate.size() + ' Sub Stockist Mappings');
+                List<Database.SaveResult> subResults = database.update(subMappingsToUpdate, false);
+                for (Integer i = 0; i < subResults.size(); i++) {
+                    if (!subResults[i].isSuccess()) {
+                        for (Database.Error err : subResults[i].getErrors()) {
+                            System.debug('Customer Transfer Error - Sub Mapping Id: ' + subMappingsToUpdate[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                        }
+                    }
+                }
             }
         }
         
@@ -491,7 +515,7 @@ public class CustomSharingService {
         // Step 2: Beat Transfer (update existing beats instead of cloning)
         Set<String> affectedPrimaryIds = oldPrimaryCustomerToNewMap.keySet();
         Set<String> affectedSubStockiestIds = oldSubStockiestToNewSubStockiestMap.keySet();
-        
+
         List<Child_beat__c> oldBeats = [
             SELECT Id, Name, Primary_Customer__c, Sub_Stockist__c, Order_Number__c, OwnerId,Beat_Type__c,Active__c
             FROM Child_beat__c
@@ -499,13 +523,15 @@ public class CustomSharingService {
             OR Sub_Stockist__c IN :affectedSubStockiestIds)
             AND Active__c = true
         ];
-        
+        System.debug('Beat Transfer - Queried beats count: ' + oldBeats.size());
+
         List<Child_beat__c> beatsToUpdate = new List<Child_beat__c>();
 
         for (Child_beat__c beat : oldBeats) {
             Boolean changed = false;
 
             if (beat.Primary_Customer__c != null && oldPrimaryCustomerToNewMap.containsKey(beat.Primary_Customer__c)) {
+                System.debug('Beat Transfer - Updating Primary_Customer__c on beat: ' + beat.Id + ' from ' + beat.Primary_Customer__c + ' to ' + oldPrimaryCustomerToNewMap.get(beat.Primary_Customer__c));
                 beat.Primary_Customer__c = oldPrimaryCustomerToNewMap.get(beat.Primary_Customer__c);
                 changed = true;
             }
@@ -523,8 +549,16 @@ public class CustomSharingService {
             if (changed) beatsToUpdate.add(beat);
         }
 
+        System.debug('Beat Transfer - Beats to update count: ' + beatsToUpdate.size());
         if (!beatsToUpdate.isEmpty()) {
-            database.update(beatsToUpdate, false);
+            List<Database.SaveResult> beatResults = database.update(beatsToUpdate, false);
+            for (Integer i = 0; i < beatResults.size(); i++) {
+                if (!beatResults[i].isSuccess()) {
+                    for (Database.Error err : beatResults[i].getErrors()) {
+                        System.debug('Beat Transfer Error - Beat Id: ' + beatsToUpdate[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                    }
+                }
+            }
         }
         
     }
