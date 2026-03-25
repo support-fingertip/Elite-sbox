@@ -75,7 +75,8 @@ global class getDataIntegrationController {
                         so.Delivery_Plant__c = obj.delivaryPlant;
                         so.IGST_Amount__c = obj.igstAmount;
                         so.GST_Amount__c = obj.gstAmount;   
-                        so.Grand_Total__c = obj.billAmount;    
+                        so.Grand_Total__c = obj.billAmount;
+                        Decimal totalQty = 0;
                         if(obj.InvoiceItems.size()>0){
                             for(Invoiceitems ad : obj.InvoiceItems){
                                 //Link line item to invoice record   
@@ -171,9 +172,11 @@ global class getDataIntegrationController {
                                 invItem.Company_Code__c = obj.companyCode;
                                 invItem.Plant__c  = obj.delivaryPlant;
                                 invItem.Bill_Date__c =  date.valueof(obj.invoiceDate);
+                                totalQty += invItem.Qyt__c != null ? invItem.Qyt__c : 0;
                                 invLineList.add(invItem);
                             }
                         }
+                        so.Total_Quantity__c = totalQty;
                         invList.add(so);
                     }
                 }
