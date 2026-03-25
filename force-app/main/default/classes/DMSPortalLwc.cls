@@ -366,7 +366,7 @@ public without sharing class DMSPortalLwc {
         }
         
         List<Invoice_Item__c> invItems = [
-            SELECT Id, Product__r.Name, SKU__r.Name,Quantity__c,GST_Amount__c, Tax_Amount__c, Bill_Amount__c,Price_per_unit__c
+            SELECT Id, Product__r.Name, SKU__r.Name,Qyt__c,GST_Amount__c, Tax_Amount__c, Bill_Amount__c,Price_per_unit__c
             FROM Invoice_Item__c
             WHERE Invoice__c = :invoiceId
             ORDER BY Product__r.Name
@@ -377,7 +377,7 @@ public without sharing class DMSPortalLwc {
             Invoice_Item_Data data = new Invoice_Item_Data();
             data.Id = item.Id;
             data.ItemName = item.SKU__r != null ? item.SKU__r.Name : '';
-            data.Quantity = item.Quantity__c;
+            data.Quantity = item.Qyt__c;
             data.TaxAmount = item.GST_Amount__c;
             data.TotalAmount = item.Bill_Amount__c ;
             data.unitPrice = item.Price_per_unit__c ;
