@@ -60,8 +60,10 @@ global class AzureIntegrationController {
                     ords.Status__c = 'Push to Logistics';
                     update ords;
                     if(successCount==1){
-                        
-                        sendListEmail(ord); 
+                        if(Label.SendOrderEmail == 'True')
+                        {
+                            sendListEmail(ord); 
+                        }
                     }
                     else{
                     }
@@ -256,7 +258,11 @@ global class AzureIntegrationController {
                         if(successCount==1){
                             notification.setTitle('Order Created in ERP');
                             notification.setBody(NotificationBody);	 
-                            sendListEmail(ord); 
+                            if(Label.SendOrderEmail == 'True')
+                            {
+                                sendListEmail(ord); 
+                            }
+                           
                         }
                         else{
                             notification.setBody('Error: '+message);	 

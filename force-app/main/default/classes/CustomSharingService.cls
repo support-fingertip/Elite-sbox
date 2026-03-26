@@ -355,171 +355,159 @@ public class CustomSharingService {
         }
         
     }
-    /**-----------------------------Customer Replacement-----------------------------------------**/ 
+    /**-----------------------------Customer Replacement-----------------------------------------**/
     public static void customerReplacement(Map<String, String> oldPrimaryCustomerToNewMap, Map<String, String> oldSubStockiestToNewSubStockiestMap) {
-        
-        // Step 1: Product Mapping Cloning
-        List<Product_Mapping__c> clonedMappings = new List<Product_Mapping__c>();
-        
-        String fields = 'Exectuive__c, Primary_Customer__c, Sub_Stockiest__c, Customer__c, Chanel__c,' +
-            'Area__c, PDP_Name__c, PDP_Day__c, Parent_Depot__c, Child_Depot__c, Payment_Term__c,' +
-            'Credit_Description__c, Inco_Terms__c, Order_Type__c, Distribution_Channel__c,' +
-            'Sales_Office__c, Division__c,Customer_Type__c,Secondary_Customer_Type__c';
-        
+
+        // Step 1: Product Mapping Transfer (update existing records instead of cloning)
+        List<Product_Mapping__c> mappingsToUpdate = new List<Product_Mapping__c>();
+
         //Primary Customer Replacement
         if (!oldPrimaryCustomerToNewMap.isEmpty()) {
             Set<String> oldCustomerIdStrings = oldPrimaryCustomerToNewMap.keySet();
-            List<Id> oldCustomerIds = new List<Id>();
-            
-            for (String idStr : oldCustomerIdStrings) {
-                if (Id.valueOf(idStr) != null) {
-                    oldCustomerIds.add((Id)idStr);
-                }
-            }
-            
+
             // Fetch mappings where Customer__c or Primary_Customer__c match replaced customers
-            String query = 'SELECT ' + fields +
-                ' FROM Product_Mapping__c ' +
-                ' WHERE Customer__c IN :oldCustomerIdStrings OR Primary_Customer__c IN :oldCustomerIdStrings';
-            
-            List<Product_Mapping__c> allMappings = Database.query(query);
-            List<Product_Mapping__c> clonedPrimaryMappings = new List<Product_Mapping__c>();
-            
-            // Exetives Productmapping for that primary customer
-            for (Product_Mapping__c oldMap : allMappings) {
-                Boolean isMapped = false;
-                Product_Mapping__c newMap = cloneMapping(oldMap);
-                if (oldMap.Customer__c != null && oldPrimaryCustomerToNewMap.containsKey(oldMap.Customer__c) && oldMap.Customer_Type__c == 'Primary Customer') 
-                {
-                    String newCustomer = oldPrimaryCustomerToNewMap.get(oldMap.Customer__c);
-                    newMap.Customer__c = newCustomer;
-                    newMap.Cloning_From_Customer_Deactivation__c = true;
-                    clonedPrimaryMappings.add(newMap);
+            List<Product_Mapping__c> allMappings = [
+                SELECT Id, Customer__c, Primary_Customer__c, Sub_Stockiest__c, Customer_Type__c, Secondary_Customer_Type__c
+                FROM Product_Mapping__c
+                WHERE Customer__c IN :oldCustomerIdStrings OR Primary_Customer__c IN :oldCustomerIdStrings
+            ];
+
+            // Transfer Primary Customer mappings and Secondary Customer mappings to new customer
+            for (Product_Mapping__c pm : allMappings) {
+                Boolean changed = false;
+
+                // Primary Customer: update Customer__c to new customer
+                if (pm.Customer__c != null && oldPrimaryCustomerToNewMap.containsKey(pm.Customer__c) && pm.Customer_Type__c == 'Primary Customer') {
+                    pm.Customer__c = oldPrimaryCustomerToNewMap.get(pm.Customer__c);
+                    pm.Customer_Id__c = pm.Customer__c;
+                    changed = true;
+                }
+
+                // Secondary Customers: update Primary_Customer__c to new primary customer
+                if (pm.Primary_Customer__c != null && oldPrimaryCustomerToNewMap.containsKey(pm.Primary_Customer__c) && pm.Customer_Type__c == 'Secondary Customer') {
+                    pm.Primary_Customer__c = oldPrimaryCustomerToNewMap.get(pm.Primary_Customer__c);
+                    pm.Primary_Customer_Id__c = pm.Primary_Customer__c;
+                    changed = true;
+                }
+
+                if (changed) {
+                    mappingsToUpdate.add(pm);
                 }
             }
-            
-            
-            
-            
-            List<Employee_Customer_Assignment__c> clonedDSMPrimaryMappings = new List<Employee_Customer_Assignment__c>();
-            
-            list<Employee_Customer_Assignment__c> EmployeeCustomerAssignment = [select Id,Name,Employee__c,Executive__c,Customer__c
-                                                                               from Employee_Customer_Assignment__c where Customer__c =:oldCustomerIdStrings ];
-            for(Employee_Customer_Assignment__c oldMap: EmployeeCustomerAssignment)
-            {
-                if (oldMap.Customer__c != null && oldPrimaryCustomerToNewMap.containsKey(oldMap.Customer__c)) {
-                    Employee_Customer_Assignment__c newMap = new Employee_Customer_Assignment__c();
-                    newMap.Customer__c = oldPrimaryCustomerToNewMap.get(oldMap.Customer__c);
-                    newMap.Executive__c = oldMap.Executive__c;
-                    newMap.Cloned_From_Customer_Deactivation__c = true;
-                    newMap.Employee__c = oldMap.Employee__c;
-                    clonedDSMPrimaryMappings.add(newMap);
+
+            // Transfer Employee Customer Assignments to new customer
+            List<Employee_Customer_Assignment__c> employeeAssignments = [
+                SELECT Id, Customer__c
+                FROM Employee_Customer_Assignment__c WHERE Customer__c IN :oldCustomerIdStrings
+            ];
+            List<Employee_Customer_Assignment__c> assignmentsToUpdate = new List<Employee_Customer_Assignment__c>();
+            for (Employee_Customer_Assignment__c eca : employeeAssignments) {
+                if (eca.Customer__c != null && oldPrimaryCustomerToNewMap.containsKey(eca.Customer__c)) {
+                    eca.Customer__c = oldPrimaryCustomerToNewMap.get(eca.Customer__c);
+                    eca.Customer_Id__c = eca.Customer__c;
+                    assignmentsToUpdate.add(eca);
                 }
             }
-            
-               
-            // Primary Mappings Cloning DSM
-            if (!clonedDSMPrimaryMappings.isEmpty()) {
-                database.insert(clonedDSMPrimaryMappings,false);
-            }
-            
-            // Primary Mappings Cloning first 
-            if (!clonedPrimaryMappings.isEmpty()) {
-                database.insert(clonedPrimaryMappings,false);
-            } 
-            
-            
-            List<Product_Mapping__c> clonedRetailerMappings = new List<Product_Mapping__c>();
-            //Reailers and Substociest cloning for the new primary customer   
-            for (Product_Mapping__c oldMap : allMappings) {
-                Product_Mapping__c newMap = cloneMapping(oldMap);
-                if (oldMap.Primary_Customer__c != null && oldPrimaryCustomerToNewMap.containsKey(oldMap.Primary_Customer__c)
-                   && oldMap.Customer_Type__c == 'Secondary Customer') {
-                    String newPrimaryCustomer = oldPrimaryCustomerToNewMap.get(oldMap.Primary_Customer__c);
-                    newMap.Primary_Customer__c = newPrimaryCustomer;
-                    newMap.Cloning_From_Customer_Deactivation__c = true;
-                    clonedRetailerMappings.add(newMap);
+
+            // Update Employee Customer Assignments
+            if (!assignmentsToUpdate.isEmpty()) {
+                System.debug('Customer Transfer - Updating ' + assignmentsToUpdate.size() + ' Employee Customer Assignments');
+                List<Database.SaveResult> ecaResults = database.update(assignmentsToUpdate, false);
+                for (Integer i = 0; i < ecaResults.size(); i++) {
+                    if (!ecaResults[i].isSuccess()) {
+                        for (Database.Error err : ecaResults[i].getErrors()) {
+                            System.debug('Customer Transfer Error - Assignment Id: ' + assignmentsToUpdate[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                        }
+                    }
                 }
             }
-            
-            
-           
-            // Primary Mappings Cloning
-            if (!clonedRetailerMappings.isEmpty()) {
-                database.insert(clonedRetailerMappings,false);
-            }    
+
+            // Update Product Mappings
+            if (!mappingsToUpdate.isEmpty()) {
+                System.debug('Customer Transfer - Updating ' + mappingsToUpdate.size() + ' Product Mappings');
+                List<Database.SaveResult> pmResults = database.update(mappingsToUpdate, false);
+                for (Integer i = 0; i < pmResults.size(); i++) {
+                    if (!pmResults[i].isSuccess()) {
+                        for (Database.Error err : pmResults[i].getErrors()) {
+                            System.debug('Customer Transfer Error - Mapping Id: ' + mappingsToUpdate[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                        }
+                    }
+                }
+            }
         }
-        
-        //Sub stociest Replacement
-        Map<String, String> subStockiestToPrimaryMap = new Map<String, String>(); 
+
+        //Sub Stockiest Replacement
+        Map<String, String> subStockiestToPrimaryMap = new Map<String, String>();
+        List<Product_Mapping__c> subMappingsToUpdate = new List<Product_Mapping__c>();
         if (!oldSubStockiestToNewSubStockiestMap.isEmpty()) {
-            
+
             List<String> newSubStockiestIds = oldSubStockiestToNewSubStockiestMap.values();
             Set<String> oldSubStockiestIds = oldSubStockiestToNewSubStockiestMap.keySet();
-            
+
             // Step 1: Get Primary Customers for new Sub Stockists
             List<Product_Mapping__c> mappingsForNewSubs = [
-                SELECT Primary_Customer__c, Sub_Stockiest__c, Customer__c 
-                FROM Product_Mapping__c 
+                SELECT Primary_Customer__c, Sub_Stockiest__c, Customer__c
+                FROM Product_Mapping__c
                 WHERE Customer__c IN :newSubStockiestIds
                 AND Secondary_Customer_Type__c = 'Sub Stockiest'
             ];
-            
+
             for (Product_Mapping__c pm : mappingsForNewSubs) {
                 if (pm.Customer__c != null && pm.Primary_Customer__c != null) {
                     subStockiestToPrimaryMap.put(pm.Customer__c, pm.Primary_Customer__c);
                 }
             }
-            
-            // Step 2: Query old mappings for Sub Stockists
-            List<Product_Mapping__c> oldSubMappings = Database.query(
-                'SELECT ' + fields +
-                ' FROM Product_Mapping__c ' +
-                'WHERE Customer__c IN :oldSubStockiestIds ' +
-                'OR Sub_Stockiest__c IN :oldSubStockiestIds'
-            );
-            
-            // Case 1: Executive Product mapping (Customer is the Sub Stockist)
-            List<Product_Mapping__c> clonedSubstockiestMappings = new List<Product_Mapping__c>();
-            for (Product_Mapping__c oldMap : oldSubMappings) {
-                Boolean isMapped = false;
-                Product_Mapping__c newMap = cloneMapping(oldMap);
-                if (oldMap.Customer__c != null && oldSubStockiestToNewSubStockiestMap.containsKey(oldMap.Customer__c) &&
-                  oldMap.Customer_Type__c == 'Secondary Customer' &&  oldMap.Secondary_Customer_Type__c == 'Sub Stockiest') {
-                    String newCustomer = oldSubStockiestToNewSubStockiestMap.get(oldMap.Customer__c);
-                    newMap.Customer__c = newCustomer;
-                    clonedSubstockiestMappings.add(newMap);
+
+            // Step 2: Query existing mappings for Sub Stockists
+            List<Product_Mapping__c> oldSubMappings = [
+                SELECT Id, Customer__c, Sub_Stockiest__c, Primary_Customer__c, Customer_Type__c, Secondary_Customer_Type__c
+                FROM Product_Mapping__c
+                WHERE Customer__c IN :oldSubStockiestIds OR Sub_Stockiest__c IN :oldSubStockiestIds
+            ];
+
+            // Transfer Sub Stockist mappings to new customer
+            for (Product_Mapping__c pm : oldSubMappings) {
+                Boolean changed = false;
+
+                // Case 1: Customer is the Sub Stockist itself
+                if (pm.Customer__c != null && oldSubStockiestToNewSubStockiestMap.containsKey(pm.Customer__c) &&
+                    pm.Customer_Type__c == 'Secondary Customer' && pm.Secondary_Customer_Type__c == 'Sub Stockiest') {
+                    pm.Customer__c = oldSubStockiestToNewSubStockiestMap.get(pm.Customer__c);
+                    pm.Customer_Id__c = pm.Customer__c;
+                    changed = true;
                 }
-            }
-            
-            //Substockiest Mapping insert
-            if (!clonedSubstockiestMappings.isEmpty()) {
-                database.insert(clonedSubstockiestMappings,false);
-            }
-            
-            
-            List<Product_Mapping__c> clonedSubstockiestReatilersMappings = new List<Product_Mapping__c>();
-            for (Product_Mapping__c oldMap : oldSubMappings) {
-                Boolean isMapped = false;
-                Product_Mapping__c newMap = cloneMapping(oldMap);
-                // Case 2: Sub Stockist Retailers
-                if (oldMap.Sub_Stockiest__c != null && oldSubStockiestToNewSubStockiestMap.containsKey(oldMap.Sub_Stockiest__c)
-                   && oldMap.Customer_Type__c == 'Secondary Customer' &&  oldMap.Secondary_Customer_Type__c != 'Sub Stockiest') {
-                    String newSubStockiest = oldSubStockiestToNewSubStockiestMap.get(oldMap.Sub_Stockiest__c);
+
+                // Case 2: Sub Stockist Retailers - update Sub_Stockiest__c and Primary_Customer__c
+                if (pm.Sub_Stockiest__c != null && oldSubStockiestToNewSubStockiestMap.containsKey(pm.Sub_Stockiest__c)
+                    && pm.Customer_Type__c == 'Secondary Customer' && pm.Secondary_Customer_Type__c != 'Sub Stockiest') {
+                    String newSubStockiest = oldSubStockiestToNewSubStockiestMap.get(pm.Sub_Stockiest__c);
                     String newPrimary = subStockiestToPrimaryMap.get(newSubStockiest);
-                    
+
                     if (String.isNotBlank(newPrimary)) {
-                        newMap.Sub_Stockiest__c = newSubStockiest;
-                        newMap.Primary_Customer__c = newPrimary;
-                        newMap.Cloning_From_Customer_Deactivation__c = true;
-                        clonedSubstockiestReatilersMappings.add(newMap);
+                        pm.Sub_Stockiest__c = newSubStockiest;
+                        pm.Sub_Stockiest_Id__c = pm.Sub_Stockiest__c;
+                        pm.Primary_Customer__c = newPrimary;
+                        pm.Primary_Customer_Id__c = pm.Primary_Customer__c;
+                        changed = true;
                     }
                 }
+
+                if (changed) {
+                    subMappingsToUpdate.add(pm);
+                }
             }
-            
-            //Retailers under Substoiest
-            if (!clonedSubstockiestReatilersMappings.isEmpty()) {
-                database.insert(clonedSubstockiestReatilersMappings,false);
+
+            // Update Sub Stockist mappings
+            if (!subMappingsToUpdate.isEmpty()) {
+                System.debug('Customer Transfer - Updating ' + subMappingsToUpdate.size() + ' Sub Stockist Mappings');
+                List<Database.SaveResult> subResults = database.update(subMappingsToUpdate, false);
+                for (Integer i = 0; i < subResults.size(); i++) {
+                    if (!subResults[i].isSuccess()) {
+                        for (Database.Error err : subResults[i].getErrors()) {
+                            System.debug('Customer Transfer Error - Sub Mapping Id: ' + subMappingsToUpdate[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                        }
+                    }
+                }
             }
         }
         
@@ -527,7 +515,7 @@ public class CustomSharingService {
         // Step 2: Beat Transfer (update existing beats instead of cloning)
         Set<String> affectedPrimaryIds = oldPrimaryCustomerToNewMap.keySet();
         Set<String> affectedSubStockiestIds = oldSubStockiestToNewSubStockiestMap.keySet();
-        
+
         List<Child_beat__c> oldBeats = [
             SELECT Id, Name, Primary_Customer__c, Sub_Stockist__c, Order_Number__c, OwnerId,Beat_Type__c,Active__c
             FROM Child_beat__c
@@ -535,13 +523,15 @@ public class CustomSharingService {
             OR Sub_Stockist__c IN :affectedSubStockiestIds)
             AND Active__c = true
         ];
-        
+        System.debug('Beat Transfer - Queried beats count: ' + oldBeats.size());
+
         List<Child_beat__c> beatsToUpdate = new List<Child_beat__c>();
 
         for (Child_beat__c beat : oldBeats) {
             Boolean changed = false;
 
             if (beat.Primary_Customer__c != null && oldPrimaryCustomerToNewMap.containsKey(beat.Primary_Customer__c)) {
+                System.debug('Beat Transfer - Updating Primary_Customer__c on beat: ' + beat.Id + ' from ' + beat.Primary_Customer__c + ' to ' + oldPrimaryCustomerToNewMap.get(beat.Primary_Customer__c));
                 beat.Primary_Customer__c = oldPrimaryCustomerToNewMap.get(beat.Primary_Customer__c);
                 changed = true;
             }
@@ -559,8 +549,16 @@ public class CustomSharingService {
             if (changed) beatsToUpdate.add(beat);
         }
 
+        System.debug('Beat Transfer - Beats to update count: ' + beatsToUpdate.size());
         if (!beatsToUpdate.isEmpty()) {
-            database.update(beatsToUpdate, false);
+            List<Database.SaveResult> beatResults = database.update(beatsToUpdate, false);
+            for (Integer i = 0; i < beatResults.size(); i++) {
+                if (!beatResults[i].isSuccess()) {
+                    for (Database.Error err : beatResults[i].getErrors()) {
+                        System.debug('Beat Transfer Error - Beat Id: ' + beatsToUpdate[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                    }
+                }
+            }
         }
         
     }

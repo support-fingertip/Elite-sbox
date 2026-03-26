@@ -273,7 +273,7 @@ export default class SecondaryReturns extends LightningElement {
             if (!item.quantity ||  item.quantity <= 0 ) {
                 this.showToast(
                     'Validation Error',
-                    `Row ${item.rowIndex}: Please add a valid Salable Quantity Or Non-Salable Quantity.`,
+                    `Row ${item.rowIndex}: Please add a valid Saleable Quantity Or Non-Saleable Quantity.`,
                     'error'
                 );
                 return;

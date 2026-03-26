@@ -65,7 +65,8 @@ export default class NewDebitNote extends LightningElement {
                     customerName: note.customerName,
                     reason: note.reason,
                     date: note.noteDate,
-                    amount: note.amount
+                    amount: note.amount,
+                    description: note.description || ''
                 }));
                 this.debitNotes = [...this.originalDebitNotes];
                 this.showDebitNotes = this.debitNotes.length >0 ? true : false ;
@@ -260,7 +261,7 @@ export default class NewDebitNote extends LightningElement {
             return;
         }
 
-        const header = ['S.No.', 'Debit Note No', 'Customer Name', 'Reason', 'Date', 'Amount'];
+        const header = ['S.No.', 'Debit Note No', 'Customer Name', 'Reason', 'Date', 'Amount', 'Description'];
 
         const rows = this.originalDebitNotes.map(note => [
             note.rowIndex,
@@ -268,7 +269,8 @@ export default class NewDebitNote extends LightningElement {
             note.customerName || '',
             note.reason || '',
             note.date || '',
-            note.amount || 0
+            note.amount || 0,
+            `"${(note.description || '').replace(/"/g, '""')}"`
         ]);
 
         let csvContent = 'data:text/csv;charset=utf-8,' + header.join(',') + '\n';

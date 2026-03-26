@@ -1,0 +1,89 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="loading-container">
+            <c-loading-screen></c-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="orders layouts">
+            <!-- Header -->
+            <div class="report-header">
+                <div class="header-left">
+                    <button class="back-btn" onclick={handleBack}>
+                        <lightning-icon icon-name="utility:back" size="x-small"
+                            style="--slds-c-icon-color-foreground-default: white;">
+                        </lightning-icon>
+                        <span>Back</span>
+                    </button>
+                    <h3 class="report-title">Aging Report: {customerName}</h3>
+                </div>
+                <div class="header-right">
+                    <div class="btn-wrapper download-dropdown">
+                        <button class="exportBtn" onclick={toggleDownloadMenu}>
+                            <span style="display:flex; align-items:center; gap:6px;">
+                                Download
+                                <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                    size="x-small" style="--slds-c-icon-color-foreground-default: white;">
+                                </lightning-icon>
+                            </span>
+                        </button>
+                        <template lwc:if={showDownloadMenu}>
+                            <div class="download-menu">
+                                <ul>
+                                    <li onclick={handleExportCsv}>
+                                        <lightning-icon icon-name="doctype:csv" size="x-small"></lightning-icon>
+                                        Download CSV
+                                    </li>
+                                    <li onclick={handleExportXlsx}>
+                                        <lightning-icon icon-name="doctype:excel" size="x-small"></lightning-icon>
+                                        Download XLSX
+                                    </li>
+                                    <li onclick={handleExportPdf}>
+                                        <lightning-icon icon-name="doctype:pdf" size="x-small"></lightning-icon>
+                                        Download PDF
+                                    </li>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aging Buckets Table -->
+            <div class="report-card">
+                <table class="aging-table">
+                    <thead>
+                        <tr>
+                            <th class="th-left">Age Bucket</th>
+                            <th class="th-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={agingBuckets} for:item="bucket">
+                            <tr key={bucket.label}>
+                                <td class="td-left">{bucket.label}</td>
+                                <td class="td-right">{bucket.formattedTotal}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Breakdown -->
+            <div class="report-card summary-card">
+                <h4 class="summary-title">Payment Summary</h4>
+                <div class="slds-grid slds-wrap slds-gutters slds-p-around_small">
+                    <div class="slds-col slds-size_1-of-3">
+                        <p><strong>Invoice Pending:</strong> {formattedInvoicePending}</p>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <p><strong>Debit Note Pending:</strong> {formattedDebitNotePending}</p>
+                    </div>
+                    <div class="slds-col slds-size_1-of-3">
+                        <p><strong>Total Aging Amount:</strong> {formattedTotalAging}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

@@ -56,11 +56,15 @@ export default class SecondaryCustomerLedger extends LightningElement {
         this.customerSearch = event.target.value;
         const searchVal = this.customerSearch?.trim();
 
-        // Reset if empty or too short
+        // Reset if empty or too short (handles built-in X clear button)
         if (!searchVal || searchVal.length < 2) {
             this.filteredCustomers = [];
             this.showCustomerSuggestions = false;
             this.selectedCustomerId = '';
+            this.customerName = '';
+            this.allLedgerData = [];
+            this.isDataExisted = false;
+            this.errorMessage = '';
             return;
         }
 
@@ -369,10 +373,11 @@ export default class SecondaryCustomerLedger extends LightningElement {
             printDiv.id = 'lwc-print-overlay';
             printDiv.innerHTML = `
                 <style id="lwc-print-style">
-                    /* Hide everything except our overlay during print */
                     @media print {
-                        body > *:not(#lwc-print-overlay) { display: none !important; }
-                        #lwc-print-overlay { display: block !important; }
+                        @page { margin: 0; padding: 10mm; }
+                        body * { visibility: hidden !important; }
+                        #lwc-print-overlay, #lwc-print-overlay * { visibility: visible !important; }
+                        #lwc-print-overlay { position: absolute !important; top: 0; left: 0; width: 100%; display: block !important; }
                     }
                 </style>
                 <div id="lwc-print-content">

@@ -13,12 +13,13 @@
             <sorted>false</sorted>
             <value>
                 <fullName>MRP</fullName>
-                <default>false</default>
+                <default>true</default>
                 <label>MRP</label>
             </value>
             <value>
                 <fullName>Unit Price</fullName>
                 <default>false</default>
+                <isActive>false</isActive>
                 <label>Unit Price</label>
             </value>
         </valueSetDefinition>

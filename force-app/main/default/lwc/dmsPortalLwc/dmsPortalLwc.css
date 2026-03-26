@@ -347,10 +347,9 @@ border-collapse: separate;
 border-spacing: 0;
 border-radius: 10px;
 border: 1px solid #ccc;
-overflow: hidden;
+overflow: visible;
 background-color: #fff;
  display: block;  /* To allow scroll on table body */
-  max-height: 65vh;  /* Adjust the height as needed */
 }
 
 
@@ -389,8 +388,9 @@ color: var(--table-text-color);
 
 .contacts-table tbody {
   display: block;  /* To make the body scrollable */
-  max-height: 60vh;  /* Adjust the height to control the scrollable area */
+  max-height: 65vh;  /* Adjust the height to control the scrollable area */
   overflow-y: auto;  /* Enable vertical scrolling */
+  padding-bottom: 5px;  /* Prevent last row from being clipped */
 }
 
 .contacts-table thead,
@@ -655,4 +655,59 @@ height: 33px;
 }
 .download-menu li:hover {
     background-color: #f0f4ff;
+}
+
+/* GRN Images Card */
+.grn-images-card {
+    width: 95%;
+    margin: 20px auto 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
+
+.grn-images-header {
+    font-size: 18px;
+    font-weight: 600;
+    color: #02323e;
+    margin: 0 0 12px;
+}
+
+.grn-images-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.grn-images-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eef0f3;
+}
+
+.grn-images-list li:last-child {
+    border-bottom: none;
+}
+
+.grn-images-list a {
+    color: #0070d2;
+    text-decoration: underline;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.aging-report-btn {
+    background-color: #0070d2;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.aging-report-btn:hover {
+    background-color: #005fb2;
 }
