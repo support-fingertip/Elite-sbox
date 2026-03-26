@@ -878,14 +878,14 @@ export default class ProductScreen4 extends LightningElement {
             return;
         }
 
-       /* if (this.isShowOwner == true && !this.OrderOwnerId) {
+        if (this.isShowOwner == true && !this.OrderOwnerId) {
             this.genericDispatchToastEvent(
                 'Validation Error',
                 'Please fill the owner name',
                 'error'
             );
             return;
-        }*/
+        }
 
         const selectedDate = new Date(this.expectedDeliveryDate);
         const today = new Date();
@@ -2164,9 +2164,7 @@ export default class ProductScreen4 extends LightningElement {
                 const quantity = (crateQty * uomConv) + eachQty;
                 const netWeight = parseFloat(product.netWeight || 0); // NEW: Get net weight
 
-                //const baseUnitPrice = parseFloat(product.UnitPricePriceBook.toFixed(2) || 0);
-                const baseUnitPrice = parseFloat(Number(product.UnitPricePriceBook || 0).toFixed(2));
-
+                const baseUnitPrice = parseFloat(product.UnitPricePriceBook.toFixed(2) || 0);
                 const taxPercent = parseFloat(product.taxPercent || 0);
 
                 const taxAmt = (baseUnitPrice * quantity) * (taxPercent / 100);

@@ -643,9 +643,10 @@
                             <thead>
                                 <tr>
                                     <th style="width:5%">S.No.</th>
-                                    <th style="width:35%">GRN Name</th>
-                                    <th style="width:30%">Invoice</th>
-                                    <th style="width:30%">GRN Date</th>
+                                    <th style="width:25%">GRN Name</th>
+                                    <th style="width:20%">Bill No.</th>
+                                    <th style="width:25%">Invoice</th>
+                                    <th style="width:25%">GRN Date</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -654,18 +655,18 @@
                                         <tr key={grn.Id}>
                                             <td style="width:5%">{grn.rowIndex}</td>
                                             <td onclick={handleGrnNameClick} data-id={grn.Id}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;width:35%">
+                                                style="cursor: pointer; color: blue; text-decoration: underline;width:25%">
                                                 {grn.Name}
                                             </td>
-                                            <td style="width:30%">{grn.Invoice__r.Name}</td>
-                                            <!-- Display Invoice Name -->
-                                            <td style="width:30%">{grn.GRN_Date__c}</td>
+                                            <td style="width:20%">{grn.Invoice__r.Invoice_No__c}</td>
+                                            <td style="width:25%">{grn.Invoice__r.Name}</td>
+                                            <td style="width:25%">{grn.GRN_Date__c}</td>
                                         </tr>
                                     </template>
                                 </template>
                                 <template lwc:else>
                                     <tr>
-                                        <td colspan="3"
+                                        <td colspan="5"
                                             style="text-align:center; color:red; padding:10px; font-size:large;">
                                             No GRN records found!
                                         </td>
@@ -724,6 +725,20 @@
                             </template>
                         </tbody>
                     </table>
+
+                    <!-- GRN Images Card -->
+                    <template lwc:if={GRNFilter.grnImages.length}>
+                        <div class="grn-images-card">
+                            <h4 class="grn-images-header">GRN Images</h4>
+                            <ul class="grn-images-list">
+                                <template for:each={GRNFilter.grnImages} for:item="img">
+                                    <li key={img.id}>
+                                        <a href={img.url} target="_blank">{img.name}</a>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
                 </div>
             </template>
 
@@ -748,9 +763,9 @@
                                 <lightning-input type="date" class="custominputfieldSize" label="To Date" name="toDate"
                                     value={claimFilter.toDate} onchange={handleClaimhange}>
                                 </lightning-input>
-                                <lightning-combobox name="status" label="Time Frame" value={claimFilter.status}
+                                <!--<lightning-combobox name="status" label="Time Frame" value={claimFilter.status}
                                     options={claimFilter.statusVal} onchange={handleClaimhange} class="comboboxClass">
-                                </lightning-combobox>
+                                </lightning-combobox>-->
                                 <lightning-input type="search" label="Search" class="custominputfieldSize"
                                     placeholder="Claim No or Description." name="serchCust" value={claimFilter.srchVal}
                                     onchange={handleClaimSearch}>
@@ -761,10 +776,10 @@
                             <thead>
                                 <tr>
                                     <th style="width:5%">S.No.</th>
-                                    <th style="width:15%">Claim No.</th>
+                                    <th style="width:30%">Claim No.</th>
                                     <th style="width:15%">Customer Name</th>
                                     <th style="width:15%">Claim Amount</th>
-                                    <th style="width:15%">Status</th>
+                                    <!--<th style="width:15%">Status</th>-->
                                     <th style="width:15%">Claim Date</th>
                                     <th style="width:15%">Description</th>
                                 </tr>
@@ -774,12 +789,12 @@
                                     <template for:each={claimFilter.allClaimData} for:item="row">
                                         <tr key={row.claimName}>
                                             <td style="width:5%"> {row.rowIndex}</td>
-                                            <td style="width:15%">
+                                            <td style="width:30%">
                                                 {row.claimName}
                                             </td>
                                             <td style="width:15%">{row.customerName}</td>
                                             <td style="width:15%">{row.claimAmount}</td>
-                                            <td style="width:15%">{row.status}</td>
+                                           <!-- <td style="width:15%">{row.status}</td>-->
                                             <td style="width:15%">{row.claimDate}</td>
                                             <td style="width:15%">{row.description}</td>
                                         </tr>
@@ -1215,6 +1230,35 @@
                                 <button class="actionButton" style="margin-top: 27px;"
                                     onclick={handleNewSecondaryReturn}>New
                                     Return</button>
+                                <div class="download-dropdown" style="margin-top: 27px;">
+                                    <button class="actionButton"
+                                        style="background-color: #28a745; color: white;"
+                                        onclick={toggleSecReturnDownloadMenu}>
+                                        Download &nbsp;
+                                        <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                            size="x-small"
+                                            style="--slds-c-icon-color-foreground-default: white;">
+                                        </lightning-icon>
+                                    </button>
+                                    <template lwc:if={showSecReturnDownloadMenu}>
+                                        <div class="download-menu">
+                                            <ul>
+                                                <li onclick={downloadSecondaryReturnsAsCSV}>
+                                                    <lightning-icon icon-name="doctype:csv" size="x-small"></lightning-icon>
+                                                    Download CSV
+                                                </li>
+                                                <li onclick={downloadSecondaryReturnsAsXLSX}>
+                                                    <lightning-icon icon-name="doctype:excel" size="x-small"></lightning-icon>
+                                                    Download XLSX
+                                                </li>
+                                                <li onclick={downloadSecondaryReturnsAsPDF}>
+                                                    <lightning-icon icon-name="doctype:pdf" size="x-small"></lightning-icon>
+                                                    Download PDF
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </template>
+                                </div>
                                 <lightning-input type="date" class="custominputfieldSize" label="From Date"
                                     name="fromDate" value={secoundaryReturnFilter.fromDate}
                                     onchange={handleSecoundaryReturnChange}>
@@ -1282,6 +1326,9 @@
                         <div class="order-filters">
                             <button class="actionButton" onclick={closeSecondaryReturnItems}>Back to
                                 Returns</button>
+                            <button class="actionButton" onclick={downloadSecondaryReturnPdf}
+                                style="background-color: #0070d2; color: white;">
+                                Download PDF</button>
                         </div>
                     </div>
 

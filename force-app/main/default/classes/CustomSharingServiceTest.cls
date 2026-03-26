@@ -365,24 +365,18 @@ public class CustomSharingServiceTest {
         
         Test.stopTest();
         
-        // Validate cloned records exist
-        List<Product_Mapping__c> clonedPMs = [
-            SELECT Id, Cloning_From_Customer_Deactivation__c FROM Product_Mapping__c
-            WHERE Cloning_From_Customer_Deactivation__c = true
+        // Validate records were transferred (updated in place) to new customers
+        List<Product_Mapping__c> transferredPMs = [
+            SELECT Id, Customer__c, Primary_Customer__c, Sub_Stockiest__c FROM Product_Mapping__c
+            WHERE Customer__c = :primaryNew.Id OR Customer__c = :subNew.Id
         ];
-        System.debug('Cloned Product Mappings: ' + clonedPMs);
-        
-        List<Child_beat__c> clonedBeats = [
-            SELECT Id FROM Child_beat__c
-            WHERE Cloned_From_Customer_Deactivation__c = true
+        System.debug('Transferred Product Mappings: ' + transferredPMs);
+
+        List<Child_beat__c> transferredBeats = [
+            SELECT Id, Primary_Customer__c, Sub_Stockist__c FROM Child_beat__c
+            WHERE Primary_Customer__c = :primaryNew.Id
         ];
-        System.debug('Cloned Beats: ' + clonedBeats);
-        
-        List<Junction_Beat__c> clonedJBs = [
-            SELECT Id FROM Junction_Beat__c
-            WHERE Cloned_From_Customer_Deactivation__c = true
-        ];
-        System.debug('Cloned Junction Beats: ' + clonedJBs);
+        System.debug('Transferred Beats: ' + transferredBeats);
     }
 
     @IsTest

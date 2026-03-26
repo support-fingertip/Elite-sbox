@@ -111,11 +111,12 @@
                     <thead>
                         <tr>
                             <th style="width:5%;">S.No.</th>
-                            <th style="width:20%;">Debit Note No</th>
-                            <th style="width:25%;">Customer Name</th>
-                            <th style="width:20%;">Reason</th>
-                            <th style="width:15%;">Date</th>
-                            <th style="width:15%;">Amount</th>
+                            <th style="width:15%;">Debit Note No</th>
+                            <th style="width:20%;">Customer Name</th>
+                            <th style="width:15%;">Reason</th>
+                            <th style="width:10%;">Date</th>
+                            <th style="width:10%;">Amount</th>
+                            <th style="width:25%;">Description</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,17 +124,18 @@
                             <template for:each={debitNotes} for:item="note">
                                 <tr key={note.id}>
                                     <td style="width:5%">{note.rowIndex}</td>
-                                    <td style="width:20%">{note.debitNoteNo}</td>
-                                    <td style="width:25%">{note.customerName}</td>
-                                    <td style="width:20%">{note.reason}</td>
-                                    <td style="width:15%">{note.date}</td>
-                                    <td style="width:15%">{note.amount}</td>
+                                    <td style="width:15%">{note.debitNoteNo}</td>
+                                    <td style="width:20%">{note.customerName}</td>
+                                    <td style="width:15%">{note.reason}</td>
+                                    <td style="width:10%">{note.date}</td>
+                                    <td style="width:10%">{note.amount}</td>
+                                    <td style="width:25%">{note.description}</td>
                                 </tr>
                             </template>
                         </template>
                         <template if:false={showDebitNotes}>
                             <tr>
-                                <td colspan="6" style="text-align:center; color:red; padding:10px; font-size:large;">
+                                <td colspan="7" style="text-align:center; color:red; padding:10px; font-size:large;">
                                     No records found!
                                 </td>
                             </tr>

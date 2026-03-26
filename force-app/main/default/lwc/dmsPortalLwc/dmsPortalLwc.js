@@ -31,6 +31,7 @@ import getPaymentReceiptDetails from '@salesforce/apex/DMSPortalLwc.getPaymentRe
 import getReceiptItems from '@salesforce/apex/DMSPortalLwc.getReceiptItems';
 import getGRNList from '@salesforce/apex/DMSPortalLwc.getGRNList';
 import getGRNItems from '@salesforce/apex/DMSPortalLwc.getGRNItems';
+import getGRNImages from '@salesforce/apex/DMSPortalLwc.getGRNImages';
 import getSecondaryReturnItems from '@salesforce/apex/DMSPortalLwc.getSecondaryReturnItems';
 import getSecondaryInvoiceItems from '@salesforce/apex/DMSPortalLwc.getSecondaryInvoiceItems';
 import getOrderItems from '@salesforce/apex/DMSPortalLwc.getOrderItems';
@@ -70,7 +71,7 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Secondary Orders', label: 'Secondary Orders' },
         { id: 'Secondary Invoices', label: 'Secondary Invoices' },
         { id: 'Secondary Returns', label: 'Secondary Returns' },
-        { id: 'Secondary Customers', label: 'Seondary Customers' },
+        { id: 'Secondary Customers', label: 'Secondary Customers' },
         { id: 'Secondary Customer Ledger', label: 'Secondary Customer Ledger' },
         { id: 'Users', label: 'Users' },
         { id: 'Stock Adjustment', label: 'Stock Adjustment' },
@@ -1816,15 +1817,23 @@ export default class NavigationComponent extends LightningElement {
         this.selectedGrnId = grnId;
         this.selectedGrnName = grnName;
         this.isSubPartLoad = true;
+        this.GRNFilter.grnImages = [];
 
-        // Fetch GRN items based on selected GRN Id
-        getGRNItems({ grnId: grnId })
-            .then(items => {
+        // Fetch GRN items and images in parallel
+        Promise.all([
+            getGRNItems({ grnId: grnId }),
+            getGRNImages({ grnId: grnId })
+        ])
+            .then(([items, images]) => {
                 this.GRNFilter.allGRNItems = this.addRowIndex(items);
                 this.GRNFilter.isItemsDataExisted = items.length > 0;
+                this.GRNFilter.grnImages = (images || []).map(img => ({
+                    id: img.Id,
+                    name: img.Name,
+                    url: img.DistributionPublicUrl
+                }));
                 this.showGrnItems = true;
                 this.showPrimaryGrn = false;
-
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -1832,6 +1841,7 @@ export default class NavigationComponent extends LightningElement {
                 this.isSubPartLoad = false;
                 this.GRNFilter.allGRNItems = [];
                 this.GRNFilter.isItemsDataExisted = false;
+                this.GRNFilter.grnImages = [];
                 this.showGrnItems = false;
             });
     }
@@ -2259,6 +2269,124 @@ export default class NavigationComponent extends LightningElement {
             });
     }
 
+    showSecReturnDownloadMenu = false;
+
+    toggleSecReturnDownloadMenu() {
+        this.showSecReturnDownloadMenu = !this.showSecReturnDownloadMenu;
+    }
+
+    _getSecReturnExportData() {
+        const data = this.secoundaryReturnFilter.allSReturnData || [];
+        if (data.length === 0) {
+            this.showToast('No Data Found', 'No secondary returns found for the selected filters.', 'error');
+            return null;
+        }
+        const headers = ['S.No.', 'Return Name', 'Secondary Customer', 'Total Quantity', 'Total Amount', 'Return Date'];
+        const rows = data.map(row => [
+            row.rowIndex,
+            row.secoundaryReturnNo || '',
+            row.secondaryCustomer || '',
+            row.quantity || 0,
+            row.totalAmount || 0,
+            row.returnDate || ''
+        ]);
+        return { headers, rows };
+    }
+
+    downloadSecondaryReturnsAsCSV() {
+        this.showSecReturnDownloadMenu = false;
+        const exportData = this._getSecReturnExportData();
+        if (!exportData) return;
+
+        let csvContent = 'data:text/csv;charset=utf-8,' + exportData.headers.join(',') + '\n';
+        exportData.rows.forEach(row => {
+            csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'secondary_returns.csv');
+        link.click();
+    }
+
+    downloadSecondaryReturnsAsXLSX() {
+        this.showSecReturnDownloadMenu = false;
+        const exportData = this._getSecReturnExportData();
+        if (!exportData) return;
+
+        try {
+            const XLSX = window.XLSX;
+            if (!XLSX) {
+                this.showToast('Export Error', 'Excel library not loaded yet, please retry', 'error');
+                return;
+            }
+            const wsData = [exportData.headers, ...exportData.rows];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            ws['!cols'] = [{ wch: 6 }, { wch: 16 }, { wch: 25 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Secondary Returns');
+            XLSX.writeFile(wb, `secondary_returns_${this.secoundaryReturnFilter.fromDate}_to_${this.secoundaryReturnFilter.toDate}.xlsx`);
+        } catch (error) {
+            console.error('XLSX Export Error:', error);
+            this.showToast('Export Error', 'Failed to export: ' + error.message, 'error');
+        }
+    }
+
+    downloadSecondaryReturnsAsPDF() {
+        this.showSecReturnDownloadMenu = false;
+        const exportData = this._getSecReturnExportData();
+        if (!exportData) return;
+
+        try {
+            const title = `Secondary Returns | ${this.secoundaryReturnFilter.fromDate} to ${this.secoundaryReturnFilter.toDate}`;
+            let rowsHtml = '';
+            exportData.rows.forEach(row => {
+                rowsHtml += `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+            });
+
+            const printDiv = document.createElement('div');
+            printDiv.id = 'lwc-print-overlay';
+            printDiv.innerHTML = `
+                <style id="lwc-print-style">
+                    @media print {
+                        @page { margin: 0; padding: 10mm; }
+                        body * { visibility: hidden !important; }
+                        #lwc-print-overlay, #lwc-print-overlay * { visibility: visible !important; }
+                        #lwc-print-overlay { position: absolute !important; top: 0; left: 0; width: 100%; display: block !important; }
+                    }
+                </style>
+                <div id="lwc-print-content">
+                    <h2 style="font-size:14px;color:#02323e;margin-bottom:12px;">${title}</h2>
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead>
+                            <tr>${exportData.headers.map(h => `<th style="background:#02323e;color:#fff;padding:7px 9px;text-align:left;">${h}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
+                <style>
+                    #lwc-print-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; padding: 20px; box-sizing: border-box; }
+                    #lwc-print-content td { padding: 6px 9px; border-bottom: 1px solid #e0e0e0; }
+                </style>`;
+
+            document.body.appendChild(printDiv);
+            setTimeout(() => {
+                window.print();
+                const cleanup = () => {
+                    const overlay = document.getElementById('lwc-print-overlay');
+                    if (overlay) overlay.parentNode.removeChild(overlay);
+                    window.removeEventListener('afterprint', cleanup);
+                };
+                window.addEventListener('afterprint', cleanup);
+                setTimeout(cleanup, 5000);
+            }, 100);
+        } catch (error) {
+            console.error('PDF Export Error:', error);
+            this.showToast('Export Error', 'Failed to export PDF: ' + error.message, 'error');
+        }
+    }
+
     // Method to handle click on Secondary Return Number and fetch its items
     handleSecondaryReturnNoClick(event) {
         const returnId = event.currentTarget.dataset.id;  // Use currentTarget for consistency
@@ -2317,6 +2445,16 @@ export default class NavigationComponent extends LightningElement {
         this.selectedSecondaryReturnNo = '';
         this.selectedSecondaryReturnId = null;
         this.showSecoundaryReturn = true;
+    }
+
+    downloadSecondaryReturnPdf() {
+        const returnId = this.selectedSecondaryReturnId;
+        if (!returnId) {
+            this.showToast('Error', 'No return selected.', 'error');
+            return;
+        }
+        const url = `${orgUrl}/ReturnPdf?Id=${returnId}`;
+        window.open(url, '_blank');
     }
 
     // Check if there are secondary return items to display
@@ -3019,28 +3157,25 @@ export default class NavigationComponent extends LightningElement {
             return;
         }
 
-        if (this.secinvoices.length === 0) {
-            console.log('Number of invoices:', this.secinvoices.length);
+        const invoices = this.secInvFilter.allSecInvData || [];
+
+        if (invoices.length === 0) {
             this.showToast('No Data Found', 'No invoices found for the selected filters.', 'error');
-            console.log('Invoices data:', this.secinvoices); // Log to check if it's empty
             return;
         }
 
         // Define CSV header
-        const header = ['Invoice Name', 'Secondary Customer', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Grand Total',];
+        const header = ['Invoice Name', 'Secondary Customer', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Grand Total'];
 
         // Map invoices to CSV rows
-        const rows = this.secinvoices.map(invoice => [
-
-            invoice.Name,
-            invoice.Store__r ? invoice.Store__r.Name : '',  // Store Name (Ensure it's checked for null)
-            invoice.Invoice_Date__c,
-            invoice.Status__c,
-            invoice.Total_Quantity__c,
-            invoice.Total_Tax__c,
-
-            invoice.Grand_Total__c,
-
+        const rows = invoices.map(invoice => [
+            invoice.name || '',
+            invoice.accName || '',
+            invoice.InvDate || '',
+            invoice.Status || '',
+            invoice.Quantity || '',
+            invoice.tax || '',
+            invoice.Amount || ''
         ]);
 
         // Create CSV content
