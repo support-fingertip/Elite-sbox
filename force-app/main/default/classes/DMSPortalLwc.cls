@@ -1,18 +1,62 @@
 public without sharing class DMSPortalLwc {
+    
+    public class SecondaryReceiptItemWrapper {
+        @AuraEnabled public String rowIndex       { get; set; }
+        @AuraEnabled public String name           { get; set; }
+        @AuraEnabled public String docNo          { get; set; }
+        @AuraEnabled public String createdDate    { get; set; }
+        @AuraEnabled public Decimal amount        { get; set; }
+        @AuraEnabled public String itemType       { get; set; } // 'Invoice' or 'DebitNote'
+    }
+    
     @AuraEnabled
-    public static List<Secondary_Receipt_Item__c> getSecondaryReceiptItemsByReceiptId(Id receiptId) {
-        return [
-            SELECT Name, Amount__c
+    public static List<SecondaryReceiptItemWrapper> getSecondaryReceiptItemsByReceiptId(Id receiptId) {
+        List<SecondaryReceiptItemWrapper> wrapperList = new List<SecondaryReceiptItemWrapper>();
+        
+        // Fetch Invoice Receipt Items
+        List<Secondary_Receipt_Item__c> invoiceItems = [
+            SELECT Name, Amount__c, CreatedDate, Secondary_Invoice__r.Name
             FROM Secondary_Receipt_Item__c
             WHERE Secondary_Receipt__c = :receiptId
         ];
+        
+        // Fetch Debit Note Receipt Items
+        List<Secondary_Receipt_Debit_Item__c> debitItems = [
+            SELECT Name, Amount__c, CreatedDate, Secondary_Debit_Note__r.Name
+            FROM Secondary_Receipt_Debit_Item__c
+            WHERE Secondary_Receipt__c = :receiptId
+        ];
+        
+        Integer index = 1;
+        
+        for (Secondary_Receipt_Item__c item : invoiceItems) {
+            SecondaryReceiptItemWrapper w = new SecondaryReceiptItemWrapper();
+            w.name        = item.Name;
+            w.docNo       = item.Secondary_Invoice__r != null ? item.Secondary_Invoice__r.Name : '';
+            w.createdDate = item.CreatedDate != null ? String.valueOf(item.CreatedDate.date()) : '';
+            w.amount      = item.Amount__c;
+            w.itemType    = 'Invoice';
+            wrapperList.add(w);
+        }
+        
+        for (Secondary_Receipt_Debit_Item__c dn : debitItems) {
+            SecondaryReceiptItemWrapper w = new SecondaryReceiptItemWrapper();
+            w.name        = dn.Name;
+            w.docNo       = dn.Secondary_Debit_Note__r != null ? dn.Secondary_Debit_Note__r.Name : '';
+            w.createdDate = dn.CreatedDate != null ? String.valueOf(dn.CreatedDate.date()) : '';
+            w.amount      = dn.Amount__c;
+            w.itemType    = 'DebitNote';
+            wrapperList.add(w);
+        }
+        
+        return wrapperList;
     }
     /**
      * Fetch secondary invoices for a customer with pending amount > 0
      * @param customerId The Id of the secondary customer
      * @return List of SecInvData for invoices with Pending_Amount__c > 0
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static List<SecInvData> getPendingSecondaryInvoicesByCustomer(Id customerId) {
         List<SecInvData> result = new List<SecInvData>();
         if (customerId == null) return result;
@@ -30,6 +74,7 @@ public without sharing class DMSPortalLwc {
             data.accId = inv.Customer__c;
             data.accName = inv.Customer__r != null ? inv.Customer__r.Name : '';
             data.Amount = inv.Grand_Total__c;
+            data.paidAmount = inv.Paid_Invoice_Amount__c;
             data.Status = inv.Status__c;
             data.pendingAmount = inv.Pending_Amount__c;
             data.tax = inv.Total_Tax__c;
@@ -321,7 +366,7 @@ public without sharing class DMSPortalLwc {
         }
         
         List<Invoice_Item__c> invItems = [
-            SELECT Id, Product__r.Name, SKU__r.Name,Quantity__c,GST_Amount__c, Tax_Amount__c, Bill_Amount__c,Price_per_unit__c
+            SELECT Id, Product__r.Name, SKU__r.Name,Qyt__c,GST_Amount__c, Tax_Amount__c, Bill_Amount__c,Price_per_unit__c
             FROM Invoice_Item__c
             WHERE Invoice__c = :invoiceId
             ORDER BY Product__r.Name
@@ -329,10 +374,11 @@ public without sharing class DMSPortalLwc {
         
         List<Invoice_Item_Data> itemDataList = new List<Invoice_Item_Data>();
         for (Invoice_Item__c item : invItems) {
+            
             Invoice_Item_Data data = new Invoice_Item_Data();
             data.Id = item.Id;
             data.ItemName = item.SKU__r != null ? item.SKU__r.Name : '';
-            data.Quantity = item.Quantity__c;
+            data.Quantity = item.Qyt__c;
             data.TaxAmount = item.GST_Amount__c;
             data.TotalAmount = item.Bill_Amount__c ;
             data.unitPrice = item.Price_per_unit__c ;
@@ -533,9 +579,30 @@ public without sharing class DMSPortalLwc {
     }
     
     @AuraEnabled(cacheable=true)
+    public static List<ContentDistribution> getGRNImages(Id grnId) {
+        List<ContentDocumentLink> cdLinks = [
+            SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId = :grnId
+        ];
+        if (cdLinks.isEmpty()) {
+            return new List<ContentDistribution>();
+        }
+        Set<Id> contentDocIds = new Set<Id>();
+        for (ContentDocumentLink cdl : cdLinks) {
+            contentDocIds.add(cdl.ContentDocumentId);
+        }
+        List<Id> contentVersionIds = new List<Id>();
+        for (ContentVersion cv : [SELECT Id FROM ContentVersion WHERE ContentDocumentId IN :contentDocIds AND IsLatest = true]) {
+            contentVersionIds.add(cv.Id);
+        }
+        return [
+            SELECT Id, Name, DistributionPublicUrl FROM ContentDistribution WHERE ContentVersionId IN :contentVersionIds
+        ];
+    }
+
+    @AuraEnabled(cacheable=true)
     public static List<Goods_Received_Note__c> getGRNList(Date frmDate, Date toDate) {
         return [
-            SELECT Id, Name, Invoice__c, Invoice__r.Name, GRN_Date__c
+            SELECT Id, Name, Invoice__c, Invoice__r.Name, Invoice__r.Invoice_No__c, GRN_Date__c
             FROM Goods_Received_Note__c
             WHERE GRN_Date__c >= :frmDate
             AND GRN_Date__c <= :toDate
@@ -651,7 +718,7 @@ public without sharing class DMSPortalLwc {
     public static DmsData allCreditNoteData(Date frmDate, date toDate,string status){
         DmsData dt = new DmsData();
         List<Secondary_Credit_Note__c> creditNotesList = new List<Secondary_Credit_Note__c>();
-        String query = 'SELECT Id, Secondary_Credit_Note_Name__c, Claim__c, Claim__r.Name, Credit_Date__c, Customer__c, Customer__r.Name, Status__c, Reason__c, Amount__c, Description__c '+
+        String query = 'SELECT Id, Name, Claim__c, Claim__r.Name, Credit_Date__c, Customer__c, Customer__r.Name, Status__c, Reason__c, Amount__c, Description__c '+
             'FROM Secondary_Credit_Note__c WHERE Credit_Date__c >= :frmDate AND Credit_Date__c <= :toDate ';
         if (status != 'All' && status != '' && status != null) {
             query += ' AND Status__c = :status';
@@ -663,7 +730,7 @@ public without sharing class DMSPortalLwc {
             date Dateval = i.Credit_Date__c;
             String formattedDate = Dateval != null ? DateTime.newInstance(Dateval.year(),Dateval.month(),Dateval.day()).format('dd/MM/yyyy') : '';
             CreditNote creditNote = new CreditNote();
-            creditNote.creditNoteNo = i.Secondary_Credit_Note_Name__c;
+            creditNote.creditNoteNo = i.Name;
             creditNote.creditNoteId = i.Id;
             creditNote.customerName = i.Customer__r.Name;
             creditNote.customerId = i.Customer__c;
@@ -702,7 +769,7 @@ public without sharing class DMSPortalLwc {
     public static DmsData allDebitNoteData(Date frmDate, date toDate, String status){
         DmsData dt = new DmsData();
         List<Secondary_Debit_Note__c> debitNotesList = new List<Secondary_Debit_Note__c>();
-        String query = 'SELECT Id, Name__c, Note_Date__c, Customer__c, Customer__r.Name, Distributor__c, Distributor__r.Name, Status__c, Reason__c, Amount__c, Description__c, Secondary_Invoice__c, Secondary_Invoice__r.Name '+
+        String query = 'SELECT Id, Name, Note_Date__c, Customer__c, Customer__r.Name, Distributor__c, Distributor__r.Name, Status__c, Reason__c, Amount__c, Description__c, Secondary_Invoice__c, Secondary_Invoice__r.Name '+
             'FROM Secondary_Debit_Note__c WHERE Note_Date__c >= :frmDate AND Note_Date__c <= :toDate ';
         if (status != 'All' && status != '' && status != null) {
             query += ' AND Status__c = :status';
@@ -714,7 +781,7 @@ public without sharing class DMSPortalLwc {
             date Dateval = i.Note_Date__c;
             String formattedDate = Dateval != null ? DateTime.newInstance(Dateval.year(),Dateval.month(),Dateval.day()).format('dd/MM/yyyy') : '';
             DebitNote debitNote = new DebitNote();
-            debitNote.debitNoteNo = i.Name__c;
+            debitNote.debitNoteNo = i.Name;
             debitNote.debitNoteId = i.Id;
             debitNote.customerName = i.Customer__r.Name;
             debitNote.customerId = i.Customer__c;
@@ -722,6 +789,7 @@ public without sharing class DMSPortalLwc {
             debitNote.status = i.Status__c;
             debitNote.reason = i.Reason__c;
             debitNote.amount = i.Amount__c;
+            debitNote.description = i.Description__c;
             DebitNoteDataList.add(debitNote);
         }
         dt.totalDebitNoteData = DebitNoteDataList;
@@ -1248,6 +1316,7 @@ public without sharing class DMSPortalLwc {
             Total_Amount__c = totalAmount,
             Total_Quantity__c = totalQuantity,
             Customer__c = customerId,
+            Distributor__c = accountId,
             Return_Date__c = system.today()
         );
         insert secReturn;
@@ -1310,7 +1379,7 @@ public without sharing class DMSPortalLwc {
         }
         
         return [
-            select Id,Name from Account where Id IN: CustomerIds
+            select Id,Name,Land_Mark__c,Street__c from Account where Id IN: CustomerIds
         ]; 
         
         
@@ -1863,7 +1932,8 @@ public without sharing class DMSPortalLwc {
             'Primary_Customer__r.Name, ' +
             'Customer__r.Secondary_Customer_Category__c, ' +
             'Customer__r.Customer_Status__c, ' +
-            'Sub_Stockiest__r.Name ' +
+            'Sub_Stockiest__r.Name ,' +
+            'Customer__r.Secondary_Outstanding_Amount__c ' +
             'FROM Product_Mapping__c ' +
             'WHERE Primary_Customer__c = :accountId ' +
             'AND Is_Executive_Active__c = true ' +
@@ -1911,6 +1981,7 @@ public without sharing class DMSPortalLwc {
             d.customerType =  pm.Customer__r.Secondary_Customer_Type__c;
             d.customerCategory =  pm.Customer__r.Secondary_Customer_Category__c;
             d.status = pm.Customer__r.Customer_Status__c;
+            d.outStanding=  pm.Customer__r.Secondary_Outstanding_Amount__c != null ? pm.Customer__r.Secondary_Outstanding_Amount__c : 0;
             d.beatName = outletToBeatNames.containsKey(pm.Customer__c)
                 ? String.join(new List<String>(outletToBeatNames.get(pm.Customer__c)), ';')
                 : '';
@@ -2139,6 +2210,7 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String status;
         @AuraEnabled public String customerType;
         @AuraEnabled public String customerCategory;
+        @AuraEnabled public decimal outStanding;
     }
     
     
@@ -2204,20 +2276,15 @@ public without sharing class DMSPortalLwc {
     }
 
     @AuraEnabled
-    public static void saveSecondaryReceipt(String receiptJson) {
-        Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(receiptJson);
-        Secondary_Receipt__c rec = new Secondary_Receipt__c();
-        if (data.containsKey('customerId')) rec.Customer__c = (String) data.get('customerId');
-        if (data.containsKey('paymentDate') && data.get('paymentDate') != null && String.valueOf(data.get('paymentDate')).trim() != '') {
-            rec.Payment_Date__c = Date.valueOf((String) data.get('paymentDate'));
+    public static void saveSecondaryReceipt(Secondary_Receipt__c receiptData, list<Secondary_Receipt_Item__c> recipetItems)
+    {
+    	insert receiptData;
+        
+        for(Secondary_Receipt_Item__c rec: recipetItems)
+        {
+            rec.Secondary_Receipt__c = receiptData.Id;
         }
-        if (data.containsKey('paymentMode')) rec.Payment_Mode__c = (String) data.get('paymentMode');
-        if (data.containsKey('referenceNumber')) rec.Reference_Number__c = (String) data.get('referenceNumber');
-        if (data.containsKey('remarks')) rec.Remarks__c = (String) data.get('remarks');
-        if (data.containsKey('totalAmount') && data.get('totalAmount') != null && String.valueOf(data.get('totalAmount')).trim() != '') {
-            rec.Total_Amount__c = Decimal.valueOf(String.valueOf(data.get('totalAmount')));
-        }
-        insert rec;
+        insert recipetItems;
     }
     public class OrdData {
         @AuraEnabled public String itemName;
@@ -2240,6 +2307,8 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String name;
         @AuraEnabled public String InvDate;
         @AuraEnabled public String accId;
+        @AuraEnabled public Decimal paidAmount;
+        
         @AuraEnabled public String accName;
         @AuraEnabled public Decimal Amount;
         @AuraEnabled public String InvId;
@@ -2342,10 +2411,12 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String status;
         @AuraEnabled public String reason;
         @AuraEnabled public decimal amount;
+        @AuraEnabled public String description;
     }
     public class SecInvData {
         @AuraEnabled public String name;
         @AuraEnabled public String InvDate;
+        @AuraEnabled public Decimal paidAmount;
         @AuraEnabled public String accId;
         @AuraEnabled public String accName;
         @AuraEnabled public Decimal Amount;
@@ -2461,7 +2532,7 @@ public without sharing class DMSPortalLwc {
         List<Product__c> products = [
             SELECT Id, Name, Channel__c, Category__c, Product_Category_Name__c, Product_Category1__c,
             Product_Category1__r.Name, List_Price__c, MRP__c, Tax_Percent__c,
-            Tax_Class__c, CreatedDate, UOM__c, Selling_Category__c, Product_Image_Url__c,
+            Tax_Class__c, CreatedDate, UOM__c, Selling_Category__c, Product_Image_Url__c,SKU_Code__c, Sku_Name__c,
             (SELECT Id, Unit_Price__c, MRP__c, UOM__c, Customer__c, 
              Customer_Type__c, Region__c, Secondary_Customer_Category__c
              FROM Price_Books__r WHERE Customer__c = :accountId)
@@ -2479,40 +2550,46 @@ public without sharing class DMSPortalLwc {
     // Wrapper class for opening balance
     public class OpeningBalanceResult {
         @AuraEnabled public Decimal balance;
-    }
-
+    } 
+    
     // Wrapper class for ledger entry
-    public class LedgerEntry {
-        @AuraEnabled public String transactionType;      // Invoice, Receipt, Return, Credit Note, Debit Note
-        @AuraEnabled public Date transactionDate;
-        @AuraEnabled public String transactionNo;        // Doc number
-        @AuraEnabled public String description;
-        @AuraEnabled public String referenceNo;
+    public class LedgerEntry implements Comparable {
+        @AuraEnabled public String  transactionType;
+        @AuraEnabled public Date    transactionDate;
+        @AuraEnabled public String  transactionNo;
+        @AuraEnabled public String  description;
+        @AuraEnabled public String  referenceNo;
         @AuraEnabled public Decimal amount;
-        @AuraEnabled public String status;
+        @AuraEnabled public String  status;
+        
+        public Integer compareTo(Object compareTo) {
+            Date otherDate = ((LedgerEntry) compareTo).transactionDate;
+            if (transactionDate == otherDate) return 0;
+            if (transactionDate == null || transactionDate < otherDate) return -1;
+            return 1;
+        }
     }
-
+    
     // Wrapper class for secondary ledger result
     public class SecondaryLedgerResult {
         @AuraEnabled public List<LedgerEntry> ledgerData;
         @AuraEnabled public List<Map<String, String>> statusOptions;
     }
-
+    
     // Get opening balance for a customer up to a specific date
     @AuraEnabled
-    public static OpeningBalanceResult getOpeningBalance(Id customerId, String asOfDate) {
+    public static OpeningBalanceResult getOpeningBalance(String customerId, String asOfDate) {
         OpeningBalanceResult result = new OpeningBalanceResult();
         result.balance = 0;
-
+        
         if (String.isBlank(asOfDate)) {
             return result;
         }
-
+        
         Date cutoffDate = Date.valueOf(asOfDate);
         Decimal totalDebits = 0;
         Decimal totalCredits = 0;
-
-
+        
         try {
             // Sum all Secondary Invoices before cutoff date (DEBIT - increases balance)
             List<AggregateResult> invoiceAgg = [
@@ -2524,7 +2601,7 @@ public without sharing class DMSPortalLwc {
             if (!invoiceAgg.isEmpty() && invoiceAgg[0].get('totalAmount') != null) {
                 totalDebits += (Decimal) invoiceAgg[0].get('totalAmount');
             }
-
+            
             // Sum all Secondary Debit Notes before cutoff date (DEBIT - increases balance)
             List<AggregateResult> debitNoteAgg = [
                 SELECT SUM(Amount__c) totalAmount
@@ -2535,7 +2612,7 @@ public without sharing class DMSPortalLwc {
             if (!debitNoteAgg.isEmpty() && debitNoteAgg[0].get('totalAmount') != null) {
                 totalDebits += (Decimal) debitNoteAgg[0].get('totalAmount');
             }
-
+            
             // Sum all Secondary Credit Notes before cutoff date (CREDIT - decreases balance)
             List<AggregateResult> creditNoteAgg = [
                 SELECT SUM(Amount__c) totalAmount
@@ -2546,7 +2623,7 @@ public without sharing class DMSPortalLwc {
             if (!creditNoteAgg.isEmpty() && creditNoteAgg[0].get('totalAmount') != null) {
                 totalCredits += (Decimal) creditNoteAgg[0].get('totalAmount');
             }
-
+            
             // Sum all Secondary Returns before cutoff date (CREDIT - decreases balance)
             List<AggregateResult> returnAgg = [
                 SELECT SUM(Total_Amount__c) totalAmount
@@ -2558,7 +2635,7 @@ public without sharing class DMSPortalLwc {
             if (!returnAgg.isEmpty() && returnAgg[0].get('totalAmount') != null) {
                 totalCredits += (Decimal) returnAgg[0].get('totalAmount');
             }
-
+            
             // Sum all Secondary Receipts before cutoff date (CREDIT - decreases balance)
             List<AggregateResult> receiptAgg = [
                 SELECT SUM(Total_Amount__c) totalAmount
@@ -2569,31 +2646,31 @@ public without sharing class DMSPortalLwc {
             if (!receiptAgg.isEmpty() && receiptAgg[0].get('totalAmount') != null) {
                 totalCredits += (Decimal) receiptAgg[0].get('totalAmount');
             }
-
+            
             // Calculate opening balance: Debits - Credits
             result.balance = totalDebits - totalCredits;
-
+            
         } catch (Exception e) {
             System.debug('Error calculating opening balance: ' + e.getMessage());
         }
-
+        
         return result;
     }
-
+    
     // Get secondary ledger transactions within date range for a customer
     @AuraEnabled
     public static SecondaryLedgerResult getSecondaryLedger(Id customerId, String fromDate, String toDate, String status) {
         SecondaryLedgerResult result = new SecondaryLedgerResult();
         result.ledgerData = new List<LedgerEntry>();
         result.statusOptions = new List<Map<String, String>>();
-
+        
         if (String.isBlank(fromDate) || String.isBlank(toDate)) {
             return result;
         }
-
+        
         Date startDate = Date.valueOf(fromDate);
         Date endDate = Date.valueOf(toDate);
-
+        
         try {
             // Fetch Secondary Invoices (DEBIT)
             List<Secondary_Invoice__c> invoices = [
@@ -2604,19 +2681,19 @@ public without sharing class DMSPortalLwc {
                 AND Invoice_Date__c <= :endDate
                 ORDER BY Invoice_Date__c ASC
             ];
-
+            
             for (Secondary_Invoice__c inv : invoices) {
                 LedgerEntry entry = new LedgerEntry();
                 entry.transactionType = 'Invoice';
                 entry.transactionDate = inv.Invoice_Date__c;
-                entry.transactionNo = inv.Name;
-                entry.description = 'Secondary Invoice';
-                entry.referenceNo = inv.Id;
-                entry.amount = inv.Grand_Total__c;
-                entry.status = inv.Status__c;
+                entry.transactionNo   = inv.Name;           // FIX: doc number
+                entry.description     = 'Secondary Invoice';
+                entry.referenceNo     = inv.Name;           // FIX: was inv.Id
+                entry.amount          = inv.Grand_Total__c;
+                entry.status          = inv.Status__c;
                 result.ledgerData.add(entry);
             }
-
+            
             // Fetch Secondary Returns (CREDIT)
             List<Return__c> returns = [
                 SELECT Id, Name, Return_Date__c, Total_Amount__c
@@ -2627,64 +2704,63 @@ public without sharing class DMSPortalLwc {
                 AND Customer_Type__c = 'Secondary Customer'
                 ORDER BY Return_Date__c ASC
             ];
-
+            
             for (Return__c ret : returns) {
                 LedgerEntry entry = new LedgerEntry();
                 entry.transactionType = 'Return';
                 entry.transactionDate = ret.Return_Date__c;
-                entry.transactionNo = ret.Name;
-                entry.description = 'Secondary Return';
-                entry.referenceNo = ret.Id;
-                entry.amount = ret.Total_Amount__c;
-                entry.status = 'Completed';
+                entry.transactionNo   = ret.Name;           // FIX: doc number
+                entry.description     = 'Secondary Return';
+                entry.referenceNo     = ret.Name;           // FIX: was ret.Id
+                entry.amount          = ret.Total_Amount__c;
+                entry.status          = 'Completed';
                 result.ledgerData.add(entry);
             }
-
+            
             // Fetch Secondary Credit Notes (CREDIT)
             List<Secondary_Credit_Note__c> creditNotes = [
-                SELECT Id, Secondary_Credit_Note_Name__c, Credit_Date__c, Amount__c, Status__c
+                SELECT Id, Name, Credit_Date__c, Amount__c, Status__c
                 FROM Secondary_Credit_Note__c
                 WHERE Customer__c = :customerId
                 AND Credit_Date__c >= :startDate
                 AND Credit_Date__c <= :endDate
                 ORDER BY Credit_Date__c ASC
             ];
-
+            
             for (Secondary_Credit_Note__c creditNote : creditNotes) {
                 LedgerEntry entry = new LedgerEntry();
                 entry.transactionType = 'Credit Note';
                 entry.transactionDate = creditNote.Credit_Date__c;
-                entry.transactionNo = creditNote.Secondary_Credit_Note_Name__c;
-                entry.description = 'Secondary Credit Note';
-                entry.referenceNo = creditNote.Id;
-                entry.amount = creditNote.Amount__c;
-                entry.status = creditNote.Status__c;
+                entry.transactionNo   = creditNote.Name;   // FIX: doc number
+                entry.description     = 'Secondary Credit Note';
+                entry.referenceNo     = creditNote.Name;   // FIX: was creditNote.Id
+                entry.amount          = creditNote.Amount__c;
+                entry.status          = creditNote.Status__c;
                 result.ledgerData.add(entry);
             }
-
-
+            
             // Fetch Secondary Debit Notes (DEBIT)
             List<Secondary_Debit_Note__c> debitNotes = [
-                SELECT Id, Name__c, Note_Date__c, Amount__c, Status__c
+                SELECT Id, Name, Note_Date__c, Amount__c, Status__c
                 FROM Secondary_Debit_Note__c
                 WHERE Customer__c = :customerId
                 AND Note_Date__c >= :startDate
                 AND Note_Date__c <= :endDate
                 ORDER BY Note_Date__c ASC
             ];
-
+            
             for (Secondary_Debit_Note__c debitNote : debitNotes) {
                 LedgerEntry entry = new LedgerEntry();
                 entry.transactionType = 'Debit Note';
                 entry.transactionDate = debitNote.Note_Date__c;
-                entry.transactionNo = debitNote.Name__c;
-                entry.description = 'Secondary Debit Note';
-                entry.referenceNo = debitNote.Id;
-                entry.amount = debitNote.Amount__c;
-                entry.status = debitNote.Status__c;
+                entry.transactionNo   = debitNote.Name;   // FIX: doc number
+                entry.description     = 'Secondary Debit Note';
+                entry.referenceNo     = debitNote.Name;   // FIX: was debitNote.Id
+                entry.amount          = debitNote.Amount__c;
+                entry.status          = debitNote.Status__c;
                 result.ledgerData.add(entry);
             }
-
+            
             // Fetch Secondary Receipts (CREDIT)
             List<Secondary_Receipt__c> receipts = [
                 SELECT Id, Name, Payment_Date__c, Total_Amount__c, Payment_Mode__c
@@ -2694,47 +2770,213 @@ public without sharing class DMSPortalLwc {
                 AND Payment_Date__c <= :endDate
                 ORDER BY Payment_Date__c ASC
             ];
-
+            
             for (Secondary_Receipt__c rec : receipts) {
                 LedgerEntry entry = new LedgerEntry();
                 entry.transactionType = 'Receipt';
                 entry.transactionDate = rec.Payment_Date__c;
-                entry.transactionNo = rec.Name;
-                entry.description = 'Secondary Receipt';
-                entry.referenceNo = rec.Id;
-                entry.amount = rec.Total_Amount__c;
-                entry.status = rec.Payment_Mode__c;
+                entry.transactionNo   = rec.Name;            // FIX: doc number
+                entry.description     = 'Secondary Receipt';
+                entry.referenceNo     = rec.Name;            // FIX: was rec.Id
+                entry.amount          = rec.Total_Amount__c;
+                entry.status          = rec.Payment_Mode__c;
                 result.ledgerData.add(entry);
             }
-
+            
             // Sort all ledger data by transaction date
             result.ledgerData.sort();
-
+            
             // Build status options
             Map<String, String> allOption = new Map<String, String>();
             allOption.put('label', 'All');
             allOption.put('value', '');
             result.statusOptions.add(allOption);
-
+            
             Map<String, String> pendingOption = new Map<String, String>();
             pendingOption.put('label', 'Pending');
             pendingOption.put('value', 'Pending');
             result.statusOptions.add(pendingOption);
-
+            
             Map<String, String> paidOption = new Map<String, String>();
             paidOption.put('label', 'Paid');
             paidOption.put('value', 'Paid');
             result.statusOptions.add(paidOption);
-
+            
             Map<String, String> partialOption = new Map<String, String>();
             partialOption.put('label', 'Partial');
             partialOption.put('value', 'Partial');
             result.statusOptions.add(partialOption);
-
+            
         } catch (Exception e) {
             System.debug('Error fetching secondary ledger: ' + e.getMessage());
         }
-
+        
         return result;
+    }
+
+    // ========== Debit Note & Advance Methods for Receipt Creation ==========
+
+    @AuraEnabled(cacheable=false)
+    public static List<DebitNoteData> getPendingDebitNotesByCustomer(Id customerId) {
+        List<DebitNoteData> result = new List<DebitNoteData>();
+        if (customerId == null) return result;
+        List<Secondary_Debit_Note__c> notes = [
+            SELECT Id, Name, Note_Date__c, Amount__c, Paid_Amount__c, Pending_Amount__c,
+                   Customer__c, Customer__r.Name, Status__c, Reason__c
+            FROM Secondary_Debit_Note__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+            ORDER BY Note_Date__c ASC
+        ];
+        for (Secondary_Debit_Note__c dn : notes) {
+            DebitNoteData data = new DebitNoteData();
+            data.name = dn.Name;
+            data.debitNoteId = dn.Id;
+            data.noteDate = dn.Note_Date__c != null ? DateTime.newInstance(dn.Note_Date__c.year(), dn.Note_Date__c.month(), dn.Note_Date__c.day()).format('dd/MM/yyyy') : '';
+            data.amount = dn.Amount__c;
+            data.paidAmount = dn.Paid_Amount__c;
+            data.pendingAmount = dn.Pending_Amount__c;
+            data.reason = dn.Reason__c;
+            result.add(data);
+        }
+        return result;
+    }
+
+
+    @AuraEnabled
+    public static void saveSecondaryReceiptWithDetails(
+        Secondary_Receipt__c receiptData,
+        List<Secondary_Receipt_Item__c> receiptItems,
+        List<Secondary_Receipt_Debit_Item__c> debitItems
+    ) {
+        insert receiptData;
+
+        if (receiptItems != null && !receiptItems.isEmpty()) {
+            for (Secondary_Receipt_Item__c rec : receiptItems) {
+                rec.Secondary_Receipt__c = receiptData.Id;
+            }
+            insert receiptItems;
+        }
+
+        if (debitItems != null && !debitItems.isEmpty()) {
+            for (Secondary_Receipt_Debit_Item__c rec : debitItems) {
+                rec.Secondary_Receipt__c = receiptData.Id;
+            }
+            insert debitItems;
+        }
+
+    }
+
+    // Wrapper classes for Debit Note and Advance data
+    public class DebitNoteData {
+        @AuraEnabled public String name;
+        @AuraEnabled public String debitNoteId;
+        @AuraEnabled public String noteDate;
+        @AuraEnabled public Decimal amount;
+        @AuraEnabled public Decimal paidAmount;
+        @AuraEnabled public Decimal pendingAmount;
+        @AuraEnabled public String reason;
+    }
+
+    public class AdvanceData {
+        @AuraEnabled public String name;
+        @AuraEnabled public String advanceId;
+        @AuraEnabled public String advanceDate;
+        @AuraEnabled public Decimal amount;
+        @AuraEnabled public Decimal usedAmount;
+        @AuraEnabled public Decimal availableAmount;
+        @AuraEnabled public String modeOfPayment;
+    }
+
+    // Aging Report wrapper classes
+    public class AgingBucket {
+        @AuraEnabled public String label;
+        @AuraEnabled public Decimal invoiceAmount;
+        @AuraEnabled public Decimal debitNoteAmount;
+        @AuraEnabled public Decimal totalAmount;
+    }
+
+    public class AgingReportData {
+        @AuraEnabled public List<AgingBucket> buckets;
+        @AuraEnabled public Decimal totalInvoicePending;
+        @AuraEnabled public Decimal totalDebitNotePending;
+        @AuraEnabled public Decimal totalAgingAmount;
+    }
+
+    @AuraEnabled
+    public static AgingReportData getSecondaryCustomerAgingReport(String customerId) {
+        AgingReportData report = new AgingReportData();
+        report.totalInvoicePending = 0;
+        report.totalDebitNotePending = 0;
+        report.totalAgingAmount = 0;
+
+        // Initialize buckets: 0-15, 16-30, 31-45, 45+
+        List<AgingBucket> buckets = new List<AgingBucket>();
+        String[] labels = new String[]{ '0-15', '16-30', '31-45', '45+' };
+        for (String lbl : labels) {
+            AgingBucket b = new AgingBucket();
+            b.label = lbl;
+            b.invoiceAmount = 0;
+            b.debitNoteAmount = 0;
+            b.totalAmount = 0;
+            buckets.add(b);
+        }
+
+        Date today = Date.today();
+
+        // Query pending invoices
+        List<Secondary_Invoice__c> invoices = [
+            SELECT Id, Invoice_Date__c, Pending_Amount__c
+            FROM Secondary_Invoice__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+        ];
+
+        for (Secondary_Invoice__c inv : invoices) {
+            Integer daysDiff = inv.Invoice_Date__c.daysBetween(today);
+            Integer bucketIndex;
+            if (daysDiff <= 15) {
+                bucketIndex = 0;
+            } else if (daysDiff <= 30) {
+                bucketIndex = 1;
+            } else if (daysDiff <= 45) {
+                bucketIndex = 2;
+            } else {
+                bucketIndex = 3;
+            }
+            buckets[bucketIndex].invoiceAmount += inv.Pending_Amount__c;
+            report.totalInvoicePending += inv.Pending_Amount__c;
+        }
+
+        // Query pending debit notes
+        List<Secondary_Debit_Note__c> debitNotes = [
+            SELECT Id, Note_Date__c, Pending_Amount__c
+            FROM Secondary_Debit_Note__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+        ];
+
+        for (Secondary_Debit_Note__c dn : debitNotes) {
+            Integer daysDiff = dn.Note_Date__c.daysBetween(today);
+            Integer bucketIndex;
+            if (daysDiff <= 15) {
+                bucketIndex = 0;
+            } else if (daysDiff <= 30) {
+                bucketIndex = 1;
+            } else if (daysDiff <= 45) {
+                bucketIndex = 2;
+            } else {
+                bucketIndex = 3;
+            }
+            buckets[bucketIndex].debitNoteAmount += dn.Pending_Amount__c;
+            report.totalDebitNotePending += dn.Pending_Amount__c;
+        }
+
+        // Calculate totals per bucket
+        for (AgingBucket b : buckets) {
+            b.totalAmount = b.invoiceAmount + b.debitNoteAmount;
+        }
+
+        report.buckets = buckets;
+        report.totalAgingAmount = report.totalInvoicePending + report.totalDebitNotePending;
+
+        return report;
     }
 }

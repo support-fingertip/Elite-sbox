@@ -16,6 +16,21 @@
                 <default>false</default>
                 <label>Price Difference</label>
             </value>
+            <value>
+                <fullName>Discounts or Rebates</fullName>
+                <default>false</default>
+                <label>Discounts or Rebates</label>
+            </value>
+            <value>
+                <fullName>Adjusting Tax Liability</fullName>
+                <default>false</default>
+                <label>Adjusting Tax Liability</label>
+            </value>
+            <value>
+                <fullName>Invoice Errors</fullName>
+                <default>false</default>
+                <label>Invoice Errors</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

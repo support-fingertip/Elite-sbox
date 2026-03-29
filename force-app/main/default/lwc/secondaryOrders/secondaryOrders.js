@@ -14,6 +14,8 @@ export default class DmsPortal extends LightningElement {
     @track invoiceItems = [];
     remarks = '';
     delivaryRemakrs ='';
+    gstNumber = '';
+    irnNumber = '';
     customerName = '';
     isSubPartLoad = false;
     invoiceDate = new Date().toISOString().split('T')[0];
@@ -136,7 +138,11 @@ export default class DmsPortal extends LightningElement {
                     Tax_Percent__c : item.TaxPercent,
                     Order_Item__c: item.OrderItemId,
                     Total_Amount__c: item.TotalAmount,
-                    Order_Item__c : item.OrderItemId
+                    Order_Item__c : item.OrderItemId,
+                    Before_Category_Slab_Unit_Price__c: item.BeforeCategorySlabUnitPrice,
+                    After_Category_Slab_Unit_Price__c: item.AfterCategorySlabUnitPrice,
+                    Before_Scheme_Unit_Price__c: item.BeforeSchemeUnitPrice,
+                    After_Scheme_Unit_Price__c: item.AfterSchemeUnitPrice
                 });
             }
 
@@ -148,6 +154,8 @@ export default class DmsPortal extends LightningElement {
                 Status__c: 'Raised',
                 Remarks__c: this.remarks,
                 Delivery_remarks__c: this.delivaryRemakrs,
+                GST_Number__c: this.gstNumber,
+                IRN_Number__c: this.irnNumber,
                 Order__c :  this.selectedOrderId,
                 Total_Tax__c: totalTax,
                 Grand_Total__c: grandTotal,
@@ -206,6 +214,14 @@ export default class DmsPortal extends LightningElement {
     onUpdateDelivaryRemakrs(event) {
         var delivaryRemakrs = event.target.value;
         this.delivaryRemakrs = delivaryRemakrs;
+    }
+
+    onUpdateGstNumber(event) {
+        this.gstNumber = event.target.value;
+    }
+
+    onUpdateIrnNumber(event) {
+        this.irnNumber = event.target.value;
     }
 
     handleCancel() {

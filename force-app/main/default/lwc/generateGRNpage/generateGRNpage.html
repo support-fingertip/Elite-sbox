@@ -17,6 +17,26 @@
                 </div>
             </div>
 
+            <!-- GRN Details Card -->
+            <div class="grn-details-card">
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <div class="slds-col slds-size_1-of-1 slds-p-around_small">
+                        <lightning-textarea label="Comments" value={grnComments}
+                            onchange={handleCommentsChange} placeholder="Enter comments...">
+                        </lightning-textarea>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-p-around_small">
+                        <label class="slds-form-element__label">Image</label>
+                        <input type="file" accept="image/*" onchange={handleImageUpload} class="file-input" />
+                        <template lwc:if={imagePreview}>
+                            <div class="image-preview">
+                                <img src={imagePreview} alt="GRN Image" />
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
             <div class="contacts-table">
                 <template if:true={invoiceItems}>
                     <template for:each={invoiceItems} for:item="invoice">

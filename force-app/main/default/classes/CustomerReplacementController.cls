@@ -1,4 +1,4 @@
-public class CustomerReplacementController {
+public without sharing class CustomerReplacementController {
     
     @AuraEnabled
     public static String customerReplacement(Id recordId) {

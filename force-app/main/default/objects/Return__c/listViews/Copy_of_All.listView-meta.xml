@@ -4,6 +4,7 @@
     <columns>NAME</columns>
     <columns>Customer__c</columns>
     <columns>Visit__c</columns>
+    <columns>Distributor__c</columns>
     <columns>Return_Date__c</columns>
     <columns>CREATED_DATE</columns>
     <columns>CREATEDBY_USER</columns>

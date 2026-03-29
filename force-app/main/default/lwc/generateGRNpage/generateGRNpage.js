@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import createGRN from '@salesforce/apex/DMSPortalLwc.createGRN';
+import saveGRNImage from '@salesforce/apex/DMSPortalLwc.saveGRNImage';
 import getInvoicesByIds from '@salesforce/apex/DMSPortalLwc.getInvoicesByIds';
 import GOOGLE_ICONS from '@salesforce/resourceUrl/googleIcons';
 
@@ -8,6 +9,10 @@ export default class GenerateGRNpage extends LightningElement {
     @track invoiceItems = [];
     isPageLoaded = false;
     loading = false;
+    @track grnComments = '';
+    @track imagePreview = '';
+    imageBase64 = '';
+    imageFileName = '';
 
     googleIcons = {
         order: GOOGLE_ICONS + "/googleIcons/order.png",
@@ -110,6 +115,24 @@ export default class GenerateGRNpage extends LightningElement {
 
 
 
+    handleCommentsChange(event) {
+        this.grnComments = event.detail.value;
+    }
+
+    handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        this.imageFileName = file.name;
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            this.imageBase64 = base64;
+            this.imagePreview = reader.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
     handleSave() {
         if (!this.invoiceItems || this.invoiceItems.length === 0) {
             this.showToast('Error', 'No invoice data found', 'error');
@@ -171,8 +194,19 @@ export default class GenerateGRNpage extends LightningElement {
 
         this.isPageLoaded = true;
 
-        createGRN({ invoiceId: invoiceId, items: payload })
-            .then(() => {
+        createGRN({ invoiceId: invoiceId, items: payload, comments: this.grnComments || '' })
+            .then(grnId => {
+                // Save image if uploaded
+                if (this.imageBase64 && this.imageFileName) {
+                    return saveGRNImage({
+                        grnId: grnId,
+                        fileName: this.imageFileName,
+                        base64Data: this.imageBase64
+                    }).then(() => grnId);
+                }
+                return grnId;
+            })
+            .then(grnId => {
                 this.showToast('Success', 'GRN created successfully', 'success');
                 setTimeout(() => {
                     this.dispatchEvent(new CustomEvent('grncreated', {
@@ -186,7 +220,7 @@ export default class GenerateGRNpage extends LightningElement {
             })
             .catch(error => {
                 this.showToast('Error', error.body?.message || 'Unknown error', 'error');
-                this.loading = false;
+                this.isPageLoaded = false;
             });
     }
 

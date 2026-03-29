@@ -31,6 +31,7 @@ import getPaymentReceiptDetails from '@salesforce/apex/DMSPortalLwc.getPaymentRe
 import getReceiptItems from '@salesforce/apex/DMSPortalLwc.getReceiptItems';
 import getGRNList from '@salesforce/apex/DMSPortalLwc.getGRNList';
 import getGRNItems from '@salesforce/apex/DMSPortalLwc.getGRNItems';
+import getGRNImages from '@salesforce/apex/DMSPortalLwc.getGRNImages';
 import getSecondaryReturnItems from '@salesforce/apex/DMSPortalLwc.getSecondaryReturnItems';
 import getSecondaryInvoiceItems from '@salesforce/apex/DMSPortalLwc.getSecondaryInvoiceItems';
 import getOrderItems from '@salesforce/apex/DMSPortalLwc.getOrderItems';
@@ -44,6 +45,8 @@ import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockAdjustmen
 import getSecondaryLedger from '@salesforce/apex/DMSPortalLwc.getSecondaryLedger';
 import getOpeningBalance from '@salesforce/apex/DMSPortalLwc.getOpeningBalance';
 import orgUrl from '@salesforce/label/c.orgUrl';
+import { loadScript } from 'lightning/platformResourceLoader';
+import SHEETJS from '@salesforce/resourceUrl/SheetJS';
 const TAB_WIDTH = 145;     // realistic average width per tab
 const RESERVED_WIDTH = 300; // logo + profile + More button + spacing
 
@@ -68,7 +71,7 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Secondary Orders', label: 'Secondary Orders' },
         { id: 'Secondary Invoices', label: 'Secondary Invoices' },
         { id: 'Secondary Returns', label: 'Secondary Returns' },
-        { id: 'Secondary Customers', label: 'Seondary Customers' },
+        { id: 'Secondary Customers', label: 'Secondary Customers' },
         { id: 'Secondary Customer Ledger', label: 'Secondary Customer Ledger' },
         { id: 'Users', label: 'Users' },
         { id: 'Stock Adjustment', label: 'Stock Adjustment' },
@@ -101,6 +104,11 @@ export default class NavigationComponent extends LightningElement {
 
     // Secondary Customer Ledger Tab
     @track showSecondaryCustomerLedger = false;
+
+    // Secondary Customer Aging Report
+    @track showSecondaryCustomerAgingReport = false;
+    @track selectedAgingCustomerId = '';
+    @track selectedAgingCustomerName = '';
 
 
     @track orderItems = [];      // List of order items with Tax_Amount__c field
@@ -196,6 +204,7 @@ export default class NavigationComponent extends LightningElement {
 
 
     @track hideOrders = false;
+    showCustomerDownloadMenu = false;
 
 
     @track ordFilter = {
@@ -410,7 +419,7 @@ export default class NavigationComponent extends LightningElement {
         } catch (error) {
             console.error('Error in connectedCallback:', error);
         }
-        loadScript(this, XLSX)
+        loadScript(this, SHEETJS)
             .then(() => {
                 this.xlsxJsLibrary = window.XLSX;
                 console.log('XLSX library loaded successfully!');
@@ -513,6 +522,7 @@ export default class NavigationComponent extends LightningElement {
         this.isShowNewAdjustStock = false;
         this.showProductGallery = false;
         this.showSecondaryCustomerLedger = false;
+        this.showSecondaryCustomerAgingReport = false;
     }
 
     selectedTabFunction() {
@@ -583,7 +593,7 @@ export default class NavigationComponent extends LightningElement {
                 break;
             case 'Secondary Customer Ledger':
                 this.showSecondaryCustomerLedger = true;
-                this.getSecondaryLedgerData();
+                //this.getSecondaryLedgerData();
                 break;
             case 'Stock Adjustment':
                 this.showStockAdjustment = true;
@@ -805,6 +815,140 @@ export default class NavigationComponent extends LightningElement {
         // Show / hide data
         this.secoundaryCustomerFilter.isshowData =
             this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
+    }
+
+    handleViewAgingReport(event) {
+        this.selectedAgingCustomerId = event.currentTarget.dataset.id;
+        this.selectedAgingCustomerName = event.currentTarget.dataset.name;
+        this.isShowSecondaryCustomers = false;
+        this.showSecondaryCustomerAgingReport = true;
+    }
+
+    handleAgingReportBack() {
+        this.showSecondaryCustomerAgingReport = false;
+        this.isShowSecondaryCustomers = true;
+        this.getCustomerData();
+    }
+
+    handleCustomerExportCsv() {
+        this.showCustomerDownloadMenu = false;
+        const data = this.secoundaryCustomerFilter.originalSecondaryCustomers;
+
+        if (!data || data.length === 0) {
+            this.showToast('Export Error', 'No customer data to export', 'error');
+            return;
+        }
+
+        try {
+            const headers = [
+                'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
+                'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
+                'District', 'Outstanding'
+            ];
+
+            const rows = data.map(cust => [
+                cust.sNumber               || '',
+                cust.secondaryCustomerName || '',
+                cust.secondaryCustomerCode || '',
+                cust.customerType          || '',
+                cust.customerCategory      || '',
+                cust.status                || '',
+                cust.primaryPhoneNumber    || '',
+                cust.beatName              || '',
+                cust.district              || '',
+                cust.outStanding           || ''
+            ]);
+
+            const csvContent = [headers, ...rows]
+                .map(row =>
+                    row.map(cell =>
+                        '"' + String(cell).replace(/"/g, '""') + '"'
+                    ).join(',')
+                )
+                .join('\r\n');
+
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/plain' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `SecondaryCustomers_${new Date().toISOString().slice(0,10)}.csv`;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+        } catch (error) {
+            console.error('CSV Export Error:', error);
+            this.showToast('Export Error', 'Failed to export CSV: ' + error.message, 'error');
+        }
+    }
+    toggleCustomerDownloadMenu() {
+        this.showCustomerDownloadMenu = !this.showCustomerDownloadMenu;
+    }
+    handleCustomerExportXlsx() {
+        this.showCustomerDownloadMenu = false;
+        const data = this.secoundaryCustomerFilter.originalSecondaryCustomers;
+
+        if (!data || data.length === 0) {
+            this.showToast('Export Error', 'No customer data to export', 'error');
+            return;
+        }
+
+        // If SheetJS is loaded use it, otherwise fall back to CSV with .csv extension
+        const XLSX = window.XLSX;
+
+        if (XLSX) {
+            try {
+                const headers = [
+                    'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
+                    'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
+                    'District', 'Outstanding'
+                ];
+
+                const rows = data.map(cust => [
+                    cust.sNumber               || '',
+                    cust.secondaryCustomerName || '',
+                    cust.secondaryCustomerCode || '',
+                    cust.customerType          || '',
+                    cust.customerCategory      || '',
+                    cust.status                || '',
+                    cust.primaryPhoneNumber    || '',
+                    cust.beatName              || '',
+                    cust.district              || '',
+                    cust.outStanding           || ''
+                ]);
+
+                const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+                // Column widths
+                ws['!cols'] = [
+                    { wch: 6  },  // S.No.
+                    { wch: 25 },  // Customer Name
+                    { wch: 15 },  // Customer Code
+                    { wch: 15 },  // Customer Type
+                    { wch: 18 },  // Customer Category
+                    { wch: 12 },  // Status
+                    { wch: 14 },  // Primary Phone
+                    { wch: 18 },  // Beat Name
+                    { wch: 14 },  // District
+                    { wch: 14 }   // Outstanding
+                ];
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Secondary Customers');
+                XLSX.writeFile(wb, `SecondaryCustomers_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+            } catch (error) {
+                console.error('XLSX Export Error:', error);
+                this.showToast('Export Error', 'Failed to export Excel: ' + error.message, 'error');
+            }
+
+        } else {
+            // SheetJS not loaded — fall back to CSV (opens in Excel perfectly)
+            this.handleCustomerExportCsv();
+            this.showToast('Info', 'Downloaded as CSV — opens in Excel', 'info');
+        }
     }
 
     /**-----Secondary Customer Ledger-----**/
@@ -1126,7 +1270,7 @@ export default class NavigationComponent extends LightningElement {
 
             this.ordFilter = {
                 ...this.ordFilter,
-                allordData: indexedData,
+                allordData: uniqueOrders,
                 isOrderDataExisted: uniqueOrders.length !== 0
             };
 
@@ -1673,15 +1817,23 @@ export default class NavigationComponent extends LightningElement {
         this.selectedGrnId = grnId;
         this.selectedGrnName = grnName;
         this.isSubPartLoad = true;
+        this.GRNFilter.grnImages = [];
 
-        // Fetch GRN items based on selected GRN Id
-        getGRNItems({ grnId: grnId })
-            .then(items => {
+        // Fetch GRN items and images in parallel
+        Promise.all([
+            getGRNItems({ grnId: grnId }),
+            getGRNImages({ grnId: grnId })
+        ])
+            .then(([items, images]) => {
                 this.GRNFilter.allGRNItems = this.addRowIndex(items);
                 this.GRNFilter.isItemsDataExisted = items.length > 0;
+                this.GRNFilter.grnImages = (images || []).map(img => ({
+                    id: img.Id,
+                    name: img.Name,
+                    url: img.DistributionPublicUrl
+                }));
                 this.showGrnItems = true;
                 this.showPrimaryGrn = false;
-
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -1689,6 +1841,7 @@ export default class NavigationComponent extends LightningElement {
                 this.isSubPartLoad = false;
                 this.GRNFilter.allGRNItems = [];
                 this.GRNFilter.isItemsDataExisted = false;
+                this.GRNFilter.grnImages = [];
                 this.showGrnItems = false;
             });
     }
@@ -2116,6 +2269,124 @@ export default class NavigationComponent extends LightningElement {
             });
     }
 
+    showSecReturnDownloadMenu = false;
+
+    toggleSecReturnDownloadMenu() {
+        this.showSecReturnDownloadMenu = !this.showSecReturnDownloadMenu;
+    }
+
+    _getSecReturnExportData() {
+        const data = this.secoundaryReturnFilter.allSReturnData || [];
+        if (data.length === 0) {
+            this.showToast('No Data Found', 'No secondary returns found for the selected filters.', 'error');
+            return null;
+        }
+        const headers = ['S.No.', 'Return Name', 'Secondary Customer', 'Total Quantity', 'Total Amount', 'Return Date'];
+        const rows = data.map(row => [
+            row.rowIndex,
+            row.secoundaryReturnNo || '',
+            row.secondaryCustomer || '',
+            row.quantity || 0,
+            row.totalAmount || 0,
+            row.returnDate || ''
+        ]);
+        return { headers, rows };
+    }
+
+    downloadSecondaryReturnsAsCSV() {
+        this.showSecReturnDownloadMenu = false;
+        const exportData = this._getSecReturnExportData();
+        if (!exportData) return;
+
+        let csvContent = 'data:text/csv;charset=utf-8,' + exportData.headers.join(',') + '\n';
+        exportData.rows.forEach(row => {
+            csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'secondary_returns.csv');
+        link.click();
+    }
+
+    downloadSecondaryReturnsAsXLSX() {
+        this.showSecReturnDownloadMenu = false;
+        const exportData = this._getSecReturnExportData();
+        if (!exportData) return;
+
+        try {
+            const XLSX = window.XLSX;
+            if (!XLSX) {
+                this.showToast('Export Error', 'Excel library not loaded yet, please retry', 'error');
+                return;
+            }
+            const wsData = [exportData.headers, ...exportData.rows];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            ws['!cols'] = [{ wch: 6 }, { wch: 16 }, { wch: 25 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Secondary Returns');
+            XLSX.writeFile(wb, `secondary_returns_${this.secoundaryReturnFilter.fromDate}_to_${this.secoundaryReturnFilter.toDate}.xlsx`);
+        } catch (error) {
+            console.error('XLSX Export Error:', error);
+            this.showToast('Export Error', 'Failed to export: ' + error.message, 'error');
+        }
+    }
+
+    downloadSecondaryReturnsAsPDF() {
+        this.showSecReturnDownloadMenu = false;
+        const exportData = this._getSecReturnExportData();
+        if (!exportData) return;
+
+        try {
+            const title = `Secondary Returns | ${this.secoundaryReturnFilter.fromDate} to ${this.secoundaryReturnFilter.toDate}`;
+            let rowsHtml = '';
+            exportData.rows.forEach(row => {
+                rowsHtml += `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+            });
+
+            const printDiv = document.createElement('div');
+            printDiv.id = 'lwc-print-overlay';
+            printDiv.innerHTML = `
+                <style id="lwc-print-style">
+                    @media print {
+                        @page { margin: 0; padding: 10mm; }
+                        body * { visibility: hidden !important; }
+                        #lwc-print-overlay, #lwc-print-overlay * { visibility: visible !important; }
+                        #lwc-print-overlay { position: absolute !important; top: 0; left: 0; width: 100%; display: block !important; }
+                    }
+                </style>
+                <div id="lwc-print-content">
+                    <h2 style="font-size:14px;color:#02323e;margin-bottom:12px;">${title}</h2>
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead>
+                            <tr>${exportData.headers.map(h => `<th style="background:#02323e;color:#fff;padding:7px 9px;text-align:left;">${h}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
+                <style>
+                    #lwc-print-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; padding: 20px; box-sizing: border-box; }
+                    #lwc-print-content td { padding: 6px 9px; border-bottom: 1px solid #e0e0e0; }
+                </style>`;
+
+            document.body.appendChild(printDiv);
+            setTimeout(() => {
+                window.print();
+                const cleanup = () => {
+                    const overlay = document.getElementById('lwc-print-overlay');
+                    if (overlay) overlay.parentNode.removeChild(overlay);
+                    window.removeEventListener('afterprint', cleanup);
+                };
+                window.addEventListener('afterprint', cleanup);
+                setTimeout(cleanup, 5000);
+            }, 100);
+        } catch (error) {
+            console.error('PDF Export Error:', error);
+            this.showToast('Export Error', 'Failed to export PDF: ' + error.message, 'error');
+        }
+    }
+
     // Method to handle click on Secondary Return Number and fetch its items
     handleSecondaryReturnNoClick(event) {
         const returnId = event.currentTarget.dataset.id;  // Use currentTarget for consistency
@@ -2174,6 +2445,16 @@ export default class NavigationComponent extends LightningElement {
         this.selectedSecondaryReturnNo = '';
         this.selectedSecondaryReturnId = null;
         this.showSecoundaryReturn = true;
+    }
+
+    downloadSecondaryReturnPdf() {
+        const returnId = this.selectedSecondaryReturnId;
+        if (!returnId) {
+            this.showToast('Error', 'No return selected.', 'error');
+            return;
+        }
+        const url = `${orgUrl}/ReturnPdf?Id=${returnId}`;
+        window.open(url, '_blank');
     }
 
     // Check if there are secondary return items to display
@@ -2876,28 +3157,25 @@ export default class NavigationComponent extends LightningElement {
             return;
         }
 
-        if (this.secinvoices.length === 0) {
-            console.log('Number of invoices:', this.secinvoices.length);
+        const invoices = this.secInvFilter.allSecInvData || [];
+
+        if (invoices.length === 0) {
             this.showToast('No Data Found', 'No invoices found for the selected filters.', 'error');
-            console.log('Invoices data:', this.secinvoices); // Log to check if it's empty
             return;
         }
 
         // Define CSV header
-        const header = ['Invoice Name', 'Secondary Customer', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Grand Total',];
+        const header = ['Invoice Name', 'Secondary Customer', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Grand Total'];
 
         // Map invoices to CSV rows
-        const rows = this.secinvoices.map(invoice => [
-
-            invoice.Name,
-            invoice.Store__r ? invoice.Store__r.Name : '',  // Store Name (Ensure it's checked for null)
-            invoice.Invoice_Date__c,
-            invoice.Status__c,
-            invoice.Total_Quantity__c,
-            invoice.Total_Tax__c,
-
-            invoice.Grand_Total__c,
-
+        const rows = invoices.map(invoice => [
+            invoice.name || '',
+            invoice.accName || '',
+            invoice.InvDate || '',
+            invoice.Status || '',
+            invoice.Quantity || '',
+            invoice.tax || '',
+            invoice.Amount || ''
         ]);
 
         // Create CSV content
@@ -2918,20 +3196,6 @@ export default class NavigationComponent extends LightningElement {
     //================================================================================
     // PRIMARY INVOICES AS CSV
 
-    @track Primaryinvoices = [];
-
-    @wire(getPrimaryInvoices, {
-        status: '$InvFilter.status',
-        frmDate: '$InvFilter.fromDate',
-        toDate: '$InvFilter.toDate'
-    })
-    wiredInvoices({ error, data }) {
-        if (data) {
-            this.Primaryinvoices = data; // Assuming DmsData contains the list of invoices
-        } else if (error) {
-            console.error('Error fetching Primary invoices', error);
-        }
-    }
 
 
 
@@ -2942,29 +3206,24 @@ export default class NavigationComponent extends LightningElement {
             alert('Please provide both From Date and To Date.');
             return;
         }
-
-        if (this.Primaryinvoices.length === 0) {
+        var invoices = this.InvFilter.allInvData
+        if (invoices.length === 0) {
             // Show toast message if no invoices are found
             this.showToast('No Data Found', 'No primary invoices found for the selected filters.', 'error');
             return;
         }
 
         // Define CSV header with fields as per the invoice data
-        const header = ['Invoice Name', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Total Amount'];
+        const header = ['SAP Inv No','SF Inv No.', 'Invoice Date', 'Total Quantity', 'Total Tax', 'Total Amount'];
 
         // Map invoices to CSV rows
-        const rows = this.Primaryinvoices.map(invoice => [
-
-            invoice.Name,
-            // invoice.Store__r ? invoice.Store__r.Name : '',  // Store Name (Ensure it's checked for null)
-            invoice.Invoice_Date__c,
-            invoice.Status__c,
-            invoice.Total_Quantity__c,
-            invoice.Total_Tax__c,
-            invoice.Grand_Total__c,
-
-
-
+        const rows = invoices.map(invoice => [
+            invoice.invoiceNo,
+            invoice.name,
+            invoice.InvDate,
+            invoice.TotalQuantity,
+            invoice.tax,
+            invoice.Amount
         ]);
 
         // Create CSV content

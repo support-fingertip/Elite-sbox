@@ -128,7 +128,7 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
                         uiKey: item.beatId + '-' + index  // unique key for UI
                     };
                 });
-
+                console.log('this.beatData:' + JSON.stringify(this.beatData));
                 this.sortBeatData();
                 this.isDayStarted = result.isDayStarted;
                 this.isLeaveExisted = result.isLeaveExisted;
@@ -394,6 +394,9 @@ export default class BeatScreen extends NavigationMixin(LightningElement) {
         return this.sharedBeatData && this.sharedBeatData.length > 0;
     }
 
+    get noBeatsFound() {
+        return !this.hasBeatData && !this.hasSharedBeatData;
+    }
 
     closePreview() {
         this.isShowPreview = false;

@@ -1,6 +1,6 @@
 <template>
     <template lwc:if={isLoading}>
-        <div class="no-scroll">
+        <div style="margin:30px">
             <c-loading-screen></c-loading-screen>
         </div>
     </template>
@@ -8,113 +8,156 @@
         <div class="orders layouts" id="secondaryCustomerLedgerLayout">
             <div class="order-head">
                 <h3 class="order-title">Secondary Customer Ledger</h3>
-                <div class="order-filters">
-                    <button class="actionButton" onclick={handleExportCsv}
-                        style="background-color: #28a745; color: white; display: flex; align-items: center; padding: 6px 12px; border-radius: 4px;margin-top: 27px;">
-                        <span style="display: flex; align-items: center;">
-                            Export CSV
+            </div>
+
+            <div class="filter-bar">
+                <!-- Customer Search -->
+                <div class="customer-search-container">
+                    <lightning-input
+                        label="Customer"
+                        type="search"
+                        placeholder="Search customer..."
+                        value={customerSearch}
+                        onchange={handleCustomerSearch}
+                        onfocus={handleCustomerFocus}>
+                    </lightning-input>
+                    <template lwc:if={showCustomerSuggestions}>
+                        <div class="suggestion-box" role="listbox">
+                            <ul class="slds-listbox slds-listbox_vertical">
+                                <template for:each={filteredCustomers} for:item="cust">
+                                    <li key={cust.value} class="slds-listbox__item">
+                                        <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                            onclick={selectCustomer}
+                                            data-id={cust.value}
+                                            style="cursor: pointer;">
+                                            <span class="slds-media__figure slds-listbox__option-icon">
+                                                <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
+                                            </span>
+                                           <span class="slds-media__body">
+                                                <span class="slds-truncate" title={cust.label}>{cust.label}</span>
+
+                                                <template if:true={cust.landmark}>
+                                                    <span> | </span>
+                                                    <span class="slds-truncate" title={cust.landmark}>{cust.landmark}</span>
+                                                </template>
+
+                                                <template if:true={cust.street}>
+                                                    <span> | </span>
+                                                    <span class="slds-truncate" title={cust.street}>{cust.street}</span>
+                                                </template>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- From Date -->
+                <lightning-input
+                    type="date"
+                    class="custominputfieldSize"
+                    label="From Date"
+                    name="fromDate"
+                    value={fromDate}
+                    onchange={handleFromDateChange}>
+                </lightning-input>
+
+                <!-- To Date -->
+                <lightning-input
+                    type="date"
+                    class="custominputfieldSize"
+                    label="To Date"
+                    name="toDate"
+                    value={toDate}
+                    onchange={handleToDateChange}>
+                </lightning-input>
+
+                <!-- Generate Button -->
+                <div class="btn-wrapper">
+                    <lightning-button
+                        label="Generate Ledger"
+                        variant="brand"
+                        onclick={handleGenerateLedger}>
+                    </lightning-button>
+                </div>
+
+                  <!-- Download Dropdown -->
+                <div class="btn-wrapper download-dropdown">
+                    <button class="exportBtn" onclick={toggleDownloadMenu}>
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            Download
                             <lightning-icon icon-name="utility:download" alternative-text="Download"
-                                size="x-small"
-                                style="margin-left: 4px; --slds-c-icon-color-foreground-default: white;">
+                                size="x-small" style="--slds-c-icon-color-foreground-default: white;">
                             </lightning-icon>
                         </span>
                     </button>
-
-                    <lightning-combobox 
-                        name="customer" 
-                        label="Customer" 
-                        class="custominputfieldSize"
-                        value={selectedCustomer} 
-                        placeholder="Select Customer" 
-                        options={customerOptions}
-                        onchange={handleCustomerChange}>
-                    </lightning-combobox>
-
-                    <lightning-combobox 
-                        name="status" 
-                        label="Status" 
-                        class="custominputfieldSize"
-                        value={status} 
-                        placeholder="Select Status" 
-                        options={statusOptions}
-                        onchange={handleStatusChange}>
-                    </lightning-combobox>
-
-                    <lightning-input 
-                        type="date" 
-                        class="custominputfieldSize" 
-                        label="From Date"
-                        name="fromDate" 
-                        value={fromDate} 
-                        onchange={handleFromDateChange}>
-                    </lightning-input>
-
-                    <lightning-input 
-                        type="date" 
-                        class="custominputfieldSize" 
-                        label="To Date" 
-                        name="toDate"
-                        value={toDate} 
-                        onchange={handleToDateChange}>
-                    </lightning-input>
-
-                    <lightning-input 
-                        type="search" 
-                        label="Search" 
-                        class="custominputfieldSize"
-                        placeholder="Search by description or amount" 
-                        name="searchCust" 
-                        value={srchVal}
-                        onchange={handleSearchChange}>
-                    </lightning-input>
-
-                    <lightning-button 
-                        label="Generate Ledger" 
-                        variant="brand" 
-                        onclick={handleGenerateLedger}
-                        style="margin-top: 27px;">
-                    </lightning-button>
+                    <template lwc:if={showDownloadMenu}>
+                        <div class="download-menu">
+                            <ul>
+                                <li onclick={handleExportCsv}>
+                                    <lightning-icon icon-name="doctype:csv" size="x-small"></lightning-icon>
+                                    Download CSV
+                                </li>
+                                <li onclick={handleExportXlsx}>
+                                    <lightning-icon icon-name="doctype:excel" size="x-small"></lightning-icon>
+                                    Download XLSX
+                                </li>
+                                <li onclick={handleExportPdf}>
+                                    <lightning-icon icon-name="doctype:pdf" size="x-small"></lightning-icon>
+                                    Download PDF
+                                </li>
+                            </ul>
+                        </div>
+                    </template>
                 </div>
             </div>
+          
 
+            <!-- Ledger Table -->
             <template lwc:if={hasLedgerData}>
-                <table class="contacts-table">
-                    <thead>
-                        <tr>
-                            <th style="width:5%">S.No.</th>
-                            <th style="width:15%">Transaction Date</th>
-                            <th style="width:20%">Description</th>
-                            <th style="width:15%">Reference No</th>
-                            <th style="width:12%">Debit (₹)</th>
-                            <th style="width:12%">Credit (₹)</th>
-                            <th style="width:15%">Balance (₹)</th>
-                            <th style="width:10%">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template for:each={allLedgerData} for:item="record">
-                            <tr key={record.Id}>
-                                <td style="width:5%">{record.rowIndex}</td>
-                                <td style="width:15%">{record.transactionDate}</td>
-                                <td style="width:20%">{record.description}</td>
-                                <td style="width:15%">{record.referenceNo}</td>
-                                <td style="width:12%;text-align:right;">{record.debitAmount}</td>
-                                <td style="width:12%;text-align:right;">{record.creditAmount}</td>
-                                <td style="width:15%;text-align:right;font-weight:bold;">{record.balance}</td>
-                                <td style="width:10%">{record.status}</td>
+                <div class="table-wrapper">
+                    <table class="contacts-table">
+                        <thead>
+                            <tr>
+                                <th>S.No.</th>
+                                <th>Transaction Date</th>
+                                <th>Doc Type</th>
+                                <th>Doc No</th>
+                                <th style="text-align:right;">Debit (&#8377;)</th>
+                                <th style="text-align:right;">Credit (&#8377;)</th>
+                                <th style="text-align:right;">Balance (&#8377;)</th>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <template for:each={allLedgerData} for:item="record">
+                                <tr key={record.uniqueKey} class={record.rowClass}>
+                                    <td>{record.rowIndex}</td>
+                                    <td>{record.transactionDate}</td>
+                                    <td>{record.description}</td>
+                                    <td>{record.referenceNo}</td>
+                                    <td style="text-align:right;">{record.debitAmount}</td>
+                                    <td style="text-align:right;">{record.creditAmount}</td>
+                                    <td style="text-align:right; font-weight:bold;">{record.balance}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </template>
+
+            <!-- Empty State -->
             <template lwc:else>
-                <div class="slds-align_absolute-center" style="padding: 40px; flex-direction: column;">
-                    <span style="color:red; font-size:large;">No records found!</span>
+                <div class="empty-state">
+                    <span class="empty-icon">&#128196;</span>
+                    <p class="empty-title">No records found!</p>
                     <template lwc:if={errorMessage}>
-                        <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">{errorMessage}</p>
+                        <p class="empty-sub">{errorMessage}</p>
                     </template>
                 </div>
             </template>
         </div>
     </template>
+    <c-custom-toast auto-close-time="8000"></c-custom-toast>
 </template>

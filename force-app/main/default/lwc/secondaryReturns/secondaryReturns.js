@@ -225,7 +225,9 @@ export default class SecondaryReturns extends LightningElement {
             .then(result => {
                 this.filteredCustomers = result.map(acc => ({
                     label: acc.Name,
-                    value: acc.Id
+                    value: acc.Id,
+                    landmark: acc.Land_Mark__c,
+                    street: acc.Street__c
                 }));
                 this.customerOptions = this.filteredCustomers;
                 this.showCustomerSuggestions = this.filteredCustomers.length > 0;
@@ -271,7 +273,7 @@ export default class SecondaryReturns extends LightningElement {
             if (!item.quantity ||  item.quantity <= 0 ) {
                 this.showToast(
                     'Validation Error',
-                    `Row ${item.rowIndex}: Please add a valid Salable Quantity Or Non-Salable Quantity.`,
+                    `Row ${item.rowIndex}: Please add a valid Saleable Quantity Or Non-Saleable Quantity.`,
                     'error'
                 );
                 return;

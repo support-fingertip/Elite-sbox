@@ -25,6 +25,7 @@ export default class NewDebitNote extends LightningElement {
     @track searchSecondaryCustomerName = '';
     @track filteredListCustomers = [];
     @track showListCustomerSuggestions = false;
+    showDebitNotes = false;
 
     isPageLoaded = false;
     isSubPartLoad = false;
@@ -64,9 +65,11 @@ export default class NewDebitNote extends LightningElement {
                     customerName: note.customerName,
                     reason: note.reason,
                     date: note.noteDate,
-                    amount: note.amount
+                    amount: note.amount,
+                    description: note.description || ''
                 }));
                 this.debitNotes = [...this.originalDebitNotes];
+                this.showDebitNotes = this.debitNotes.length >0 ? true : false ;
                 this.isSubPartLoad = false;
             })
             .catch(error => {
@@ -121,6 +124,7 @@ export default class NewDebitNote extends LightningElement {
             filtered = filtered.filter(n => n.customerName && n.customerName.toLowerCase().includes(key));
         }
         this.debitNotes = filtered.length > 0 ? filtered : null;
+        this.showDebitNotes = filtered.length > 0  ? true : false ;
     }
 
     handleCustomerFocus() {
@@ -142,7 +146,9 @@ export default class NewDebitNote extends LightningElement {
             .then(result => {
                 this.filteredCustomers = result.map(acc => ({
                     label: acc.Name,
-                    value: acc.Id
+                    value: acc.Id,
+                    landmark: acc.Land_Mark__c,
+                    street: acc.Street__c
                 }));
                 this.customerOptions = this.filteredCustomers;
                 this.showCustomerSuggestions = this.filteredCustomers.length > 0;
@@ -173,6 +179,12 @@ export default class NewDebitNote extends LightningElement {
     handleDescriptionChange(event) {
         this.description = event.detail.value;
     }
+
+    handleNoteDateChange(event) {
+    this.noteDate = event.detail.value;
+}
+
+
 
     handleSave() {
         if (!this.selectedCustomerId) {
@@ -249,7 +261,7 @@ export default class NewDebitNote extends LightningElement {
             return;
         }
 
-        const header = ['S.No.', 'Debit Note No', 'Customer Name', 'Reason', 'Date', 'Amount'];
+        const header = ['S.No.', 'Debit Note No', 'Customer Name', 'Reason', 'Date', 'Amount', 'Description'];
 
         const rows = this.originalDebitNotes.map(note => [
             note.rowIndex,
@@ -257,7 +269,8 @@ export default class NewDebitNote extends LightningElement {
             note.customerName || '',
             note.reason || '',
             note.date || '',
-            note.amount || 0
+            note.amount || 0,
+            `"${(note.description || '').replace(/"/g, '""')}"`
         ]);
 
         let csvContent = 'data:text/csv;charset=utf-8,' + header.join(',') + '\n';
