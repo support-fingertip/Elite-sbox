@@ -1,0 +1,224 @@
+<template>
+    <!-- Report Selection Screen -->
+    <template lwc:if={isReportSelection}>
+        <div class="orders layouts">
+            <div class="report-header">
+                <div class="header-left">
+                    <h3 class="report-title">Claim Reports</h3>
+                </div>
+            </div>
+            <div class="report-cards">
+                <template for:each={reportOptions} for:item="opt">
+                    <div key={opt.id} class="report-card" data-id={opt.id} onclick={handleReportSelect}>
+                        <h4 class="card-title">{opt.label}</h4>
+                        <p class="card-desc">{opt.description}</p>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- Report View -->
+    <template lwc:if={showReport}>
+        <div class="orders layouts">
+            <div class="report-header">
+                <div class="header-left">
+                    <button class="back-btn" onclick={handleBack}>&#8592; Back</button>
+                    <h3 class="report-title">{reportTitle}</h3>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <lightning-input type="date" label="From Date" value={fromDate}
+                    data-field="fromDate" onchange={handleDateChange}></lightning-input>
+                <lightning-input type="date" label="To Date" value={toDate}
+                    data-field="toDate" onchange={handleDateChange}></lightning-input>
+            </div>
+
+            <template lwc:if={isLoading}>
+                <div class="loading-container">
+                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template lwc:if={hasData}>
+                <!-- Report 1: Category Slab Claim - Category-Wise Summary -->
+                <template lwc:if={isCategorySummary}>
+                    <div class="report-card">
+                        <table class="claim-table">
+                            <thead>
+                                <tr>
+                                    <th class="th-left">S.No</th>
+                                    <th class="th-left">Product Name</th>
+                                    <th class="th-right">Before Cat. Slab Price</th>
+                                    <th class="th-right">After Cat. Slab Price</th>
+                                    <th class="th-right">Qty</th>
+                                    <th class="th-right">Cat. Slab Claim Amt</th>
+                                    <th class="th-right">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={groupedData} for:item="row">
+                                    <template lwc:if={row.isGroupHeader}>
+                                        <tr key={row.key} class="group-header-row">
+                                            <td colspan="7" class="group-header-cell">{row.label}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isData}>
+                                        <tr key={row.key} class="data-row">
+                                            <td class="td-left">{row.sno}</td>
+                                            <td class="td-left">{row.productName}</td>
+                                            <td class="td-right">{row.beforePrice}</td>
+                                            <td class="td-right">{row.afterPrice}</td>
+                                            <td class="td-right">{row.quantity}</td>
+                                            <td class="td-right">{row.claimAmount}</td>
+                                            <td class="td-right">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isSubtotal}>
+                                        <tr key={row.key} class="subtotal-row">
+                                            <td colspan="4" class="td-left subtotal-label">{row.label}</td>
+                                            <td class="td-right subtotal-val">{row.quantity}</td>
+                                            <td class="td-right subtotal-val">{row.claimAmount}</td>
+                                            <td class="td-right subtotal-val">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isGrandTotal}>
+                                        <tr key={row.key} class="grandtotal-row">
+                                            <td colspan="4" class="td-left grandtotal-label">{row.label}</td>
+                                            <td class="td-right grandtotal-val">{row.quantity}</td>
+                                            <td class="td-right grandtotal-val">{row.claimAmount}</td>
+                                            <td class="td-right grandtotal-val">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+
+                <!-- Report 2: Category Slab Claim - Category + Customer Detail -->
+                <template lwc:if={isCategoryCustomerDetail}>
+                    <div class="report-card">
+                        <table class="claim-table">
+                            <thead>
+                                <tr>
+                                    <th class="th-left">S.No</th>
+                                    <th class="th-left">Product Name</th>
+                                    <th class="th-right">Before Cat. Slab Price</th>
+                                    <th class="th-right">After Cat. Slab Price</th>
+                                    <th class="th-right">Qty</th>
+                                    <th class="th-right">Cat. Slab Claim Amt</th>
+                                    <th class="th-right">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={groupedData} for:item="row">
+                                    <template lwc:if={row.isGroupHeader}>
+                                        <tr key={row.key} class="group-header-row">
+                                            <td colspan="7" class="group-header-cell">{row.label}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isSubGroupHeader}>
+                                        <tr key={row.key} class="subgroup-header-row">
+                                            <td colspan="7" class="subgroup-header-cell">{row.label}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isData}>
+                                        <tr key={row.key} class="data-row">
+                                            <td class="td-left">{row.sno}</td>
+                                            <td class="td-left">{row.productName}</td>
+                                            <td class="td-right">{row.beforePrice}</td>
+                                            <td class="td-right">{row.afterPrice}</td>
+                                            <td class="td-right">{row.quantity}</td>
+                                            <td class="td-right">{row.claimAmount}</td>
+                                            <td class="td-right">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isSubtotal}>
+                                        <tr key={row.key} class="subtotal-row">
+                                            <td colspan="4" class="td-left subtotal-label">{row.label}</td>
+                                            <td class="td-right subtotal-val">{row.quantity}</td>
+                                            <td class="td-right subtotal-val">{row.claimAmount}</td>
+                                            <td class="td-right subtotal-val">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isGrandTotal}>
+                                        <tr key={row.key} class="grandtotal-row">
+                                            <td colspan="4" class="td-left grandtotal-label">{row.label}</td>
+                                            <td class="td-right grandtotal-val">{row.quantity}</td>
+                                            <td class="td-right grandtotal-val">{row.claimAmount}</td>
+                                            <td class="td-right grandtotal-val">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+
+                <!-- Report 3: Scheme Claim - Customer-Wise Summary -->
+                <template lwc:if={isSchemeCustomerSummary}>
+                    <div class="report-card">
+                        <table class="claim-table">
+                            <thead>
+                                <tr>
+                                    <th class="th-left">S.No</th>
+                                    <th class="th-left">Product Name</th>
+                                    <th class="th-right">Before Scheme Price</th>
+                                    <th class="th-right">After Scheme Price</th>
+                                    <th class="th-right">Qty</th>
+                                    <th class="th-right">Scheme Claim Amt</th>
+                                    <th class="th-right">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={groupedData} for:item="row">
+                                    <template lwc:if={row.isGroupHeader}>
+                                        <tr key={row.key} class="group-header-row">
+                                            <td colspan="7" class="group-header-cell">{row.label}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isData}>
+                                        <tr key={row.key} class="data-row">
+                                            <td class="td-left">{row.sno}</td>
+                                            <td class="td-left">{row.productName}</td>
+                                            <td class="td-right">{row.beforePrice}</td>
+                                            <td class="td-right">{row.afterPrice}</td>
+                                            <td class="td-right">{row.quantity}</td>
+                                            <td class="td-right">{row.claimAmount}</td>
+                                            <td class="td-right">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isSubtotal}>
+                                        <tr key={row.key} class="subtotal-row">
+                                            <td colspan="4" class="td-left subtotal-label">{row.label}</td>
+                                            <td class="td-right subtotal-val">{row.quantity}</td>
+                                            <td class="td-right subtotal-val">{row.claimAmount}</td>
+                                            <td class="td-right subtotal-val">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                    <template lwc:if={row.isGrandTotal}>
+                                        <tr key={row.key} class="grandtotal-row">
+                                            <td colspan="4" class="td-left grandtotal-label">{row.label}</td>
+                                            <td class="td-right grandtotal-val">{row.quantity}</td>
+                                            <td class="td-right grandtotal-val">{row.claimAmount}</td>
+                                            <td class="td-right grandtotal-val">{row.totalAmount}</td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </template>
+
+            <!-- No Data -->
+            <template lwc:if={showNoData}>
+                <div class="empty-state">
+                    <p>No records found for the selected date range.</p>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>
