@@ -10,6 +10,7 @@ export default class ClaimReports extends LightningElement {
     @track isLoading = false;
     @track groupedData = [];
     @track hasData = false;
+    @track totalClaimAmount = '0.00';
 
     reportOptions = [
         {
@@ -78,6 +79,7 @@ export default class ClaimReports extends LightningElement {
         this.selectedReport = null;
         this.groupedData = [];
         this.hasData = false;
+        this.totalClaimAmount = '0.00';
     }
 
     handleDateChange(event) {
@@ -121,8 +123,13 @@ export default class ClaimReports extends LightningElement {
         if (!data || data.length === 0) {
             this.groupedData = [];
             this.hasData = false;
+            this.totalClaimAmount = '0.00';
             return;
         }
+
+        let totalClaim = 0;
+        data.forEach(item => { totalClaim += (item.claimAmount || 0); });
+        this.totalClaimAmount = this.fmt(totalClaim);
 
         if (this.selectedReport === 'categorySummary') {
             this.groupedData = this.groupByCategory(data);

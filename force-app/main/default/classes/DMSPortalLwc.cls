@@ -3024,6 +3024,8 @@ public without sharing class DMSPortalLwc {
             WHERE Secondary_Invoice__r.Store__c = :accountId
             AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
             AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Category_Slab_Claim_Amount__c > 0
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
             ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Product__r.Name
         ];
 
@@ -3062,6 +3064,8 @@ public without sharing class DMSPortalLwc {
             WHERE Secondary_Invoice__r.Store__c = :accountId
             AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
             AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Category_Slab_Claim_Amount__c > 0
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
             ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name, Product__r.Name
         ];
 
@@ -3100,6 +3104,7 @@ public without sharing class DMSPortalLwc {
             WHERE Secondary_Invoice__r.Store__c = :accountId
             AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
             AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Scheme_Claim_Amount__c > 0
             ORDER BY Secondary_Invoice__r.Customer__r.Name, Product__r.Name
         ];
 
