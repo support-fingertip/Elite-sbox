@@ -419,7 +419,7 @@ export default class NavigationComponent extends LightningElement {
         } catch (error) {
             console.error('Error in connectedCallback:', error);
         }
-        loadScript(this, SHEETJS)
+        loadScript(this, XLSX)
             .then(() => {
                 this.xlsxJsLibrary = window.XLSX;
                 console.log('XLSX library loaded successfully!');

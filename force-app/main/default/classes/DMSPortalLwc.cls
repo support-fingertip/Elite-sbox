@@ -1469,7 +1469,8 @@ public without sharing class DMSPortalLwc {
         List<Order_Item__c> ordList = [
             SELECT Id, Name, Product__c, Product__r.Name,
             Quantity__c, Unit_Price__c,Tax__c,
-            Tax_Percent__c, Tax_Amount__c, Total_Amount1__c,Secondary_Invoice_Pending_Quantity__c
+            Tax_Percent__c, Tax_Amount__c, Total_Amount1__c,Secondary_Invoice_Pending_Quantity__c,
+            Before_Category_Slab_Unit_Price__c,After_Category_Slab_Unit_Price__c,Before_Scheme_Unit_Price__c,After_Scheme_Unit_Price__c
             FROM Order_Item__c
             WHERE Order__c =: orderId
         ];
@@ -1501,6 +1502,11 @@ public without sharing class DMSPortalLwc {
             Decimal taxAmt = (price * qty * taxPer) / 100;
             Decimal totalAmt = (price * qty) + taxAmt;
             
+            Decimal BeforeCategorySlabUnitPrice = item.Before_Category_Slab_Unit_Price__c;
+            Decimal AfterCategorySlabUnitPrice =  item.After_Category_Slab_Unit_Price__c;
+            Decimal BeforeSchemeUnitPrice = item.Before_Scheme_Unit_Price__c;
+            Decimal AfterSchemeUnitPrice = item.After_Scheme_Unit_Price__c;
+            
             row.put('OrderItemId', item.Id);
             row.put('ItemName', item.Name);
             row.put('ProductId', item.Product__c);
@@ -1510,6 +1516,12 @@ public without sharing class DMSPortalLwc {
             row.put('TaxPercent', taxPer);
             row.put('TaxAmount', taxAmt);
             row.put('TotalAmount', totalAmt);
+            
+            row.put('BeforeCategorySlabUnitPrice', BeforeCategorySlabUnitPrice);
+            row.put('AfterCategorySlabUnitPrice', AfterCategorySlabUnitPrice);
+            row.put('BeforeSchemeUnitPrice', BeforeSchemeUnitPrice);
+            row.put('AfterSchemeUnitPrice', AfterSchemeUnitPrice);
+            
             row.put(
                 'availableQuantity',
                 stockMap.containsKey(item.Product__r.Name)

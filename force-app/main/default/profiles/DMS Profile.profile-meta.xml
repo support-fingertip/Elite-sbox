@@ -7031,6 +7031,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Order__c.Distributor_with_Code__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Order__c.Division__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -9186,6 +9191,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Invoice__c.Distributor_with_Code__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Invoice__c.Due_Date__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -9232,6 +9242,11 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice__c.Remarks__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Secondary_Customer_Category__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
