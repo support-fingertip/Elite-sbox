@@ -94,6 +94,28 @@
     padding: 40px;
 }
 
+/* Total Claim Amount Card */
+.total-claim-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #02323e;
+    color: #ffffff;
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.total-claim-label {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.total-claim-value {
+    font-size: 22px;
+    font-weight: 700;
+}
+
 /* Table Styling */
 .claim-table {
     width: 100%;

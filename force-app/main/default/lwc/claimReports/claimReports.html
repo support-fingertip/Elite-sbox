@@ -42,6 +42,11 @@
             </template>
 
             <template lwc:if={hasData}>
+                <div class="total-claim-card">
+                    <span class="total-claim-label">Total Claim Amount</span>
+                    <span class="total-claim-value">{totalClaimAmount}</span>
+                </div>
+
                 <!-- Report 1: Category Slab Claim - Category-Wise Summary -->
                 <template lwc:if={isCategorySummary}>
                     <div class="report-card">
