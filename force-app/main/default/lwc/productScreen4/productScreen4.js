@@ -879,6 +879,7 @@ export default class ProductScreen4 extends LightningElement {
         }
 
         if (this.isShowOwner == true && !this.OrderOwnerId) {
+            this.isPageLoaded = false;
             this.genericDispatchToastEvent(
                 'Validation Error',
                 'Please fill the owner name',
@@ -925,6 +926,10 @@ export default class ProductScreen4 extends LightningElement {
                 Case_Qyt__c: item.crateQty,
                 Each_Qyt__c: item.eachQty,
                 Unit_price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
+                Before_Category_Slab_Unit_Price__c: item.originalUnitPrice || item.UnitPricePriceBook,
+                After_Category_Slab_Unit_Price__c: item.UnitPricePriceBook,
+                Before_Scheme_Unit_Price__c: item.UnitPricePriceBook,
+                After_Scheme_Unit_Price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
                 Tax__c: item.taxPercent || 0,
                 Tax_Amount__c: parseFloat(item.taxAmt),
                 Total_Amount__c: parseFloat(item.netValue)

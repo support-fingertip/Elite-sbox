@@ -579,9 +579,30 @@ public without sharing class DMSPortalLwc {
     }
     
     @AuraEnabled(cacheable=true)
+    public static List<ContentDistribution> getGRNImages(Id grnId) {
+        List<ContentDocumentLink> cdLinks = [
+            SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId = :grnId
+        ];
+        if (cdLinks.isEmpty()) {
+            return new List<ContentDistribution>();
+        }
+        Set<Id> contentDocIds = new Set<Id>();
+        for (ContentDocumentLink cdl : cdLinks) {
+            contentDocIds.add(cdl.ContentDocumentId);
+        }
+        List<Id> contentVersionIds = new List<Id>();
+        for (ContentVersion cv : [SELECT Id FROM ContentVersion WHERE ContentDocumentId IN :contentDocIds AND IsLatest = true]) {
+            contentVersionIds.add(cv.Id);
+        }
+        return [
+            SELECT Id, Name, DistributionPublicUrl FROM ContentDistribution WHERE ContentVersionId IN :contentVersionIds
+        ];
+    }
+
+    @AuraEnabled(cacheable=true)
     public static List<Goods_Received_Note__c> getGRNList(Date frmDate, Date toDate) {
         return [
-            SELECT Id, Name, Invoice__c, Invoice__r.Name, GRN_Date__c
+            SELECT Id, Name, Invoice__c, Invoice__r.Name, Invoice__r.Invoice_No__c, GRN_Date__c
             FROM Goods_Received_Note__c
             WHERE GRN_Date__c >= :frmDate
             AND GRN_Date__c <= :toDate
@@ -768,6 +789,7 @@ public without sharing class DMSPortalLwc {
             debitNote.status = i.Status__c;
             debitNote.reason = i.Reason__c;
             debitNote.amount = i.Amount__c;
+            debitNote.description = i.Description__c;
             DebitNoteDataList.add(debitNote);
         }
         dt.totalDebitNoteData = DebitNoteDataList;
@@ -2389,6 +2411,7 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String status;
         @AuraEnabled public String reason;
         @AuraEnabled public decimal amount;
+        @AuraEnabled public String description;
     }
     public class SecInvData {
         @AuraEnabled public String name;

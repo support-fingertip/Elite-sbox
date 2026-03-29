@@ -962,6 +962,8 @@ global with sharing class beatPlannerlwc {
         
         //Map to store the final Price for each Product
         Map<String, Decimal> allProductwithPrice = new Map<String, Decimal>();
+        //Map to store the original unit price before category slab discount
+        Map<String, Decimal> originalUnitPriceMap = new Map<String, Decimal>();
         
         //Price change Map
         Map<String, Price_Change__c> priceChangeMap = new Map<String, Price_Change__c>();
@@ -998,13 +1000,16 @@ global with sharing class beatPlannerlwc {
                 }
                 
                 Decimal finalPrice = 0;
-                
+                Decimal origUnitPrice = 0;
+
                 if (bestPB != null) {
+                    origUnitPrice = bestPB.Unit_Price__c != null ? bestPB.Unit_Price__c : 0;
+
                     if (priceChangeMap.containsKey(acc.Secondary_Customer_Category__c)) {
                         Price_Change__c priceChange = priceChangeMap.get(acc.Secondary_Customer_Category__c);
                         Decimal discountPercent = priceChange.Off__c;
                         String typeOf = priceChange.Type__c;
-                        
+
                         if(typeOf == 'MRP' && bestPB.MRP__c != null){
                             finalPrice = (bestPB.MRP__c * (1 - discountPercent / 100)).setScale(2, RoundingMode.HALF_UP);
                         }
@@ -1014,18 +1019,20 @@ global with sharing class beatPlannerlwc {
                         else if (bestPB.Unit_Price__c != null) {
                             finalPrice = bestPB.Unit_Price__c;
                         }
-                        
-                    } 
+
+                    }
                     else if (bestPB.Unit_Price__c != null) {
                         finalPrice = bestPB.Unit_Price__c;
                     }
-                } 
+                }
                 else {
+                    origUnitPrice = p.List_Price__c != null ? p.List_Price__c : 0;
+
                     if (priceChangeMap.containsKey(acc.Secondary_Customer_Category__c)) {
                         Price_Change__c priceChange = priceChangeMap.get(acc.Secondary_Customer_Category__c);
                         Decimal discountPercent = priceChange.Off__c;
                         String typeOf = priceChange.Type__c;
-                        
+
                         if(typeOf == 'MRP' && p.MRP__c != null){
                             finalPrice = (p.MRP__c * (1 - discountPercent / 100)).setScale(2, RoundingMode.HALF_UP);
                         }
@@ -1035,18 +1042,20 @@ global with sharing class beatPlannerlwc {
                         else if (p.List_Price__c != null) {
                             finalPrice = p.List_Price__c;
                         }
-                        
-                    } 
+
+                    }
                     else if (p.List_Price__c != null) {
                         finalPrice = p.List_Price__c;
                     }
                 }
-                
+
                 allProductwithPrice.put(p.Id, finalPrice);
+                originalUnitPriceMap.put(p.Id, origUnitPrice);
             }
         }
-        
+
         dt.productIdWithMrp = allProductwithPrice;
+        dt.productIdWithOriginalUnitPrice = originalUnitPriceMap;
         dt.isUomDisabled = true;
         
         if (acc != null && acc.Customer_Type__c == 'Primary Customer') {
@@ -1638,13 +1647,16 @@ global with sharing class beatPlannerlwc {
             pd.name = p.Name;
             pd.category = p.Product_Category_Name__c;
             pd.UnitPricePriceBook = 0;
+            pd.originalUnitPrice = 0;
             system.debug('childInvoiceItem '+p.Name+' - invoicepricebok '+p.Invoice_items__r);
             if(p.Invoice_items__r.size() > 0){
                 pd.UnitPricePriceBook = p.Invoice_items__r[0].Price_per_unit__c;
+                pd.originalUnitPrice = p.Invoice_items__r[0].Price_per_unit__c;
                 pd.MRP = p.MRP__c;
             }
             else if (bestPB != null) {
-                
+                pd.originalUnitPrice = bestPB.Unit_Price__c != null ? bestPB.Unit_Price__c : 0;
+
                 if (priceChangeMap.containsKey(acc.Secondary_Customer_Category__c)) {
                     Price_Change__c priceChange = priceChangeMap.get(acc.Secondary_Customer_Category__c);
                     Decimal discountPercent = priceChange.Off__c;
@@ -1662,11 +1674,13 @@ global with sharing class beatPlannerlwc {
                 else if(bestPB.Unit_Price__c != null){
                     pd.UnitPricePriceBook = bestPB.Unit_Price__c;
                 }
-                
+
                 pd.MRP = bestPB.MRP__c != null ? bestPB.MRP__c : 0;
                 pd.taxPercent = bestPB.Tax__c;
-            } 
+            }
             else {
+                pd.originalUnitPrice = p.List_Price__c != null ? p.List_Price__c : 0;
+
                 if (priceChangeMap.containsKey(acc.Secondary_Customer_Category__c)) {
                     Price_Change__c priceChange = priceChangeMap.get(acc.Secondary_Customer_Category__c);
                     Decimal discountPercent = priceChange.Off__c;
@@ -1678,13 +1692,13 @@ global with sharing class beatPlannerlwc {
                         pd.UnitPricePriceBook = (p.List_Price__c * (1 - discountPercent / 100)).setScale(2, RoundingMode.HALF_UP);
                     }
                     else if(p.List_Price__c != null){
-                        pd.UnitPricePriceBook = p.List_Price__c; 
+                        pd.UnitPricePriceBook = p.List_Price__c;
                     }
                 }
                 else if(p.List_Price__c != null){
-                    pd.UnitPricePriceBook = p.List_Price__c; 
+                    pd.UnitPricePriceBook = p.List_Price__c;
                 }
-                
+
                 pd.MRP = p.MRP__c != null ? p.MRP__c : 0;
                 pd.uom = p.UOM__c;
                 pd.taxPercent = p.Tax_Percent__c;
@@ -1736,10 +1750,13 @@ global with sharing class beatPlannerlwc {
         
         
         
+        String accSecCategory = acc.Secondary_Customer_Category__c;
+
         List<Scheme__c> schemes = [
             SELECT Id, Name, Description__c, Scheme_Start_Date__c, Scheme_End_Date__c,
             (SELECT Id, Product__c, Min__c, Sale_Value__c,Sale_Value_Threshold__c,Discount__c,Buy_Quantity__c, Product__r.Name
-             FROM Buy_Products__r where Sales_Channel__c in:channelSet  )
+             FROM Buy_Products__r where Sales_Channel__c in:channelSet AND 
+             (Secondary_Customer_Category__c = :accSecCategory OR Secondary_Customer_Category__c = null) )
             FROM Scheme__c
             WHERE Scheme_Start_Date__c <= :Date.today()
             AND Scheme_End_Date__c >= :Date.today()
@@ -2512,6 +2529,45 @@ global with sharing class beatPlannerlwc {
                 } else if (unitPriceObj instanceof Integer) {
                     item.Unit_price__c = Decimal.valueOf(((Integer)unitPriceObj));
                 }
+
+                // Category Slab: Set before and after slab unit prices
+                Object beforeSlabObj = product.get('Before_Category_Slab_Unit_Price__c');
+                if (beforeSlabObj instanceof Decimal) {
+                    item.Before_Category_Slab_Unit_Price__c = (Decimal)beforeSlabObj;
+                } else if (beforeSlabObj instanceof String && String.isNotBlank((String)beforeSlabObj)) {
+                    item.Before_Category_Slab_Unit_Price__c = Decimal.valueOf((String)beforeSlabObj);
+                } else if (beforeSlabObj instanceof Integer) {
+                    item.Before_Category_Slab_Unit_Price__c = Decimal.valueOf((Integer)beforeSlabObj);
+                }
+
+                Object afterSlabObj = product.get('After_Category_Slab_Unit_Price__c');
+                if (afterSlabObj instanceof Decimal) {
+                    item.After_Category_Slab_Unit_Price__c = (Decimal)afterSlabObj;
+                } else if (afterSlabObj instanceof String && String.isNotBlank((String)afterSlabObj)) {
+                    item.After_Category_Slab_Unit_Price__c = Decimal.valueOf((String)afterSlabObj);
+                } else if (afterSlabObj instanceof Integer) {
+                    item.After_Category_Slab_Unit_Price__c = Decimal.valueOf((Integer)afterSlabObj);
+                }
+
+                // Scheme: Set before and after scheme unit prices
+                Object beforeSchemeObj = product.get('Before_Scheme_Unit_Price__c');
+                if (beforeSchemeObj instanceof Decimal) {
+                    item.Before_Scheme_Unit_Price__c = (Decimal)beforeSchemeObj;
+                } else if (beforeSchemeObj instanceof String && String.isNotBlank((String)beforeSchemeObj)) {
+                    item.Before_Scheme_Unit_Price__c = Decimal.valueOf((String)beforeSchemeObj);
+                } else if (beforeSchemeObj instanceof Integer) {
+                    item.Before_Scheme_Unit_Price__c = Decimal.valueOf((Integer)beforeSchemeObj);
+                }
+
+                Object afterSchemeObj = product.get('After_Scheme_Unit_Price__c');
+                if (afterSchemeObj instanceof Decimal) {
+                    item.After_Scheme_Unit_Price__c = (Decimal)afterSchemeObj;
+                } else if (afterSchemeObj instanceof String && String.isNotBlank((String)afterSchemeObj)) {
+                    item.After_Scheme_Unit_Price__c = Decimal.valueOf((String)afterSchemeObj);
+                } else if (afterSchemeObj instanceof Integer) {
+                    item.After_Scheme_Unit_Price__c = Decimal.valueOf((Integer)afterSchemeObj);
+                }
+
                 item.Tax__c = (Decimal)product.get('Tax__c');
                 item.Tax_Amount__c = (Decimal)product.get('Tax_Amount__c');
                 item.Total_Amount__c = (Decimal)product.get('Total_Amount__c');
@@ -3869,6 +3925,7 @@ return getTaskData(objectId);
         @AuraEnabled public List<Map<String, String>> resonForReturn = new List<Map<String, String>> ();
         @AuraEnabled public List<Map<String, String>> uom = new List<Map<String, String>> ();
         @AuraEnabled public Map<String, Decimal> productIdWithMrp = new Map<String, Decimal>();
+        @AuraEnabled public Map<String, Decimal> productIdWithOriginalUnitPrice = new Map<String, Decimal>();
         @AuraEnabled public list<Order__c> orderList { get; set; }
         @AuraEnabled public list<BeatData> beatDataList { get; set; }
         @AuraEnabled public list<BeatData> sharedBeatDataList { get; set; }
@@ -4139,6 +4196,7 @@ return getTaskData(objectId);
         @AuraEnabled public boolean isDropdownTargetOpen;
         @AuraEnabled public String SKUCodeName;
         @AuraEnabled public Decimal UnitPricePriceBook;
+        @AuraEnabled public Decimal originalUnitPrice;
         @AuraEnabled public Decimal discountedPrice;
         @AuraEnabled public Decimal discountedUnitPrice;
         @AuraEnabled public String categoryId;
