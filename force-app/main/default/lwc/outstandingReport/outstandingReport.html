@@ -53,7 +53,7 @@
                 <!-- Summary Card -->
                 <div class="summary-row">
                     <div class="summary-card">
-                        <span class="summary-label">Total Document Amount</span>
+                        <span class="summary-label">Total Amount</span>
                         <span class="summary-value">{formattedTotalDocument}</span>
                     </div>
                     <div class="summary-card">
@@ -77,9 +77,12 @@
                                 <th class="th-left">Pri. Customer Name</th>
                                 <th class="th-left">Sec. Customer Code</th>
                                 <th class="th-left">Sec. Customer Name</th>
+                                <th class="th-left">Executive Code</th>
+                                <th class="th-left">Executive Name</th>
+                                <th class="th-left">Beat Name</th>
                                 <th class="th-left">Document No.</th>
                                 <th class="th-left">Document Date</th>
-                                <th class="th-right">Document Amt</th>
+                                <th class="th-right">Amount</th>
                                 <th class="th-right">Collected Amt</th>
                                 <th class="th-right">Outstanding Amt</th>
                             </tr>
@@ -93,6 +96,9 @@
                                     <td class="td-left">{row.primaryCustomerName}</td>
                                     <td class="td-left">{row.secondaryCustomerCode}</td>
                                     <td class="td-left">{row.secondaryCustomerName}</td>
+                                    <td class="td-left">{row.executiveCode}</td>
+                                    <td class="td-left">{row.executiveName}</td>
+                                    <td class="td-left">{row.beatName}</td>
                                     <td class="td-left">{row.documentNumber}</td>
                                     <td class="td-left">{row.formattedDate}</td>
                                     <td class="td-right">{row.formattedDocAmount}</td>
@@ -101,7 +107,7 @@
                                 </tr>
                             </template>
                             <tr class="total-row">
-                                <td colspan="8" class="td-left total-label">Total</td>
+                                <td colspan="11" class="td-left total-label">Total</td>
                                 <td class="td-right total-val">{formattedTotalDocument}</td>
                                 <td class="td-right total-val">{formattedTotalCollected}</td>
                                 <td class="td-right total-val">{formattedTotalOutstanding}</td>

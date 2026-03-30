@@ -54,9 +54,9 @@ export default class OutstandingReport extends LightningElement {
                 let totalOut = 0;
 
                 this.reportData = (result || []).map((item, index) => {
-                    const docAmt = item.documentAmount || 0;
-                    const colAmt = item.collectedAmount || 0;
-                    const outAmt = item.outstandingAmount || 0;
+                    const docAmt = Number(item.documentAmount) || 0;
+                    const colAmt = Number(item.collectedAmount) || 0;
+                    const outAmt = Number(item.outstandingAmount) || 0;
                     totalDoc += docAmt;
                     totalCol += colAmt;
                     totalOut += outAmt;
@@ -105,8 +105,9 @@ export default class OutstandingReport extends LightningElement {
         return [
             'S.No', 'Type', 'Primary Customer SAP Code', 'Primary Customer Name',
             'Secondary Customer Code', 'Secondary Customer Name',
+            'Executive Code', 'Executive Name', 'Beat Name',
             'Document Number', 'Document Date',
-            'Document Amount', 'Collected Amount', 'Outstanding Amount'
+            'Amount', 'Collected Amount', 'Outstanding Amount'
         ];
     }
 
@@ -114,11 +115,12 @@ export default class OutstandingReport extends LightningElement {
         const rows = this.reportData.map(r => [
             r.sno, r.documentType, r.primaryCustomerSapCode, r.primaryCustomerName,
             r.secondaryCustomerCode, r.secondaryCustomerName,
+            r.executiveCode || '', r.executiveName || '', r.beatName || '',
             r.documentNumber, r.documentDate,
-            r.documentAmount || 0, r.collectedAmount || 0, r.outstandingAmount || 0
+            Number(r.documentAmount) || 0, Number(r.collectedAmount) || 0, Number(r.outstandingAmount) || 0
         ]);
         rows.push([
-            '', '', '', '', '', '', '', 'Total',
+            '', '', '', '', '', '', '', '', '', '', 'Total',
             this.totalDocumentAmount, this.totalCollectedAmount, this.totalOutstandingAmount
         ]);
         return rows;
@@ -193,6 +195,9 @@ export default class OutstandingReport extends LightningElement {
                     <td>${r.primaryCustomerName || ''}</td>
                     <td>${r.secondaryCustomerCode || ''}</td>
                     <td>${r.secondaryCustomerName || ''}</td>
+                    <td>${r.executiveCode || ''}</td>
+                    <td>${r.executiveName || ''}</td>
+                    <td>${r.beatName || ''}</td>
                     <td>${r.documentNumber || ''}</td>
                     <td>${r.formattedDate || ''}</td>
                     <td class="num">${r.formattedDocAmount}</td>
@@ -202,7 +207,7 @@ export default class OutstandingReport extends LightningElement {
             });
 
             rowsHtml += `<tr style="background:#dceef5;font-weight:bold;">
-                <td colspan="8">Total</td>
+                <td colspan="11">Total</td>
                 <td class="num">${this.formattedTotalDocument}</td>
                 <td class="num">${this.formattedTotalCollected}</td>
                 <td class="num bold">${this.formattedTotalOutstanding}</td>
@@ -225,8 +230,9 @@ export default class OutstandingReport extends LightningElement {
                                 <th>S.No</th><th>Type</th>
                                 <th>Pri. SAP Code</th><th>Pri. Customer</th>
                                 <th>Sec. Code</th><th>Sec. Customer</th>
+                                <th>Exec. Code</th><th>Exec. Name</th><th>Beat</th>
                                 <th>Doc Number</th><th>Doc Date</th>
-                                <th class="num">Doc Amount</th>
+                                <th class="num">Amount</th>
                                 <th class="num">Collected</th>
                                 <th class="num">Outstanding</th>
                             </tr>
