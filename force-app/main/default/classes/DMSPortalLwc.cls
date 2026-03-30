@@ -3230,6 +3230,9 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String primaryCustomerName;
         @AuraEnabled public String secondaryCustomerCode;
         @AuraEnabled public String secondaryCustomerName;
+        @AuraEnabled public String executiveCode;
+        @AuraEnabled public String executiveName;
+        @AuraEnabled public String beatName;
         @AuraEnabled public String documentNumber;
         @AuraEnabled public Date documentDate;
         @AuraEnabled public Decimal documentAmount;
@@ -3249,6 +3252,59 @@ public without sharing class DMSPortalLwc {
     public static List<OutstandingReportItem> getOutstandingReport(String customerId) {
         List<OutstandingReportItem> result = new List<OutstandingReportItem>();
 
+        // Get the primary customer (Store/Distributor) account ID for this secondary customer
+        Id primaryCustomerId;
+        List<Secondary_Invoice__c> sampleInv = [
+            SELECT Store__c FROM Secondary_Invoice__c
+            WHERE Customer__c = :customerId AND Store__c != null
+            LIMIT 1
+        ];
+        if (!sampleInv.isEmpty()) {
+            primaryCustomerId = sampleInv[0].Store__c;
+        } else {
+            List<Secondary_Debit_Note__c> sampleDn = [
+                SELECT Distributor__c FROM Secondary_Debit_Note__c
+                WHERE Customer__c = :customerId AND Distributor__c != null
+                LIMIT 1
+            ];
+            if (!sampleDn.isEmpty()) {
+                primaryCustomerId = sampleDn[0].Distributor__c;
+            }
+        }
+
+        // Query Executive from Product_Mapping__c
+        String execCode = '';
+        String execName = '';
+        if (primaryCustomerId != null) {
+            List<Product_Mapping__c> pmList = [
+                SELECT Exectuive__r.Employee_Code__c, Exectuive__r.Name
+                FROM Product_Mapping__c
+                WHERE Customer__c = :customerId
+                AND Primary_Customer__c = :primaryCustomerId
+                AND Exectuive__c != null
+                LIMIT 1
+            ];
+            if (!pmList.isEmpty()) {
+                execCode = pmList[0].Exectuive__r.Employee_Code__c;
+                execName = pmList[0].Exectuive__r.Name;
+            }
+        }
+
+        // Query Beat Name from Junction_Beat__c
+        String beatNameVal = '';
+        if (primaryCustomerId != null) {
+            List<Junction_Beat__c> jbList = [
+                SELECT Child_beat__r.Name
+                FROM Junction_Beat__c
+                WHERE Account__c = :customerId
+                AND Child_beat__r.Primary_Customer__c = :primaryCustomerId
+                LIMIT 1
+            ];
+            if (!jbList.isEmpty()) {
+                beatNameVal = jbList[0].Child_beat__r.Name;
+            }
+        }
+
         // Secondary Invoices with outstanding amount
         List<Secondary_Invoice__c> invoices = [
             SELECT Name, Invoice_Date__c, Grand_Total__c, Paid_Invoice_Amount__c, Pending_Amount__c,
@@ -3265,11 +3321,14 @@ public without sharing class DMSPortalLwc {
             item.primaryCustomerName = inv.Store__r != null ? inv.Store__r.Name : '';
             item.secondaryCustomerCode = inv.Customer__r != null ? inv.Customer__r.Customer_Code__c : '';
             item.secondaryCustomerName = inv.Customer__r != null ? inv.Customer__r.Name : '';
+            item.executiveCode = execCode;
+            item.executiveName = execName;
+            item.beatName = beatNameVal;
             item.documentNumber = inv.Name;
             item.documentDate = inv.Invoice_Date__c;
-            item.documentAmount = inv.Grand_Total__c;
-            item.collectedAmount = inv.Paid_Invoice_Amount__c;
-            item.outstandingAmount = inv.Pending_Amount__c;
+            item.documentAmount = inv.Grand_Total__c != null ? inv.Grand_Total__c : 0;
+            item.collectedAmount = inv.Paid_Invoice_Amount__c != null ? inv.Paid_Invoice_Amount__c : 0;
+            item.outstandingAmount = inv.Pending_Amount__c != null ? inv.Pending_Amount__c : 0;
             item.documentType = 'Invoice';
             result.add(item);
         }
@@ -3290,11 +3349,14 @@ public without sharing class DMSPortalLwc {
             item.primaryCustomerName = dn.Distributor__r != null ? dn.Distributor__r.Name : '';
             item.secondaryCustomerCode = dn.Customer__r != null ? dn.Customer__r.Customer_Code__c : '';
             item.secondaryCustomerName = dn.Customer__r != null ? dn.Customer__r.Name : '';
+            item.executiveCode = execCode;
+            item.executiveName = execName;
+            item.beatName = beatNameVal;
             item.documentNumber = dn.Name;
             item.documentDate = dn.Note_Date__c;
-            item.documentAmount = dn.Amount__c;
-            item.collectedAmount = dn.Paid_Amount__c;
-            item.outstandingAmount = dn.Pending_Amount__c;
+            item.documentAmount = dn.Amount__c != null ? dn.Amount__c : 0;
+            item.collectedAmount = dn.Paid_Amount__c != null ? dn.Paid_Amount__c : 0;
+            item.outstandingAmount = dn.Pending_Amount__c != null ? dn.Pending_Amount__c : 0;
             item.documentType = 'Debit Note';
             result.add(item);
         }
