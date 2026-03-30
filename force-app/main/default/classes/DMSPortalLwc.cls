@@ -1469,7 +1469,8 @@ public without sharing class DMSPortalLwc {
         List<Order_Item__c> ordList = [
             SELECT Id, Name, Product__c, Product__r.Name,
             Quantity__c, Unit_Price__c,Tax__c,
-            Tax_Percent__c, Tax_Amount__c, Total_Amount1__c,Secondary_Invoice_Pending_Quantity__c
+            Tax_Percent__c, Tax_Amount__c, Total_Amount1__c,Secondary_Invoice_Pending_Quantity__c,
+            Before_Category_Slab_Unit_Price__c,After_Category_Slab_Unit_Price__c,Before_Scheme_Unit_Price__c,After_Scheme_Unit_Price__c
             FROM Order_Item__c
             WHERE Order__c =: orderId
         ];
@@ -1501,6 +1502,11 @@ public without sharing class DMSPortalLwc {
             Decimal taxAmt = (price * qty * taxPer) / 100;
             Decimal totalAmt = (price * qty) + taxAmt;
             
+            Decimal BeforeCategorySlabUnitPrice = item.Before_Category_Slab_Unit_Price__c;
+            Decimal AfterCategorySlabUnitPrice =  item.After_Category_Slab_Unit_Price__c;
+            Decimal BeforeSchemeUnitPrice = item.Before_Scheme_Unit_Price__c;
+            Decimal AfterSchemeUnitPrice = item.After_Scheme_Unit_Price__c;
+            
             row.put('OrderItemId', item.Id);
             row.put('ItemName', item.Name);
             row.put('ProductId', item.Product__c);
@@ -1510,6 +1516,12 @@ public without sharing class DMSPortalLwc {
             row.put('TaxPercent', taxPer);
             row.put('TaxAmount', taxAmt);
             row.put('TotalAmount', totalAmt);
+            
+            row.put('BeforeCategorySlabUnitPrice', BeforeCategorySlabUnitPrice);
+            row.put('AfterCategorySlabUnitPrice', AfterCategorySlabUnitPrice);
+            row.put('BeforeSchemeUnitPrice', BeforeSchemeUnitPrice);
+            row.put('AfterSchemeUnitPrice', AfterSchemeUnitPrice);
+            
             row.put(
                 'availableQuantity',
                 stockMap.containsKey(item.Product__r.Name)
@@ -2978,5 +2990,236 @@ public without sharing class DMSPortalLwc {
         report.totalAgingAmount = report.totalInvoicePending + report.totalDebitNotePending;
 
         return report;
+    }
+
+    // ==================== Claim Reports ====================
+
+    public class ClaimReportItem {
+        @AuraEnabled public String category;
+        @AuraEnabled public String customerName;
+        @AuraEnabled public String productName;
+        @AuraEnabled public Decimal beforePrice;
+        @AuraEnabled public Decimal afterPrice;
+        @AuraEnabled public Decimal quantity;
+        @AuraEnabled public Decimal claimAmount;
+        @AuraEnabled public Decimal totalAmount;
+        @AuraEnabled public Decimal beforeCategorySlabPrice;
+        @AuraEnabled public Decimal afterCategorySlabPrice;
+        @AuraEnabled public Decimal categorySlabClaimAmount;
+        @AuraEnabled public Decimal beforeSchemePrice;
+        @AuraEnabled public Decimal afterSchemePrice;
+        @AuraEnabled public Decimal schemeClaimAmount;
+        @AuraEnabled public Decimal totalClaimAmount;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getCategorySlabClaimCategorySummary(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c, Before_Category_Slab_Unit_Price__c,
+                   After_Category_Slab_Unit_Price__c, Category_Slab_Claim_Amount__c,
+                   Total_Amount__c, Secondary_Invoice__r.Secondary_Customer_Category__c
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Category_Slab_Claim_Amount__c > 0
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
+            ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.category = item.Secondary_Invoice__r.Secondary_Customer_Category__c;
+            r.productName = item.Product__r.Name;
+            r.beforePrice = item.Before_Category_Slab_Unit_Price__c;
+            r.afterPrice = item.After_Category_Slab_Unit_Price__c;
+            r.quantity = item.Quantity__c;
+            r.claimAmount = item.Category_Slab_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getCategorySlabClaimCategoryCustomerDetail(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c, Before_Category_Slab_Unit_Price__c,
+                   After_Category_Slab_Unit_Price__c, Category_Slab_Claim_Amount__c,
+                   Total_Amount__c, Secondary_Invoice__r.Secondary_Customer_Category__c,
+                   Secondary_Invoice__r.Customer__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Category_Slab_Claim_Amount__c > 0
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
+            ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.category = item.Secondary_Invoice__r.Secondary_Customer_Category__c;
+            r.customerName = item.Secondary_Invoice__r.Customer__r.Name;
+            r.productName = item.Product__r.Name;
+            r.beforePrice = item.Before_Category_Slab_Unit_Price__c;
+            r.afterPrice = item.After_Category_Slab_Unit_Price__c;
+            r.quantity = item.Quantity__c;
+            r.claimAmount = item.Category_Slab_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getSchemeClaimCustomerSummary(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c, Before_Scheme_Unit_Price__c,
+                   After_Scheme_Unit_Price__c, Scheme_Claim_Amount__c,
+                   Total_Amount__c, Secondary_Invoice__r.Customer__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Scheme_Claim_Amount__c > 0
+            ORDER BY Secondary_Invoice__r.Customer__r.Name, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.customerName = item.Secondary_Invoice__r.Customer__r.Name;
+            r.productName = item.Product__r.Name;
+            r.beforePrice = item.Before_Scheme_Unit_Price__c;
+            r.afterPrice = item.After_Scheme_Unit_Price__c;
+            r.quantity = item.Quantity__c;
+            r.claimAmount = item.Scheme_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getCombinedClaimCategoryCustomerSummary(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c,
+                   Before_Category_Slab_Unit_Price__c, After_Category_Slab_Unit_Price__c, Category_Slab_Claim_Amount__c,
+                   Before_Scheme_Unit_Price__c, After_Scheme_Unit_Price__c, Scheme_Claim_Amount__c,
+                   Total_Claim_Amount__c, Total_Amount__c,
+                   Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Category_Slab_Claim_Amount__c > 0
+            AND Scheme_Claim_Amount__c > 0
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
+            ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.category = item.Secondary_Invoice__r.Secondary_Customer_Category__c;
+            r.customerName = item.Secondary_Invoice__r.Customer__r.Name;
+            r.productName = item.Product__r.Name;
+            r.quantity = item.Quantity__c;
+            r.beforeCategorySlabPrice = item.Before_Category_Slab_Unit_Price__c;
+            r.afterCategorySlabPrice = item.After_Category_Slab_Unit_Price__c;
+            r.categorySlabClaimAmount = item.Category_Slab_Claim_Amount__c;
+            r.beforeSchemePrice = item.Before_Scheme_Unit_Price__c;
+            r.afterSchemePrice = item.After_Scheme_Unit_Price__c;
+            r.schemeClaimAmount = item.Scheme_Claim_Amount__c;
+            r.totalClaimAmount = item.Total_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getTotalClaimCategoryCustomerSummary(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c,
+                   Before_Category_Slab_Unit_Price__c, After_Category_Slab_Unit_Price__c, Category_Slab_Claim_Amount__c,
+                   Before_Scheme_Unit_Price__c, After_Scheme_Unit_Price__c, Scheme_Claim_Amount__c,
+                   Total_Claim_Amount__c, Total_Amount__c,
+                   Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND (Category_Slab_Claim_Amount__c > 0 OR Scheme_Claim_Amount__c > 0)
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
+            ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.category = item.Secondary_Invoice__r.Secondary_Customer_Category__c;
+            r.customerName = item.Secondary_Invoice__r.Customer__r.Name;
+            r.productName = item.Product__r.Name;
+            r.quantity = item.Quantity__c;
+            r.beforeCategorySlabPrice = item.Before_Category_Slab_Unit_Price__c;
+            r.afterCategorySlabPrice = item.After_Category_Slab_Unit_Price__c;
+            r.categorySlabClaimAmount = item.Category_Slab_Claim_Amount__c;
+            r.beforeSchemePrice = item.Before_Scheme_Unit_Price__c;
+            r.afterSchemePrice = item.After_Scheme_Unit_Price__c;
+            r.schemeClaimAmount = item.Scheme_Claim_Amount__c;
+            r.totalClaimAmount = item.Total_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
     }
 }

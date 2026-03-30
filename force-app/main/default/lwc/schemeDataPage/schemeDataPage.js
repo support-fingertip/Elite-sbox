@@ -38,7 +38,7 @@ export default class SchemeDataPage extends LightningElement {
         { label: 'Sale Value Discount', value: 'Sale Value Discount' },
         { label: 'Per Quantity Off', value: 'Per Quantity Off' },
     ];
-    // FIX: Per-channel product cache. Key = salesChannel string, Value = Product[] array
+    // Per-channel product cache. Key = salesChannel string, Value = Product[] array
     productCacheByChannel = {};
 
     @wire(getPicklistValues, { recordTypeId: '$schemeObject.data.defaultRecordTypeId', fieldApiName: SCHEME_APPLIES })
@@ -138,6 +138,14 @@ export default class SchemeDataPage extends LightningElement {
         this.getDataOnload(false);
     }
 
+    // ─── Helper: recompute sNo for every row after any add/remove/clone ───
+    _recomputeSerialNumbers() {
+        this.productsToShow = this.productsToShow.map((row, idx) => ({
+            ...row,
+            sNo: idx + 1
+        }));
+    }
+
     getDataOnload(dependPickList) {
         this.isSubPartLoaded = true;
         ALL_DATA({ recordId: this.recordId })
@@ -160,9 +168,6 @@ export default class SchemeDataPage extends LightningElement {
                     this.schemeData = result.scheme;
                     this.buyProData = result.buyPro;
                     if (result.scheme.Scheme_Type__c == 'Product') {
-                        // Cache products under the scheme's sales channel on edit load
-                        // We don't know individual row channels here so just store all products
-                        // Per-row channel cache will be populated on first search per channel
                         this.allProductData = result.allProducts;
                         this.schemeTypeData = this.allProductData;
                     } else {
@@ -212,9 +217,7 @@ export default class SchemeDataPage extends LightningElement {
         this.values.searchValueDta = scheme.Product_Category__c ? scheme.Product_Category__r.Name : null;
 
         const buyPro = this.buyProData;
-        this.productsToShow = buyPro.map(item => {
-            // ─── FIX: Compute correct enable/disable per field
-            // based on the row's own schemeType (not the header schemeType)
+        this.productsToShow = buyPro.map((item, idx) => {
             const rowSchemeType = item.Scheme_Type__c || '';
             const fieldFlags = this.computeFieldFlags(rowSchemeType);
 
@@ -238,10 +241,8 @@ export default class SchemeDataPage extends LightningElement {
                 secondaryCustomerCategory: item.Secondary_Customer_Category__c || '',
                 schemeType: rowSchemeType,
                 isDisableSalesChannel: false,
-                // ─── FIX: schemeType combobox is editable if salesChannel is already set
                 isDisableSchemeType: item.Sales_Channel__c ? false : true,
 
-                // ─── FIX: Use computeFieldFlags so edit mode respects schemeType
                 isBuyQnt: fieldFlags.isBuyQnt,
                 isBuyVal: fieldFlags.isBuyVal,
                 isOfferQnt: fieldFlags.isOfferQnt,
@@ -255,6 +256,9 @@ export default class SchemeDataPage extends LightningElement {
                 Discount: item.Discount__c || 0,
                 SaleValue: item.Sale_Value__c || 0,
                 PerKg: item.Sale_Value_Threshold__c || 0,
+
+                // Serial number
+                sNo: idx + 1,
             };
         });
 
@@ -263,13 +267,11 @@ export default class SchemeDataPage extends LightningElement {
     }
 
     /**
-     * FIX: Central method to compute which fields are enabled/disabled
-     * based purely on schemeType string. Used both in addDataInRows (edit)
-     * and handleProductVal (new/edit change).
+     * Central method to compute which fields are enabled/disabled
+     * based purely on schemeType string.
      * Returns an object of boolean flags — true = DISABLED.
      */
     computeFieldFlags(schemeType) {
-        // Default: everything disabled
         let flags = {
             isBuyQnt: true,
             isBuyVal: true,
@@ -279,14 +281,14 @@ export default class SchemeDataPage extends LightningElement {
         };
 
         if (schemeType === 'Free Quantity') {
-            flags.isBuyQnt = false;  // Free Qty — enabled
-            flags.isMin = false;     // Min — enabled
+            flags.isBuyQnt = false;
+            flags.isMin = false;
         } else if (schemeType === 'Sale Value Discount') {
-            flags.isBuyVal = false;    // Discount % on Sale Value — enabled
-            flags.isOfferQnt = false;  // Threshold — enabled
+            flags.isBuyVal = false;
+            flags.isOfferQnt = false;
         } else if (schemeType === 'Per Quantity Off') {
-            flags.isOfferQnt = false;  // Threshold — enabled
-            flags.isDiscount = false;  // Discount INR Per EA — enabled
+            flags.isOfferQnt = false;
+            flags.isDiscount = false;
         }
 
         return flags;
@@ -314,7 +316,6 @@ export default class SchemeDataPage extends LightningElement {
             isDisableFields: true,
             isValueSearched: false,
             showDataDropDown: [],
-            // All numeric fields disabled until schemeType is selected
             isBuyQnt: true,
             isBuyVal: true,
             isOfferQnt: true,
@@ -327,6 +328,8 @@ export default class SchemeDataPage extends LightningElement {
             Discount: 0,
             SaleValue: 0,
             PerKg: 0,
+            // sNo will be assigned by _recomputeSerialNumbers below
+            sNo: dta.length + 1,
         });
 
         if (this.values.schemeType == 'Product') {
@@ -336,6 +339,7 @@ export default class SchemeDataPage extends LightningElement {
         }
 
         this.productsToShow = dta;
+        this._recomputeSerialNumbers();
     }
 
     handleCloneRow(event) {
@@ -349,6 +353,7 @@ export default class SchemeDataPage extends LightningElement {
         clonedRow.searchValueDta = '';
         this.productsToShow.push(clonedRow);
         this.productsToShow = [...this.productsToShow];
+        this._recomputeSerialNumbers();
     }
 
     handleProductVal(event) {
@@ -360,9 +365,7 @@ export default class SchemeDataPage extends LightningElement {
 
         if (fieldName === 'salesChannel') {
             product.salesChannel = value;
-            // Unlock schemeType dropdown once sales channel is chosen
             product.isDisableSchemeType = false;
-            // Clear the product search on this row since channel changed
             product.searchValueDta = '';
             product.proId = '';
             product.catId = '';
@@ -372,7 +375,7 @@ export default class SchemeDataPage extends LightningElement {
         } else if (fieldName === 'schemeType') {
             product.schemeType = value;
 
-            // ─── FIX 1: Reset all numeric field VALUES to 0 when scheme type changes
+            // Reset all numeric field values to 0 when scheme type changes
             product.buyQuantity = 0;
             product.min = 0;
             product.SaleValue = 0;
@@ -383,7 +386,7 @@ export default class SchemeDataPage extends LightningElement {
             product.offerValue = 0;
             product.offerPercent = 0;
 
-            // ─── FIX 2: Use central computeFieldFlags so both new & edit behave identically
+            // Use central computeFieldFlags so both new & edit behave identically
             const flags = this.computeFieldFlags(value);
             product.isBuyQnt   = flags.isBuyQnt;
             product.isBuyVal   = flags.isBuyVal;
@@ -396,7 +399,7 @@ export default class SchemeDataPage extends LightningElement {
         }
 
         this.productsToShow[index] = product;
-        this.productsToShow = [...this.productsToShow]; // trigger reactivity
+        this.productsToShow = [...this.productsToShow];
     }
 
     handleSearchPro(event) {
@@ -405,13 +408,11 @@ export default class SchemeDataPage extends LightningElement {
         const product = this.productsToShow[index];
         const salesChannel = product.salesChannel;
 
-        // Guard: sales channel must be selected first
         if (!salesChannel) {
             this.genericToastDispatchEvent("Error", "Select Sales Channel first!", "error");
             return;
         }
 
-        // Clear dropdown if search text is empty
         if (!searchText || !searchText.trim()) {
             this.productsToShow[index].isValueSearched = false;
             this.productsToShow[index].showDataDropDown = [];
@@ -419,17 +420,11 @@ export default class SchemeDataPage extends LightningElement {
             return;
         }
 
-        // FIX: Check per-channel cache instead of a single global array.
-        // Each sales channel has its own independent product list.
         if (this.productCacheByChannel[salesChannel] && this.productCacheByChannel[salesChannel].length > 0) {
-            // Cache hit — filter and show immediately
             this.filterAndDisplayProducts(index, searchText, salesChannel);
         } else {
-            // Cache miss — fetch from Apex for this specific sales channel
             PROD_DATA({ salesChannel: salesChannel })
                 .then(data => {
-                    // Store under the channel key so other rows with the same
-                    // channel reuse this result without a second Apex call
                     this.productCacheByChannel[salesChannel] = data.allProducts || [];
                     this.filterAndDisplayProducts(index, searchText, salesChannel);
                 })
@@ -440,7 +435,6 @@ export default class SchemeDataPage extends LightningElement {
         }
     }
 
-    // FIX: Now receives salesChannel so it always filters from the correct channel's cache
     filterAndDisplayProducts(index, searchText, salesChannel) {
         const channelProducts = this.productCacheByChannel[salesChannel] || [];
         const filteredProducts = channelProducts.filter(p =>
@@ -448,7 +442,7 @@ export default class SchemeDataPage extends LightningElement {
         );
         this.productsToShow[index].showDataDropDown = filteredProducts;
         this.productsToShow[index].isValueSearched = filteredProducts.length > 0;
-        this.productsToShow = [...this.productsToShow]; // trigger reactivity
+        this.productsToShow = [...this.productsToShow];
     }
 
     handleSearch(event) {
@@ -638,7 +632,6 @@ export default class SchemeDataPage extends LightningElement {
         this.values.proCatId = event.currentTarget.dataset.id;
         this.values.searchValueDta = event.currentTarget.dataset.name;
         this.isValueSearched = false;
-        // FIX: Pass the row's salesChannel so getProductData fetches the right products
         const salesChannel = index !== undefined && this.productsToShow[index]
             ? this.productsToShow[index].salesChannel
             : this.values.salesChannel;
@@ -675,7 +668,6 @@ export default class SchemeDataPage extends LightningElement {
         this.productsToShow[index].isDisableFields = false;
         this.productsToShow[index].showCrossButton = true;
 
-        // Re-apply field enable logic based on current schemeType
         const schemeType = this.productsToShow[index].schemeType;
         this.handleProductVal({
             target: {
@@ -699,18 +691,16 @@ export default class SchemeDataPage extends LightningElement {
 
         const removeDta = this.productsToShow[index];
 
-        // Remove from array immediately
         this.productsToShow.splice(index, 1);
         this.productsToShow = [...this.productsToShow];
 
-        // FIX: Always check length AFTER splice, regardless of whether
-        // the row is saved or unsaved. This was broken before because
-        // the early `return` on Id == '' prevented this check from running.
+        // Recompute serial numbers after removal
+        this._recomputeSerialNumbers();
+
         if (this.productsToShow.length === 0) {
             this.addRow();
         }
 
-        // Only call deleteRecord if this row was already saved in Salesforce
         if (removeDta && removeDta.Id !== '' && removeDta.Id != null) {
             deleteRecord(removeDta.Id)
                 .then(() => {
@@ -726,15 +716,46 @@ export default class SchemeDataPage extends LightningElement {
     validateFields(i, j) {
         for (let k = i; k <= j; k++) {
             const dta = this.productsToShow[k];
+            const lineNo = dta.sNo || (k + 1);
             const { schemeType } = this.values;
 
             const fieldValidations = [
-                { condition: schemeType === 'Product' && !dta.proId, message: 'Please Select Product' },
-                { condition: schemeType === 'Category' && !dta.catId, message: 'Please Select Category' },
-                { condition: dta.buyQuantity == 0 && dta.min == 0 && dta.SaleValue == 0 && dta.PerKg == 0 && dta.Discount == 0, message: 'Please enter Values' },
-                { condition: dta.buyQuantity == 0 && dta.min != 0, message: 'Please enter Free Quantity' },
-                { condition: dta.buyQuantity != 0 && dta.min == 0, message: 'Please enter Min Value' },
-                { condition: dta.SaleValue != 0 && dta.PerKg == 0, message: 'Please enter Per Kg' },
+                {
+                    condition: !dta.salesChannel,
+                    message: `Line ${lineNo}: Please select Sales Channel`
+                },
+                {
+                    condition: !dta.schemeType,
+                    message: `Line ${lineNo}: Please select Scheme Type`
+                },
+                {
+                    condition: schemeType === 'Product' && !dta.proId,
+                    message: `Line ${lineNo}: Please select Product`
+                },
+                {
+                    condition: schemeType === 'Category' && !dta.catId,
+                    message: `Line ${lineNo}: Please select Category`
+                },
+                {
+                    condition: !dta.secondaryCustomerCategory,
+                    message: `Line ${lineNo}: Please select Secondary Customer Category`
+                },
+                {
+                    condition: dta.buyQuantity == 0 && dta.min == 0 && dta.SaleValue == 0 && dta.PerKg == 0 && dta.Discount == 0,
+                    message: `Line ${lineNo}: Please enter at least one value`
+                },
+                {
+                    condition: dta.buyQuantity == 0 && dta.min != 0,
+                    message: `Line ${lineNo}: Please enter Free Quantity`
+                },
+                {
+                    condition: dta.buyQuantity != 0 && dta.min == 0,
+                    message: `Line ${lineNo}: Please enter Min Value`
+                },
+                {
+                    condition: dta.SaleValue != 0 && dta.PerKg == 0,
+                    message: `Line ${lineNo}: Please enter Threshold value`
+                },
             ];
 
             for (const { condition, message } of fieldValidations) {
@@ -755,15 +776,12 @@ export default class SchemeDataPage extends LightningElement {
         return false;
     }
 
-    // NOTE: getProductData is called from selectObjName (category/product category selection).
-    // It receives the salesChannel from the triggering row via a parameter.
     getProductData(salesChannel) {
         if (this.values.proCatId == '') return;
         if (!salesChannel) {
             console.warn('getProductData called without a salesChannel — skipping fetch');
             return;
         }
-        // If already cached for this channel, skip the Apex call
         if (this.productCacheByChannel[salesChannel] && this.productCacheByChannel[salesChannel].length > 0) {
             this.allProductData = this.productCacheByChannel[salesChannel];
             this.schemeTypeData = this.allProductData;
@@ -772,8 +790,6 @@ export default class SchemeDataPage extends LightningElement {
         this.isSubPartLoaded = true;
         PROD_DATA({ salesChannel: salesChannel })
             .then(data => {
-                // FIX: Store in per-channel cache and also set legacy allProductData
-                // for backward compatibility with other parts of the component
                 this.productCacheByChannel[salesChannel] = data.allProducts || [];
                 this.allProductData = this.productCacheByChannel[salesChannel];
                 this.schemeTypeData = this.allProductData;

@@ -97,6 +97,7 @@
                         <table class="scheme-table">
                             <thead>
                                 <tr>
+                                    <th class="col-xs sno-th">S.No.</th>
                                     <th class="col-sm">Sales Channel</th>
                                     <th class="col-sm">Secondary Customer Category</th>
                                     <th class="col-sm">Scheme Type</th>
@@ -107,13 +108,15 @@
                                     <th class="col-xs">Discount Amount<span class="unit">Per EA</span></th>
                                     <th class="col-md">Threshold <span class="unit">Sale Value Discount – Amount 
                                         <br/> Per Qty Off – Qty</span></th>
-                                  
                                     <th class="col-action">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template for:each={productsToShow} for:item="product" for:index="i">
                                     <tr key={product.id} class="table-row">
+
+                                        <!-- S.No. -->
+                                        <td class="sno-cell">{product.sNo}</td>
 
                                         <td>
                                             <lightning-combobox name="salesChannel" value={product.salesChannel}
@@ -184,6 +187,7 @@
                                                 disabled={product.isBuyVal}>
                                             </lightning-input>
                                         </td>
+
                                         <td>
                                             <lightning-input type="percent" name="Discount"
                                                 value={product.Discount} class="cell-input"
@@ -199,6 +203,7 @@
                                                 disabled={product.isOfferQnt}>
                                             </lightning-input>
                                         </td>
+
                                         <td class="action-cell">
                                             <div class="action-group">
                                                 <button class="icon-btn icon-btn--add" title="Add Row"

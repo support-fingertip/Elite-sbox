@@ -929,6 +929,14 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>SecondaryInvoiceSharingBatch</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryInvoiceSharingHandler</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>SendAccountDocumentsOrgWide</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -6530,6 +6538,16 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>Order_Item__c.Difference_Category_Slab_Unit_Per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Order_Item__c.Difference_Scheme_Unit_per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>Order_Item__c.Discount_Amount__c</field>
         <readable>true</readable>
@@ -7030,6 +7048,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>Order__c.Distributor_with_Code__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>Order__c.Division__c</field>
         <readable>true</readable>
@@ -7257,6 +7280,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Order__c.Sales_Organization__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Order__c.Secondary_Customer_Category__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -9076,6 +9104,16 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Difference_Category_Slab_Unit_Per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Difference_Scheme_Unit_per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Invoice_Item__c.HSN_Code__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -9181,6 +9219,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Invoice__c.Distributor_with_Code__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Invoice__c.Due_Date__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -9227,6 +9270,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Secondary_Invoice__c.Remarks__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Secondary_Customer_Category__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
