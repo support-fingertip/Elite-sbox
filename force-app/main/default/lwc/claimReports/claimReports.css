@@ -205,13 +205,13 @@
     background-color: #02323e;
 }
 
-.grandtotal-label {
+.claim-table .grandtotal-label {
     font-weight: 700;
     color: #ffffff;
     font-size: 14px;
 }
 
-.grandtotal-val {
+.claim-table .grandtotal-val {
     font-weight: 700;
     color: #ffffff;
     font-size: 14px;
