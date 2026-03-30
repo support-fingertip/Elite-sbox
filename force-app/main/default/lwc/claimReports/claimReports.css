@@ -1,5 +1,8 @@
 .orders.layouts {
     padding: 15px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    min-height: 400px;
 }
 
 .report-header {
@@ -56,11 +59,14 @@
     border-radius: 8px;
     padding: 16px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.report-card-select {
     cursor: pointer;
     transition: box-shadow 0.2s, border-color 0.2s;
 }
 
-.report-card:hover {
+.report-card-select:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     border-color: #02323e;
 }
@@ -214,7 +220,29 @@
 /* Empty State */
 .empty-state {
     text-align: center;
-    padding: 40px;
-    color: #666;
+    padding: 60px 40px;
+    background: #f8f9fa;
+    border: 1px solid #e1e5eb;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #3e3e3c;
+    margin: 0 0 8px 0;
+}
+
+.empty-state-message {
     font-size: 14px;
+    color: #706e6b;
+    margin: 0;
 }
