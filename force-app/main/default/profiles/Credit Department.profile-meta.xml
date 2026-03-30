@@ -297,6 +297,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>DMSPortalLwcTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>DailyLogNotification</apexClass>
         <enabled>true</enabled>
     </classAccesses>
