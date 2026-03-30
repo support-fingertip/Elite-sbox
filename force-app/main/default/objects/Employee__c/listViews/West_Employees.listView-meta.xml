@@ -16,9 +16,9 @@
     <columns>Category__c</columns>
     <filterScope>Everything</filterScope>
     <filters>
-        <field>NAME</field>
-        <operation>contains</operation>
-        <value>WEST</value>
+        <field>Sales_Channel__c</field>
+        <operation>includes</operation>
+        <value>TN</value>
     </filters>
     <label>West Employees</label>
 </ListView>
