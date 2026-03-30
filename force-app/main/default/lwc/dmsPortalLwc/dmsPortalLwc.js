@@ -76,7 +76,7 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Users', label: 'Users' },
         { id: 'Stock Adjustment', label: 'Stock Adjustment' },
         { id: 'Product Gallery', label: 'Product Gallery' },
-        { id: 'Claim Reports', label: 'Claim Reports' }
+       /*{ id: 'Claim Reports', label: 'Claim Reports' }**/
     ];
     @track showSecondaryReceipt = false;
 

@@ -297,6 +297,10 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>DMSPortalLwcTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>DailyLogNotification</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -927,6 +931,14 @@
     <classAccesses>
         <apexClass>SecondaryCustomerTransferBatchProcessor</apexClass>
         <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryInvoiceSharingBatch</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryInvoiceSharingHandler</apexClass>
+        <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SendAccountDocumentsOrgWide</apexClass>
@@ -6531,6 +6543,16 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Order_Item__c.Difference_Category_Slab_Unit_Per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Order_Item__c.Difference_Scheme_Unit_per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Order_Item__c.Discount_Amount__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -9082,6 +9104,16 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice_Item__c.Category_Slab_Claim_Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Difference_Category_Slab_Unit_Per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Difference_Scheme_Unit_per_EA__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
