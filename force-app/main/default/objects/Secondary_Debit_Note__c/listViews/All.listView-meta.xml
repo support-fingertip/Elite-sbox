@@ -3,6 +3,7 @@
     <fullName>All</fullName>
     <columns>NAME</columns>
     <columns>Customer__c</columns>
+    <columns>Distributor__c</columns>
     <columns>Note_Date__c</columns>
     <columns>Amount__c</columns>
     <columns>Status__c</columns>

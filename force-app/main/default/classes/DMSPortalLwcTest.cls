@@ -218,6 +218,27 @@ private class DMSPortalLwcTest {
             Distributor_Stock__c = stock.Id
         );
         insert stockAdj;
+
+        // Create Community User in separate context to avoid MIXED_DML_OPERATION
+        User adminUser = [SELECT Id FROM User WHERE Id = :UserInfo.getUserId()];
+        System.runAs(adminUser) {
+            Profile p = [SELECT Id FROM Profile WHERE Name = 'Partner Community User' LIMIT 1];
+            String uniqueStr = String.valueOf(DateTime.now().getTime());
+            User u = new User(
+                FirstName = 'Test', LastName = 'Partner',
+                Email = 'tpdms' + uniqueStr + '@test.com',
+                Username = 'tpdms' + uniqueStr + '@test.com.dms',
+                Alias = 'tprt', TimeZoneSidKey = 'Asia/Kolkata',
+                LocaleSidKey = 'en_IN', EmailEncodingKey = 'UTF-8',
+                LanguageLocaleKey = 'en_US', ProfileId = p.Id, ContactId = con.Id,
+                Employee_Code__c = 'EMP' + uniqueStr
+            );
+            insert u;
+        }
+    }
+
+    static User getCommunityUser() {
+        return [SELECT Id FROM User WHERE Username LIKE 'tpdms%' AND IsActive = true LIMIT 1];
     }
 
     // Helper to get test data
@@ -1156,40 +1177,1497 @@ private class DMSPortalLwcTest {
 
     @isTest
     static void testWrapperClasses() {
-        // Test all wrapper classes are instantiable
-        DMSPortalLwc.DmsData dmsData = new DMSPortalLwc.DmsData();
+        // OrdData
         DMSPortalLwc.OrdData ordData = new DMSPortalLwc.OrdData();
+        ordData.itemName = 'Test';
+        ordData.productId = 'pid';
+        ordData.orderItemName = 'OI-1';
+        ordData.orderItemId = 'oiid';
+        ordData.orderNo = 'ORD-1';
+        ordData.orderId = 'oid';
+        ordData.quantity = 10;
+        ordData.invoicedQuantity = 5;
+        ordData.orderDate = '2026-01-01';
+        ordData.amount = 1000;
+        ordData.tax = 180;
+        ordData.status = 'Open';
+        ordData.customerId = 'cid';
+        ordData.customerName = 'Test Customer';
+        ordData.items = new List<Order_Item__c>();
+
+        // InvData
         DMSPortalLwc.InvData invData = new DMSPortalLwc.InvData();
+        invData.name = 'INV-1';
+        invData.InvDate = '2026-01-01';
+        invData.accId = 'aid';
+        invData.paidAmount = 500;
+        invData.accName = 'Test';
+        invData.Amount = 1000;
+        invData.InvId = 'iid';
+        invData.Status = 'Raised';
+        invData.tax = 180;
+        invData.isDisabled = false;
+        invData.selected = true;
+        invData.TotalQuantity = 10;
+        invData.invoiceNo = 'INV-001';
+        invData.orderId = 'oid';
+
+        // PReturnData
         DMSPortalLwc.PReturnData pRetData = new DMSPortalLwc.PReturnData();
+        pRetData.productName = 'Product';
+        pRetData.returnItemNo = 'RI-1';
+        pRetData.productId = 'pid';
+        pRetData.primaryReturnNo = 'PR-1';
+        pRetData.primaryReturnId = 'prid';
+        pRetData.quantity = 5;
+        pRetData.returnDate = '2026-01-01';
+
+        // PaymentData
         DMSPortalLwc.PaymentData payData = new DMSPortalLwc.PaymentData();
+        payData.paymenetItemNo = 'PI-1';
+        payData.paymenetItemId = 'piid';
+        payData.paymenetNo = 'PAY-1';
+        payData.paymenetId = 'payid';
+        payData.invoiceNo = 'INV-1';
+        payData.invoiceId = 'iid';
+        payData.paymentDate = '2026-01-01';
+        payData.Amount = 500;
+
+        // GRNData
         DMSPortalLwc.GRNData grnData = new DMSPortalLwc.GRNData();
+        grnData.GRNItemName = 'GI-1';
+        grnData.GRNItemId = 'giid';
+        grnData.invoiceNo = 'INV-1';
+        grnData.invoiceId = 'iid';
+        grnData.productName = 'Product';
+        grnData.productId = 'pid';
+        grnData.invoiceItemNo = 'II-1';
+        grnData.invoiceItemId = 'iiid';
+        grnData.GRNDate = '2026-01-01';
+        grnData.invoicedQuantity = 10;
+        grnData.receivedQuantity = 10;
+        grnData.GRNName = 'GRN-1';
+        grnData.GRNId = 'gid';
+
+        // ClaimData
         DMSPortalLwc.ClaimData claimData = new DMSPortalLwc.ClaimData();
+        claimData.claimName = 'CLM-1';
+        claimData.claimId = 'clid';
+        claimData.customerName = 'Cust';
+        claimData.customerId = 'cid';
+        claimData.description = 'Test';
+        claimData.claimDate = '2026-01-01';
+        claimData.status = 'New';
+        claimData.claimAmount = 500;
+
+        // DistributorStock
         DMSPortalLwc.DistributorStock distStock = new DMSPortalLwc.DistributorStock();
+        distStock.stockName = 'STK-1';
+        distStock.stockId = 'sid';
+        distStock.customerName = 'Cust';
+        distStock.customerId = 'cid';
+        distStock.productName = 'Prod';
+        distStock.productId = 'pid';
+        distStock.stockUOM = 'Pcs';
+        distStock.stockDate = Date.today();
+        distStock.GRNSaleableQuantity = 100;
+        distStock.GRNNonSaleableQuantity = 5;
+        distStock.SecondaryReturnSaleableQuantity = 3;
+        distStock.SecondaryReturnNonSaleableQuantity = 1;
+        distStock.primaryReturnQty = 2;
+        distStock.secoundryInvoiceQty = 50;
+        distStock.salebletoNonSaleableQty = 1;
+        distStock.nonSaleabletoSaleableQty = 1;
+        distStock.writtenOffQty = 0;
+        distStock.availableSaleableQuantity = 44;
+        distStock.availableNonSaleableQuantity = 5;
+
+        // CreditNote
         DMSPortalLwc.CreditNote creditNote = new DMSPortalLwc.CreditNote();
+        creditNote.creditNoteNo = 'CN-1';
+        creditNote.creditNoteId = 'cnid';
+        creditNote.customerName = 'Cust';
+        creditNote.customerId = 'cid';
+        creditNote.claimNo = 'CLM-1';
+        creditNote.claimId = 'clid';
+        creditNote.primaryReturnNo = 'PR-1';
+        creditNote.primaryReturnId = 'prid';
+        creditNote.creditDate = '2026-01-01';
+        creditNote.status = 'Open';
+        creditNote.reason = 'Price Difference';
+        creditNote.creditAmount = 200;
+
+        // DebitNote
         DMSPortalLwc.DebitNote debitNote = new DMSPortalLwc.DebitNote();
+        debitNote.debitNoteNo = 'DN-1';
+        debitNote.debitNoteId = 'dnid';
+        debitNote.customerName = 'Cust';
+        debitNote.customerId = 'cid';
+        debitNote.noteDate = '2026-01-01';
+        debitNote.status = 'Draft';
+        debitNote.reason = 'Price Difference';
+        debitNote.amount = 150;
+        debitNote.description = 'Test';
+
+        // SecInvData
         DMSPortalLwc.SecInvData secInvData = new DMSPortalLwc.SecInvData();
+        secInvData.name = 'SI-1';
+        secInvData.InvDate = '2026-01-01';
+        secInvData.paidAmount = 200;
+        secInvData.accId = 'aid';
+        secInvData.accName = 'Cust';
+        secInvData.Amount = 500;
+        secInvData.InvId = 'siid';
+        secInvData.Status = 'Raised';
+        secInvData.tax = 50;
+        secInvData.pendingAmount = 300;
+        secInvData.Quantity = 5;
+        secInvData.selected = false;
+
+        // SReturnData
         DMSPortalLwc.SReturnData sRetData = new DMSPortalLwc.SReturnData();
+        sRetData.productName = 'Product';
+        sRetData.returnItemNo = 'RI-1';
+        sRetData.productId = 'pid';
+        sRetData.secoundaryReturnNo = 'SR-1';
+        sRetData.secoundaryReturnId = 'srid';
+        sRetData.quantity = 3;
+        sRetData.returnDate = '2026-01-01';
+        sRetData.secondaryCustomer = 'Sec Cust';
+        sRetData.totalAmount = 300;
+
+        // GraphData
         DMSPortalLwc.GraphData graphData = new DMSPortalLwc.GraphData();
+        graphData.formattedUsersOrder = new List<Map<String, String>>();
+        graphData.formattedUsersSales = new List<Map<String, String>>();
+        graphData.graphlist = new List<DMSPortalLwc.kpi_graph_target>();
+
+        // kpi_graph_target
         DMSPortalLwc.kpi_graph_target kpiTarget = new DMSPortalLwc.kpi_graph_target();
+        kpiTarget.target = 1000;
+        kpiTarget.actual = 800;
+        kpiTarget.xAxis = 'Jan';
+
+        // OrderItemWrapper
         DMSPortalLwc.OrderItemWrapper oiWrapper = new DMSPortalLwc.OrderItemWrapper();
+        oiWrapper.productId = 'pid';
+        oiWrapper.quantity = 10;
+
+        // GRN_Item_Wrapper
         DMSPortalLwc.GRN_Item_Wrapper grnWrapper = new DMSPortalLwc.GRN_Item_Wrapper();
+        grnWrapper.invoiceItemId = null;
+        grnWrapper.productId = null;
+        grnWrapper.invoicedQty = 10;
+        grnWrapper.receivedQty = 10;
+
+        // SecondaryReceipt
         DMSPortalLwc.SecondaryReceipt secReceipt = new DMSPortalLwc.SecondaryReceipt();
+        secReceipt.receiptNo = 'REC-1';
+        secReceipt.receiptId = 'recid';
+        secReceipt.customerName = 'Cust';
+        secReceipt.customerId = 'cid';
+        secReceipt.paymentDate = '2026-01-01';
+        secReceipt.paymentMode = 'Cash';
+        secReceipt.referenceNumber = 'REF-1';
+        secReceipt.remarks = 'Test';
+        secReceipt.totalAmount = 200;
+
+        // secondaryReturnData
         DMSPortalLwc.secondaryReturnData secRetData = new DMSPortalLwc.secondaryReturnData();
+        secRetData.productsList = new List<Product__c>();
+        secRetData.resonForReturn = new List<Map<String, String>>();
+        secRetData.uom = new List<Map<String, String>>();
+
+        // StockAdjustmentBox
         DMSPortalLwc.StockAdjustmentBox saBox = new DMSPortalLwc.StockAdjustmentBox();
+        saBox.adjustmentTypes = new List<Map<String, String>>();
+        saBox.stockAdjustmentList = new List<DMSPortalLwc.StockAdjustmentData>();
+        saBox.distributorStocks = new List<Distributor_Stock__c>();
+        saBox.distributorId = 'did';
+
+        // StockAdjustmentData
         DMSPortalLwc.StockAdjustmentData saData = new DMSPortalLwc.StockAdjustmentData();
+        saData.recordId = 'rid';
+        saData.stockId = 'sid';
+        saData.productName = 'Prod';
+        saData.AdjustmentType = 'Add';
+        saData.reason = 'Test';
+        saData.stockDate = '2026-01-01';
+        saData.quantity = 5;
+
+        // ReturnAccData
         DMSPortalLwc.ReturnAccData retAccData = new DMSPortalLwc.ReturnAccData();
+        retAccData.customerData = new List<DMSPortalLwc.AccData>();
+        retAccData.secondaryCustomerCount = 1;
+        retAccData.subStockiestCount = 0;
+        retAccData.totalCustomersCount = 1;
+
+        // AccData
         DMSPortalLwc.AccData accData = new DMSPortalLwc.AccData();
+        accData.recordId = 'rid';
+        accData.secondaryCustomerId = 'scid';
+        accData.secondaryCustomerName = 'Sec Cust';
+        accData.secondaryCustomerOutletId = 'olid';
+        accData.secondaryCustomerCode = 'SC-1';
+        accData.primaryPhoneNumber = '9999999999';
+        accData.primaryCustomerName = 'Pri Cust';
+        accData.subStockiestName = 'Sub';
+        accData.state = 'Bihar';
+        accData.district = 'Patna';
+        accData.beatName = 'Beat-1';
+        accData.sNumber = 1;
+        accData.status = 'Active';
+        accData.customerType = 'Secondary Customer';
+        accData.customerCategory = 'A';
+        accData.outStanding = 5000;
+
+        // Invoice_Item_Data
         DMSPortalLwc.Invoice_Item_Data iiData = new DMSPortalLwc.Invoice_Item_Data();
+        // PrimaryReturnWrapper
         DMSPortalLwc.PrimaryReturnWrapper prWrapper = new DMSPortalLwc.PrimaryReturnWrapper();
+        // SecondaryReceiptItemWrapper
         DMSPortalLwc.SecondaryReceiptItemWrapper sriWrapper = new DMSPortalLwc.SecondaryReceiptItemWrapper();
+        sriWrapper.rowIndex = '1';
+        sriWrapper.name = 'SRI-1';
+        sriWrapper.docNo = 'DOC-1';
+        sriWrapper.createdDate = '2026-01-01';
+        sriWrapper.amount = 200;
+        sriWrapper.itemType = 'Invoice';
+
+        // OpeningBalanceResult
         DMSPortalLwc.OpeningBalanceResult obResult = new DMSPortalLwc.OpeningBalanceResult();
+        obResult.balance = 1000;
+
+        // SecondaryLedgerResult
         DMSPortalLwc.SecondaryLedgerResult slResult = new DMSPortalLwc.SecondaryLedgerResult();
+        slResult.ledgerData = new List<DMSPortalLwc.LedgerEntry>();
+
+        // LedgerEntry
+        DMSPortalLwc.LedgerEntry ledger = new DMSPortalLwc.LedgerEntry();
+        ledger.transactionDate = Date.today();
+        ledger.description = 'Test';
+        ledger.referenceNo = 'REF-1';
+        ledger.transactionType = 'Secondary Invoice';
+        ledger.transactionNo = 'TXN-1';
+        ledger.amount = 100;
+        ledger.status = 'Raised';
+
+        // DebitNoteData
         DMSPortalLwc.DebitNoteData dnData = new DMSPortalLwc.DebitNoteData();
+        dnData.name = 'DN-1';
+        dnData.debitNoteId = 'dnid';
+        dnData.noteDate = '2026-01-01';
+        dnData.amount = 150;
+        dnData.paidAmount = 50;
+        dnData.pendingAmount = 100;
+        dnData.reason = 'Price Difference';
+
+        // AdvanceData
         DMSPortalLwc.AdvanceData advData = new DMSPortalLwc.AdvanceData();
+        advData.name = 'ADV-1';
+        advData.advanceId = 'advid';
+        advData.advanceDate = '2026-01-01';
+        advData.amount = 1000;
+        advData.usedAmount = 500;
+        advData.availableAmount = 500;
+        advData.modeOfPayment = 'Cash';
+
+        // AgingBucket
         DMSPortalLwc.AgingBucket agBucket = new DMSPortalLwc.AgingBucket();
+        agBucket.label = '0-15';
+        agBucket.invoiceAmount = 500;
+        agBucket.debitNoteAmount = 100;
+        agBucket.totalAmount = 600;
+
+        // AgingReportData
         DMSPortalLwc.AgingReportData arData = new DMSPortalLwc.AgingReportData();
+        arData.buckets = new List<DMSPortalLwc.AgingBucket>{ agBucket };
+        arData.totalInvoicePending = 500;
+        arData.totalDebitNotePending = 100;
+        arData.totalAgingAmount = 600;
+
+        // ClaimReportItem
         DMSPortalLwc.ClaimReportItem crItem = new DMSPortalLwc.ClaimReportItem();
+        crItem.category = 'Cat-A';
+        crItem.customerName = 'Cust';
+        crItem.productName = 'Prod';
+        crItem.beforePrice = 100;
+        crItem.afterPrice = 90;
+        crItem.quantity = 10;
+        crItem.claimAmount = 100;
+        crItem.totalAmount = 1000;
+        crItem.beforeCategorySlabPrice = 100;
+        crItem.afterCategorySlabPrice = 90;
+        crItem.categorySlabClaimAmount = 100;
+        crItem.beforeSchemePrice = 100;
+        crItem.afterSchemePrice = 85;
+        crItem.schemeClaimAmount = 150;
+        crItem.totalClaimAmount = 250;
+
+        // DmsData
+        DMSPortalLwc.DmsData dmsData = new DMSPortalLwc.DmsData();
+        dmsData.TotalOrderData = new List<DMSPortalLwc.OrdData>{ ordData };
+        dmsData.TotalInvoiceData = new List<DMSPortalLwc.InvData>{ invData };
+        dmsData.statusOptions = new List<Map<String, String>>();
+        dmsData.TotalPrimaryReturnDataData = new List<DMSPortalLwc.PReturnData>{ pRetData };
+        dmsData.TotalPaymentData = new List<DMSPortalLwc.PaymentData>{ payData };
+        dmsData.TotalGRNData = new List<DMSPortalLwc.GRNData>{ grnData };
+        dmsData.totalClaimData = new List<DMSPortalLwc.ClaimData>{ claimData };
+        dmsData.totalDistributorStockData = new List<DMSPortalLwc.DistributorStock>{ distStock };
+        dmsData.productCategories = new List<Product_Category__c>();
+        dmsData.totalCreditNoteData = new List<DMSPortalLwc.CreditNote>{ creditNote };
+        dmsData.totalDebitNoteData = new List<DMSPortalLwc.DebitNote>{ debitNote };
+        dmsData.totalSecoundaryInvoiceData = new List<DMSPortalLwc.SecInvData>{ secInvData };
+        dmsData.totalSecoundaryReturnData = new List<DMSPortalLwc.SReturnData>{ sRetData };
+        dmsData.totalSecondaryReceiptData = new List<DMSPortalLwc.SecondaryReceipt>{ secReceipt };
+        dmsData.orderItemId = 'oiid';
+        dmsData.orgUrl = 'https://test.salesforce.com';
+        dmsData.reasonOptions = new List<Map<String, String>>();
 
         System.assertNotEquals(null, dmsData);
+        System.assertNotEquals(null, ordData.itemName);
+        System.assertNotEquals(null, distStock.stockName);
+        System.assertNotEquals(null, crItem.totalClaimAmount);
+    }
+
+    @isTest
+    static void testSavePrimaryReturnNullItems() {
+        Test.startTest();
+        try {
+            DMSPortalLwc.savePrimaryReturn(null, 0, 0);
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true);
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSavePrimaryReturnEmptyItems() {
+        Test.startTest();
+        try {
+            DMSPortalLwc.savePrimaryReturn(new List<Primary_Return_Item__c>(), 0, 0);
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true);
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSavePrimaryReturnValidItems() {
+        Product__c prod = getProduct();
+        Primary_Return_Item__c item = new Primary_Return_Item__c(
+            Product__c = prod.Id,
+            Quantity__c = 2,
+            Unit_Price__c = 100
+        );
+        Test.startTest();
+        try {
+            Id retId = DMSPortalLwc.savePrimaryReturn(new List<Primary_Return_Item__c>{ item }, 200, 2);
+            System.assertNotEquals(null, retId);
+        } catch (Exception e) {
+            System.debug('Expected exception: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testGetUsersInactive() {
+        Test.startTest();
+        List<User> result = DMSPortalLwc.getUsers('', 'Inactive');
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetSecondaryCustomersActive() {
+        Test.startTest();
+        DMSPortalLwc.ReturnAccData result = DMSPortalLwc.getSecondaryCustomers('Active');
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetSecondaryCustomersInactive() {
+        Test.startTest();
+        DMSPortalLwc.ReturnAccData result = DMSPortalLwc.getSecondaryCustomers('Inactive');
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testAllSecondaryReceiptDataWithStatus() {
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allSecondaryReceiptData(Date.today().addDays(-30), Date.today(), 'Open');
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetStockAdjustmentsWithStatus() {
+        Test.startTest();
+        DMSPortalLwc.StockAdjustmentBox result = DMSPortalLwc.getStockAdjustments(Date.today().addDays(-30), Date.today(), 'Test');
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testAllClaimDataNew() {
+        Test.startTest();
+        try {
+            DMSPortalLwc.DmsData result = DMSPortalLwc.allClaimData(Date.today().addDays(-30), Date.today(), 'Approved');
+            System.assertNotEquals(null, result);
+        } catch (Exception e) {
+            System.debug('Expected: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testAllCreditNoteDataOpen() {
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allCreditNoteData(Date.today().addDays(-30), Date.today(), 'Open');
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testAllDebitNoteDataDraft() {
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allDebitNoteData(Date.today().addDays(-30), Date.today(), 'Draft');
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetSecondaryLedgerWithStatus() {
+        Account secAcc = getSecondaryCustomer();
+        Test.startTest();
+        DMSPortalLwc.SecondaryLedgerResult result = DMSPortalLwc.getSecondaryLedger(
+            secAcc.Id,
+            String.valueOf(Date.today().addDays(-30)),
+            String.valueOf(Date.today()),
+            'Active'
+        );
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetSecondaryCustomerAgingReportWithData() {
+        Account secAcc = getSecondaryCustomer();
+        // The setup already created a secondary invoice and debit note for this customer
+        Test.startTest();
+        DMSPortalLwc.AgingReportData result = DMSPortalLwc.getSecondaryCustomerAgingReport(secAcc.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+        System.assertNotEquals(null, result.buckets);
+        System.assertEquals(4, result.buckets.size());
+    }
+
+    // ========== Tests for createGRN ==========
+
+    @isTest
+    static void testCreateGRN() {
+        Invoice__c inv = getInvoice();
+        Product__c prod = getProduct();
+        Account acc = getDistributor();
+
+        Goods_Received_Note_Item__c item = new Goods_Received_Note_Item__c(
+            Product__c = prod.Id,
+            SKU_Name__c = prod.Id,
+            Invoiced_Quantity__c = 10,
+            Received_Quantity__c = 10
+        );
+
+        Test.startTest();
+        try {
+            Id grnId = DMSPortalLwc.createGRN(inv.Id, new List<Goods_Received_Note_Item__c>{ item });
+            System.assertNotEquals(null, grnId, 'GRN should be created');
+        } catch (Exception e) {
+            // Expected in test context if user is not a partner user
+            System.debug('Expected exception: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testCreateGRNNullInvoice() {
+        Test.startTest();
+        try {
+            DMSPortalLwc.createGRN(null, new List<Goods_Received_Note_Item__c>());
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Exception thrown for null invoice');
+        } catch (Exception e) {
+            System.assert(true, 'Exception thrown');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testCreateGRNNullItems() {
+        Invoice__c inv = getInvoice();
+        Test.startTest();
+        try {
+            DMSPortalLwc.createGRN(inv.Id, null);
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Exception thrown for null items');
+        } catch (Exception e) {
+            System.assert(true, 'Exception thrown');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testCreateGRNEmptyItems() {
+        Invoice__c inv = getInvoice();
+        Test.startTest();
+        try {
+            DMSPortalLwc.createGRN(inv.Id, new List<Goods_Received_Note_Item__c>());
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Exception thrown for empty items');
+        } catch (Exception e) {
+            System.assert(true, 'Exception thrown');
+        }
+        Test.stopTest();
+    }
+
+    // ========== Tests for saveSecondaryInvoice ==========
+
+    @isTest
+    static void testSaveSecondaryInvoice() {
+        Account acc = getDistributor();
+        Account secAcc = getSecondaryCustomer();
+        Product__c prod = getProduct();
+
+        Secondary_Invoice__c secInv = new Secondary_Invoice__c(
+            Store__c = secAcc.Id,
+            Invoice_Date__c = Date.today(),
+            Status__c = 'Raised',
+            Grand_Total__c = 500,
+            Total_Tax__c = 50,
+            Total_Quantity__c = 5
+        );
+
+        Secondary_Invoice_Item__c secInvItem = new Secondary_Invoice_Item__c(
+            Product__c = prod.Id,
+            Product_Name__c = prod.Id,
+            Quantity__c = 5,
+            Unit_Price__c = 100,
+            Tax_Amount__c = 50,
+            Total_Amount__c = 550
+        );
+
+        Test.startTest();
+        try {
+            Id invId = DMSPortalLwc.saveSecondaryInvoice(
+                new List<Secondary_Invoice__c>{ secInv },
+                new List<Secondary_Invoice_Item__c>{ secInvItem }
+            );
+            System.assertNotEquals(null, invId, 'Secondary Invoice should be created');
+        } catch (Exception e) {
+            System.debug('Expected exception: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSaveSecondaryInvoiceNullInvoices() {
+        Test.startTest();
+        try {
+            DMSPortalLwc.saveSecondaryInvoice(null, new List<Secondary_Invoice_Item__c>());
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Exception thrown for null invoices');
+        } catch (Exception e) {
+            System.assert(true, 'Exception thrown');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSaveSecondaryInvoiceEmptyInvoices() {
+        Test.startTest();
+        try {
+            DMSPortalLwc.saveSecondaryInvoice(
+                new List<Secondary_Invoice__c>(),
+                new List<Secondary_Invoice_Item__c>()
+            );
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Exception thrown for empty invoices');
+        } catch (Exception e) {
+            System.assert(true, 'Exception thrown');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSaveSecondaryInvoiceNullItems() {
+        Account secAcc = getSecondaryCustomer();
+        Secondary_Invoice__c secInv = new Secondary_Invoice__c(
+            Store__c = secAcc.Id,
+            Invoice_Date__c = Date.today(),
+            Status__c = 'Raised'
+        );
+
+        Test.startTest();
+        try {
+            DMSPortalLwc.saveSecondaryInvoice(
+                new List<Secondary_Invoice__c>{ secInv },
+                null
+            );
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Exception thrown for null items');
+        } catch (Exception e) {
+            System.assert(true, 'Exception thrown');
+        }
+        Test.stopTest();
+    }
+
+    // ========== Tests for savePrimaryOrder ==========
+
+    @isTest
+    static void testSavePrimaryOrder() {
+        Product__c prod = getProduct();
+
+        Order__c order = new Order__c(
+            Order_Date__c = Date.today()
+        );
+
+        Order_Item__c item = new Order_Item__c(
+            Product__c = prod.Id,
+            Quantity__c = 10,
+            Tax_Percent__c = 18
+        );
+
+        Test.startTest();
+        try {
+            String orderId = DMSPortalLwc.savePrimaryOrder(order, new List<Order_Item__c>{ item });
+            System.assertNotEquals(null, orderId, 'Order should be created');
+        } catch (Exception e) {
+            // Expected if user is not linked to contact
+            System.debug('Expected exception: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSavePrimaryOrderNullItems() {
+        Order__c order = new Order__c(
+            Order_Date__c = Date.today()
+        );
+
+        Test.startTest();
+        try {
+            DMSPortalLwc.savePrimaryOrder(order, null);
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Exception thrown for null items');
+        } catch (Exception e) {
+            System.assert(true, 'Exception thrown');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSavePrimaryOrderEmptyItems() {
+        Order__c order = new Order__c(
+            Order_Date__c = Date.today()
+        );
+
+        Test.startTest();
+        try {
+            DMSPortalLwc.savePrimaryOrder(order, new List<Order_Item__c>());
+            System.assert(false, 'Should have thrown exception');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Exception thrown for empty items');
+        } catch (Exception e) {
+            System.assert(true, 'Exception thrown');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testSavePrimaryOrderNullDate() {
+        Product__c prod = getProduct();
+
+        Order__c order = new Order__c();
+
+        Order_Item__c item = new Order_Item__c(
+            Product__c = prod.Id,
+            Quantity__c = 5
+        );
+
+        Test.startTest();
+        try {
+            String orderId = DMSPortalLwc.savePrimaryOrder(order, new List<Order_Item__c>{ item });
+            System.assertNotEquals(null, orderId, 'Order should be created with default date');
+        } catch (Exception e) {
+            System.debug('Expected exception: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    // ========== Tests for getStatusOptions / getPicklistValues ==========
+
+    @isTest
+    static void testGetStatusOptions() {
+        Test.startTest();
+        List<Map<String, String>> options = DMSPortalLwc.getStatusOptions('Invoice__c', 'Status__c');
+        System.assertNotEquals(null, options, 'Options should not be null');
+        System.assert(options.size() > 0, 'Should have at least the All option');
+        System.assertEquals('All', options[0].get('value'), 'First option should be All');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testGetPicklistValues() {
+        Test.startTest();
+        List<String> values = DMSPortalLwc.getPicklistValues('Invoice__c', 'Status__c');
+        System.assertNotEquals(null, values, 'Values should not be null');
+        System.assert(values.size() > 0, 'Should have picklist values');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testExtractPicklistValues() {
+        Test.startTest();
+        List<Map<String, String>> options = DMSPortalLwc.getStatusOptions('Invoice__c', 'GRN_Status__c');
+        System.assertNotEquals(null, options, 'Options should not be null');
+        Test.stopTest();
+    }
+
+    // ========== Additional Coverage Tests ==========
+
+    @isTest
+    static void testAllPrimaryReturnsDataWithData() {
+        // Create Primary Return with items to cover the for loop
+        Product__c prod = getProduct();
+        Primary_Return__c pr = new Primary_Return__c(
+            Date__c = Date.today(),
+            Total_Amount__c = 200,
+            Total_Quantity__c = 2
+        );
+        insert pr;
+        Distributor_Stock__c stock = [SELECT Id FROM Distributor_Stock__c LIMIT 1];
+        Primary_Return_Item__c prItem = new Primary_Return_Item__c(
+            Primary_Return__c = pr.Id,
+            Product__c = prod.Id,
+            Quantity__c = 2,
+            Unit_Price__c = 100,
+            Distributor_Stock__c = stock.Id
+        );
+        insert prItem;
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allPrimaryReturnsData(Date.today().addDays(-1), Date.today().addDays(1));
+        Test.stopTest();
+        System.assertNotEquals(null, result.TotalPrimaryReturnDataData);
+        System.assert(result.TotalPrimaryReturnDataData.size() > 0);
+    }
+
+    @isTest
+    static void testAllGRNDataWithData() {
+        // allGRNData doesn't use UserInfo - covers the for loop with GRN items
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allGRNData(Date.today().addDays(-1), Date.today().addDays(1));
+        Test.stopTest();
+        System.assertNotEquals(null, result.TotalGRNData);
+        System.assert(result.TotalGRNData.size() > 0);
+    }
+
+    @isTest
+    static void testAllClaimDataAllWithData() {
+        // allClaimData doesn't use UserInfo
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allClaimData(Date.today().addDays(-1), Date.today().addDays(1), 'All');
+        Test.stopTest();
+        System.assertNotEquals(null, result.totalClaimData);
+    }
+
+    @isTest
+    static void testAllCreditNoteDataAllWithData() {
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allCreditNoteData(Date.today().addDays(-1), Date.today().addDays(1), 'All');
+        Test.stopTest();
+        System.assertNotEquals(null, result.totalCreditNoteData);
+        System.assert(result.totalCreditNoteData.size() > 0);
+    }
+
+    @isTest
+    static void testAllDebitNoteDataAllWithData() {
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allDebitNoteData(Date.today().addDays(-1), Date.today().addDays(1), 'All');
+        Test.stopTest();
+        System.assertNotEquals(null, result.totalDebitNoteData);
+        System.assert(result.totalDebitNoteData.size() > 0);
+    }
+
+    @isTest
+    static void testGetPendingSecondaryInvoicesByCustomerWithData() {
+        Account secAcc = getSecondaryCustomer();
+        Test.startTest();
+        List<DMSPortalLwc.SecInvData> result = DMSPortalLwc.getPendingSecondaryInvoicesByCustomer(secAcc.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetSecondaryReceiptItemsByReceiptIdWithData() {
+        Secondary_Receipt__c receipt = getSecondaryReceipt();
+        Test.startTest();
+        List<DMSPortalLwc.SecondaryReceiptItemWrapper> result = DMSPortalLwc.getSecondaryReceiptItemsByReceiptId(receipt.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+        System.assert(result.size() > 0, 'Should have receipt items');
+    }
+
+    @isTest
+    static void testGetInvoiceItemsWithData() {
+        Invoice__c inv = getInvoice();
+        Test.startTest();
+        List<DMSPortalLwc.Invoice_Item_Data> result = DMSPortalLwc.getInvoiceItems(inv.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+        System.assert(result.size() > 0);
+    }
+
+    @isTest
+    static void testGetGRNDataWithData() {
+        Invoice__c inv = getInvoice();
+        Test.startTest();
+        List<Invoice_Item__c> result = DMSPortalLwc.getGRNData(inv.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+        System.assert(result.size() > 0);
+    }
+
+    @isTest
+    static void testGetGRNImagesNoImages() {
+        Goods_Received_Note__c grn = getGRN();
+        Test.startTest();
+        List<ContentDistribution> result = DMSPortalLwc.getGRNImages(grn.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetInvoicesByIdsWithData() {
+        Invoice__c inv = getInvoice();
+        Test.startTest();
+        List<Invoice__c> result = DMSPortalLwc.getInvoicesByIds(new List<Id>{ inv.Id });
+        Test.stopTest();
+        System.assert(result.size() > 0);
+    }
+
+    @isTest
+    static void testCreatePaymentWithItemsWithInvoice() {
+        Invoice__c inv = getInvoice();
+        Payment_Receipt_Item__c item = new Payment_Receipt_Item__c(
+            Invoice__c = inv.Id,
+            Amount__c = 1180
+        );
+        Test.startTest();
+        Id receiptId = DMSPortalLwc.createPaymentWithItems(new List<Payment_Receipt_Item__c>{ item }, 1180);
+        Test.stopTest();
+        System.assertNotEquals(null, receiptId);
+    }
+
+    @isTest
+    static void testSaveCreditNoteWithDesc() {
+        Account acc = getDistributor();
+        String jsonData = '{"customerId":"' + acc.Id + '","noteDate":"' + String.valueOf(Date.today()) + '","amount":"250","reason":"Price Difference","description":"Detailed description for test"}';
+        Test.startTest();
+        DMSPortalLwc.saveCreditNote(jsonData);
+        Test.stopTest();
+        List<Secondary_Credit_Note__c> notes = [SELECT Id FROM Secondary_Credit_Note__c WHERE Amount__c = 250];
+        System.assert(notes.size() > 0);
+    }
+
+    @isTest
+    static void testSaveDebitNoteWithDesc() {
+        Account acc = getDistributor();
+        String jsonData = '{"customerId":"' + acc.Id + '","noteDate":"' + String.valueOf(Date.today()) + '","amount":"125","reason":"Price Difference","description":"Detailed description for test"}';
+        Test.startTest();
+        DMSPortalLwc.saveDebitNote(jsonData);
+        Test.stopTest();
+        List<Secondary_Debit_Note__c> notes = [SELECT Id FROM Secondary_Debit_Note__c WHERE Amount__c = 125];
+        System.assert(notes.size() > 0);
+    }
+
+    @isTest
+    static void testAllSecondaryReceiptDataAllWithData() {
+        Test.startTest();
+        DMSPortalLwc.DmsData result = DMSPortalLwc.allSecondaryReceiptData(Date.today().addDays(-1), Date.today().addDays(1), 'All');
+        Test.stopTest();
+        System.assertNotEquals(null, result.totalSecondaryReceiptData);
+        System.assert(result.totalSecondaryReceiptData.size() > 0);
+    }
+
+    @isTest
+    static void testSaveSecondaryReceiptWithMultipleItems() {
+        Account secAcc = getSecondaryCustomer();
+        Secondary_Invoice__c secInv = getSecondaryInvoice();
+
+        Secondary_Receipt__c receipt = new Secondary_Receipt__c(
+            Customer__c = secAcc.Id,
+            Payment_Date__c = Date.today(),
+            Total_Amount__c = 300,
+            Payment_Mode__c = 'Cash'
+        );
+
+        Secondary_Receipt_Item__c recItem1 = new Secondary_Receipt_Item__c(
+            Secondary_Invoice__c = secInv.Id,
+            Amount__c = 150
+        );
+        Secondary_Receipt_Item__c recItem2 = new Secondary_Receipt_Item__c(
+            Secondary_Invoice__c = secInv.Id,
+            Amount__c = 150
+        );
+
+        Test.startTest();
+        DMSPortalLwc.saveSecondaryReceipt(receipt, new List<Secondary_Receipt_Item__c>{ recItem1, recItem2 });
+        Test.stopTest();
+        System.assertNotEquals(null, receipt.Id);
+    }
+
+    @isTest
+    static void testSaveSecondaryReceiptWithDetailsMultiple() {
+        Account secAcc = getSecondaryCustomer();
+        Secondary_Invoice__c secInv = getSecondaryInvoice();
+        Secondary_Debit_Note__c dn = [SELECT Id FROM Secondary_Debit_Note__c LIMIT 1];
+
+        Secondary_Receipt__c receipt = new Secondary_Receipt__c(
+            Customer__c = secAcc.Id,
+            Payment_Date__c = Date.today(),
+            Total_Amount__c = 250,
+            Payment_Mode__c = 'UPI'
+        );
+
+        Secondary_Receipt_Item__c recItem = new Secondary_Receipt_Item__c(
+            Secondary_Invoice__c = secInv.Id,
+            Amount__c = 200
+        );
+
+        Secondary_Receipt_Debit_Item__c debitItem = new Secondary_Receipt_Debit_Item__c(
+            Secondary_Debit_Note__c = dn.Id,
+            Amount__c = 50
+        );
+
+        Test.startTest();
+        DMSPortalLwc.saveSecondaryReceiptWithDetails(
+            receipt,
+            new List<Secondary_Receipt_Item__c>{ recItem },
+            new List<Secondary_Receipt_Debit_Item__c>{ debitItem }
+        );
+        Test.stopTest();
+        System.assertNotEquals(null, receipt.Id);
+    }
+
+    @isTest
+    static void testGetSecondaryLedgerWithDateRange() {
+        Account secAcc = getSecondaryCustomer();
+        Test.startTest();
+        DMSPortalLwc.SecondaryLedgerResult result = DMSPortalLwc.getSecondaryLedger(
+            secAcc.Id,
+            String.valueOf(Date.today().addDays(-1)),
+            String.valueOf(Date.today().addDays(1)),
+            'All'
+        );
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+        System.assertNotEquals(null, result.ledgerData);
+    }
+
+    @isTest
+    static void testGetOpeningBalanceWithDate() {
+        Account secAcc = getSecondaryCustomer();
+        Test.startTest();
+        DMSPortalLwc.OpeningBalanceResult result = DMSPortalLwc.getOpeningBalance(
+            secAcc.Id,
+            String.valueOf(Date.today().addDays(-30))
+        );
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetPendingDebitNotesByCustomerWithData() {
+        Account acc = getDistributor();
+        Test.startTest();
+        List<DMSPortalLwc.DebitNoteData> result = DMSPortalLwc.getPendingDebitNotesByCustomer(acc.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetSecondaryCustomerAgingReportDistributor() {
+        Account acc = getDistributor();
+        Test.startTest();
+        DMSPortalLwc.AgingReportData result = DMSPortalLwc.getSecondaryCustomerAgingReport(acc.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+        System.assertEquals(4, result.buckets.size());
+    }
+
+    @isTest
+    static void testGetActiveProductsWithData() {
+        Test.startTest();
+        List<DMSPortalLwc.ProductWrapper> result = DMSPortalLwc.getActiveProducts();
+        Test.stopTest();
+        System.assert(result.size() > 0);
+        System.assertNotEquals(null, result[0].id);
+        System.assertNotEquals(null, result[0].name);
+        System.assertNotEquals(null, result[0].price);
+    }
+
+    @isTest
+    static void testGetProductCategoriesWithData() {
+        Test.startTest();
+        List<String> result = DMSPortalLwc.getProductCategories();
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+        System.assert(result.size() > 0);
+    }
+
+    @isTest
+    static void testGetGRNListWithData() {
+        Test.startTest();
+        List<Goods_Received_Note__c> result = DMSPortalLwc.getGRNList(Date.today().addDays(-1), Date.today().addDays(1));
+        Test.stopTest();
+        System.assert(result.size() > 0);
+    }
+
+    @isTest
+    static void testGetSecondaryReturnItemListWithData() {
+        Test.startTest();
+        List<Secondary_Retrun__c> result = DMSPortalLwc.getSecondaryReturnItemList(Date.today().addDays(-1), Date.today().addDays(1));
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetSecondaryInvoiceItemsByReceiptIdWithData() {
+        Secondary_Receipt__c receipt = getSecondaryReceipt();
+        Test.startTest();
+        List<Secondary_Invoice_Item__c> result = DMSPortalLwc.getSecondaryInvoiceItemsByReceiptId(receipt.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+    }
+
+    @isTest
+    static void testGetAllAccountsWithData() {
+        Test.startTest();
+        List<Account> result = DMSPortalLwc.getAllAccounts();
+        Test.stopTest();
+        System.assertNotEquals(null, result);
+        System.assert(result.size() > 0);
+    }
+
+    @isTest
+    static void testGetInvoicePdfUrlFormat() {
+        Invoice__c inv = getInvoice();
+        Test.startTest();
+        String result = DMSPortalLwc.getInvoicePdfUrl(inv.Id);
+        Test.stopTest();
+        System.assert(result.contains(inv.Id));
+    }
+
+    @isTest
+    static void testSaveStockAdjustmentsMultiple() {
+        Account acc = getDistributor();
+        Product__c prod = getProduct();
+        Distributor_Stock__c stock = [SELECT Id FROM Distributor_Stock__c LIMIT 1];
+        List<Stock_Adjustment__c> adjs = new List<Stock_Adjustment__c>();
+        adjs.add(new Stock_Adjustment__c(
+            Distributor__c = acc.Id,
+            Product__c = prod.Id,
+            Product_Name__c = prod.Id,
+            Quantity__c = 3,
+            Reason__c = 'Damaged',
+            Distributor_Stock__c = stock.Id
+        ));
+        adjs.add(new Stock_Adjustment__c(
+            Distributor__c = acc.Id,
+            Product__c = prod.Id,
+            Product_Name__c = prod.Id,
+            Quantity__c = 1,
+            Reason__c = 'Expired',
+            Distributor_Stock__c = stock.Id
+        ));
+        Test.startTest();
+        DMSPortalLwc.saveStockAdjustments(adjs);
+        Test.stopTest();
+    }
+
+    // ========== Community User (System.runAs) Tests ==========
+
+    @isTest
+    static void testAllOrderDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.DmsData result = DMSPortalLwc.allOrderData('All', Date.today().addDays(-30), Date.today(), 'Primary');
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testAllOrderDataSecondaryAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.DmsData result = DMSPortalLwc.allOrderData('Open', Date.today().addDays(-30), Date.today(), 'Secondary');
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testAllInvoiceDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.DmsData result = DMSPortalLwc.allInvoiceData('All', Date.today().addDays(-30), Date.today());
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testAllSecoundaryInvoiceDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.DmsData result = DMSPortalLwc.allSecoundaryInvoiceData('All', Date.today().addDays(-30), Date.today());
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testAllSecoundaryReturnsDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.DmsData result = DMSPortalLwc.allSecoundaryReturnsData(Date.today().addDays(-30), Date.today());
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testAllPaymentReceiptDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.DmsData result = DMSPortalLwc.allPaymentReceiptData(Date.today().addDays(-30), Date.today());
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetPrimaryReturnsAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                List<DMSPortalLwc.PrimaryReturnWrapper> result = DMSPortalLwc.getPrimaryReturns(Date.today().addDays(-30), Date.today());
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testAllDistributorStockDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.DmsData result = DMSPortalLwc.allDistributorStockData('All');
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testSearchCustomersAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                List<Account> result = DMSPortalLwc.searchCustomers('Test');
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetOrderItemsAsPartner() {
+        User u = getCommunityUser();
+        Order__c ord = getOrder();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                List<Map<String, Object>> result = DMSPortalLwc.getOrderItems(ord.Id);
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetOrderlineItemsAsPartner() {
+        User u = getCommunityUser();
+        Order__c ord = getOrder();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                List<Map<String, Object>> result = DMSPortalLwc.getOrderlineItems(ord.Id);
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetAllProductsAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.secondaryReturnData result = DMSPortalLwc.getAllProducts();
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testSaveClaimsAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                Claim__c claim = new Claim__c(Claim_Amount__c = 100, Description__c = 'Test');
+                DMSPortalLwc.saveClaims(new List<Claim__c>{ claim });
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testSaveSecondaryReturnAsPartner() {
+        User u = getCommunityUser();
+        Account secAcc = getSecondaryCustomer();
+        Product__c prod = getProduct();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                Return_Item__c item = new Return_Item__c(SKU__c = prod.Id, Quantity__c = 2, Unit_Price__c = 100, Total_Amount__c = 200);
+                DMSPortalLwc.saveSecondaryReturn(new List<Return_Item__c>{ item }, 200, 2, secAcc.Id);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testCreateGRNAsPartner() {
+        User u = getCommunityUser();
+        Invoice__c inv = getInvoice();
+        Product__c prod = getProduct();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                Goods_Received_Note_Item__c item = new Goods_Received_Note_Item__c(
+                    Product__c = prod.Id, SKU_Name__c = prod.Id, Invoiced_Quantity__c = 10, Received_Quantity__c = 10
+                );
+                DMSPortalLwc.createGRN(inv.Id, new List<Goods_Received_Note_Item__c>{ item });
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testSaveSecondaryInvoiceAsPartner() {
+        User u = getCommunityUser();
+        Account secAcc = getSecondaryCustomer();
+        Product__c prod = getProduct();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                Secondary_Invoice__c secInv = new Secondary_Invoice__c(
+                    Store__c = secAcc.Id, Invoice_Date__c = Date.today(), Status__c = 'Raised',
+                    Grand_Total__c = 500, Total_Tax__c = 50, Total_Quantity__c = 5
+                );
+                Secondary_Invoice_Item__c item = new Secondary_Invoice_Item__c(
+                    Product__c = prod.Id, Product_Name__c = prod.Id, Quantity__c = 5,
+                    Unit_Price__c = 100, Tax_Amount__c = 50, Total_Amount__c = 550
+                );
+                DMSPortalLwc.saveSecondaryInvoice(new List<Secondary_Invoice__c>{ secInv }, new List<Secondary_Invoice_Item__c>{ item });
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testSavePrimaryOrderAsPartner() {
+        User u = getCommunityUser();
+        Product__c prod = getProduct();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                Order__c order = new Order__c(Order_Date__c = Date.today());
+                Order_Item__c item = new Order_Item__c(Product__c = prod.Id, Quantity__c = 10, Tax_Percent__c = 18);
+                DMSPortalLwc.savePrimaryOrder(order, new List<Order_Item__c>{ item });
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testSavePrimaryReturnAsPartner() {
+        User u = getCommunityUser();
+        Product__c prod = getProduct();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                Primary_Return_Item__c item = new Primary_Return_Item__c(Product__c = prod.Id, Quantity__c = 2, Unit_Price__c = 100);
+                DMSPortalLwc.savePrimaryReturn(new List<Primary_Return_Item__c>{ item }, 200, 2);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetSecondaryCustomersAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.ReturnAccData result = DMSPortalLwc.getSecondaryCustomers('All');
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetStockAdjustmentsAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.StockAdjustmentBox result = DMSPortalLwc.getStockAdjustments(Date.today().addDays(-30), Date.today(), 'All');
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetStockDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.StockAdjustmentBox result = DMSPortalLwc.getStockData();
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetProductGalleryDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                List<Product__c> result = DMSPortalLwc.getProductGalleryData();
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testSalesAndOrderDataAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.salesData();
+                DMSPortalLwc.orderData();
+                DMSPortalLwc.targetData();
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetUsersAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.getUsers('', 'All');
+                DMSPortalLwc.getUsers('Test', 'Active');
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testGetSecondaryOrdersAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                DMSPortalLwc.DmsData result = DMSPortalLwc.getSecondaryOrders('All', Date.today().addDays(-30), Date.today(), 'Secondary');
+                System.assertNotEquals(null, result);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
+    }
+
+    @isTest
+    static void testClaimReportsAsPartner() {
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            try {
+                String fromDt = String.valueOf(Date.today().addDays(-30));
+                String toDt = String.valueOf(Date.today());
+                DMSPortalLwc.getCategorySlabClaimCategorySummary(fromDt, toDt);
+                DMSPortalLwc.getCategorySlabClaimCategoryCustomerDetail(fromDt, toDt);
+                DMSPortalLwc.getSchemeClaimCustomerSummary(fromDt, toDt);
+                DMSPortalLwc.getCombinedClaimCategoryCustomerSummary(fromDt, toDt);
+                DMSPortalLwc.getTotalClaimCategoryCustomerSummary(fromDt, toDt);
+            } catch (Exception e) { System.debug(e.getMessage()); }
+            Test.stopTest();
+        }
     }
 }

@@ -941,6 +941,10 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>SecondaryInvoiceSharingHandlerTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>SendAccountDocumentsOrgWide</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -6918,6 +6922,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Order__c.Beat_Name_New__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Order__c.Beat_Name__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -9023,6 +9032,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Credit_Note__c.Distributor__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Credit_Note__c.Not_in_Use__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -9208,6 +9222,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Invoice__c.Beat_Name__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Invoice__c.Closed_Date__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -9229,6 +9248,16 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice__c.Due_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Executive_Employee_Code__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Executive_Name__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

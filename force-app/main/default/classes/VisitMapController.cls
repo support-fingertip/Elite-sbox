@@ -44,6 +44,7 @@ public with sharing class VisitMapController {
         @AuraEnabled public Double newOut;
         @AuraEnabled public Double nonPJPPro;
         @AuraEnabled public Double totalGeo;
+        @AuraEnabled public Double visitFormCount;
         @AuraEnabled public String baseUrl;
          @AuraEnabled public String tokenapi;
     }
@@ -106,9 +107,21 @@ system.debug(selectedDate);
         
         
         list<Account>acc=[select id,name,GeoLocation__latitude__s,GeoLocation__longitude__s,Customer_Created_Date__c,CreatedDate from Account
-                          WHERE Customer_Created_Date__c = :selectedDate 
-                          AND CreatedById = :userId 
+                          WHERE Customer_Created_Date__c = :selectedDate
+                          AND CreatedById = :userId
                           AND GeoLocation__longitude__s!= null ];
+
+        // Fetch Visit Form records
+        List<Visit_Form__c> visitForms = [
+            SELECT Id, Name, Customer_Name__c,
+                   Geo_Location__Latitude__s, Geo_Location__Longitude__s,
+                   CreatedDate, Visit__c
+            FROM Visit_Form__c
+            WHERE CreatedById = :userId
+              AND DAY_ONLY(CreatedDate) = :selectedDate
+              AND Geo_Location__Latitude__s != null
+              AND Geo_Location__Longitude__s != null
+        ];
             
             
 system.debug(ord.size());
@@ -207,6 +220,22 @@ system.debug(ord.size());
               //  '\n Account Name: ' + v.Name + 
                 ' Created Time: ' + v.CreatedDate.format('dd/MM/yyyy, h:mm a');
             d.visitTime = v.CreatedDate;
+            resp.visits.add(d);
+        }
+
+        // Add Visit Form records
+        resp.visitFormCount = visitForms.size();
+        for (Visit_Form__c vf : visitForms) {
+            VisitDTO d = new VisitDTO();
+            d.id = vf.Id;
+            d.name = (vf.Customer_Name__c != null ? vf.Customer_Name__c : 'Visit Form');
+            d.lat = (Double)vf.Geo_Location__Latitude__s;
+            d.lng = (Double)vf.Geo_Location__Longitude__s;
+            d.outcome = 'Visit Form';
+            d.markerText =
+                '\n Visit Form: ' + vf.Name +
+                '<br/> Time: ' + vf.CreatedDate.format('dd/MM/yyyy, h:mm a');
+            d.visitTime = vf.CreatedDate;
             resp.visits.add(d);
         }
 
