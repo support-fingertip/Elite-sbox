@@ -142,6 +142,7 @@
 .claim-table td {
     padding: 8px 12px;
     font-size: 13px;
+    color: #404040;
     border-bottom: 1px solid #f0f0f0;
 }
 
@@ -204,13 +205,13 @@
     background-color: #02323e;
 }
 
-.grandtotal-label {
+.claim-table .grandtotal-label {
     font-weight: 700;
     color: #ffffff;
     font-size: 14px;
 }
 
-.grandtotal-val {
+.claim-table .grandtotal-val {
     font-weight: 700;
     color: #ffffff;
     font-size: 14px;
