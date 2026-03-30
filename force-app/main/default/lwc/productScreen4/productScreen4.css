@@ -97,12 +97,14 @@
 }
 
 @media (max-width: 768px) {
-.scroll-wrapper {
-    height: calc(100vh - 56px); /* Viewport height minus footer height */
-    overflow-y: auto;
-    padding-bottom: 60px; /* Prevent content being hidden behind footer */
+    .scroll-wrapper {
+        height: calc(100dvh - 56px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 60px;
+    }
 }
-}
+
 /* Media Query for mobile screens */
 @media (max-width: 768px) {
     .task-price{
