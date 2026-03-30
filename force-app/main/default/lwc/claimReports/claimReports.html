@@ -9,7 +9,7 @@
             </div>
             <div class="report-cards">
                 <template for:each={reportOptions} for:item="opt">
-                    <div key={opt.id} class="report-card" data-id={opt.id} onclick={handleReportSelect}>
+                    <div key={opt.id} class="report-card report-card-select" data-id={opt.id} onclick={handleReportSelect}>
                         <h4 class="card-title">{opt.label}</h4>
                         <p class="card-desc">{opt.description}</p>
                     </div>
@@ -291,7 +291,9 @@
             <!-- No Data -->
             <template lwc:if={showNoData}>
                 <div class="empty-state">
-                    <p>No records found for the selected date range.</p>
+                    <span class="empty-state-icon">&#128203;</span>
+                    <h4 class="empty-state-title">No Records Found</h4>
+                    <p class="empty-state-message">No records found for the selected date range. Please try different dates.</p>
                 </div>
             </template>
         </div>
