@@ -1526,7 +1526,15 @@
                                             <td style="width:9%">{cust.district}</td>
                                             <td class="text-right" style="width:9%">{cust.outStanding}</td>
                                             <td style="width:11%">
-                                                <button class="aging-report-btn" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewAgingReport}>View Aging Report</button>
+                                                <div class="report-dropdown">
+                                                    <button class="aging-report-btn" data-id={cust.secondaryCustomerId} onclick={toggleReportMenu}>View Report</button>
+                                                    <template lwc:if={cust.showReportMenu}>
+                                                        <div class="report-dropdown-menu">
+                                                            <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewAgingReport}>View Aging Report</div>
+                                                            <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewOutstandingReport}>View Outstanding Report</div>
+                                                        </div>
+                                                    </template>
+                                                </div>
                                             </td>
                                         </tr>
                                     </template>
@@ -1552,6 +1560,15 @@
                     customer-name={selectedAgingCustomerName}
                     onback={handleAgingReportBack}>
                 </c-secondary-customer-aging-report>
+            </template>
+
+            <!-- Outstanding Report -->
+            <template lwc:if={showOutstandingReport}>
+                <c-outstanding-report
+                    customer-id={selectedAgingCustomerId}
+                    customer-name={selectedAgingCustomerName}
+                    onback={handleOutstandingReportBack}>
+                </c-outstanding-report>
             </template>
 
             <template lwc:if={showReports}>

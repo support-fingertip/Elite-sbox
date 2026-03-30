@@ -108,6 +108,7 @@ export default class NavigationComponent extends LightningElement {
 
     // Secondary Customer Aging Report
     @track showSecondaryCustomerAgingReport = false;
+    @track showOutstandingReport = false;
     @track selectedAgingCustomerId = '';
     @track selectedAgingCustomerName = '';
 
@@ -525,6 +526,7 @@ export default class NavigationComponent extends LightningElement {
         this.showProductGallery = false;
         this.showSecondaryCustomerLedger = false;
         this.showSecondaryCustomerAgingReport = false;
+        this.showOutstandingReport = false;
         this.showClaimReports = false;
     }
 
@@ -832,6 +834,28 @@ export default class NavigationComponent extends LightningElement {
 
     handleAgingReportBack() {
         this.showSecondaryCustomerAgingReport = false;
+        this.isShowSecondaryCustomers = true;
+        this.getCustomerData();
+    }
+
+    toggleReportMenu(event) {
+        const custId = event.currentTarget.dataset.id;
+        this.secoundaryCustomerFilter.originalSecondaryCustomers =
+            this.secoundaryCustomerFilter.originalSecondaryCustomers.map(c => ({
+                ...c,
+                showReportMenu: c.secondaryCustomerId === custId ? !c.showReportMenu : false
+            }));
+    }
+
+    handleViewOutstandingReport(event) {
+        this.selectedAgingCustomerId = event.currentTarget.dataset.id;
+        this.selectedAgingCustomerName = event.currentTarget.dataset.name;
+        this.isShowSecondaryCustomers = false;
+        this.showOutstandingReport = true;
+    }
+
+    handleOutstandingReportBack() {
+        this.showOutstandingReport = false;
         this.isShowSecondaryCustomers = true;
         this.getCustomerData();
     }

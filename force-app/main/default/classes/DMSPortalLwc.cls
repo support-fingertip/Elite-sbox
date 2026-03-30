@@ -3222,4 +3222,84 @@ public without sharing class DMSPortalLwc {
         }
         return result;
     }
+
+    // ==================== Outstanding Report ====================
+
+    public class OutstandingReportItem implements Comparable {
+        @AuraEnabled public String primaryCustomerSapCode;
+        @AuraEnabled public String primaryCustomerName;
+        @AuraEnabled public String secondaryCustomerCode;
+        @AuraEnabled public String secondaryCustomerName;
+        @AuraEnabled public String documentNumber;
+        @AuraEnabled public Date documentDate;
+        @AuraEnabled public Decimal documentAmount;
+        @AuraEnabled public Decimal collectedAmount;
+        @AuraEnabled public Decimal outstandingAmount;
+        @AuraEnabled public String documentType;
+
+        public Integer compareTo(Object compareTo) {
+            Date otherDate = ((OutstandingReportItem) compareTo).documentDate;
+            if (documentDate == otherDate) return 0;
+            if (documentDate == null || documentDate < otherDate) return -1;
+            return 1;
+        }
+    }
+
+    @AuraEnabled
+    public static List<OutstandingReportItem> getOutstandingReport(String customerId) {
+        List<OutstandingReportItem> result = new List<OutstandingReportItem>();
+
+        // Secondary Invoices with outstanding amount
+        List<Secondary_Invoice__c> invoices = [
+            SELECT Name, Invoice_Date__c, Grand_Total__c, Paid_Invoice_Amount__c, Pending_Amount__c,
+                   Store__r.Name, Store__r.SAP_Customer_Code__c,
+                   Customer__r.Name, Customer__r.Customer_Code__c
+            FROM Secondary_Invoice__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+            ORDER BY Invoice_Date__c ASC
+        ];
+
+        for (Secondary_Invoice__c inv : invoices) {
+            OutstandingReportItem item = new OutstandingReportItem();
+            item.primaryCustomerSapCode = inv.Store__r != null ? inv.Store__r.SAP_Customer_Code__c : '';
+            item.primaryCustomerName = inv.Store__r != null ? inv.Store__r.Name : '';
+            item.secondaryCustomerCode = inv.Customer__r != null ? inv.Customer__r.Customer_Code__c : '';
+            item.secondaryCustomerName = inv.Customer__r != null ? inv.Customer__r.Name : '';
+            item.documentNumber = inv.Name;
+            item.documentDate = inv.Invoice_Date__c;
+            item.documentAmount = inv.Grand_Total__c;
+            item.collectedAmount = inv.Paid_Invoice_Amount__c;
+            item.outstandingAmount = inv.Pending_Amount__c;
+            item.documentType = 'Invoice';
+            result.add(item);
+        }
+
+        // Secondary Debit Notes with outstanding amount
+        List<Secondary_Debit_Note__c> debitNotes = [
+            SELECT Name, Note_Date__c, Amount__c, Paid_Amount__c, Pending_Amount__c,
+                   Distributor__r.Name, Distributor__r.SAP_Customer_Code__c,
+                   Customer__r.Name, Customer__r.Customer_Code__c
+            FROM Secondary_Debit_Note__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+            ORDER BY Note_Date__c ASC
+        ];
+
+        for (Secondary_Debit_Note__c dn : debitNotes) {
+            OutstandingReportItem item = new OutstandingReportItem();
+            item.primaryCustomerSapCode = dn.Distributor__r != null ? dn.Distributor__r.SAP_Customer_Code__c : '';
+            item.primaryCustomerName = dn.Distributor__r != null ? dn.Distributor__r.Name : '';
+            item.secondaryCustomerCode = dn.Customer__r != null ? dn.Customer__r.Customer_Code__c : '';
+            item.secondaryCustomerName = dn.Customer__r != null ? dn.Customer__r.Name : '';
+            item.documentNumber = dn.Name;
+            item.documentDate = dn.Note_Date__c;
+            item.documentAmount = dn.Amount__c;
+            item.collectedAmount = dn.Paid_Amount__c;
+            item.outstandingAmount = dn.Pending_Amount__c;
+            item.documentType = 'Debit Note';
+            result.add(item);
+        }
+
+        result.sort();
+        return result;
+    }
 }
