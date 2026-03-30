@@ -1,157 +1,234 @@
 <template>
-    <div class="custom1">
-        <div class="screen-1">
+    <div class="scheme-wrapper">
 
-            <template lwc:if={isPageLoaded}>
+        <template lwc:if={isPageLoaded}>
+            <c-on-loading-screen></c-on-loading-screen>
+        </template>
+
+        <template lwc:else>
+
+            <!-- ══════════════════════════════════════
+                 TOP BAR — title + all form fields + actions in ONE row
+                 ══════════════════════════════════════ -->
+            <div class="top-bar">
+
+                <!-- Brand accent strip (left) -->
+                <div class="top-bar__brand">
+                    <lightning-icon icon-name="standard:contract" size="small" class="top-bar__icon"></lightning-icon>
+                    <div class="top-bar__title-wrap">
+                        <span class="top-bar__eyebrow">Scheme Management</span>
+                        <h1 class="top-bar__title">{header}</h1>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="top-bar__divider"></div>
+
+                <!-- Inline form fields -->
+                <div class="top-bar__fields">
+                    <div class="top-bar__field">
+                        <lightning-input
+                            label="Name"
+                            name="name"
+                            value={values.name}
+                            placeholder="Scheme name"
+                            onchange={handleChangeValues}>
+                        </lightning-input>
+                    </div>
+                    <div class="top-bar__field top-bar__field--date">
+                        <lightning-input
+                            type="date"
+                            label="Start Date"
+                            name="startDate"
+                            value={values.startDate}
+                            onchange={handleChangeValues}>
+                        </lightning-input>
+                    </div>
+                    <div class="top-bar__field top-bar__field--date">
+                        <lightning-input
+                            type="date"
+                            label="End Date"
+                            name="endDate"
+                            value={values.endDate}
+                            onchange={handleChangeValues}>
+                        </lightning-input>
+                    </div>
+                    <div class="top-bar__field top-bar__field--desc">
+                        <lightning-textarea
+                            label="Description"
+                            name="Description"
+                            value={values.Description}
+                            placeholder="Description…"
+                            onchange={handleChangeValues}>
+                        </lightning-textarea>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="top-bar__divider"></div>
+
+                <!-- Action buttons (right) -->
+                <div class="top-bar__actions">
+                    <lightning-button
+                        label="Save"
+                        variant="brand"
+                        icon-name="utility:save"
+                        onclick={handleSave}>
+                    </lightning-button>
+                    <lightning-button
+                        label="Cancel"
+                        variant="destructive-text"
+                        icon-name="utility:close"
+                        onclick={handleCancel}>
+                    </lightning-button>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════
+                 SCHEME LINES TABLE CARD
+                 ══════════════════════════════════════ -->
+            <template lwc:if={isSubPartLoaded}>
                 <c-on-loading-screen></c-on-loading-screen>
             </template>
 
             <template lwc:else>
-                <div class="main-heading">
-                    <h1>{header}</h1>
-                </div>
-
-                <div class="container">
-                    <div class="header">
-                        <div class="input-group">
-                            <lightning-input label="Name" name="name" value={values.name} class="input-field"
-                                onchange={handleChangeValues}></lightning-input>
-                            <lightning-input type="date" label="Scheme Start Date" name="startDate"
-                                value={values.startDate} class="input-field"
-                                onchange={handleChangeValues}></lightning-input>
-                            <lightning-input type="date" label="Scheme End Date" name="endDate" value={values.endDate}
-                                class="input-field" onchange={handleChangeValues}></lightning-input>
-                            <lightning-textarea label="Description" name="Description" value={values.Description}
-                                class="input-field" onchange={handleChangeValues}></lightning-textarea>
-                        </div>
-                    </div>
-
-                    <div class="button-group">
-                        <template lwc:if={isSaveButton}>
-                            <lightning-button label="Save" variant="brand" onclick={handleSave}></lightning-button>
-                        </template>
-                        <template lwc:else>
-                            <lightning-button label="Done" variant="brand" onclick={handleDone}></lightning-button>
-                            <lightning-button label="Previous" variant="brand"
-                                onclick={handlePrevious}></lightning-button>
-                        </template>
-                        <lightning-button label="Cancel" variant="brand" onclick={handleCancel}></lightning-button>
-                    </div>
-                </div>
-
-                <template lwc:if={isSubPartLoaded}>
-                    <c-on-loading-screen></c-on-loading-screen>
-                </template>
-
-                <template lwc:else>
-                    <div class="table-container">
-                        <table class="custom-table">
+                <div class="card table-card">
+                    <div class="table-scroll">
+                        <table class="scheme-table">
                             <thead>
                                 <tr>
-                                    <th>Sales Channel</th>
-                                    <th>Scheme Type</th>
-                                    <th>Product</th>
-                                    <th>Free Qty (EA)</th>
-                                    <th>Sale Value (%)</th>
-                                    <th>Threshold Value (INR / EA)</th>
-                                    <th>Discount(/EA)</th>
-                                    <th>Min (EA)</th>
-                                    <th>Action</th>
+                                    <th class="col-xs sno-th">S.No.</th>
+                                    <th class="col-sm">Sales Channel</th>
+                                    <th class="col-sm">Secondary Customer Category</th>
+                                    <th class="col-sm">Scheme Type</th>
+                                    <th class="col-lg">Product</th>
+                                    <th class="col-xs">Free Qty <span class="unit">(EA)</span></th>
+                                    <th class="col-xs">Min <span class="unit">(EA)</span></th>
+                                    <th class="col-xs">Discount % <span class="unit">on Sale Value</span></th>
+                                    <th class="col-xs">Discount Amount<span class="unit">Per EA</span></th>
+                                    <th class="col-md">Threshold <span class="unit">Sale Value Discount – Amount 
+                                        <br/> Per Qty Off – Qty</span></th>
+                                    <th class="col-action">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template for:each={productsToShow} for:item="product" for:index="i">
-                                    <tr key={product.id}>
+                                    <tr key={product.id} class="table-row">
+
+                                        <!-- S.No. -->
+                                        <td class="sno-cell">{product.sNo}</td>
+
                                         <td>
                                             <lightning-combobox name="salesChannel" value={product.salesChannel}
-                                                options={salesChannelOptions} data-index={i} onchange={handleProductVal}
-                                                class="input-box"></lightning-combobox>
+                                                options={salesChannelOptions} data-index={i} disabled={isFieldDisabled}
+                                                onchange={handleProductVal} class="cell-input">
+                                            </lightning-combobox>
                                         </td>
+
+                                        <td>
+                                            <lightning-combobox name="secondaryCustomerCategory"
+                                                value={product.secondaryCustomerCategory} disabled={isFieldDisabled}
+                                                options={secondaryCustomerCategoryOptions} data-index={i}
+                                                onchange={handleProductVal} class="cell-input">
+                                            </lightning-combobox>
+                                        </td>
+
                                         <td>
                                             <lightning-combobox name="schemeType" value={product.schemeType}
-                                                options={schemeTypeOptions} data-index={i} onchange={handleProductVal}
-                                                class="input-box"></lightning-combobox>
+                                                options={schemeTypeOptions} data-index={i} disabled={isFieldDisabled}
+                                                onchange={handleProductVal} class="cell-input">
+                                            </lightning-combobox>
                                         </td>
+
                                         <td>
                                             <div class="search-wrapper">
                                                 <lightning-input type="search" name="searchValueDta"
-                                                    value={product.searchValueDta} class="input-box"
-                                                    placeholder="Search Product" data-index={i}
+                                                    value={product.searchValueDta}
+                                                    placeholder="Search product…" disabled={isFieldDisabled}
+                                                    class="cell-input" data-index={i}
                                                     onchange={handleSearchPro} onblur={handleOnBlur}>
                                                 </lightning-input>
-
                                                 <template lwc:if={product.isValueSearched}>
-                                                    <div class="product-search-dropdown">
+                                                    <div class="search-dropdown">
                                                         <template for:each={product.showDataDropDown} for:item="srch">
-                                                            <ul key={srch.Id}
-                                                                class="slds-listbox slds-listbox_vertical">
-                                                                <li class="slds-listbox__item">
-                                                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
-                                                                        role="option" onclick={selectProName}
-                                                                        data-id={srch.Id} data-name={srch.Name}
-                                                                        data-index={i}>
-                                                                        <lightning-icon icon-name="action:new_account"
-                                                                            size="xx-small"></lightning-icon>
-                                                                        &nbsp;&nbsp;
-                                                                        <span class="slds-media__body">
-                                                                            <span class="slds-truncate"
-                                                                                title={srch.Name}>{srch.Name}</span>
-                                                                        </span>
-                                                                    </div>
-                                                                </li>
-                                                            </ul>
+                                                            <div key={srch.Id} class="search-dropdown__item"
+                                                                role="option" onclick={selectProName}
+                                                                data-id={srch.Id} data-name={srch.Name}
+                                                                data-index={i}>
+                                                                <lightning-icon icon-name="standard:product" size="xx-small"></lightning-icon>
+                                                                <span>{srch.Name}</span>
+                                                            </div>
                                                         </template>
                                                     </div>
                                                 </template>
                                             </div>
                                         </td>
+
                                         <td>
                                             <lightning-input type="number" name="buyQuantity"
-                                                value={product.buyQuantity} class="input-box" data-index={i}
-                                                onchange={handleProductVal}
-                                                disabled={product.isBuyQnt}></lightning-input>
+                                                value={product.buyQuantity} class="cell-input"
+                                                data-index={i} onchange={handleProductVal}
+                                                disabled={product.isBuyQnt}>
+                                            </lightning-input>
                                         </td>
+
+                                        <td>
+                                            <lightning-input type="number" name="min"
+                                                value={product.min} class="cell-input"
+                                                data-index={i} onchange={handleProductVal}
+                                                disabled={product.isMin}>
+                                            </lightning-input>
+                                        </td>
+
                                         <td>
                                             <lightning-input type="number" step="any" name="SaleValue"
-                                                value={product.SaleValue} class="input-box" data-index={i}
-                                                onchange={handleProductVal}
-                                                disabled={product.isBuyVal}></lightning-input>
+                                                value={product.SaleValue} class="cell-input"
+                                                data-index={i} onchange={handleProductVal}
+                                                disabled={product.isBuyVal}>
+                                            </lightning-input>
                                         </td>
+
                                         <td>
-                                            <lightning-input type="number" step="any" name="PerKg" value={product.PerKg}
-                                                class="input-box" data-index={i} onchange={handleProductVal}
-                                                disabled={product.isOfferQnt}></lightning-input>
+                                            <lightning-input type="percent" name="Discount"
+                                                value={product.Discount} class="cell-input"
+                                                data-index={i} onchange={handleProductVal}
+                                                disabled={product.isDiscount}>
+                                            </lightning-input>
                                         </td>
+
                                         <td>
-                                            <lightning-input type="percent" name="Discount" value={product.Discount}
-                                                class="input-box" data-index={i} onchange={handleProductVal}
-                                                disabled={product.isDiscount}></lightning-input>
+                                            <lightning-input type="number" step="any" name="PerKg"
+                                                value={product.PerKg} class="cell-input"
+                                                data-index={i} onchange={handleProductVal}
+                                                disabled={product.isOfferQnt}>
+                                            </lightning-input>
                                         </td>
-                                        <td>
-                                            <lightning-input type="number" name="min" value={product.min}
-                                                class="input-box" data-index={i} onchange={handleProductVal}
-                                                disabled={product.isMin}></lightning-input>
-                                        </td>
-                                        <td>
-                                            <div class="slds-button-group slds-m-top_small" role="group">
-                                                <lightning-button-icon icon-name="utility:new"
-                                                    class="slds-m-right_x-small" data-index={i}
-                                                    onclick={handleAddRow}></lightning-button-icon>
-                                                <lightning-button-icon icon-name="utility:copy"
-                                                    class="slds-m-right_x-small" data-index={i}
-                                                    onclick={handleCloneRow}>
-                                                </lightning-button-icon>
-                                                <lightning-button-icon icon-name="utility:delete" data-index={i}
-                                                    onclick={handleRemoveRow}></lightning-button-icon>
+
+                                        <td class="action-cell">
+                                            <div class="action-group">
+                                                <button class="icon-btn icon-btn--add" title="Add Row"
+                                                    data-index={i} onclick={handleAddRow}>
+                                                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                                                </button>
+                                                <button class="icon-btn icon-btn--copy" title="Clone Row"
+                                                    data-index={i} onclick={handleCloneRow}>
+                                                    <lightning-icon icon-name="utility:copy" size="xx-small"></lightning-icon>
+                                                </button>
+                                                <button class="icon-btn icon-btn--del" title="Delete Row"
+                                                    data-index={i} onclick={handleRemoveRow}>
+                                                    <lightning-icon icon-name="utility:delete" size="xx-small"></lightning-icon>
+                                                </button>
                                             </div>
                                         </td>
+
                                     </tr>
                                 </template>
                             </tbody>
                         </table>
                     </div>
-                </template>
+                </div>
             </template>
-        </div>
+
+        </template>
     </div>
 </template>

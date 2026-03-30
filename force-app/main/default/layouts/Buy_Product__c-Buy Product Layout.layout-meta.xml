@@ -90,6 +90,10 @@
                 <behavior>Readonly</behavior>
                 <field>Scheme_End_Date__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Secondary_Customer_Category__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

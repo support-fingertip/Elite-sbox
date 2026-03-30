@@ -138,7 +138,11 @@ export default class DmsPortal extends LightningElement {
                     Tax_Percent__c : item.TaxPercent,
                     Order_Item__c: item.OrderItemId,
                     Total_Amount__c: item.TotalAmount,
-                    Order_Item__c : item.OrderItemId
+                    Order_Item__c : item.OrderItemId,
+                    Before_Category_Slab_Unit_Price__c: item.BeforeCategorySlabUnitPrice,
+                    After_Category_Slab_Unit_Price__c: item.AfterCategorySlabUnitPrice,
+                    Before_Scheme_Unit_Price__c: item.BeforeSchemeUnitPrice,
+                    After_Scheme_Unit_Price__c: item.AfterSchemeUnitPrice
                 });
             }
 

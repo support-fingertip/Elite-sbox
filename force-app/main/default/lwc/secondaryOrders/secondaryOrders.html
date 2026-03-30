@@ -31,6 +31,34 @@
                 </div>
             </div>
 
+            <!-- Remarks & Additional Details Card -->
+            <div class="invoice-grid-container" style="margin-top: 20px; margin-bottom: 20px; padding: 20px;">
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                        <lightning-textarea label="Packing Remarks" value={remarks} placeholder="Enter Packing remarks"
+                            onchange={onUpdateRemakrs} variant="label-stacked">
+                        </lightning-textarea>
+                    </div>
+                    <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                        <lightning-textarea label="Delivery Remarks" value={delivaryRemakrs} placeholder="Enter Delivery remarks"
+                            onchange={onUpdateDelivaryRemakrs} variant="label-stacked">
+                        </lightning-textarea>
+                    </div>
+                    <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                        <lightning-input label="GST Number" value={gstNumber}
+                            placeholder="Enter GST Number" onchange={onUpdateGstNumber}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-4 slds-p-around_small">
+                        <lightning-input label="IRN Number" value={irnNumber}
+                            placeholder="Enter IRN Number" onchange={onUpdateIrnNumber}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                </div>
+            </div>
+
             <!-- Invoice Items Grid -->
             <div class="invoice-grid-container">
                 <template if:true={invoiceItems}>
@@ -93,34 +121,6 @@
                         No items available to invoice.
                     </div>
                 </template>
-            </div>
-
-            <!-- Remarks & Additional Details Card -->
-            <div class="invoice-grid-container" style="margin-top: 20px; padding: 20px;">
-                <div class="slds-grid slds-wrap slds-gutters">
-                    <div class="slds-col slds-size_1-of-4 slds-p-around_small">
-                        <lightning-textarea label="Packing Remarks" value={remarks} placeholder="Enter Packing remarks"
-                            onchange={onUpdateRemakrs} variant="label-stacked">
-                        </lightning-textarea>
-                    </div>
-                    <div class="slds-col slds-size_1-of-4 slds-p-around_small">
-                        <lightning-textarea label="Delivery Remarks" value={delivaryRemakrs} placeholder="Enter Delivery remarks"
-                            onchange={onUpdateDelivaryRemakrs} variant="label-stacked">
-                        </lightning-textarea>
-                    </div>
-                    <div class="slds-col slds-size_1-of-4 slds-p-around_small">
-                        <lightning-input label="GST Number" value={gstNumber}
-                            placeholder="Enter GST Number" onchange={onUpdateGstNumber}
-                            variant="label-stacked">
-                        </lightning-input>
-                    </div>
-                    <div class="slds-col slds-size_1-of-4 slds-p-around_small">
-                        <lightning-input label="IRN Number" value={irnNumber}
-                            placeholder="Enter IRN Number" onchange={onUpdateIrnNumber}
-                            variant="label-stacked">
-                        </lightning-input>
-                    </div>
-                </div>
             </div>
         </div>
     </template>

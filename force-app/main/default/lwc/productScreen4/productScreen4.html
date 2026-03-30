@@ -374,14 +374,15 @@
                                         onchange={handlePoDateChange} required={isModerTrade}>
                                     </lightning-input>
                                 </div>
-                                <template lwc:if={isShowOwner}>
-                                    <div class="slds-col slds-size_1-of-1 slds-m-right_xx-small">
-                                        <c-lookup label="Owner" placeholder="Search User" object-api-name="User"
-                                            icon-name="standard:user" filter-value={acccountId}
-                                            filter-field="Order_Owner__c" onlookupselect={handleLookupChange} required>
-                                        </c-lookup>
-                                    </div>
-                                </template>
+                             
+                            </template>
+                            <template lwc:if={isShowOwner}>
+                                <div class="slds-col slds-size_1-of-1 slds-m-right_xx-small">
+                                    <c-lookup label="Owner" placeholder="Search User" object-api-name="User"
+                                        icon-name="standard:user" filter-value={acccountId}
+                                        filter-field="Order_Owner__c" onlookupselect={handleLookupChange} required>
+                                    </c-lookup>
+                                </div>
                             </template>
                             <div class="slds-col slds-size_1-of-1 slds-m-right_xx-small">
 
