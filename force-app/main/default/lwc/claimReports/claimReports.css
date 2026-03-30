@@ -21,6 +21,11 @@
     gap: 16px;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
 .report-title {
     color: #ffffff;
     font-size: 18px;
@@ -82,6 +87,91 @@
     font-size: 13px;
     color: #666;
     margin: 0;
+}
+
+/* Toggle Button */
+.toggle-btn-wrapper {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 2px;
+}
+
+.toggle-btn {
+    background-color: #02323e;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    height: 34px;
+}
+
+.toggle-btn:hover {
+    background-color: #045a6e;
+}
+
+/* Download Dropdown */
+.btn-wrapper {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 2px;
+}
+
+.download-dropdown {
+    position: relative;
+}
+
+.exportBtn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    height: 34px;
+}
+
+.exportBtn:hover {
+    background-color: #218838;
+}
+
+.download-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    border: 1px solid #d8dde6;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 180px;
+    margin-top: 4px;
+}
+
+.download-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+}
+
+.download-menu li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+}
+
+.download-menu li:hover {
+    background-color: #f0f4ff;
 }
 
 /* Filter Bar */
