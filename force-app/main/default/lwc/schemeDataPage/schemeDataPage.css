@@ -270,12 +270,7 @@
 
 .table-row {
     border-bottom: 1px solid var(--neutral-200);
-    transition: background var(--transition);
 }
-
-.table-row:hover { background: var(--brand-light); }
-.table-row:nth-child(even) { background: var(--neutral-50); }
-.table-row:nth-child(even):hover { background: var(--brand-light); }
 
 .scheme-table td {
     padding: 5px 7px;

@@ -297,6 +297,10 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>DMSPortalLwcTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>DailyLogNotification</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -927,6 +931,18 @@
     <classAccesses>
         <apexClass>SecondaryCustomerTransferBatchProcessor</apexClass>
         <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryInvoiceSharingBatch</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryInvoiceSharingHandler</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryInvoiceSharingHandlerTest</apexClass>
+        <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SendAccountDocumentsOrgWide</apexClass>
@@ -6531,6 +6547,16 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Order_Item__c.Difference_Category_Slab_Unit_Per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Order_Item__c.Difference_Scheme_Unit_per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Order_Item__c.Discount_Amount__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -6892,6 +6918,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Order__c.Account__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Order__c.Beat_Name_New__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -9001,6 +9032,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Secondary_Credit_Note__c.Distributor__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Secondary_Credit_Note__c.Not_in_Use__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -9082,6 +9118,16 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice_Item__c.Category_Slab_Claim_Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Difference_Category_Slab_Unit_Per_EA__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Difference_Scheme_Unit_per_EA__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -9175,6 +9221,11 @@
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Invoice__c.Beat_Name__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice__c.Closed_Date__c</field>
         <readable>false</readable>
@@ -9198,6 +9249,16 @@
         <editable>false</editable>
         <field>Secondary_Invoice__c.Due_Date__c</field>
         <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Executive_Employee_Code__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Executive_Name__c</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>

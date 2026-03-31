@@ -719,7 +719,7 @@ public without sharing class DMSPortalLwc {
         DmsData dt = new DmsData();
         List<Secondary_Credit_Note__c> creditNotesList = new List<Secondary_Credit_Note__c>();
         String query = 'SELECT Id, Name, Claim__c, Claim__r.Name, Credit_Date__c, Customer__c, Customer__r.Name, Status__c, Reason__c, Amount__c, Description__c '+
-            'FROM Secondary_Credit_Note__c WHERE Credit_Date__c >= :frmDate AND Credit_Date__c <= :toDate ';
+            'FROM Secondary_Credit_Note__c WHERE Distributor__c = :accountId AND Credit_Date__c >= :frmDate AND Credit_Date__c <= :toDate ';
         if (status != 'All' && status != '' && status != null) {
             query += ' AND Status__c = :status';
         }
@@ -751,12 +751,18 @@ public without sharing class DMSPortalLwc {
     @AuraEnabled
     public static void saveCreditNote(String creditNoteJson) {
         Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(creditNoteJson);
-
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        if(partnerUser.size() >0){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            accountId = contact[0].AccountId;
+        }
         Secondary_Credit_Note__c cn = new Secondary_Credit_Note__c();
         cn.Customer__c = (String) data.get('customerId');
         cn.Credit_Date__c = Date.valueOf((String) data.get('noteDate'));
         cn.Amount__c = Decimal.valueOf(String.valueOf(data.get('amount')));
         cn.Reason__c = (String) data.get('reason');
+        cn.Distributor__c = accountId;
         if (data.get('description') != null) {
             cn.Description__c = (String) data.get('description');
         }
@@ -768,9 +774,15 @@ public without sharing class DMSPortalLwc {
     @AuraEnabled
     public static DmsData allDebitNoteData(Date frmDate, date toDate, String status){
         DmsData dt = new DmsData();
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        if(partnerUser.size() >0){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            accountId = contact[0].AccountId;
+        }
         List<Secondary_Debit_Note__c> debitNotesList = new List<Secondary_Debit_Note__c>();
         String query = 'SELECT Id, Name, Note_Date__c, Customer__c, Customer__r.Name, Distributor__c, Distributor__r.Name, Status__c, Reason__c, Amount__c, Description__c, Secondary_Invoice__c, Secondary_Invoice__r.Name '+
-            'FROM Secondary_Debit_Note__c WHERE Note_Date__c >= :frmDate AND Note_Date__c <= :toDate ';
+            'FROM Secondary_Debit_Note__c WHERE Distributor__c = :accountId AND Note_Date__c >= :frmDate AND Note_Date__c <= :toDate ';
         if (status != 'All' && status != '' && status != null) {
             query += ' AND Status__c = :status';
         }
@@ -801,12 +813,19 @@ public without sharing class DMSPortalLwc {
     @AuraEnabled
     public static void saveDebitNote(String debitNoteJson) {
         Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(debitNoteJson);
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        if(partnerUser.size() >0){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            accountId = contact[0].AccountId;
+        }
 
         Secondary_Debit_Note__c dn = new Secondary_Debit_Note__c();
         dn.Customer__c = (String) data.get('customerId');
         dn.Note_Date__c = Date.valueOf((String) data.get('noteDate'));
         dn.Amount__c = Decimal.valueOf(String.valueOf(data.get('amount')));
         dn.Reason__c = (String) data.get('reason');
+        dn.Distributor__c = accountId;
         if (data.get('description') != null) {
             dn.Description__c = (String) data.get('description');
         }
@@ -3254,39 +3273,27 @@ public without sharing class DMSPortalLwc {
 
         // Get the primary customer (Store/Distributor) account ID for this secondary customer
         Id primaryCustomerId;
-        List<Secondary_Invoice__c> sampleInv = [
-            SELECT Store__c FROM Secondary_Invoice__c
-            WHERE Customer__c = :customerId AND Store__c != null
-            LIMIT 1
-        ];
-        if (!sampleInv.isEmpty()) {
-            primaryCustomerId = sampleInv[0].Store__c;
-        } else {
-            List<Secondary_Debit_Note__c> sampleDn = [
-                SELECT Distributor__c FROM Secondary_Debit_Note__c
-                WHERE Customer__c = :customerId AND Distributor__c != null
-                LIMIT 1
-            ];
-            if (!sampleDn.isEmpty()) {
-                primaryCustomerId = sampleDn[0].Distributor__c;
-            }
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            primaryCustomerId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
         }
+
 
         // Query Executive from Product_Mapping__c
         String execCode = '';
         String execName = '';
         if (primaryCustomerId != null) {
             List<Product_Mapping__c> pmList = [
-                SELECT Exectuive__r.Employee_Code__c, Exectuive__r.Name
+                SELECT Exectuive__r.Employee_Code__c, Exectuive__r.Name,Executive_Name1__c
                 FROM Product_Mapping__c
                 WHERE Customer__c = :customerId
                 AND Primary_Customer__c = :primaryCustomerId
-                AND Exectuive__c != null
+                AND Exectuive__c != null  Order by Exectuive__r.Heirarchial_Number__c ASC
                 LIMIT 1
             ];
             if (!pmList.isEmpty()) {
                 execCode = pmList[0].Exectuive__r.Employee_Code__c;
-                execName = pmList[0].Exectuive__r.Name;
+                execName = pmList[0].Executive_Name1__c;
             }
         }
 
@@ -3308,8 +3315,8 @@ public without sharing class DMSPortalLwc {
         // Secondary Invoices with outstanding amount
         List<Secondary_Invoice__c> invoices = [
             SELECT Name, Invoice_Date__c, Grand_Total__c, Paid_Invoice_Amount__c, Pending_Amount__c,
-                   Store__r.Name, Store__r.SAP_Customer_Code__c,
-                   Customer__r.Name, Customer__r.Customer_Code__c
+                   Store__r.Name, Store__r.SAP_Customer_Code__c,Customer__r.Name, Customer__r.Customer_Code__c,
+                   Beat_Name__c,Executive_Name__c,Executive_Employee_Code__c
             FROM Secondary_Invoice__c
             WHERE Customer__c = :customerId AND Pending_Amount__c > 0
             ORDER BY Invoice_Date__c ASC
@@ -3321,9 +3328,9 @@ public without sharing class DMSPortalLwc {
             item.primaryCustomerName = inv.Store__r != null ? inv.Store__r.Name : '';
             item.secondaryCustomerCode = inv.Customer__r != null ? inv.Customer__r.Customer_Code__c : '';
             item.secondaryCustomerName = inv.Customer__r != null ? inv.Customer__r.Name : '';
-            item.executiveCode = execCode;
-            item.executiveName = execName;
-            item.beatName = beatNameVal;
+            item.executiveCode = inv.Executive_Employee_Code__c != null ? inv.Executive_Employee_Code__c : execCode;
+            item.executiveName = inv.Executive_Name__c != null ? inv.Executive_Name__c : execName;
+            item.beatName = inv.Beat_Name__c != null ? inv.Beat_Name__c : beatNameVal;
             item.documentNumber = inv.Name;
             item.documentDate = inv.Invoice_Date__c;
             item.documentAmount = inv.Grand_Total__c != null ? inv.Grand_Total__c : 0;

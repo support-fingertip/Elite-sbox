@@ -38,6 +38,7 @@
 .eod { background-color: gray; }
 
 .non-pjp-productive { background-color: #ffff00; }
+.visit-form { background-color: #FF6600; }
 .non-pjp-non-productive { background-color: navy; }
 .activity { background-color: lightblue; }
 .location-tracking { background-color: orange; }

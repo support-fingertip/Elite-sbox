@@ -79,6 +79,14 @@
                 <behavior>Readonly</behavior>
                 <field>Total_Claim_Amount__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>Difference_Category_Slab_Unit_Per_EA__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>Difference_Scheme_Unit_per_EA__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
