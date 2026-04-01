@@ -342,7 +342,7 @@ lightning-combobox,
     margin-bottom: 0px;
 }
 .contacts-table {
-width: 95%;
+width: 100%;
 border-collapse: separate;
 border-spacing: 0;
 border-radius: 10px;
@@ -361,8 +361,6 @@ text-align: left;
 font-size: 14px;
 padding: 15px;
 border-bottom: 1px solid #ccc;
-overflow: hidden;
-text-overflow: ellipsis;
 white-space: nowrap;
 }
 
