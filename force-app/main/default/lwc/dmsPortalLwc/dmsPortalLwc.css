@@ -361,7 +361,6 @@ text-align: left;
 font-size: 14px;
 padding: 15px;
 border-bottom: 1px solid #ccc;
-white-space: nowrap;
 }
 
 .contacts-table th:last-child,
@@ -380,6 +379,7 @@ font-size: 16px;
 .contacts-table td {
 font-size: 14px;
 color: var(--table-text-color);
+white-space: nowrap;
 /* font-weight: 500; */
 
 }
