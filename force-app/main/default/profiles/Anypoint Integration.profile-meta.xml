@@ -1597,6 +1597,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Account.Elite_Company_GST_Number__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Account.Email_ID__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -5192,6 +5197,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Invoice__c.CGST_Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Invoice__c.ClockOutAddress__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -5208,6 +5218,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Invoice__c.Company_Code__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice__c.Company_Name__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -5267,6 +5282,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Invoice__c.GST_Number__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Invoice__c.Grand_Total__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -5293,6 +5313,11 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Invoice__c.Is_Order_Owner_Active__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice__c.Non_Taxable_Amount__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -5328,6 +5353,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Invoice__c.SF_Order__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice__c.SGST_Amount__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

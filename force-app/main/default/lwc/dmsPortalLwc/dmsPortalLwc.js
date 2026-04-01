@@ -40,6 +40,7 @@ import getInvoices from '@salesforce/apex/InvoiceController.getInvoices';
 import getPrimaryInvoices from '@salesforce/apex/InvoiceController.getPrimaryInvoices';
 import getUsers from '@salesforce/apex/DMSPortalLwc.getUsers';
 import getSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getSecondaryCustomers';
+import getRefreshSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getRefreshSecondaryCustomers';
 import getInvoicePdfUrl from '@salesforce/apex/DMSPortalLwc.getInvoicePdfUrl';
 import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockAdjustments';
 import getSecondaryLedger from '@salesforce/apex/DMSPortalLwc.getSecondaryLedger';
@@ -47,6 +48,7 @@ import getOpeningBalance from '@salesforce/apex/DMSPortalLwc.getOpeningBalance';
 import orgUrl from '@salesforce/label/c.orgUrl';
 import { loadScript } from 'lightning/platformResourceLoader';
 import SHEETJS from '@salesforce/resourceUrl/SheetJS';
+import { refreshApex } from '@salesforce/apex';
 const TAB_WIDTH = 145;     // realistic average width per tab
 const RESERVED_WIDTH = 300; // logo + profile + More button + spacing
 
@@ -791,6 +793,26 @@ export default class NavigationComponent extends LightningElement {
                 this.isSubPartLoad = false;
             });
     }
+    handleCustomerRefresh() {
+        this.isSubPartLoad = true;
+
+        getRefreshSecondaryCustomers({
+            status: this.secoundaryCustomerFilter.status
+        })
+        .then(result => {
+            console.log('data' + JSON.stringify(result.customerData))
+            this.secoundaryCustomerFilter.originalSecondaryCustomers = result.customerData || [];
+            this.secoundaryCustomerFilter.allSecondaryCustomers = result.customerData || [];
+            this.secoundaryCustomerFilter.isshowData =
+                result.customerData && result.customerData.length > 0;
+        })
+        .catch(error => {
+            console.error('Error fetching secondary customers:', error);
+        })
+        .finally(() => {
+            this.isSubPartLoad = false;
+        });
+    }
 
     handleSecondaryCustomerStatusChange(event) {
         this.secoundaryCustomerFilter.status = event.detail.value;
@@ -835,6 +857,10 @@ export default class NavigationComponent extends LightningElement {
     handleAgingReportBack() {
         this.showSecondaryCustomerAgingReport = false;
         this.isShowSecondaryCustomers = true;
+        this.isSubPartLoad = true;
+        setTimeout(() => {
+            this.isSubPartLoad = false;
+        }, 3000);
         this.getCustomerData();
     }
 
@@ -857,6 +883,10 @@ export default class NavigationComponent extends LightningElement {
     handleOutstandingReportBack() {
         this.showOutstandingReport = false;
         this.isShowSecondaryCustomers = true;
+        this.isSubPartLoad = true;
+        setTimeout(() => {
+            this.isSubPartLoad = false;
+        }, 3000);
         this.getCustomerData();
     }
 
