@@ -241,7 +241,7 @@
                         </div>
 
                         <!-- Primary Invoices Table -->
-                        <div style="overflow-x: auto; width: 95%;">
+                        <div style="overflow-x: auto; width: 95%; border-radius:10px;">
                         <table class="contacts-table" style="min-width: 1800px; width: 100%;">
                             <thead>
                                 <tr>
@@ -282,15 +282,15 @@
                                                 {inv.invoiceNo}
                                             </td>
                                             <td style="width:8%;">{inv.name}</td>
-                                            <td style="width:7%;">Elite</td>
-                                            <td style="width:11%;">29AAAAA1111A1Z1</td>
+                                            <td style="width:7%;">{inv.companyName}</td>
+                                            <td style="width:11%;">{inv.gstNumber}</td>
                                             <td style="width:7%;">{inv.orderId}</td>
                                             <td style="width:7%;">{inv.InvDate}</td>
                                             <td style="width:5%;">{inv.TotalQuantity}</td>
-                                            <td style="width:10%;">{inv.Amount}</td>
-                                            <td style="width:7%;">{inv.tax}</td>
-                                            <td style="width:7%;">{inv.tax}</td>
-                                            <td style="width:7%;">{inv.tax}</td>
+                                            <td style="width:10%;">{inv.nonTaxableAmount}</td>
+                                            <td style="width:7%;">{inv.sgstAmount}</td>
+                                            <td style="width:7%;">{inv.cgstAmount}</td>
+                                            <td style="width:7%;">{inv.igstAmount}</td>
                                             <td style="width:9%;">{inv.Amount}</td>
 
                                         </tr>

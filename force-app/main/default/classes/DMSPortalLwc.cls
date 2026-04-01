@@ -290,13 +290,15 @@ public without sharing class DMSPortalLwc {
         system.debug('statusstatus '+status);
         system.debug('accountIdaccountId '+accountId);
         List<Invoice__c> invList = [SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                                    Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c
+                                    Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,
+                                    Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                                     FROM Invoice__c];
         system.debug('invlItsinvlist '+invList);
         if (status == 'All') {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 where Store__c =: accountId
                 AND Invoice_Date__c >= :frmDate
@@ -306,7 +308,8 @@ public without sharing class DMSPortalLwc {
         } else if(status == 'GRN Pending'){
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 WHERE (GRN_Status__c = 'GRN Pending' OR GRN_Status__c ='')
                 AND Invoice_Date__c >= :frmDate
@@ -317,7 +320,8 @@ public without sharing class DMSPortalLwc {
         }else if(status =='GRN Completed'){
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 WHERE (GRN_Status__c = 'GRN Completed')
                 AND Invoice_Date__c >= :frmDate
@@ -345,6 +349,12 @@ public without sharing class DMSPortalLwc {
             inD.TotalQuantity = i.Total_Quantity__c != null ? i.Total_Quantity__c :0 ; 
             inD.invoiceNo = i.Invoice_No__c != null ? i.Invoice_No__c: '';
             inD.orderId = i.SF_Order__r != null ? i.SF_Order__r.Name : '';
+            inD.companyName = i.Company_Name__c != null ? i.Company_Name__c : '';
+            inD.gstNumber = i.GST_Number__c != null ? i.GST_Number__c : '';
+            inD.nonTaxableAmount = i.Non_Taxable_Amount__c != null ? i.Non_Taxable_Amount__c : 0;
+            inD.sgstAmount = i.SGST_Amount__c != null ? i.SGST_Amount__c : 0;
+            inD.cgstAmount = i.CGST_Amount__c != null ? i.CGST_Amount__c : 0;
+            inD.igstAmount = i.IGST_Amount__c != null ? i.IGST_Amount__c : 0;
             invDt.add(inD);
         }
         dt.TotalInvoiceData = invDt;
@@ -2481,6 +2491,12 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public Decimal TotalQuantity;  // <-- Add this line
         @AuraEnabled public String invoiceNo;
         @AuraEnabled public String orderId;
+        @AuraEnabled public String companyName;
+        @AuraEnabled public String gstNumber;
+        @AuraEnabled public Decimal nonTaxableAmount;
+        @AuraEnabled public Decimal sgstAmount;
+        @AuraEnabled public Decimal cgstAmount;
+        @AuraEnabled public Decimal igstAmount;
     }
     public class PReturnData {
         @AuraEnabled public String productName;
