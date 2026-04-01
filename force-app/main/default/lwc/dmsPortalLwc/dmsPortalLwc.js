@@ -3225,16 +3225,19 @@ export default class NavigationComponent extends LightningElement {
         }
 
         // Define CSV header
-        const header = ['Invoice Name', 'Secondary Customer', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Grand Total'];
+        const header = ['Invoice No.', 'Outlet', 'Beat Name', 'Invoice Date', 'Status', 'Total Quantity', 'Non Taxable Amount', 'SGST', 'CGST', 'Total Amount'];
 
         // Map invoices to CSV rows
         const rows = invoices.map(invoice => [
             invoice.name || '',
             invoice.accName || '',
+            invoice.beatName || '',
             invoice.InvDate || '',
             invoice.Status || '',
             invoice.Quantity || '',
-            invoice.tax || '',
+            invoice.nonTaxableAmount || '',
+            invoice.sgstAmount || '',
+            invoice.cgstAmount || '',
             invoice.Amount || ''
         ]);
 
@@ -3274,15 +3277,21 @@ export default class NavigationComponent extends LightningElement {
         }
 
         // Define CSV header with fields as per the invoice data
-        const header = ['SAP Inv No','SF Inv No.', 'Invoice Date', 'Total Quantity', 'Total Tax', 'Total Amount'];
+        const header = ['SAP Inv No', 'SF Inv No.', 'Party Name', 'GST No.', 'Order No.', 'Invoice Date', 'Total Qty', 'Non-Taxable Amount', 'SGST', 'CGST', 'IGST', 'Total Amount'];
 
         // Map invoices to CSV rows
         const rows = invoices.map(invoice => [
             invoice.invoiceNo,
             invoice.name,
+            invoice.companyName,
+            invoice.gstNumber,
+            invoice.orderId,
             invoice.InvDate,
             invoice.TotalQuantity,
-            invoice.tax,
+            invoice.nonTaxableAmount,
+            invoice.sgstAmount,
+            invoice.cgstAmount,
+            invoice.igstAmount,
             invoice.Amount
         ]);
 

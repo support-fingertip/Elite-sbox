@@ -1115,17 +1115,21 @@
                                 </lightning-input>
                             </div>
                         </div>
-                        <table class="contacts-table">
+                        <div style="overflow-x: auto; width: 95%; border-radius:10px;">
+                        <table class="contacts-table" style="min-width: 1400px; width: 100%;">
                             <thead>
                                 <tr>
                                     <th style="width:5%;">S.No.</th>
-                                    <th style="width:15%;">Invoice No.</th>
-                                    <th style="width:20%;">Outlet</th>
-                                    <th style="width:10%;">Date</th>
-                                    <th style="width:10%;">Status</th>
-                                    <th style="width:10%;">Total Quantity</th>
-                                    <th style="width:10%;">Tax</th>
-                                    <th style="width:20%;">Total Amount</th>
+                                    <th style="width:10%;">Invoice No.</th>
+                                    <th style="width:12%;">Outlet</th>
+                                    <th style="width:12%;">Beat Name</th>
+                                    <th style="width:8%;">Date</th>
+                                    <th style="width:8%;">Status</th>
+                                    <th style="width:8%;">Total Quantity</th>
+                                    <th style="width:10%;">Non Taxable Amount</th>
+                                    <th style="width:8%;">SGST</th>
+                                    <th style="width:8%;">CGST</th>
+                                    <th style="width:11%;">Total Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1134,23 +1138,26 @@
                                         <tr key={row.InvId}>
                                             <td style="width:5%;">{row.rowIndex}</td>
                                             <td onclick={handleSecondaryInvoiceNoClick} data-id={row.InvId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;width:15%;">
+                                                style="cursor: pointer; color: blue; text-decoration: underline;width:10%;">
                                                 {row.name}
                                             </td>
-                                            <td style="width:20%;">
+                                            <td style="width:12%;">
                                                 {row.accName}
                                             </td>
-                                            <td style="width:10%;">{row.InvDate}</td>
-                                            <td style="width:10%;">{row.Status}</td>
-                                            <td style="width:10%;">{row.Quantity}</td>
-                                            <td style="width:10%;">{row.tax}</td>
-                                            <td style="width:20%;">{row.Amount}</td>
+                                            <td style="width:12%;">{row.beatName}</td>
+                                            <td style="width:8%;">{row.InvDate}</td>
+                                            <td style="width:8%;">{row.Status}</td>
+                                            <td style="width:8%;">{row.Quantity}</td>
+                                            <td style="width:10%;">{row.nonTaxableAmount}</td>
+                                            <td style="width:8%;">{row.sgstAmount}</td>
+                                            <td style="width:8%;">{row.cgstAmount}</td>
+                                            <td style="width:11%;">{row.Amount}</td>
                                         </tr>
                                     </template>
                                 </template>
                                 <template lwc:else>
                                     <tr>
-                                        <td colspan="6">
+                                        <td colspan="11">
                                             <div class="slds-truncate" style="text-align:center">
                                                 <span style="color:red;padding:10px;font-size:large">No
                                                     records found!</span>
@@ -1160,6 +1167,7 @@
                                 </template>
                             </tbody>
                         </table>
+                        </div>
 
                     </div>
                 </template>
