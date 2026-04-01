@@ -693,6 +693,37 @@ public without sharing class DMSPortalLwc {
             }
         }
         
+        // Collect Product IDs for price lookup
+        Set<Id> productIds = new Set<Id>();
+        for (Distributor_Stock__c stock : latestStockMap.values()) {
+            if (stock.Product__c != null) {
+                productIds.add(stock.Product__c);
+            }
+        }
+
+        // Query Price_Book__c for primary customer prices
+        Map<Id, Decimal> priceBookMap = new Map<Id, Decimal>();
+        if (!productIds.isEmpty() && accountId != null) {
+            for (Price_Book__c pb : [
+                SELECT Product__c, Unit_Price__c FROM Price_Book__c
+                WHERE Customer_Type__c = 'Primary Customer'
+                AND Customer__c = :accountId
+                AND Product__c IN :productIds
+            ]) {
+                priceBookMap.put(pb.Product__c, pb.Unit_Price__c);
+            }
+        }
+
+        // Fallback: Query Product__c for List_Price__c
+        Map<Id, Decimal> productListPriceMap = new Map<Id, Decimal>();
+        if (!productIds.isEmpty()) {
+            for (Product__c prod : [
+                SELECT Id, List_Price__c FROM Product__c WHERE Id IN :productIds
+            ]) {
+                productListPriceMap.put(prod.Id, prod.List_Price__c);
+            }
+        }
+
         // Step 4: Build response list
         List<DistributorStock> distributorStockDataList = new List<DistributorStock>();
         for (Distributor_Stock__c i : latestStockMap.values()) {
@@ -716,6 +747,18 @@ public without sharing class DMSPortalLwc {
 
             stockData.availableSaleableQuantity = i.Available_Saleable_Quantity__c;
             stockData.availableNonSaleableQuantity = i.Available_Nonsaleable_Quantity__c;
+
+            // Resolve unit price: Price_Book__c first, then Product__c fallback
+            Decimal resolvedPrice = 0;
+            if (priceBookMap.containsKey(i.Product__c)) {
+                resolvedPrice = priceBookMap.get(i.Product__c) != null ? priceBookMap.get(i.Product__c) : 0;
+            } else if (productListPriceMap.containsKey(i.Product__c)) {
+                resolvedPrice = productListPriceMap.get(i.Product__c) != null ? productListPriceMap.get(i.Product__c) : 0;
+            }
+            stockData.unitPrice = resolvedPrice;
+            Decimal availQty = i.Available_Saleable_Quantity__c != null ? i.Available_Saleable_Quantity__c : 0;
+            stockData.totalAmount = availQty * resolvedPrice;
+
             distributorStockDataList.add(stockData);
         }
         
@@ -2578,6 +2621,8 @@ public without sharing class DMSPortalLwc {
         
         @AuraEnabled public decimal availableSaleableQuantity;
         @AuraEnabled public decimal availableNonSaleableQuantity;
+        @AuraEnabled public Decimal unitPrice;
+        @AuraEnabled public Decimal totalAmount;
     }
     public class CreditNote{
         @AuraEnabled public String creditNoteNo;
