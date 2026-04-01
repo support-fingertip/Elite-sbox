@@ -865,14 +865,16 @@ public without sharing class DMSPortalLwc {
         if (status == 'All' || status =='' || status == null) {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, Status__c, Store__r.Name,Total_Quantity__c,Grand_Total__c,
-                Total_Tax__c,  Customer__c,Customer__r.Name FROM Secondary_Invoice__c 
+                Total_Tax__c, Customer__c,Customer__r.Name,
+                Beat_Name__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c FROM Secondary_Invoice__c
                 WHERE Invoice_Date__c >= :frmDate  AND Invoice_Date__c <= :toDate AND Store__c =: accountId ORDER BY Name DESC
             ];
         }
         else {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, Status__c,Store__r.Name,Total_Quantity__c,Grand_Total__c,
-                Customer__c,Customer__r.Name,Total_Tax__c FROM Secondary_Invoice__c WHERE  Status__c = :status  AND Invoice_Date__c >= :frmDate 
+                Customer__c,Customer__r.Name,Total_Tax__c,
+                Beat_Name__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c FROM Secondary_Invoice__c WHERE  Status__c = :status  AND Invoice_Date__c >= :frmDate
                 AND Invoice_Date__c <= :toDate
                 AND Store__c =: accountId
                 ORDER BY Name DESC
@@ -894,6 +896,10 @@ public without sharing class DMSPortalLwc {
             inD.Status = i.Status__c;
             inD.tax = i.Total_Tax__c.setScale(2, RoundingMode.HALF_UP);
             inD.Quantity = i.Total_Quantity__c;
+            inD.beatName = i.Beat_Name__c != null ? i.Beat_Name__c : '';
+            inD.nonTaxableAmount = i.Non_Taxable_Amount__c != null ? i.Non_Taxable_Amount__c : 0;
+            inD.sgstAmount = i.SGST_Amount__c != null ? i.SGST_Amount__c : 0;
+            inD.cgstAmount = i.CGST_Amount__c != null ? i.CGST_Amount__c : 0;
             invDt.add(inD);
         }
         dt.totalSecoundaryInvoiceData = invDt;
@@ -2605,6 +2611,10 @@ public without sharing class DMSPortalLwc {
         
         @AuraEnabled public decimal Quantity;
         @AuraEnabled public boolean selected = false;
+        @AuraEnabled public String beatName;
+        @AuraEnabled public Decimal nonTaxableAmount;
+        @AuraEnabled public Decimal sgstAmount;
+        @AuraEnabled public Decimal cgstAmount;
     }
     public class SReturnData {
         @AuraEnabled public String productName;
