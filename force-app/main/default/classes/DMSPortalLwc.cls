@@ -1499,7 +1499,7 @@ public without sharing class DMSPortalLwc {
     @AuraEnabled
     public static List<Map<String, Object>> getOrderItems(String orderId) {
         List<Map<String, Object>> response = new List<Map<String, Object>>();
-        
+
         Id accountId;
         User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
         if (u.ContactId != null) {
@@ -1507,7 +1507,13 @@ public without sharing class DMSPortalLwc {
                 SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1
             ].AccountId;
         }
-        
+
+        String beatName = '';
+        List<Order__c> orderList = [SELECT Beat_Name_New__c FROM Order__c WHERE Id = :orderId LIMIT 1];
+        if (!orderList.isEmpty() && orderList[0].Beat_Name_New__c != null) {
+            beatName = orderList[0].Beat_Name_New__c;
+        }
+
         List<Order_Item__c> ordList = [
             SELECT Id, Name, Product__c, Product__r.Name,
             Quantity__c, Unit_Price__c,Tax__c,
@@ -1563,6 +1569,7 @@ public without sharing class DMSPortalLwc {
             row.put('AfterCategorySlabUnitPrice', AfterCategorySlabUnitPrice);
             row.put('BeforeSchemeUnitPrice', BeforeSchemeUnitPrice);
             row.put('AfterSchemeUnitPrice', AfterSchemeUnitPrice);
+            row.put('BeatName', beatName);
             
             row.put(
                 'availableQuantity',
