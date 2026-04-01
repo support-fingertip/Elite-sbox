@@ -858,44 +858,48 @@
                         <table class="contacts-table">
                             <thead>
                                 <tr>
-                                    <th style="width:15%">SKU</th>
-                                    <th style="width:7.22%">GRN Sale Qty</th>
-                                    <th style="width:7.22%">GRN Non-Sale Qty</th>
-                                    <th style="width:7.22%">Secondary Invoice Qty</th>
-                                    <th style="width:7.22%">Primary Return Qty</th>
-                                    <th style="width:7.22%">Secondary Return Sale Qty</th>
-                                    <th style="width:7.22%">Secondary Return Non-Sale Qty</th>
-                                    <th style="width:7.22%">Sale → Non-Sale Qty</th>
-                                    <th style="width:7.22%">Non-Sale → Sale Qty</th>
-                                    <th style="width:7.22%">Written Off Qty</th>
-                                    <th style="width:10%">Available Sale Qty</th>
-                                    <th style="width:10%">Available Non-Sale Qty</th>
+                                    <th style="width:13%">SKU</th>
+                                    <th style="width:6%">GRN Sale Qty</th>
+                                    <th style="width:6%">GRN Non-Sale Qty</th>
+                                    <th style="width:6%">Secondary Invoice Qty</th>
+                                    <th style="width:6%">Primary Return Qty</th>
+                                    <th style="width:6%">Secondary Return Sale Qty</th>
+                                    <th style="width:6%">Secondary Return Non-Sale Qty</th>
+                                    <th style="width:6%">Sale → Non-Sale Qty</th>
+                                    <th style="width:6%">Non-Sale → Sale Qty</th>
+                                    <th style="width:6%">Written Off Qty</th>
+                                    <th style="width:8%">Available Sale Qty</th>
+                                    <th style="width:8%">Available Non-Sale Qty</th>
+                                    <th style="width:7%">Unit Price</th>
+                                    <th style="width:7%">Total Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={stockFilter.isDataExisted}>
                                     <template for:each={stockFilter.allStockData} for:item="row">
                                         <tr key={row.claimName}>
-                                            <td style="width:15%">
+                                            <td style="width:13%">
                                                 {row.productName}
                                             </td>
-                                            <td style="width:7.22%">{row.GRNSaleableQuantity}</td>
-                                            <td style="width:7.22%">{row.GRNNonSaleableQuantity}</td>
-                                            <td style="width:7.22%">{row.secoundryInvoiceQty}</td>
-                                            <td style="width:7.22%">{row.primaryReturnQty}</td>
-                                            <td style="width:7.22%">{row.SecondaryReturnSaleableQuantity}</td>
-                                            <td style="width:7.22%">{row.SecondaryReturnNonSaleableQuantity}</td>
-                                            <td style="width:7.22%">{row.salebletoNonSaleableQty}</td>
-                                            <td style="width:7.22%">{row.nonSaleabletoSaleableQty}</td>
-                                            <td style="width:7.22%">{row.writtenOffQty}</td>
-                                            <td style="width:10%">{row.availableSaleableQuantity}</td>
-                                            <td style="width:10%">{row.availableNonSaleableQuantity}</td>
+                                            <td style="width:6%">{row.GRNSaleableQuantity}</td>
+                                            <td style="width:6%">{row.GRNNonSaleableQuantity}</td>
+                                            <td style="width:6%">{row.secoundryInvoiceQty}</td>
+                                            <td style="width:6%">{row.primaryReturnQty}</td>
+                                            <td style="width:6%">{row.SecondaryReturnSaleableQuantity}</td>
+                                            <td style="width:6%">{row.SecondaryReturnNonSaleableQuantity}</td>
+                                            <td style="width:6%">{row.salebletoNonSaleableQty}</td>
+                                            <td style="width:6%">{row.nonSaleabletoSaleableQty}</td>
+                                            <td style="width:6%">{row.writtenOffQty}</td>
+                                            <td style="width:8%">{row.availableSaleableQuantity}</td>
+                                            <td style="width:8%">{row.availableNonSaleableQuantity}</td>
+                                            <td style="width:7%">{row.unitPrice}</td>
+                                            <td style="width:7%">{row.totalAmount}</td>
                                         </tr>
                                     </template>
                                 </template>
                                 <template lwc:else>
                                     <tr>
-                                        <td colspan="7">
+                                        <td colspan="14">
                                             <div class="slds-truncate" style="text-align:center">
                                                 <span style="color:red;padding:10px;font-size:large">No
                                                     records found!</span>
