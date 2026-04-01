@@ -849,13 +849,24 @@
                             <h3 class="order-title">Stocks</h3>
 
                             <div class="order-filters">
+                                <button class="actionButton" onclick={downloadStockData}
+                                    style="background-color: #28a745; color: white; display: flex; align-items: center; padding: 6px 12px; border-radius: 4px;">
+                                    <span style="display: flex; align-items: center;">
+                                        Download
+                                        <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                            size="x-small"
+                                            style="margin-left: 4px; --slds-c-icon-color-foreground-default: white;">
+                                        </lightning-icon>
+                                    </span>
+                                </button>
                                 <lightning-input type="search" label="Search" class="custominputfieldSize"
                                     placeholder="SKU Name" name="serchCust" variant="label-hidden"
                                     value={stockFilter.srchVal} onchange={handleStockSearch}>
                                 </lightning-input>
                             </div>
                         </div>
-                        <table class="contacts-table">
+                        <div style="overflow-x: auto; width: 95%; border-radius:10px;">
+                        <table class="contacts-table" style="min-width: 1800px; width: 100%;">
                             <thead>
                                 <tr>
                                     <th style="width:13%">SKU</th>
@@ -909,6 +920,7 @@
                                 </template>
                             </tbody>
                         </table>
+                        </div>
 
                     </div>
                 </template>
