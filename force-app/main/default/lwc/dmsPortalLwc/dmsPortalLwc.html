@@ -241,27 +241,27 @@
                         </div>
 
                         <!-- Primary Invoices Table -->
-                        <table class="contacts-table" style="min-width: 900px;">
+                        <table class="contacts-table" style="min-width: 1400px;">
                             <thead>
                                 <tr>
                                     <!-- Header Checkbox to Select All -->
-                                    <th style="width:5%;">
+                                    <th style="width:3%;">
                                         <c-custom-check-box type="checkbox" onchange={handleSelectAll}
                                             checked={isAllSelected}></c-custom-check-box>
                                     </th>
-                                    <th style="width:5%;">S.No.</th>
+                                    <th style="width:3%;">S.No.</th>
                                     <th style="width:10%;">SAP Inv No.</th>
-                                    <th style="width:7.27%;">SF Inv No.</th>
-                                    <th style="width:7.27%;">Party Name</th>
-                                    <th style="width:7.27%;">GST No.</th>
-                                    <th style="width:7.27%;">Order No.</th>
-                                    <th style="width:7.27%;">Invoice Date</th>
-                                    <th style="width:7.27%;">Total Qty</th>
-                                    <th style="width:7.27%;">Non-Taxable Amount</th>
-                                    <th style="width:7.27%;">SGST</th>
-                                    <th style="width:7.27%;">SGST</th>
-                                    <th style="width:7.27%;">IGST</th>
-                                    <th style="width:7.27%;">Total Amount</th>
+                                    <th style="width:9%;">SF Inv No.</th>
+                                    <th style="width:10%;">Party Name</th>
+                                    <th style="width:12%;">GST No.</th>
+                                    <th style="width:9%;">Order No.</th>
+                                    <th style="width:8%;">Invoice Date</th>
+                                    <th style="width:5%;">Total Qty</th>
+                                    <th style="width:8%;">Non-Taxable Amount</th>
+                                    <th style="width:6%;">SGST</th>
+                                    <th style="width:6%;">SGST</th>
+                                    <th style="width:5%;">IGST</th>
+                                    <th style="width:6%;">Total Amount</th>
 
                                 </tr>
                             </thead>
@@ -270,27 +270,27 @@
                                     <template for:each={InvFilter.allInvData} for:item="inv">
                                         <tr key={inv.InvId}>
                                             <!-- Row Checkbox -->
-                                            <td style="width:5%;">
+                                            <td style="width:3%;">
                                                 <c-custom-check-box checked={inv.isSelected}
                                                     onchange={handleRowSelection} name={inv.InvId}></c-custom-check-box>
                                             </td>
-                                            <td style="width:5%;">{inv.rowIndex}</td>
+                                            <td style="width:3%;">{inv.rowIndex}</td>
                                             <!-- Clickable Invoice No -->
                                             <td style="cursor: pointer; color: blue; text-decoration: underline;width:10%;"
                                                 data-id={inv.InvId} onclick={handleInvoiceClick}>
                                                 {inv.invoiceNo}
                                             </td>
-                                            <td style="width:7.27%;">{inv.name}</td>
-                                            <td style="width:7.27%;">Elite</td>
-                                            <td style="width:7.27%;">29AAAAA1111A1Z1</td>
-                                            <td style="width:7.27%;">{inv.orderId}</td>
-                                            <td style="width:7.27%;">{inv.InvDate}</td>
-                                            <td style="width:7.27%;">{inv.TotalQuantity}</td>
-                                            <td style="width:7.27%;">{inv.Amount}</td>
-                                            <td style="width:7.27%;">{inv.tax}</td>
-                                            <td style="width:7.27%;">{inv.tax}</td>
-                                            <td style="width:7.27%;">{inv.tax}</td>
-                                            <td style="width:7.27%;">{inv.Amount}</td>
+                                            <td style="width:9%;">{inv.name}</td>
+                                            <td style="width:10%;">Elite</td>
+                                            <td style="width:12%;">29AAAAA1111A1Z1</td>
+                                            <td style="width:9%;">{inv.orderId}</td>
+                                            <td style="width:8%;">{inv.InvDate}</td>
+                                            <td style="width:5%;">{inv.TotalQuantity}</td>
+                                            <td style="width:8%;">{inv.Amount}</td>
+                                            <td style="width:6%;">{inv.tax}</td>
+                                            <td style="width:6%;">{inv.tax}</td>
+                                            <td style="width:5%;">{inv.tax}</td>
+                                            <td style="width:6%;">{inv.Amount}</td>
 
                                         </tr>
                                     </template>
