@@ -1756,7 +1756,7 @@ global with sharing class beatPlannerlwc {
             SELECT Id, Name, Description__c, Scheme_Start_Date__c, Scheme_End_Date__c,
             (SELECT Id, Product__c, Min__c, Sale_Value__c,Sale_Value_Threshold__c,Discount__c,Buy_Quantity__c, Product__r.Name
              FROM Buy_Products__r where Sales_Channel__c in:channelSet AND 
-             (Secondary_Customer_Category__c = :accSecCategory OR Secondary_Customer_Category__c = null) )
+             (Secondary_Customer_Category__c = :accSecCategory) )
             FROM Scheme__c
             WHERE Scheme_Start_Date__c <= :Date.today()
             AND Scheme_End_Date__c >= :Date.today()
@@ -2257,7 +2257,7 @@ global with sharing class beatPlannerlwc {
         }
 
         
-        list<Visit__c> visits = [select Id,OrderCreated__c from Visit__c where Id =:visId];
+        list<Visit__c> visits = [select Id,OrderCreated__c,Beat_Name__c from Visit__c where Id =:visId];
         if(!visits.isEmpty())
         {
             Visit__c vs = new Visit__c();
@@ -2266,6 +2266,34 @@ global with sharing class beatPlannerlwc {
             update vs;
         }
         
+        // Resolve Beat Name for order
+        String beatNameVal = '';
+        if (!visits.isEmpty() && visits[0].Beat_Name__c != null) {
+            beatNameVal = visits[0].Beat_Name__c;
+        } else if (accId != null) {
+            Id currentUserId = UserInfo.getUserId();
+            List<Junction_Beat__c> jbList = [
+                SELECT Child_beat__r.Name
+                FROM Junction_Beat__c
+                WHERE Account__c = :accId
+                AND Child_beat__r.OwnerId = :currentUserId
+                LIMIT 1
+            ];
+            if (!jbList.isEmpty()) {
+                beatNameVal = jbList[0].Child_beat__r.Name;
+            } else {
+                List<Junction_Beat__c> jbListAll = [
+                    SELECT Child_beat__r.Name
+                    FROM Junction_Beat__c
+                    WHERE Account__c = :accId
+                    LIMIT 1
+                ];
+                if (!jbListAll.isEmpty()) {
+                    beatNameVal = jbListAll[0].Child_beat__r.Name;
+                }
+            }
+        }
+
         // Step 1: Deserialize ordersData into List<Object>
         List<Object> rawList = (List<Object>) JSON.deserializeUntyped(ordersData);
         
@@ -2467,9 +2495,10 @@ global with sharing class beatPlannerlwc {
                 }
                 ord.Distribution_Channel__c = prdMapList[0].Distribution_Channel__c;
             }
+            ord.Beat_Name_New__c = beatNameVal;
             createdOrders.add(ord);
         }
-        
+
         // Upsert all orders
         upsert createdOrders;
         

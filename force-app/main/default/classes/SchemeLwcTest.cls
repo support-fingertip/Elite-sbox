@@ -69,7 +69,10 @@ private class SchemeLwcTest {
         
         // Create area
         Area__c testArea = new Area__c(
-            Name = 'Test Area'
+            Name = 'test',
+            Sales_Channel__c = 'CPD',
+            Region__c =	'Kerala',
+            Area__c  = 'Central'
         );
         insert testArea;
         

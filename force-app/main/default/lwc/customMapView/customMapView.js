@@ -4,34 +4,32 @@ import USER_ID from '@salesforce/user/Id';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class MapContainerLwc extends LightningElement {
-    @api recordId;
-    vfUrl;
-    @track visitData;
-    @track selectedDate = new Date().toISOString().slice(0, 10);
-    loading = false;
-     _selectedId;
+@api recordId;
+vfUrl;
+@track visitData;
+@track selectedDate = new Date().toISOString().slice(0, 10);
+loading = false;
+_selectedId;
 loadMap= false;
     connectedCallback() {
         const baseUrl = window.location.origin;
         this.vfUrl = `${baseUrl}/apex/customMapViewVFP?lcHost=${encodeURIComponent(baseUrl)}`;
         
     }
-        @api
-        get selectedId() {
-        return this._selectedId;
-        }
-        set selectedId(value) {
-     //   alert('Child received selectedId from parent:', value);
-            this._selectedId = value;
+    @api
+    get selectedId() {
+    return this._selectedId;
+    }
+    set selectedId(value) {
+        this._selectedId = value;
         this.handleSelectedIdChange(value);
-        }
+    }
 
-        handleSelectedIdChange(newId) {
-            this.visitData=[];
-     //   alert('Selected ID changed: ' + newId);
-     this.loadMap=false;
-         this.sendDataToVf();
-        }
+    handleSelectedIdChange(newId) {
+        this.visitData=[];
+        this.loadMap=false;
+        this.sendDataToVf();
+    }
 
 
 
@@ -47,11 +45,11 @@ loadMap= false;
                 console.log('Visit data received:', result);
                 this.visitData = result;
                 if(this.visitData.startLat){
-                      this.loadMap=true;
-                this.sendDataToVf();
+                    this.loadMap=true;
+                    this.sendDataToVf();
                 }
                 this.loading = false;
-               
+                
             })
             .catch((error) => {
                 console.error(' Error fetching visits:', error);
@@ -75,7 +73,6 @@ loadMap= false;
     sendDataToVf() {
         const iframe = this.template.querySelector('iframe');
         if (!iframe ) return;
-//  if (!iframe || !this.visitData) return;
         const mapMessage = {
             loadGoogleMap: this.loadMap,
             mapOptionsCenter: {

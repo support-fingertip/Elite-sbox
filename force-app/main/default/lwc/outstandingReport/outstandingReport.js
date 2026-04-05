@@ -92,6 +92,10 @@ export default class OutstandingReport extends LightningElement {
     }
 
     handleBack() {
+        this.isLoading = true;
+        setTimeout(() => {
+            this.isLoading = false;
+        }, 3000);
         this.dispatchEvent(new CustomEvent('back'));
     }
 

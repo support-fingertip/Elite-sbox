@@ -71,6 +71,10 @@
                 <behavior>Edit</behavior>
                 <field>ERP_Update__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Place_of_Supply__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

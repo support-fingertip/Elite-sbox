@@ -40,6 +40,7 @@ import getInvoices from '@salesforce/apex/InvoiceController.getInvoices';
 import getPrimaryInvoices from '@salesforce/apex/InvoiceController.getPrimaryInvoices';
 import getUsers from '@salesforce/apex/DMSPortalLwc.getUsers';
 import getSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getSecondaryCustomers';
+import getRefreshSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getRefreshSecondaryCustomers';
 import getInvoicePdfUrl from '@salesforce/apex/DMSPortalLwc.getInvoicePdfUrl';
 import getStockAdjustments from '@salesforce/apex/DMSPortalLwc.getStockAdjustments';
 import getSecondaryLedger from '@salesforce/apex/DMSPortalLwc.getSecondaryLedger';
@@ -47,6 +48,7 @@ import getOpeningBalance from '@salesforce/apex/DMSPortalLwc.getOpeningBalance';
 import orgUrl from '@salesforce/label/c.orgUrl';
 import { loadScript } from 'lightning/platformResourceLoader';
 import SHEETJS from '@salesforce/resourceUrl/SheetJS';
+import { refreshApex } from '@salesforce/apex';
 const TAB_WIDTH = 145;     // realistic average width per tab
 const RESERVED_WIDTH = 300; // logo + profile + More button + spacing
 
@@ -791,6 +793,26 @@ export default class NavigationComponent extends LightningElement {
                 this.isSubPartLoad = false;
             });
     }
+    handleCustomerRefresh() {
+        this.isSubPartLoad = true;
+
+        getRefreshSecondaryCustomers({
+            status: this.secoundaryCustomerFilter.status
+        })
+        .then(result => {
+            console.log('data' + JSON.stringify(result.customerData))
+            this.secoundaryCustomerFilter.originalSecondaryCustomers = result.customerData || [];
+            this.secoundaryCustomerFilter.allSecondaryCustomers = result.customerData || [];
+            this.secoundaryCustomerFilter.isshowData =
+                result.customerData && result.customerData.length > 0;
+        })
+        .catch(error => {
+            console.error('Error fetching secondary customers:', error);
+        })
+        .finally(() => {
+            this.isSubPartLoad = false;
+        });
+    }
 
     handleSecondaryCustomerStatusChange(event) {
         this.secoundaryCustomerFilter.status = event.detail.value;
@@ -835,6 +857,10 @@ export default class NavigationComponent extends LightningElement {
     handleAgingReportBack() {
         this.showSecondaryCustomerAgingReport = false;
         this.isShowSecondaryCustomers = true;
+        this.isSubPartLoad = true;
+        setTimeout(() => {
+            this.isSubPartLoad = false;
+        }, 3000);
         this.getCustomerData();
     }
 
@@ -857,6 +883,10 @@ export default class NavigationComponent extends LightningElement {
     handleOutstandingReportBack() {
         this.showOutstandingReport = false;
         this.isShowSecondaryCustomers = true;
+        this.isSubPartLoad = true;
+        setTimeout(() => {
+            this.isSubPartLoad = false;
+        }, 3000);
         this.getCustomerData();
     }
 
@@ -2002,6 +2032,69 @@ export default class NavigationComponent extends LightningElement {
                 allStockData: this.stockFilter.originalStockData,
                 isDataExisted: this.stockFilter.originalStockData.length !== 0 ? true : false
             };
+        }
+    }
+
+    downloadStockData() {
+        const data = this.stockFilter.allStockData || [];
+
+        if (data.length === 0) {
+            this.showToast('No Data Found', 'No stock data to export.', 'error');
+            return;
+        }
+
+        const headers = [
+            'SKU', 'GRN Sale Qty', 'GRN Non-Sale Qty', 'Secondary Invoice Qty',
+            'Primary Return Qty', 'Secondary Return Sale Qty', 'Secondary Return Non-Sale Qty',
+            'Sale → Non-Sale Qty', 'Non-Sale → Sale Qty', 'Written Off Qty',
+            'Available Sale Qty', 'Available Non-Sale Qty', 'Unit Price', 'Total Amount'
+        ];
+
+        const rows = data.map(row => [
+            row.productName || '',
+            row.GRNSaleableQuantity || 0,
+            row.GRNNonSaleableQuantity || 0,
+            row.secoundryInvoiceQty || 0,
+            row.primaryReturnQty || 0,
+            row.SecondaryReturnSaleableQuantity || 0,
+            row.SecondaryReturnNonSaleableQuantity || 0,
+            row.salebletoNonSaleableQty || 0,
+            row.nonSaleabletoSaleableQty || 0,
+            row.writtenOffQty || 0,
+            row.availableSaleableQuantity || 0,
+            row.availableNonSaleableQuantity || 0,
+            row.unitPrice || 0,
+            row.totalAmount || 0
+        ]);
+
+        const XLSX = window.XLSX;
+
+        if (XLSX) {
+            try {
+                const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+                ws['!cols'] = [
+                    { wch: 30 }, { wch: 12 }, { wch: 14 }, { wch: 18 },
+                    { wch: 14 }, { wch: 20 }, { wch: 22 },
+                    { wch: 18 }, { wch: 18 }, { wch: 12 },
+                    { wch: 14 }, { wch: 16 }, { wch: 10 }, { wch: 12 }
+                ];
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Stocks');
+                XLSX.writeFile(wb, `Stocks_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            } catch (error) {
+                console.error('XLSX Export Error:', error);
+                this.showToast('Export Error', 'Failed to export Excel: ' + error.message, 'error');
+            }
+        } else {
+            let csvContent = 'data:text/csv;charset=utf-8,' + headers.join(',') + '\n';
+            rows.forEach(row => {
+                csvContent += row.join(',') + '\n';
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `Stocks_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.click();
         }
     }
 
@@ -3195,16 +3288,19 @@ export default class NavigationComponent extends LightningElement {
         }
 
         // Define CSV header
-        const header = ['Invoice Name', 'Secondary Customer', 'Invoice Date', 'Status', 'Total Quantity', 'Total Tax', 'Grand Total'];
+        const header = ['Invoice No.', 'Outlet', 'Beat Name', 'Invoice Date', 'Status', 'Total Quantity', 'Non Taxable Amount', 'SGST', 'CGST', 'Total Amount'];
 
         // Map invoices to CSV rows
         const rows = invoices.map(invoice => [
             invoice.name || '',
             invoice.accName || '',
+            invoice.beatName || '',
             invoice.InvDate || '',
             invoice.Status || '',
             invoice.Quantity || '',
-            invoice.tax || '',
+            invoice.nonTaxableAmount || '',
+            invoice.sgstAmount || '',
+            invoice.cgstAmount || '',
             invoice.Amount || ''
         ]);
 
@@ -3244,15 +3340,21 @@ export default class NavigationComponent extends LightningElement {
         }
 
         // Define CSV header with fields as per the invoice data
-        const header = ['SAP Inv No','SF Inv No.', 'Invoice Date', 'Total Quantity', 'Total Tax', 'Total Amount'];
+        const header = ['SAP Inv No', 'SF Inv No.', 'Party Name', 'GST No.', 'Order No.', 'Invoice Date', 'Total Qty', 'Non-Taxable Amount', 'SGST', 'CGST', 'IGST', 'Total Amount'];
 
         // Map invoices to CSV rows
         const rows = invoices.map(invoice => [
             invoice.invoiceNo,
             invoice.name,
+            invoice.companyName,
+            invoice.gstNumber,
+            invoice.orderId,
             invoice.InvDate,
             invoice.TotalQuantity,
-            invoice.tax,
+            invoice.nonTaxableAmount,
+            invoice.sgstAmount,
+            invoice.cgstAmount,
+            invoice.igstAmount,
             invoice.Amount
         ]);
 

@@ -241,22 +241,28 @@
                         </div>
 
                         <!-- Primary Invoices Table -->
-                        <table class="contacts-table" style="margin-top: 20px;">
+                        <div style="overflow-x: auto; width: 95%; border-radius:10px;">
+                        <table class="contacts-table" style="min-width: 1800px; width: 100%;">
                             <thead>
                                 <tr>
                                     <!-- Header Checkbox to Select All -->
-                                    <th style="width:5%;">
+                                    <th style="width:3%;">
                                         <c-custom-check-box type="checkbox" onchange={handleSelectAll}
                                             checked={isAllSelected}></c-custom-check-box>
                                     </th>
-                                    <th style="width:5%;">S.No.</th>
-                                    <th style="width:15%;">SAP Inv No.</th>
-                                    <th style="width:10%;">SF Inv No.</th>
-                                    <th style="width:10%;">Order No.</th>
-                                    <th style="width:10%;">Invoice Date</th>
-                                    <th style="width:15%;">Total Qty</th>
-                                    <th style="width:15%;">Tax Amount</th>
-                                    <th style="width:15%;">Total Amount</th>
+                                    <th style="width:4%;">S.No.</th>
+                                    <th style="width:8%;">SAP Inv No.</th>
+                                    <th style="width:8%;">SF Inv No.</th>
+                                    <th style="width:7%;">Party Name</th>
+                                    <th style="width:11%;">GST No.</th>
+                                    <th style="width:7%;">Order No.</th>
+                                    <th style="width:7%;">Invoice Date</th>
+                                    <th style="width:5%;">Total Qty</th>
+                                    <th style="width:10%;">Non-Taxable Amount</th>
+                                    <th style="width:7%;">SGST</th>
+                                    <th style="width:7%;">SGST</th>
+                                    <th style="width:7%;">IGST</th>
+                                    <th style="width:9%;">Total Amount</th>
 
                                 </tr>
                             </thead>
@@ -265,22 +271,27 @@
                                     <template for:each={InvFilter.allInvData} for:item="inv">
                                         <tr key={inv.InvId}>
                                             <!-- Row Checkbox -->
-                                            <td style="width:5%;">
+                                            <td style="width:3%;">
                                                 <c-custom-check-box checked={inv.isSelected}
                                                     onchange={handleRowSelection} name={inv.InvId}></c-custom-check-box>
                                             </td>
-                                            <td style="width:5%;">{inv.rowIndex}</td>
+                                            <td style="width:4%;">{inv.rowIndex}</td>
                                             <!-- Clickable Invoice No -->
-                                            <td style="cursor: pointer; color: blue; text-decoration: underline;width:15%;"
+                                            <td style="cursor: pointer; color: blue; text-decoration: underline;width:8%;"
                                                 data-id={inv.InvId} onclick={handleInvoiceClick}>
                                                 {inv.invoiceNo}
                                             </td>
-                                            <td style="width:10%;">{inv.name}</td>
-                                            <td style="width:10%;">{inv.orderId}</td>
-                                            <td style="width:10%;">{inv.InvDate}</td>
-                                            <td style="width:15%;">{inv.TotalQuantity}</td>
-                                            <td style="width:15%;">{inv.tax}</td>
-                                            <td style="width:15%;">{inv.Amount}</td>
+                                            <td style="width:8%;">{inv.name}</td>
+                                            <td style="width:7%;">{inv.companyName}</td>
+                                            <td style="width:11%;">{inv.gstNumber}</td>
+                                            <td style="width:7%;">{inv.orderId}</td>
+                                            <td style="width:7%;">{inv.InvDate}</td>
+                                            <td style="width:5%;">{inv.TotalQuantity}</td>
+                                            <td style="width:10%;">{inv.nonTaxableAmount}</td>
+                                            <td style="width:7%;">{inv.sgstAmount}</td>
+                                            <td style="width:7%;">{inv.cgstAmount}</td>
+                                            <td style="width:7%;">{inv.igstAmount}</td>
+                                            <td style="width:9%;">{inv.Amount}</td>
 
                                         </tr>
                                     </template>
@@ -295,6 +306,7 @@
                                 </template>
                             </tbody>
                         </table>
+                        </div>
 
                     </div>
                 </template>
@@ -837,53 +849,68 @@
                             <h3 class="order-title">Stocks</h3>
 
                             <div class="order-filters">
+                                <button class="actionButton" onclick={downloadStockData}
+                                    style="background-color: #28a745; color: white; display: flex; align-items: center; padding: 6px 12px; border-radius: 4px;">
+                                    <span style="display: flex; align-items: center;">
+                                        Download
+                                        <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                            size="x-small"
+                                            style="margin-left: 4px; --slds-c-icon-color-foreground-default: white;">
+                                        </lightning-icon>
+                                    </span>
+                                </button>
                                 <lightning-input type="search" label="Search" class="custominputfieldSize"
                                     placeholder="SKU Name" name="serchCust" variant="label-hidden"
                                     value={stockFilter.srchVal} onchange={handleStockSearch}>
                                 </lightning-input>
                             </div>
                         </div>
-                        <table class="contacts-table">
+                        <div style="overflow-x: auto; width: 95%; border-radius:10px;">
+                        <table class="contacts-table" style="min-width: 1800px; width: 100%;">
                             <thead>
                                 <tr>
-                                    <th style="width:15%">SKU</th>
-                                    <th style="width:7.22%">GRN Sale Qty</th>
-                                    <th style="width:7.22%">GRN Non-Sale Qty</th>
-                                    <th style="width:7.22%">Secondary Invoice Qty</th>
-                                    <th style="width:7.22%">Primary Return Qty</th>
-                                    <th style="width:7.22%">Secondary Return Sale Qty</th>
-                                    <th style="width:7.22%">Secondary Return Non-Sale Qty</th>
-                                    <th style="width:7.22%">Sale → Non-Sale Qty</th>
-                                    <th style="width:7.22%">Non-Sale → Sale Qty</th>
-                                    <th style="width:7.22%">Written Off Qty</th>
-                                    <th style="width:10%">Available Sale Qty</th>
-                                    <th style="width:10%">Available Non-Sale Qty</th>
+                                    <th style="width:13%">SKU</th>
+                                    <th style="width:6%">GRN Sale Qty</th>
+                                    <th style="width:6%">GRN Non-Sale Qty</th>
+                                    <th style="width:6%">Secondary Invoice Qty</th>
+                                    <th style="width:6%">Primary Return Qty</th>
+                                    <th style="width:6%">Secondary Return Sale Qty</th>
+                                    <th style="width:6%">Secondary Return Non-Sale Qty</th>
+                                    <th style="width:6%">Sale → Non-Sale Qty</th>
+                                    <th style="width:6%">Non-Sale → Sale Qty</th>
+                                    <th style="width:6%">Written Off Qty</th>
+                                    <th style="width:8%">Available Sale Qty</th>
+                                    <th style="width:8%">Available Non-Sale Qty</th>
+                                    <th style="width:7%">Unit Price</th>
+                                    <th style="width:7%">Total Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={stockFilter.isDataExisted}>
                                     <template for:each={stockFilter.allStockData} for:item="row">
                                         <tr key={row.claimName}>
-                                            <td style="width:15%">
+                                            <td style="width:13%">
                                                 {row.productName}
                                             </td>
-                                            <td style="width:7.22%">{row.GRNSaleableQuantity}</td>
-                                            <td style="width:7.22%">{row.GRNNonSaleableQuantity}</td>
-                                            <td style="width:7.22%">{row.secoundryInvoiceQty}</td>
-                                            <td style="width:7.22%">{row.primaryReturnQty}</td>
-                                            <td style="width:7.22%">{row.SecondaryReturnSaleableQuantity}</td>
-                                            <td style="width:7.22%">{row.SecondaryReturnNonSaleableQuantity}</td>
-                                            <td style="width:7.22%">{row.salebletoNonSaleableQty}</td>
-                                            <td style="width:7.22%">{row.nonSaleabletoSaleableQty}</td>
-                                            <td style="width:7.22%">{row.writtenOffQty}</td>
-                                            <td style="width:10%">{row.availableSaleableQuantity}</td>
-                                            <td style="width:10%">{row.availableNonSaleableQuantity}</td>
+                                            <td style="width:6%">{row.GRNSaleableQuantity}</td>
+                                            <td style="width:6%">{row.GRNNonSaleableQuantity}</td>
+                                            <td style="width:6%">{row.secoundryInvoiceQty}</td>
+                                            <td style="width:6%">{row.primaryReturnQty}</td>
+                                            <td style="width:6%">{row.SecondaryReturnSaleableQuantity}</td>
+                                            <td style="width:6%">{row.SecondaryReturnNonSaleableQuantity}</td>
+                                            <td style="width:6%">{row.salebletoNonSaleableQty}</td>
+                                            <td style="width:6%">{row.nonSaleabletoSaleableQty}</td>
+                                            <td style="width:6%">{row.writtenOffQty}</td>
+                                            <td style="width:8%">{row.availableSaleableQuantity}</td>
+                                            <td style="width:8%">{row.availableNonSaleableQuantity}</td>
+                                            <td style="width:7%">{row.unitPrice}</td>
+                                            <td style="width:7%">{row.totalAmount}</td>
                                         </tr>
                                     </template>
                                 </template>
                                 <template lwc:else>
                                     <tr>
-                                        <td colspan="7">
+                                        <td colspan="14">
                                             <div class="slds-truncate" style="text-align:center">
                                                 <span style="color:red;padding:10px;font-size:large">No
                                                     records found!</span>
@@ -893,6 +920,7 @@
                                 </template>
                             </tbody>
                         </table>
+                        </div>
 
                     </div>
                 </template>
@@ -1103,17 +1131,21 @@
                                 </lightning-input>
                             </div>
                         </div>
-                        <table class="contacts-table">
+                        <div style="overflow-x: auto; width: 95%; border-radius:10px;">
+                        <table class="contacts-table" style="min-width: 1400px; width: 100%;">
                             <thead>
                                 <tr>
                                     <th style="width:5%;">S.No.</th>
-                                    <th style="width:15%;">Invoice No.</th>
-                                    <th style="width:20%;">Outlet</th>
-                                    <th style="width:10%;">Date</th>
-                                    <th style="width:10%;">Status</th>
-                                    <th style="width:10%;">Total Quantity</th>
-                                    <th style="width:10%;">Tax</th>
-                                    <th style="width:20%;">Total Amount</th>
+                                    <th style="width:10%;">Invoice No.</th>
+                                    <th style="width:12%;">Outlet</th>
+                                    <th style="width:12%;">Beat Name</th>
+                                    <th style="width:8%;">Date</th>
+                                    <th style="width:8%;">Status</th>
+                                    <th style="width:8%;">Total Quantity</th>
+                                    <th style="width:10%;">Non Taxable Amount</th>
+                                    <th style="width:8%;">SGST</th>
+                                    <th style="width:8%;">CGST</th>
+                                    <th style="width:11%;">Total Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1122,23 +1154,26 @@
                                         <tr key={row.InvId}>
                                             <td style="width:5%;">{row.rowIndex}</td>
                                             <td onclick={handleSecondaryInvoiceNoClick} data-id={row.InvId}
-                                                style="cursor: pointer; color: blue; text-decoration: underline;width:15%;">
+                                                style="cursor: pointer; color: blue; text-decoration: underline;width:10%;">
                                                 {row.name}
                                             </td>
-                                            <td style="width:20%;">
+                                            <td style="width:12%;">
                                                 {row.accName}
                                             </td>
-                                            <td style="width:10%;">{row.InvDate}</td>
-                                            <td style="width:10%;">{row.Status}</td>
-                                            <td style="width:10%;">{row.Quantity}</td>
-                                            <td style="width:10%;">{row.tax}</td>
-                                            <td style="width:20%;">{row.Amount}</td>
+                                            <td style="width:12%;">{row.beatName}</td>
+                                            <td style="width:8%;">{row.InvDate}</td>
+                                            <td style="width:8%;">{row.Status}</td>
+                                            <td style="width:8%;">{row.Quantity}</td>
+                                            <td style="width:10%;">{row.nonTaxableAmount}</td>
+                                            <td style="width:8%;">{row.sgstAmount}</td>
+                                            <td style="width:8%;">{row.cgstAmount}</td>
+                                            <td style="width:11%;">{row.Amount}</td>
                                         </tr>
                                     </template>
                                 </template>
                                 <template lwc:else>
                                     <tr>
-                                        <td colspan="6">
+                                        <td colspan="11">
                                             <div class="slds-truncate" style="text-align:center">
                                                 <span style="color:red;padding:10px;font-size:large">No
                                                     records found!</span>
@@ -1148,6 +1183,7 @@
                                 </template>
                             </tbody>
                         </table>
+                        </div>
 
                     </div>
                 </template>
@@ -1463,6 +1499,16 @@
                                 <lightning-input type="search" label="Search Customer" placeholder="Name / Code / Phone"
                                     value={searchKey} onchange={handleCustomerSearch}>
                                 </lightning-input>
+                                 <div class="btn-wrapper download-dropdown">
+                                    <button class="exportBtn" onclick={handleCustomerRefresh}>
+                                        <span style="display:flex; align-items:center; gap:6px;">
+                                            Refresh
+                                            <lightning-icon icon-name="utility:refresh" alternative-text="refresh"
+                                                size="x-small" style="--slds-c-icon-color-foreground-default: white;">
+                                            </lightning-icon>
+                                        </span>
+                                    </button>
+                                </div>
 
                                 <!-- Download Dropdown -->
                                 <div class="btn-wrapper download-dropdown">
@@ -1493,45 +1539,45 @@
                             </div>
                         </div>
 
-                        <table class="contacts-table">
+                        <table class="contacts-table" >
                             <thead>
                                 <tr>
                                     <th style="width:4%">S.No.</th>
                                     <th style="width:13%">Customer Name</th>
-                                    <th style="width:9%">Customer Code</th>
-                                    <th style="width:9%">Customer Type</th>
+                                    <th style="width:8%">Customer Code</th>
+                                    <th style="width:8%">Customer Type</th>
                                     <th style="width:9%">Customer Category</th>
                                     <th style="width:9%">Customer Status</th>
                                     <th style="width:9%">Primary Phone</th>
                                     <th style="width:9%">Beat Name</th>
                                     <th style="width:9%">District</th>
                                     <th style="width:9%">Outstanding</th>
-                                    <th style="width:11%">Action</th>
+                                    <th style="width:13%">Action</th>
                                 </tr>
                             </thead>
 
-                            <tbody>
+                            <tbody style="min-height:200px">
                                 <template lwc:if={secoundaryCustomerFilter.isshowData}>
                                     <template for:each={secoundaryCustomerFilter.originalSecondaryCustomers}
                                         for:item="cust">
                                         <tr key={cust.secondaryCustomerId}>
                                             <td style="width:4%">{cust.sNumber}</td>
                                             <td style="width:13%">{cust.secondaryCustomerName}</td>
-                                            <td style="width:9%">{cust.secondaryCustomerCode}</td>
-                                            <td style="width:9%">{cust.customerType}</td>
+                                            <td style="width:8%">{cust.secondaryCustomerCode}</td>
+                                            <td style="width:8%">{cust.customerType}</td>
                                             <td style="width:9%">{cust.customerCategory}</td>
                                             <td style="width:9%">{cust.status}</td>
                                             <td style="width:9%">{cust.primaryPhoneNumber}</td>
                                             <td style="width:9%">{cust.beatName}</td>
                                             <td style="width:9%">{cust.district}</td>
                                             <td class="text-right" style="width:9%">{cust.outStanding}</td>
-                                            <td style="width:11%">
+                                            <td style="width:13%">
                                                 <div class="report-dropdown">
                                                     <button class="aging-report-btn" data-id={cust.secondaryCustomerId} onclick={toggleReportMenu}>View Report</button>
                                                     <template lwc:if={cust.showReportMenu}>
                                                         <div class="report-dropdown-menu">
-                                                            <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewAgingReport}>View Aging Report</div>
-                                                            <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewOutstandingReport}>View Outstanding Report</div>
+                                                            <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewAgingReport}>Aging Report</div>
+                                                            <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewOutstandingReport}>Outstanding Report</div>
                                                         </div>
                                                     </template>
                                                 </div>
@@ -1542,8 +1588,14 @@
 
                                 <template lwc:else>
                                     <tr>
-                                        <td colspan="6" style="text-align:center;color:red;font-size:large">
-                                            No Customers found!
+                                        <td colspan="6" >
+                                            <div style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                                    <div class="slds-truncate">
+                                                        <span style="color:red; font-size:large;">
+                                                            No records found!
+                                                        </span>
+                                                    </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </template>
@@ -1623,9 +1675,12 @@
                                 <template lwc:else>
                                     <tr>
                                         <td colspan="5">
-                                            <div class="slds-truncate" style="text-align:center">
-                                                <span style="color:red;padding:10px;font-size:large">No
-                                                    records found!</span>
+                                           <div style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                                <div class="slds-truncate">
+                                                    <span style="color:red; font-size:large;">
+                                                        No records found!
+                                                    </span>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>

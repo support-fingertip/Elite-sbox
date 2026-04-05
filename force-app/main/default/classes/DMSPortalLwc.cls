@@ -290,13 +290,15 @@ public without sharing class DMSPortalLwc {
         system.debug('statusstatus '+status);
         system.debug('accountIdaccountId '+accountId);
         List<Invoice__c> invList = [SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                                    Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c
+                                    Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,
+                                    Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                                     FROM Invoice__c];
         system.debug('invlItsinvlist '+invList);
         if (status == 'All') {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 where Store__c =: accountId
                 AND Invoice_Date__c >= :frmDate
@@ -306,7 +308,8 @@ public without sharing class DMSPortalLwc {
         } else if(status == 'GRN Pending'){
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 WHERE (GRN_Status__c = 'GRN Pending' OR GRN_Status__c ='')
                 AND Invoice_Date__c >= :frmDate
@@ -317,7 +320,8 @@ public without sharing class DMSPortalLwc {
         }else if(status =='GRN Completed'){
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 WHERE (GRN_Status__c = 'GRN Completed')
                 AND Invoice_Date__c >= :frmDate
@@ -345,6 +349,12 @@ public without sharing class DMSPortalLwc {
             inD.TotalQuantity = i.Total_Quantity__c != null ? i.Total_Quantity__c :0 ; 
             inD.invoiceNo = i.Invoice_No__c != null ? i.Invoice_No__c: '';
             inD.orderId = i.SF_Order__r != null ? i.SF_Order__r.Name : '';
+            inD.companyName = i.Company_Name__c != null ? i.Company_Name__c : '';
+            inD.gstNumber = i.GST_Number__c != null ? i.GST_Number__c : '';
+            inD.nonTaxableAmount = i.Non_Taxable_Amount__c != null ? i.Non_Taxable_Amount__c : 0;
+            inD.sgstAmount = i.SGST_Amount__c != null ? i.SGST_Amount__c : 0;
+            inD.cgstAmount = i.CGST_Amount__c != null ? i.CGST_Amount__c : 0;
+            inD.igstAmount = i.IGST_Amount__c != null ? i.IGST_Amount__c : 0;
             invDt.add(inD);
         }
         dt.TotalInvoiceData = invDt;
@@ -683,6 +693,37 @@ public without sharing class DMSPortalLwc {
             }
         }
         
+        // Collect Product IDs for price lookup
+        Set<Id> productIds = new Set<Id>();
+        for (Distributor_Stock__c stock : latestStockMap.values()) {
+            if (stock.Product__c != null) {
+                productIds.add(stock.Product__c);
+            }
+        }
+
+        // Query Price_Book__c for primary customer prices
+        Map<Id, Decimal> priceBookMap = new Map<Id, Decimal>();
+        if (!productIds.isEmpty() && accountId != null) {
+            for (Price_Book__c pb : [
+                SELECT Product__c, Unit_Price__c FROM Price_Book__c
+                WHERE Customer_Type__c = 'Primary Customer'
+                AND Customer__c = :accountId
+                AND Product__c IN :productIds
+            ]) {
+                priceBookMap.put(pb.Product__c, pb.Unit_Price__c);
+            }
+        }
+
+        // Fallback: Query Product__c for List_Price__c
+        Map<Id, Decimal> productListPriceMap = new Map<Id, Decimal>();
+        if (!productIds.isEmpty()) {
+            for (Product__c prod : [
+                SELECT Id, List_Price__c FROM Product__c WHERE Id IN :productIds
+            ]) {
+                productListPriceMap.put(prod.Id, prod.List_Price__c);
+            }
+        }
+
         // Step 4: Build response list
         List<DistributorStock> distributorStockDataList = new List<DistributorStock>();
         for (Distributor_Stock__c i : latestStockMap.values()) {
@@ -706,6 +747,18 @@ public without sharing class DMSPortalLwc {
 
             stockData.availableSaleableQuantity = i.Available_Saleable_Quantity__c;
             stockData.availableNonSaleableQuantity = i.Available_Nonsaleable_Quantity__c;
+
+            // Resolve unit price: Price_Book__c first, then Product__c fallback
+            Decimal resolvedPrice = 0;
+            if (priceBookMap.containsKey(i.Product__c)) {
+                resolvedPrice = priceBookMap.get(i.Product__c) != null ? priceBookMap.get(i.Product__c) : 0;
+            } else if (productListPriceMap.containsKey(i.Product__c)) {
+                resolvedPrice = productListPriceMap.get(i.Product__c) != null ? productListPriceMap.get(i.Product__c) : 0;
+            }
+            stockData.unitPrice = resolvedPrice;
+            Decimal availQty = i.Available_Saleable_Quantity__c != null ? i.Available_Saleable_Quantity__c : 0;
+            stockData.totalAmount = availQty * resolvedPrice;
+
             distributorStockDataList.add(stockData);
         }
         
@@ -716,6 +769,13 @@ public without sharing class DMSPortalLwc {
     //Credit Notes
     @AuraEnabled
     public static DmsData allCreditNoteData(Date frmDate, date toDate,string status){
+
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        if(partnerUser.size() >0){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            accountId = contact[0].AccountId;
+        }
         DmsData dt = new DmsData();
         List<Secondary_Credit_Note__c> creditNotesList = new List<Secondary_Credit_Note__c>();
         String query = 'SELECT Id, Name, Claim__c, Claim__r.Name, Credit_Date__c, Customer__c, Customer__r.Name, Status__c, Reason__c, Amount__c, Description__c '+
@@ -848,14 +908,16 @@ public without sharing class DMSPortalLwc {
         if (status == 'All' || status =='' || status == null) {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, Status__c, Store__r.Name,Total_Quantity__c,Grand_Total__c,
-                Total_Tax__c,  Customer__c,Customer__r.Name FROM Secondary_Invoice__c 
+                Total_Tax__c, Customer__c,Customer__r.Name,
+                Beat_Name__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c FROM Secondary_Invoice__c
                 WHERE Invoice_Date__c >= :frmDate  AND Invoice_Date__c <= :toDate AND Store__c =: accountId ORDER BY Name DESC
             ];
         }
         else {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, Status__c,Store__r.Name,Total_Quantity__c,Grand_Total__c,
-                Customer__c,Customer__r.Name,Total_Tax__c FROM Secondary_Invoice__c WHERE  Status__c = :status  AND Invoice_Date__c >= :frmDate 
+                Customer__c,Customer__r.Name,Total_Tax__c,
+                Beat_Name__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c FROM Secondary_Invoice__c WHERE  Status__c = :status  AND Invoice_Date__c >= :frmDate
                 AND Invoice_Date__c <= :toDate
                 AND Store__c =: accountId
                 ORDER BY Name DESC
@@ -877,6 +939,10 @@ public without sharing class DMSPortalLwc {
             inD.Status = i.Status__c;
             inD.tax = i.Total_Tax__c.setScale(2, RoundingMode.HALF_UP);
             inD.Quantity = i.Total_Quantity__c;
+            inD.beatName = i.Beat_Name__c != null ? i.Beat_Name__c : '';
+            inD.nonTaxableAmount = i.Non_Taxable_Amount__c != null ? i.Non_Taxable_Amount__c : 0;
+            inD.sgstAmount = i.SGST_Amount__c != null ? i.SGST_Amount__c : 0;
+            inD.cgstAmount = i.CGST_Amount__c != null ? i.CGST_Amount__c : 0;
             invDt.add(inD);
         }
         dt.totalSecoundaryInvoiceData = invDt;
@@ -1476,7 +1542,7 @@ public without sharing class DMSPortalLwc {
     @AuraEnabled
     public static List<Map<String, Object>> getOrderItems(String orderId) {
         List<Map<String, Object>> response = new List<Map<String, Object>>();
-        
+
         Id accountId;
         User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
         if (u.ContactId != null) {
@@ -1484,7 +1550,13 @@ public without sharing class DMSPortalLwc {
                 SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1
             ].AccountId;
         }
-        
+
+        String beatName = '';
+        List<Order__c> orderList = [SELECT Beat_Name_New__c FROM Order__c WHERE Id = :orderId LIMIT 1];
+        if (!orderList.isEmpty() && orderList[0].Beat_Name_New__c != null) {
+            beatName = orderList[0].Beat_Name_New__c;
+        }
+
         List<Order_Item__c> ordList = [
             SELECT Id, Name, Product__c, Product__r.Name,
             Quantity__c, Unit_Price__c,Tax__c,
@@ -1540,6 +1612,7 @@ public without sharing class DMSPortalLwc {
             row.put('AfterCategorySlabUnitPrice', AfterCategorySlabUnitPrice);
             row.put('BeforeSchemeUnitPrice', BeforeSchemeUnitPrice);
             row.put('AfterSchemeUnitPrice', AfterSchemeUnitPrice);
+            row.put('BeatName', beatName);
             
             row.put(
                 'availableQuantity',
@@ -2028,6 +2101,130 @@ public without sharing class DMSPortalLwc {
         return rt;
     }
     
+     
+    @AuraEnabled
+    public static ReturnAccData getRefreshSecondaryCustomers(string status) {
+        
+        ReturnAccData rt = new ReturnAccData();
+        
+        // Get Logged-in User's Account 
+        Id accountId;
+        List<User> partnerUser = [
+            SELECT ContactId 
+            FROM User 
+            WHERE Id = :UserInfo.getUserId()
+            LIMIT 1
+        ];
+        
+        if (!partnerUser.isEmpty() && partnerUser[0].ContactId != null) {
+            List<Contact> contacts = [
+                SELECT AccountId 
+                FROM Contact 
+                WHERE Id = :partnerUser[0].ContactId
+                LIMIT 1
+            ];
+            if (!contacts.isEmpty()) {
+                accountId = contacts[0].AccountId;
+            }
+        }
+        
+        // Safety check
+        if (accountId == null) {
+            return rt;
+        }
+        
+        // Get Beat Mappings
+        List<Junction_Beat__c> beatItems = [
+            SELECT Account__c, Child_beat__r.Name
+            FROM Junction_Beat__c
+            WHERE Primary_Customer_Record_Id__c = :accountId
+        ];
+        
+        Map<Id, Set<String>> outletToBeatNames = new Map<Id, Set<String>>();
+        
+        for (Junction_Beat__c bt : beatItems) {
+            if (!outletToBeatNames.containsKey(bt.Account__c)) {
+                outletToBeatNames.put(bt.Account__c, new Set<String>());
+            }
+            outletToBeatNames.get(bt.Account__c).add(bt.Child_beat__r.Name);
+        }
+        
+        String query =
+            'SELECT Customer__c, ' +
+            'Secondary_Customer_Outlet_Id__c, ' +
+            'Secondary_Customer_Customer_Code__c, ' +
+            'Customer__r.Name, ' +
+            'Customer__r.State__c, ' +
+            'Customer__r.District__c, ' +
+            'Customer__r.Primary_Phone_Number__c, ' +
+            'Customer__r.Secondary_Customer_Type__c, ' +
+            'Primary_Customer__r.Name, ' +
+            'Customer__r.Secondary_Customer_Category__c, ' +
+            'Customer__r.Customer_Status__c, ' +
+            'Sub_Stockiest__r.Name ,' +
+            'Customer__r.Secondary_Outstanding_Amount__c ' +
+            'FROM Product_Mapping__c ' +
+            'WHERE Primary_Customer__c = :accountId ' +
+            'AND Is_Executive_Active__c = true ' +
+            'AND Customer__r.Customer_Status__c != null ';
+        
+        //Add status condition only when NOT “All”
+        if (status != 'All') {
+            query += ' AND Customer__r.Customer_Status__c = :status';
+        }
+        
+        List<Product_Mapping__c> mappings = Database.query(query);
+
+        
+        //Deduplication 
+        Set<Id> processedCustomerIds = new Set<Id>();
+        Set<Id> subStockiestCustomers = new Set<Id>();
+        
+        List<AccData> uniqueSecondaryCustomers = new List<AccData>();
+        Integer serialNo = 1;
+        for (Product_Mapping__c pm : mappings) {
+            
+            if (pm.Customer__c == null || processedCustomerIds.contains(pm.Customer__c)) {
+                continue;
+            }
+            
+            processedCustomerIds.add(pm.Customer__c);
+            
+            if (pm.Customer__r.Secondary_Customer_Type__c == 'Sub Stockiest') {
+                subStockiestCustomers.add(pm.Customer__c);
+            }
+            
+            AccData d = new AccData();
+            d.recordId = pm.Customer__c;
+            d.sNumber = serialNo++; 
+            d.secondaryCustomerId = pm.Customer__c;
+            d.secondaryCustomerName = pm.Customer__r.Name;
+            d.secondaryCustomerOutletId = pm.Secondary_Customer_Outlet_Id__c;
+            d.secondaryCustomerCode = pm.Secondary_Customer_Customer_Code__c;
+            d.primaryPhoneNumber = pm.Customer__r.Primary_Phone_Number__c;
+            d.state = pm.Customer__r.State__c;
+            d.district = pm.Customer__r.District__c;
+            d.primaryCustomerName = pm.Primary_Customer__r.Name;
+            d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
+            d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
+            d.customerType =  pm.Customer__r.Secondary_Customer_Type__c;
+            d.customerCategory =  pm.Customer__r.Secondary_Customer_Category__c;
+            d.status = pm.Customer__r.Customer_Status__c;
+            d.outStanding=  pm.Customer__r.Secondary_Outstanding_Amount__c != null ? pm.Customer__r.Secondary_Outstanding_Amount__c : 0;
+            d.beatName = outletToBeatNames.containsKey(pm.Customer__c)
+                ? String.join(new List<String>(outletToBeatNames.get(pm.Customer__c)), ';')
+                : '';
+            
+            uniqueSecondaryCustomers.add(d);
+        }
+        
+        rt.customerData = uniqueSecondaryCustomers;
+        rt.subStockiestCount = subStockiestCustomers.size();
+        rt.totalCustomersCount = processedCustomerIds.size();
+        rt.secondaryCustomerCount = rt.totalCustomersCount - rt.subStockiestCount;
+        
+        return rt;
+    }
     //=========================
     //Stock Adjustments
     //=========================
@@ -2350,6 +2547,12 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public Decimal TotalQuantity;  // <-- Add this line
         @AuraEnabled public String invoiceNo;
         @AuraEnabled public String orderId;
+        @AuraEnabled public String companyName;
+        @AuraEnabled public String gstNumber;
+        @AuraEnabled public Decimal nonTaxableAmount;
+        @AuraEnabled public Decimal sgstAmount;
+        @AuraEnabled public Decimal cgstAmount;
+        @AuraEnabled public Decimal igstAmount;
     }
     public class PReturnData {
         @AuraEnabled public String productName;
@@ -2418,6 +2621,8 @@ public without sharing class DMSPortalLwc {
         
         @AuraEnabled public decimal availableSaleableQuantity;
         @AuraEnabled public decimal availableNonSaleableQuantity;
+        @AuraEnabled public Decimal unitPrice;
+        @AuraEnabled public Decimal totalAmount;
     }
     public class CreditNote{
         @AuraEnabled public String creditNoteNo;
@@ -2458,6 +2663,10 @@ public without sharing class DMSPortalLwc {
         
         @AuraEnabled public decimal Quantity;
         @AuraEnabled public boolean selected = false;
+        @AuraEnabled public String beatName;
+        @AuraEnabled public Decimal nonTaxableAmount;
+        @AuraEnabled public Decimal sgstAmount;
+        @AuraEnabled public Decimal cgstAmount;
     }
     public class SReturnData {
         @AuraEnabled public String productName;
