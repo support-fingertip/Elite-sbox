@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Total_Calls__c</fullName>
+    <fullName>Total_No_of_Beat_Non_PJP_Order__c</fullName>
     <externalId>false</externalId>
-    <formula>Total_Visits__c + Non_PJP_Order_Calls__c +  Unique_Visit_form_Visits__c</formula>
+    <formula>Total_Outlets__c + No_Of_Outlets_from_Non_PJP_Order__c</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-    <label>Total Calls Made</label>
+    <label>Total No of Beat &amp; Non PJP Order</label>
     <precision>18</precision>
     <required>false</required>
     <scale>0</scale>

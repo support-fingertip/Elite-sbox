@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Total_Calls__c</fullName>
+    <fullName>Customer_GST_Number__c</fullName>
     <externalId>false</externalId>
-    <formula>Total_Visits__c + Non_PJP_Order_Calls__c +  Unique_Visit_form_Visits__c</formula>
+    <formula>Customer__r.GST_Number__c</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-    <label>Total Calls Made</label>
-    <precision>18</precision>
+    <label>Customer GST Number</label>
     <required>false</required>
-    <scale>0</scale>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
-    <type>Number</type>
+    <type>Text</type>
     <unique>false</unique>
 </CustomField>

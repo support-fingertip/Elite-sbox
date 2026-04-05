@@ -1756,7 +1756,7 @@ global with sharing class beatPlannerlwc {
             SELECT Id, Name, Description__c, Scheme_Start_Date__c, Scheme_End_Date__c,
             (SELECT Id, Product__c, Min__c, Sale_Value__c,Sale_Value_Threshold__c,Discount__c,Buy_Quantity__c, Product__r.Name
              FROM Buy_Products__r where Sales_Channel__c in:channelSet AND 
-             (Secondary_Customer_Category__c = :accSecCategory OR Secondary_Customer_Category__c = null) )
+             (Secondary_Customer_Category__c = :accSecCategory) )
             FROM Scheme__c
             WHERE Scheme_Start_Date__c <= :Date.today()
             AND Scheme_End_Date__c >= :Date.today()

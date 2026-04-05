@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Total_Calls__c</fullName>
+    <fullName>Visit_Form_Unique_Calls__c</fullName>
     <externalId>false</externalId>
-    <formula>Total_Visits__c + Non_PJP_Order_Calls__c +  Unique_Visit_form_Visits__c</formula>
+    <formula>Unique_Visit_form_Visits__c</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-    <label>Total Calls Made</label>
+    <label>Visit Form Unique Calls</label>
     <precision>18</precision>
     <required>false</required>
     <scale>0</scale>

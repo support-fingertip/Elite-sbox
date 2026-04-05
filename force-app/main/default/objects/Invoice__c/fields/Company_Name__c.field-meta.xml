@@ -4,7 +4,7 @@
     <externalId>false</externalId>
     <formula>&apos;TEST&apos;</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-    <label>Company Name</label>
+    <label>Party Name</label>
     <required>false</required>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>

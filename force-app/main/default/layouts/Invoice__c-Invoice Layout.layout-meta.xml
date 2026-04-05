@@ -18,6 +18,10 @@
                 <behavior>Readonly</behavior>
                 <field>CGST_Amount__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>GSTIN_UIN_of_Recipient__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns/>
         <style>TwoColumnsLeftToRight</style>

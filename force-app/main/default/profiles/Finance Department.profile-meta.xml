@@ -917,6 +917,18 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>SecondaryCreditNoteSharingBatch</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryCreditNoteSharingHandler</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryCreditNoteSharingHandlerTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>SecondaryCustomerController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -1823,6 +1835,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Account.Pincode__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.Place_of_Supply__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -3301,6 +3318,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>Daily_Log__c.No_of_Outlets_from_Visit_forms__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>Daily_Log__c.Non_PJP_Normal_Calls__c</field>
         <readable>true</readable>
@@ -3532,6 +3554,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Daily_Log__c.Total_No_of_Beat_Non_PJP_Order__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Daily_Log__c.Total_No_of_Outlets__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -3606,6 +3633,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Daily_Log__c.Unique_Visit_form_Visits__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Daily_Log__c.User_Id__c</field>
         <readable>true</readable>
@@ -3623,6 +3655,16 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Daily_Log__c.Vehicle__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Daily_Log__c.Visit_Form_Total_Calls__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Daily_Log__c.Visit_Form_Unique_Calls__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -5273,6 +5315,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Invoice__c.GRN_Status__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice__c.GSTIN_UIN_of_Recipient__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -9257,8 +9304,18 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Invoice__c.CGST_Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Invoice__c.Closed_Date__c</field>
         <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Customer_GST_Number__c</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
@@ -9316,6 +9373,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Non_Taxable_Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>Secondary_Invoice__c.Order__c</field>
         <readable>true</readable>
@@ -9333,6 +9395,16 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Secondary_Invoice__c.Remarks__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Reverse_Charge__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.SGST_Amount__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -10648,6 +10720,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Visit_Form__c.Contact_Number__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Visit_Form__c.CustomerId__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

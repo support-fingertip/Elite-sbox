@@ -5,7 +5,7 @@ public without sharing class OrderTriggerHandler {
         List<Order__c> primaryOrders = new List<Order__c>();
         Date today = Date.today();
         set<String> customerWithExecutiveIds = new set<String>();
-         set<String> customerCodes = new set<String>();
+        set<String> customerCodes = new set<String>();
         for(Order__c ord : ordList) {
             if(ord.Customer_Name__c != null)  ord.Customer_Name_Search__c = ord.Customer_Name__c;
             if(ord.Customer_SAP_Code__c != null)  ord.SAP_Code__c = ord.Customer_SAP_Code__c;
@@ -39,7 +39,7 @@ public without sharing class OrderTriggerHandler {
                 keyWithPrimaryCustomer.put(pm.Customer_Executive_Pair__c,pm.Primary_Customer__c);
                 if(pm.Sub_Stockiest__c != null)
                 {
-                     keyWithSubStockiest.put(pm.Customer_Executive_Pair__c,pm.Sub_Stockiest__c);
+                    keyWithSubStockiest.put(pm.Customer_Executive_Pair__c,pm.Sub_Stockiest__c);
                 }
             }
             
@@ -53,7 +53,7 @@ public without sharing class OrderTriggerHandler {
                     secondaryCustomerWithSubStockiest.put(pm.Customer__c,pm.Sub_Stockiest__c);
                 }
             }
-
+            
             for(Order__c ord : ordList) {
                 if(ord.Account__c !=null && ord.Order_Type__c == 'Secondary Order')
                 {
@@ -203,7 +203,7 @@ public without sharing class OrderTriggerHandler {
         }
     }
     
-
+    
     public static void afterUpdate(List<Order__c> newOrderList,Map<Id,Order__c> oldMap)
     {
         set<Id> userIds = new set<Id>();
@@ -219,7 +219,7 @@ public without sharing class OrderTriggerHandler {
                     visitIds.add(ord.Visit__c);
                 }
             }  
-               
+            
         }
         if(!userIds.isEmpty() && !orderDates.isEmpty())
         {
@@ -230,7 +230,7 @@ public without sharing class OrderTriggerHandler {
         if (!visitIds.isEmpty()) {
             updateVisitStatusAfterRejection(visitIds);
         }
-       
+        
         
     }
     public static void afterDelete(List<Order__c> oldOrderList) {
@@ -293,9 +293,9 @@ public without sharing class OrderTriggerHandler {
         if (!visitIds.isEmpty()) {
             updateVisitStatusAfterRejection(visitIds);
         }
-   
+        
     }
- 
+    
     public static void beforeUpdate(List<Order__c> newOrderList,Map<Id,Order__c> oldMap)
     {
         for (Order__c ord : newOrderList) {
@@ -433,7 +433,7 @@ public without sharing class OrderTriggerHandler {
             update logsToUpdate;
         }
     }
-        
+    
     public static void OrderAmountUpdateOnDailyLog(Set<Id> userIds,Set<Date> orderDates) {
         if (userIds.isEmpty() || orderDates.isEmpty()) return;
         
@@ -446,7 +446,7 @@ public without sharing class OrderTriggerHandler {
         Map<String, Decimal> totalLinesSoldPrimaryMap = new Map<String, Decimal>();
         Map<String, Decimal> totalLinesSoldSubStockiestMap = new Map<String, Decimal>();
         Map<String, Decimal> totalLinesSoldOutletMap = new Map<String, Decimal>();
-
+        
         for (AggregateResult ar : [
             SELECT OwnerId ownerId,
             Order_Date__c orderDate,
@@ -550,7 +550,7 @@ public without sharing class OrderTriggerHandler {
             outLoc.removeAll(inLoc);
             
             finalNonPjpCount.put(key, Decimal.valueOf(nonPjpCustomers.size()));
-
+            
             finalInLocationCount.put(key, Decimal.valueOf(inLoc.size()));
             finalOutLocationCount.put(key, Decimal.valueOf(outLoc.size()));
         }
