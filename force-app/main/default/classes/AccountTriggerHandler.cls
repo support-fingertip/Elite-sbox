@@ -349,9 +349,10 @@ public class AccountTriggerHandler {
                 GenericNotificationCenter.notificationSend(title, acc.Id, body, systemadminUserIds);
             }
             Boolean isLastOrderChanged = acc.Last_Order__c != oldAcc.Last_Order__c;
+            Boolean isSalesChennelChanged = acc.Sales_Channel__c != oldAcc.Sales_Channel__c;
             //send the data to azure : integration            
             if ((acc.Customer_Status__c == 'Active' || (acc.Customer_Status__c != oldAcc.Customer_Status__c && acc.Customer_Status__c == 'Inactive' ))
-                && AccountTriggerRecursion.skipAzureCall==false && !isLastOrderChanged) {// acc.Customer_Status__c != oldAcc.Customer_Status__c && acc.Customer_Type__c == 'Primary Customer'
+                && AccountTriggerRecursion.skipAzureCall==false && !isLastOrderChanged && !isSalesChennelChanged) {// acc.Customer_Status__c != oldAcc.Customer_Status__c && acc.Customer_Type__c == 'Primary Customer'
                    
                 
                     system.debug('accounttriggerhandler 341:-acc.Customer_Status__c'+acc.Customer_Status__c); 

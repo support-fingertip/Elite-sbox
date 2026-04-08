@@ -10,7 +10,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AccountController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AccountControllerTest</apexClass>
@@ -18,7 +18,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AccountDocumentMailer</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AccountEditAccessController</apexClass>
@@ -38,11 +38,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AccountTriggerRecursion</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ApproverReplacementQueue</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AreaTriggerTest</apexClass>
@@ -50,7 +50,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AutoPJPCreationScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AutoPJPCreationSchedulerTest</apexClass>
@@ -58,7 +58,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AzureAccountSyncQueue</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AzureAccountSyncQueueTest</apexClass>
@@ -66,7 +66,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AzureIntegrationController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AzureIntegrationControllerTest</apexClass>
@@ -82,7 +82,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>BatchPasswordReset</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BatchPasswordResetTest</apexClass>
@@ -90,15 +90,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>Batch_TargetActualsActuals</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatCloneBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatItemTriggerTest</apexClass>
@@ -110,7 +110,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>BeatTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatTriggerHandlerTest</apexClass>
@@ -122,7 +122,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>BeatVisitSummaries</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CSVCreator</apexClass>
@@ -174,11 +174,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ClientInspectorController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CloneBeatController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CollectionTriggerHandler</apexClass>
@@ -190,7 +190,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesLandingController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesLandingControllerTest</apexClass>
@@ -198,7 +198,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesLoginController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesLoginControllerTest</apexClass>
@@ -206,7 +206,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesSelfRegConfirmController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesSelfRegConfirmControllerTest</apexClass>
@@ -214,7 +214,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesSelfRegController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesSelfRegControllerTest</apexClass>
@@ -238,7 +238,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CreateMissingPriceBooksBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CreateMissingPriceBooksBatchTest</apexClass>
@@ -286,7 +286,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CustomerReplacementController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CustomerReplacementControllerTest</apexClass>
@@ -294,7 +294,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DMSPortalLwc</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DMSPortalLwcTest</apexClass>
@@ -302,15 +302,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotification</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationBatchScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationBatchTest</apexClass>
@@ -318,7 +318,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationSchedulerTest</apexClass>
@@ -330,11 +330,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogOrderAmountBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DashboardService</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DataType</apexClass>
@@ -342,7 +342,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DataUploaderController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DeactivatePJPScheduler</apexClass>
@@ -362,7 +362,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DistanceCalculationQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DistanceCalculationQueueableTest</apexClass>
@@ -378,19 +378,19 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EODReport</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportBatchScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportPdfController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportPdfControllerTest</apexClass>
@@ -398,7 +398,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportQueueableMail</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportQueueableMailTest</apexClass>
@@ -442,15 +442,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeProductMappingCloneBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeReplacementBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeReplacementUpdateQueue</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeSubmitForApprovalController</apexClass>
@@ -462,11 +462,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeSubordinateController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeSubordinateControllerTest</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeTriggerHandler</apexClass>
@@ -498,15 +498,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeesWithoutAttendenceBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeesWithoutAttendenceBatchScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExceptionHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExceptionHandlerTest</apexClass>
@@ -514,7 +514,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseApprovalController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseApprovalController_Test</apexClass>
@@ -522,11 +522,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseApprovalHistoryController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseController_Test</apexClass>
@@ -538,7 +538,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseLineItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseListViewController</apexClass>
@@ -546,15 +546,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseLwcController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpensePeriodUtil</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>FileController</apexClass>
@@ -578,7 +578,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>GTInvoiceController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>GenericNotificationCenter</apexClass>
@@ -594,19 +594,19 @@
     </classAccesses>
     <classAccesses>
         <apexClass>GoogleMapsConfigController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceHeaderTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceItemTriggerHandlerTest</apexClass>
@@ -630,7 +630,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LeavesTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LeavesTriggerHandlerTest</apexClass>
@@ -654,7 +654,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LightningForgotPasswordController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LightningForgotPasswordControllerTest</apexClass>
@@ -662,7 +662,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LightningLoginFormController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LightningLoginFormControllerTest</apexClass>
@@ -670,7 +670,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LightningSelfRegisterController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LightningSelfRegisterControllerTest</apexClass>
@@ -686,11 +686,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>MapMissingMappings</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>MappingHelper</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>MappingHelperTest</apexClass>
@@ -698,7 +698,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>MicrobatchSelfRegController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>MicrobatchSelfRegControllerTest</apexClass>
@@ -730,15 +730,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>OrderFulfilmentController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>OrderItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>OrderNumberingQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>OrderPdfController</apexClass>
@@ -750,7 +750,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>OrderTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>OrderTriggerHandlerTest</apexClass>
@@ -758,7 +758,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>OrderViewForm</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PJPItemHandler</apexClass>
@@ -782,11 +782,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PostHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PrimaryTargetsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PrimaryTargetsBatchTest</apexClass>
@@ -794,11 +794,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ProductControllerGRIDVIEW</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ProductGalleryController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ProductMappingTriggerHandler</apexClass>
@@ -810,11 +810,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PushOrderToSAQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogiSchedular</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogiSchedularTest</apexClass>
@@ -822,7 +822,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogisticsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogisticsBatchTest</apexClass>
@@ -830,11 +830,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogisticsScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>RejectOrder</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>RejectOrderTest</apexClass>
@@ -850,7 +850,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ResetPasswordController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>RetunPdfController</apexClass>
@@ -870,11 +870,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnTriggerHandlerTest</apexClass>
@@ -918,11 +918,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingHandlerTest</apexClass>
@@ -930,7 +930,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCustomerController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCustomerControllerTest</apexClass>
@@ -938,7 +938,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCustomerMappingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCustomerTransferBatchProcessor</apexClass>
@@ -946,11 +946,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingHandlerTest</apexClass>
@@ -958,11 +958,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SendAccountDocumentsOrgWide</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SendEmailNotificationToBillingTeam</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SendEmailNotificationToBillingTeam_Test</apexClass>
@@ -990,7 +990,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>StockTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>StockTriggerHandlerTest</apexClass>
@@ -1014,11 +1014,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SyncApprovers</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayBatchTest</apexClass>
@@ -1026,7 +1026,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayControllerTest</apexClass>
@@ -1034,7 +1034,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDaySchedulerTest</apexClass>
@@ -1042,11 +1042,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>TargetActualsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TargetActualsChartController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TargetActualsTriggerTest</apexClass>
@@ -1062,15 +1062,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>TransactionController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UnlockExpenseRecord</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateCustomerChannelsAndPlantsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateCustomerChannelsAndPlantsBatchTest</apexClass>
@@ -1078,11 +1078,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateDailyLogBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateDailyLogBatchForAccountCount</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateDailyLogBatchTest</apexClass>
@@ -1090,7 +1090,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateLastOrderBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateLastOrderBatchTest</apexClass>
@@ -1098,7 +1098,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateProductiveVisitBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateUsersQueueable</apexClass>
@@ -1110,7 +1110,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UserListController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UserRoleSyncBatch</apexClass>
@@ -1130,7 +1130,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>VerifyEmailController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>VerifyEmailControllerTest</apexClass>
@@ -1138,7 +1138,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormControllerTest</apexClass>
@@ -1146,7 +1146,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormTriggerHandlerTest</apexClass>
@@ -1178,7 +1178,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ceoDashboardController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ceoDashboardControllerTest</apexClass>
@@ -1194,7 +1194,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>getDataIntegrationController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>getDataIntegrationController_Test</apexClass>
@@ -1202,7 +1202,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>mapController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>mapControllerTest</apexClass>
@@ -1218,7 +1218,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>newStockAdjustment</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>postHandler_TestClass</apexClass>
@@ -1226,7 +1226,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>primaryorderTABLEVIEW</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>userProfileLWC</apexClass>
