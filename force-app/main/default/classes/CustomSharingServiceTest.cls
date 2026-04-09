@@ -527,11 +527,126 @@ public class CustomSharingServiceTest {
             FROM Employee__c
             WHERE Id = :emp.Id
         ];
-        
+
     }
 
-    
 
-    
-    
+    @IsTest
+    static void testEmployeeTransfer() {
+
+        User oldUser = [SELECT Id, Name FROM User WHERE Employee_Code__c = '123sfgg212231' LIMIT 1];
+        User newUser = [SELECT Id, Name FROM User WHERE Employee_Code__c = '1232122DDD343' LIMIT 1];
+
+        // Seed records owned/assigned to old user
+        Account acc = new Account(
+            Name = 'Transfer Primary',
+            OwnerId = oldUser.Id,
+            Customer_Type__c = 'Primary Customer',
+            Pincode__c = '560001',
+            Primary_Phone_Number__c = '3876543210',
+            State__c = 'Karnataka',
+            District__c = 'Kolar'
+        );
+        insert acc;
+
+        Area__c tr = new Area__c(
+            Name = 'Transfer Area',
+            Sales_Channel__c = 'CPD',
+            Region__c = 'Kerala',
+            Area__c = 'Central'
+        );
+        insert tr;
+
+        Product_Mapping__c pm = new Product_Mapping__c(
+            Customer__c = acc.Id,
+            Chanel__c = 'CPD',
+            Parent_Depot__c = '1100',
+            Child_Depot__c = '1100',
+            Payment_Term__c = '0003',
+            Area__c = tr.Id,
+            Exectuive__c = oldUser.Id
+        );
+        insert pm;
+
+        Employee__c emp = new Employee__c(
+            Name = 'Transfer Employee',
+            OwnerId = oldUser.Id,
+            User__c = oldUser.Id,
+            IsDataUpload__c = true,
+            Mail_Id__c = 'txfer@gmail.com',
+            Aadhar_Number__c = '119977669999',
+            Profile__c = 'ASM',
+            Sales_Channel__c = 'TN',
+            User_Name__c = 'txfer@test.com'
+        );
+        insert emp;
+
+        Employee_Customer_Assignment__c eca = new Employee_Customer_Assignment__c(
+            Executive__c = oldUser.Id,
+            Employee__c = emp.Id,
+            Customer__c = acc.Id
+        );
+        insert eca;
+
+        Child_beat__c beat = new Child_beat__c(
+            Beat_Id_Text__c = '777888',
+            Name = 'Transfer Beat',
+            OwnerId = oldUser.Id,
+            User__c = oldUser.Id,
+            Beat_Type__c = 'Primary'
+        );
+        insert beat;
+
+        Calendar_beat__c pjp = new Calendar_beat__c(
+            User__c = oldUser.Id,
+            Active__c = true
+        );
+        insert pjp;
+
+        Map<String, String> oldToNewMap = new Map<String, String>{
+            oldUser.Id => newUser.Id
+        };
+
+        Test.startTest();
+        CustomSharingService.employeeTransfer(oldToNewMap);
+        Test.stopTest();
+
+        // Verify ownership has moved
+        Product_Mapping__c pmAfter = [SELECT Exectuive__c FROM Product_Mapping__c WHERE Id = :pm.Id];
+        System.assertEquals(newUser.Id, pmAfter.Exectuive__c, 'Product Mapping should be transferred');
+
+        Employee_Customer_Assignment__c ecaAfter = [SELECT Executive__c FROM Employee_Customer_Assignment__c WHERE Id = :eca.Id];
+        System.assertEquals(newUser.Id, ecaAfter.Executive__c, 'Assignment should be transferred');
+
+        Child_beat__c beatAfter = [SELECT OwnerId, User__c FROM Child_beat__c WHERE Id = :beat.Id];
+        System.assertEquals(newUser.Id, beatAfter.OwnerId, 'Beat OwnerId should be transferred');
+        System.assertEquals(newUser.Id, beatAfter.User__c, 'Beat User__c should be transferred');
+
+        Calendar_beat__c pjpAfter = [SELECT User__c FROM Calendar_beat__c WHERE Id = :pjp.Id];
+        System.assertEquals(newUser.Id, pjpAfter.User__c, 'PJP User__c should be transferred');
+    }
+
+    @IsTest
+    static void testEmployeeTransferEmptyMap() {
+        Test.startTest();
+        CustomSharingService.employeeTransfer(null);
+        CustomSharingService.employeeTransfer(new Map<String, String>());
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testEmployeeTransferService() {
+        User oldUser = [SELECT Id FROM User WHERE Employee_Code__c = '123sfgg212231' LIMIT 1];
+        User newUser = [SELECT Id FROM User WHERE Employee_Code__c = '1232122DDD343' LIMIT 1];
+
+        Map<String, String> oldToNewMap = new Map<String, String>{
+            oldUser.Id => newUser.Id
+        };
+
+        Test.startTest();
+        EmployeeTransferService.transferEmployee(oldToNewMap);
+        Test.stopTest();
+    }
+
+
 }

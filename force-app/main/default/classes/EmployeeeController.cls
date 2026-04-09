@@ -367,7 +367,69 @@ public class EmployeeeController {
         }
     }
 
-    
+
+    /**
+     * Transfer (in-place) variant of Employee Replacement.
+     * Instead of cloning records from old user to new user, this updates
+     * existing Product Mappings, Employee Customer Assignments, Beats and
+     * PJPs so that they now belong to the new DSM. Beats have both User__c
+     * and OwnerId updated (the "user tag" on Child_beat__c).
+     */
+    @AuraEnabled
+    public static String employeeTransferAction(Id recordId) {
+        try {
+            List<Employee__c> employeeList = [
+                SELECT Id, Name, User__c, ReplacedForUserId__c, Cloning_is_Completed__c,
+                    Replaced_For__c, Replaced_For__r.Is_Employee_Replaced__c, Replaced_For__r.Employee_Replaced_With_Name__c
+                FROM Employee__c
+                WHERE Id = :recordId
+            ];
+
+            if (employeeList.isEmpty()) { return 'Error: EMPLOYEE_NOT_FOUND'; }
+
+            Employee__c emp = employeeList[0];
+
+            // Validate required fields
+            if (emp.User__c == null || emp.ReplacedForUserId__c == null || emp.Replaced_For__c == null) {
+                return 'Error: REPLACEMENT_MISSING';
+            }
+
+            // Already replaced?
+            if (emp.Replaced_For__r != null && emp.Replaced_For__r.Is_Employee_Replaced__c) {
+                return 'Error: EMPLOYEE_REPLACED::' + emp.Replaced_For__r.Employee_Replaced_With_Name__c;
+            }
+
+            if (emp.Cloning_is_Completed__c) {
+                return 'Error: CLONING_COMPLETED';
+            }
+
+            Map<String, String> oldToNewUserMap = new Map<String, String>();
+            oldToNewUserMap.put(emp.ReplacedForUserId__c, emp.User__c);
+
+            // Run transfer in without-sharing context
+            EmployeeTransferService.transferEmployee(oldToNewUserMap);
+
+            // Mark new employee complete
+            emp.Cloning_is_Completed__c = true;
+
+            // Mark replacement done on old employee
+            Employee__c oldEmployee = new Employee__c(
+                Id = emp.Replaced_For__c,
+                Is_Employee_Replaced__c = true,
+                Employee_Replaced_With_Name__c = emp.Name
+            );
+
+            System.debug('Employee Transfer Done for Employee: ' + emp.Id);
+            System.enqueueJob(new EmployeeReplacementUpdateQueue(new List<Employee__c>{ emp, oldEmployee }));
+
+            return 'Success: Employee records (Beats, PJPs, Product Mappings, Customer Assignments) successfully transferred to new DSM.';
+        } catch (Exception ex) {
+            System.debug('Exception in employeeTransferAction: ' + ex.getMessage());
+            return 'Error: ' + ex.getMessage();
+        }
+    }
+
+
     /**----------LWC Controller ---------**/
     public class DataBox{
         @AuraEnabled public string profileName;
