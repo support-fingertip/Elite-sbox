@@ -1,10 +1,56 @@
 @isTest
 public class CustomerReplacementControllerTest {
-    
+
+    // @testSetup runs in its own transaction, so User DML done here does NOT
+    // cause Mixed DML errors when test methods later insert non-setup objects
+    // like Account, Product_Mapping__c, etc.
+    @testSetup
+    static void setupUsers() {
+        UserRole testRole = [SELECT Id FROM UserRole LIMIT 1];
+        Profile tseProfile = [SELECT Id FROM Profile WHERE Name = 'TSE' LIMIT 1];
+
+        User testUser1 = new User(
+            Alias = 'tuser',
+            Employee_Code__c = '123212231',
+            Email = 'testus12er@example.com',
+            EmailEncodingKey = 'UTF-8',
+            userroleId = testRole.Id,
+            LastName = 'Test',
+            isActive = true,
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey = 'en_US',
+            ProfileId = tseProfile.Id,
+            TimeZoneSidKey = 'America/Los_Angeles',
+            Username = 'testus1212er@example.com' + System.currentTimeMillis(),
+            Sales_Channel__c = 'Cake'
+        );
+        insert testUser1;
+
+        User testUser2 = new User(
+            Alias = 'tuser12',
+            Employee_Code__c = '1232122343',
+            Email = 'testuse12r@example.com',
+            userroleId = testRole.Id,
+            ManagerId = testUser1.Id,
+            isActive = true,
+            EmailEncodingKey = 'UTF-8',
+            LastName = 'Test',
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey = 'en_US',
+            ProfileId = tseProfile.Id,
+            TimeZoneSidKey = 'America/Los_Angeles',
+            Username = 'testu212ser@example.com' + System.currentTimeMillis(),
+            Sales_Channel__c = 'Cake'
+        );
+        insert testUser2;
+    }
+
     @isTest
     static void testPrimaryCustomerReplacement() {
-        // Create source and target primary customers
-     // Create primary customer
+        // Users were inserted in @testSetup, so querying is safe - no Mixed DML.
+        User testUser2 = [SELECT Id FROM User WHERE Employee_Code__c = '1232122343' LIMIT 1];
+
+        // Create primary customer
         Account primaryAcc = new Account(
             Name = 'Primary Customer',
             Customer_Type__c = 'Primary Customer',
@@ -12,7 +58,7 @@ public class CustomerReplacementControllerTest {
             Payment_Type__c = 'Credit',
             Credit_Limit__c = 10000,
             Customer_Status__c = 'Active',
-            SAP_Customer_Code__c ='1211',
+            SAP_Customer_Code__c = '1211',
             Pincode__c = '123456',
             Primary_Phone_Number__c = '9876543210',
             State__c = 'Karnataka',
@@ -20,7 +66,7 @@ public class CustomerReplacementControllerTest {
             Is_Transfer_Completed__c = false
         );
         insert primaryAcc;
-        
+
         // Create new primary customer to transfer to
         Account newPrimaryAcc = new Account(
             Name = 'New Primary Customer',
@@ -29,28 +75,38 @@ public class CustomerReplacementControllerTest {
             Payment_Type__c = 'Credit',
             Credit_Limit__c = 15000,
             Customer_Status__c = 'Active',
-            SAP_Customer_Code__c ='1211211',
+            SAP_Customer_Code__c = '1211211',
             Pincode__c = '123456',
             Primary_Phone_Number__c = '9876543111',
             State__c = 'Karnataka',
             District__c = 'Kolar'
         );
         insert newPrimaryAcc;
-        
+
+        area__c tr = new area__c();
+        tr.Name = '2211sjsjs';
+        tr.Sales_Channel__c = 'CPD';
+        tr.Region__c = 'Kerala';
+        tr.Area__c = 'Central';
+        insert tr;
+
         // Create product mapping
         Product_Mapping__c pm = new Product_Mapping__c(
             Customer__c = primaryAcc.Id,
             Payment_Type__c = 'Credit',
+            Chanel__c = 'CPD',
+            Area__c = tr.Id,
             Payment_Term__c = 'Z045',
-            Inco_Terms__c = 'FOB'
+            Inco_Terms__c = 'FOB',
+            Exectuive__c = testUser2.Id
         );
         insert pm;
-        
+
         // Update to inactive with transfer
         primaryAcc.Customer_Status__c = 'Inactive';
         primaryAcc.Deactivate_Reason2__c = 'Replacement';
         primaryAcc.Transferred_To__c = newPrimaryAcc.Id;
-        
+
         Test.startTest();
         update primaryAcc;
 
