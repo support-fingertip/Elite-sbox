@@ -445,15 +445,23 @@ public class CustomSharingService {
         }
 
         /**---------- Step 4: Transfer PJPs (Calendar Beats) ----------**/
+        // PJPTrigger only syncs OwnerId <- User__c on before insert, not on
+        // update, so we must explicitly set both fields when transferring.
         List<Calendar_beat__c> pjpsToTransfer = [
-            SELECT Id, User__c
+            SELECT Id, User__c, OwnerId
             FROM Calendar_beat__c
-            WHERE User__c IN :oldUserIds
+            WHERE User__c IN :oldUserIds OR OwnerId IN :oldUserIds
         ];
         for (Calendar_beat__c pjp : pjpsToTransfer) {
-            String newUserId = oldToNewUserMap.get(pjp.User__c);
+            String newUserId = null;
+            if (pjp.OwnerId != null && oldToNewUserMap.containsKey(pjp.OwnerId)) {
+                newUserId = oldToNewUserMap.get(pjp.OwnerId);
+            } else if (pjp.User__c != null && oldToNewUserMap.containsKey(pjp.User__c)) {
+                newUserId = oldToNewUserMap.get(pjp.User__c);
+            }
             if (String.isNotBlank(newUserId)) {
                 pjp.User__c = newUserId;
+                pjp.OwnerId = newUserId;
             }
         }
         if (!pjpsToTransfer.isEmpty()) {

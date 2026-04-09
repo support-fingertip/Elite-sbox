@@ -622,8 +622,9 @@ public class CustomSharingServiceTest {
         System.assertEquals(newUser.Id, beatAfter.OwnerId, 'Beat OwnerId should be transferred');
         System.assertEquals(newUser.Id, beatAfter.User__c, 'Beat User__c should be transferred');
 
-        Calendar_beat__c pjpAfter = [SELECT User__c FROM Calendar_beat__c WHERE Id = :pjp.Id];
+        Calendar_beat__c pjpAfter = [SELECT User__c, OwnerId FROM Calendar_beat__c WHERE Id = :pjp.Id];
         System.assertEquals(newUser.Id, pjpAfter.User__c, 'PJP User__c should be transferred');
+        System.assertEquals(newUser.Id, pjpAfter.OwnerId, 'PJP OwnerId should be transferred');
     }
 
     @IsTest
