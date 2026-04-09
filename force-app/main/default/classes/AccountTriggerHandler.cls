@@ -2,6 +2,22 @@ public class AccountTriggerHandler {
     private static Set<String> sapAdminUserIds;
     private static Set<String> systemAdminUserIds;
     
+    private static final Set<String> TRACKED_FIELDS = new Set<String>{
+        'Name', 'Customer_Type__c', 'Customer_Code__c', 'SAP_Customer_Code__c',
+            'Customer_Group_Name__c', 'Primary_Customer_Type__c', 'Primary_Customer_Business_Type__c',
+            'Customer_Status__c', 'Primary_Phone_Number__c', 'Aadhaar_No__c',
+            'GST_Number__c', 'Email_ID__c', 'Contact_Person_Name__c', 'Contact_Person_Phone__c',
+            'Secondary_Phone_Number__c', 'PAN_Number__c', 'Account_Holder_Name__c',
+            'Account_No__c', 'Bank_Name__c', 'IFSC_Code__c', 'Branch_Name__c',
+            'Reference_Contact_Name__c', 'Reference_Contact_Mobile__c', 'Reference_Email__c',
+            'Reference_Address__c', 'Expected_Turn_over_PA__c', 'Payment_Type__c',
+            'Credit_Limit__c', 'Company_Name__c', 'Security_Cheque_Status__c',
+            'Security_Amount__c', 'State__c', 'District__c', 'Door_No__c',
+            'Building_Name__c', 'Land_Mark__c', 'City_Town__c', 'Street__c',
+            'Pincode__c', 'GeoLocation__c', 'Secondary_Customer_Category__c',
+            'Secondary_Customer_Business_Type__c', 'Secondary_Customer_Type__c'
+            };
+                
     public static void beforeInsert(List<Account> newAccounts) {
         Map<Id, User> userMap = new Map<Id, User>([SELECT Id, Name, RSM__c, ASM_TSM__c,Primary_Customer_Approver_3_Credit_Dept__c,
                                                    Primary_Customer_Approver_1__c,Primary_Customer_Approver_2__c,
@@ -306,6 +322,16 @@ public class AccountTriggerHandler {
         
     }
     
+    // Helper method
+    public static Boolean hasRelevantFieldChanged(Account newAcc, Account oldAcc) {
+        for (String field : TRACKED_FIELDS) {
+            if (newAcc.get(field) != oldAcc.get(field)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void afterUpdate(List<Account> newAccounts, Map<Id, Account> oldAccountMap) {
         system.debug('acc afterUpdate>>'+newAccounts[0].ERP_Check__c+' >>'+newAccounts[0].ERP_Update__c);
         loadAdminUsers();   
@@ -351,10 +377,11 @@ public class AccountTriggerHandler {
             Boolean isLastOrderChanged = acc.Last_Order__c != oldAcc.Last_Order__c;
             Boolean isSalesChennelChanged = acc.Sales_Channel__c != oldAcc.Sales_Channel__c;
             //send the data to azure : integration            
-            if ((acc.Customer_Status__c == 'Active' || (acc.Customer_Status__c != oldAcc.Customer_Status__c && acc.Customer_Status__c == 'Inactive' ))
-                && AccountTriggerRecursion.skipAzureCall==false && !isLastOrderChanged && !isSalesChennelChanged) {// acc.Customer_Status__c != oldAcc.Customer_Status__c && acc.Customer_Type__c == 'Primary Customer'
-                   
-                
+            if ((acc.Customer_Status__c == 'Active' || 
+                 (acc.Customer_Status__c != oldAcc.Customer_Status__c &&  acc.Customer_Status__c == 'Inactive' ))
+                && AccountTriggerRecursion.skipAzureCall==false && !isLastOrderChanged && !isSalesChennelChanged
+                && hasRelevantFieldChanged(acc, oldAcc)) {// acc.Customer_Status__c != oldAcc.Customer_Status__c && acc.Customer_Type__c == 'Primary Customer'
+                    
                     system.debug('accounttriggerhandler 341:-acc.Customer_Status__c'+acc.Customer_Status__c); 
                     //   PostHandler.accPost(acc);
                     System.enqueueJob(new AzureAccountSyncQueue(acc.Id,acc.ERP_Check__c));
