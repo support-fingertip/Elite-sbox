@@ -1,0 +1,168 @@
+<template>
+    <template lwc:if={isSubPartLoad}>
+        <div style="margin:40px">
+            <c-loading-screen></c-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <!-- New Credit Note Form -->
+        <template if:true={showNewCreditNoteForm}>
+            <div class="orders layouts" style=" min-height: 100vh;" id="NewCreditNoteLayout">
+               <div class="order-head slds-grid slds-wrap slds-gutters slds-p-around_medium" style="margin-top: 1.5rem; align-items: center;">
+
+                    <!-- Title -->
+                    <div class="slds-size_1-of-3 slds-text-align_left">
+                        <h3 class="order-title">Secondary Credit Note</h3>
+                    </div>
+
+                    <!-- Customer Search -->
+                    <div class="slds-size_1-of-3 slds-text-align_left">
+                        <div style="position: relative;">
+                            <lightning-input label="Search Secondary Customers" type="search" required
+                                value={customerSearch} onchange={handleCustomerSearch} onfocus={handleCustomerFocus}>
+                            </lightning-input>
+
+                            <template if:true={showCustomerSuggestions}>
+                                <div class="suggestion-box" role="listbox">
+                                    <ul class="slds-listbox slds-listbox_vertical">
+                                        <template for:each={filteredCustomers} for:item="cust">
+                                            <li key={cust.value} class="slds-listbox__item">
+                                                <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                    onclick={selectCustomer} data-id={cust.value} style="cursor: pointer;">
+                                                    
+                                                    <span class="slds-media__figure slds-listbox__option-icon">
+                                                        <lightning-icon icon-name="standard:contact" size="small"></lightning-icon>
+                                                    </span>
+
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-truncate" title={cust.label}>{cust.label}</span>
+                                                         <template if:true={cust.landmark}>
+                                                            <span> | </span>
+                                                            <span class="slds-truncate" title={cust.landmark}>{cust.landmark}</span>
+                                                        </template>
+
+                                                        <template if:true={cust.street}>
+                                                            <span> | </span>
+                                                            <span class="slds-truncate" title={cust.street}>{cust.street}</span>
+                                                        </template>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class=" slds-size_1-of-3 slds-text-align_right">
+                        <button class="actionButton" onclick={handleSave}>Save</button>
+                        <button class="actionButton1" onclick={handleCancel}>Cancel</button>
+                    </div>
+
+                </div>
+
+                <div class="invoice-grid-container" style="padding: 1.5rem;">
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <!-- Note Date -->
+                        <div class="slds-col slds-size_1-of-3 slds-p-around_small">
+                           <lightning-input type="date" label="Note Date" value={noteDate} onchange={handleNoteDateChange}></lightning-input>
+                        </div>
+
+                        <!-- Reason Picklist -->
+                        <div class="slds-col slds-size_1-of-3 slds-p-around_small">
+                            <lightning-combobox label="Reason" value={reason} options={reasonOptions}
+                                onchange={handleReasonChange} placeholder="Select Reason" required>
+                            </lightning-combobox>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="slds-col slds-size_1-of-3 slds-p-around_small">
+                            <lightning-input type="number" label="Amount" value={amount}
+                                onchange={handleAmountChange} required></lightning-input>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="slds-col slds-size_1-of-1 slds-p-around_small">
+                            <lightning-textarea label="Description" value={description}
+                                onchange={handleDescriptionChange} placeholder="Enter description..."></lightning-textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Credit Note List -->
+        <template if:false={showNewCreditNoteForm}>
+            <div class="orders layouts" id="InvoiceLayout">
+                <h3 class="order-title">Secondary Credit Notes</h3>
+                <div class="order-head">
+                    <div class="order-filters">
+                        <button class="actionButton" style="margin-top:30px; width:auto; padding:0 12px; white-space:nowrap;" onclick={handleNewCreditNote}>
+                            New Secondary Credit Note
+                        </button>
+                        <button class="actionButton" onclick={downloadCreditNotesAsCSV}
+                            style="background-color: #28a745; color: white; margin-top:30px; align-items: center; padding: 6px 12px; border-radius: 4px;">
+                            <span style="align-items: center;">
+                                <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                    size="x-small"
+                                    style="margin-left: 4px; --slds-c-icon-color-foreground-default: white;">
+                                </lightning-icon>
+                            </span>
+                        </button>
+                        <lightning-input type="date" class="custominputfieldSize" label="From Date"
+                            name="fromDate" value={fromDate} onchange={handleFromDateChange}>
+                        </lightning-input>
+                        <lightning-input type="date" class="custominputfieldSize" label="To Date"
+                            name="toDate" value={toDate} onchange={handleToDateChange}>
+                        </lightning-input>
+                        <lightning-input type="search" label="Credit Note No" class="custominputfieldSize"
+                            placeholder="Search by Credit Note No" value={searchCreditNoteNo}
+                            onchange={handleSearchCreditNoteNo}>
+                        </lightning-input>
+                        <lightning-input type="search" label="Customer Name" class="custominputfieldSize"
+                            placeholder="Search Customer" value={searchSecondaryCustomerName}
+                            onchange={handleListCustomerSearch}>
+                        </lightning-input>
+                    </div>
+                </div>
+
+                <table class="contacts-table" style="margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th style="width:5%;">S.No.</th>
+                            <th style="width:20%;">Credit Note No</th>
+                            <th style="width:25%;">Customer Name</th>
+                            <th style="width:20%;">Reason</th>
+                            <th style="width:15%;">Date</th>
+                            <th style="width:15%;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template if:true={showCreditNotes}>
+                            <template for:each={creditNotes} for:item="note">
+                                <tr key={note.id}>
+                                    <td style="width:5%;">{note.rowIndex}</td>
+                                    <td style="width:20%;">{note.creditNoteNo}</td>
+                                    <td style="width:25%;">{note.customerName}</td>
+                                    <td style="width:20%;">{note.reason}</td>
+                                    <td style="width:15%;">{note.date}</td>
+                                    <td style="width:15%;">{note.amount}</td>
+                                </tr>
+                            </template>
+                        </template>
+                        <template if:false={showCreditNotes}>
+                            <tr>
+                                <td colspan="6" style="text-align:center; color:red; padding:10px; font-size:large;">
+                                    No records found!
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+    </template>
+    <c-custom-toast auto-close-time="8000"></c-custom-toast>
+</template>

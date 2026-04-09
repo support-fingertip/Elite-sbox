@@ -39,10 +39,7 @@ import getSecondaryInvoiceItems from '@salesforce/apex/DMSPortalLwc.getSecondary
 import getOrderItems from '@salesforce/apex/DMSPortalLwc.getOrderItems';
 import getInvoices from '@salesforce/apex/InvoiceController.getInvoices';
 import getPrimaryInvoices from '@salesforce/apex/InvoiceController.getPrimaryInvoices';
-//import getUsers from '@salesforce/apex/UserListController.getUsers';
-
-// Stub while UserListController is disabled
-const getUsers = () => Promise.reject('UserListController is currently disabled');
+import getUsers from '@salesforce/apex/UserListController.getUsers';
 
 export default class Testing extends NavigationMixin(LightningElement) {
 

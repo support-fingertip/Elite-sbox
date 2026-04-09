@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Layout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <excludeButtons>OpenSlackRecordChannel</excludeButtons>
     <excludeButtons>Submit</excludeButtons>
     <layoutSections>
         <customLabel>false</customLabel>
@@ -30,6 +31,10 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Net_Weight__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Product_Image_Url__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>
@@ -160,6 +165,10 @@
     </layoutSections>
     <relatedLists>
         <fields>NAME</fields>
+        <fields>Customer_Type__c</fields>
+        <fields>Sales_Channel__c</fields>
+        <fields>MRP__c</fields>
+        <fields>Unit_Price__c</fields>
         <relatedList>Price_Book__c.Product__c</relatedList>
     </relatedLists>
     <relatedLists>
@@ -184,6 +193,8 @@
     </relatedLists>
     <relatedLists>
         <fields>NAME</fields>
+        <fields>Sales_Channel__c</fields>
+        <fields>Delivery_Plant__c</fields>
         <relatedList>Sales_Channel_To_SKU__c.SKU__c</relatedList>
     </relatedLists>
     <relatedLists>

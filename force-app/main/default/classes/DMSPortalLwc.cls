@@ -1,5 +1,102 @@
-public without sharing class DMSPortalLwc
-{
+public without sharing class DMSPortalLwc {
+    
+    public class SecondaryReceiptItemWrapper {
+        @AuraEnabled public String rowIndex       { get; set; }
+        @AuraEnabled public String name           { get; set; }
+        @AuraEnabled public String docNo          { get; set; }
+        @AuraEnabled public String createdDate    { get; set; }
+        @AuraEnabled public Decimal amount        { get; set; }
+        @AuraEnabled public String itemType       { get; set; } // 'Invoice' or 'DebitNote'
+    }
+    
+    @AuraEnabled
+    public static List<SecondaryReceiptItemWrapper> getSecondaryReceiptItemsByReceiptId(Id receiptId) {
+        List<SecondaryReceiptItemWrapper> wrapperList = new List<SecondaryReceiptItemWrapper>();
+        
+        // Fetch Invoice Receipt Items
+        List<Secondary_Receipt_Item__c> invoiceItems = [
+            SELECT Name, Amount__c, CreatedDate, Secondary_Invoice__r.Name
+            FROM Secondary_Receipt_Item__c
+            WHERE Secondary_Receipt__c = :receiptId
+        ];
+        
+        // Fetch Debit Note Receipt Items
+        List<Secondary_Receipt_Debit_Item__c> debitItems = [
+            SELECT Name, Amount__c, CreatedDate, Secondary_Debit_Note__r.Name
+            FROM Secondary_Receipt_Debit_Item__c
+            WHERE Secondary_Receipt__c = :receiptId
+        ];
+        
+        Integer index = 1;
+        
+        for (Secondary_Receipt_Item__c item : invoiceItems) {
+            SecondaryReceiptItemWrapper w = new SecondaryReceiptItemWrapper();
+            w.name        = item.Name;
+            w.docNo       = item.Secondary_Invoice__r != null ? item.Secondary_Invoice__r.Name : '';
+            w.createdDate = item.CreatedDate != null ? String.valueOf(item.CreatedDate.date()) : '';
+            w.amount      = item.Amount__c;
+            w.itemType    = 'Invoice';
+            wrapperList.add(w);
+        }
+        
+        for (Secondary_Receipt_Debit_Item__c dn : debitItems) {
+            SecondaryReceiptItemWrapper w = new SecondaryReceiptItemWrapper();
+            w.name        = dn.Name;
+            w.docNo       = dn.Secondary_Debit_Note__r != null ? dn.Secondary_Debit_Note__r.Name : '';
+            w.createdDate = dn.CreatedDate != null ? String.valueOf(dn.CreatedDate.date()) : '';
+            w.amount      = dn.Amount__c;
+            w.itemType    = 'DebitNote';
+            wrapperList.add(w);
+        }
+        
+        return wrapperList;
+    }
+    /**
+     * Fetch secondary invoices for a customer with pending amount > 0
+     * @param customerId The Id of the secondary customer
+     * @return List of SecInvData for invoices with Pending_Amount__c > 0
+     */
+    @AuraEnabled(cacheable=false)
+    public static List<SecInvData> getPendingSecondaryInvoicesByCustomer(Id customerId) {
+        List<SecInvData> result = new List<SecInvData>();
+        if (customerId == null) return result;
+        List<Secondary_Invoice__c> invoices = [
+            SELECT Id, Name, Invoice_Date__c, Grand_Total__c, Paid_Invoice_Amount__c, Pending_Amount__c, Customer__c, Customer__r.Name, Total_Quantity__c, Total_Tax__c, Status__c
+            FROM Secondary_Invoice__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+            ORDER BY Invoice_Date__c ASC
+        ];
+        for (Secondary_Invoice__c inv : invoices) {
+            SecInvData data = new SecInvData();
+            data.name = inv.Name;
+            data.InvId = inv.Id;
+            data.InvDate = inv.Invoice_Date__c != null ? DateTime.newInstance(inv.Invoice_Date__c.year(), inv.Invoice_Date__c.month(), inv.Invoice_Date__c.day()).format('dd/MM/yyyy') : '';
+            data.accId = inv.Customer__c;
+            data.accName = inv.Customer__r != null ? inv.Customer__r.Name : '';
+            data.Amount = inv.Grand_Total__c;
+            data.paidAmount = inv.Paid_Invoice_Amount__c;
+            data.Status = inv.Status__c;
+            data.pendingAmount = inv.Pending_Amount__c;
+            data.tax = inv.Total_Tax__c;
+            data.Quantity = inv.Total_Quantity__c;
+            // Add extra fields for paid and pending amounts if needed in JS
+            // You can extend SecInvData if you want to expose Paid_Invoice_Amount__c and Pending_Amount__c
+            result.add(data);
+        }
+        return result;
+    }
+        // Wrapper for Secondary Receipt
+        public class SecondaryReceipt {
+            @AuraEnabled public String receiptNo;
+            @AuraEnabled public String receiptId;
+            @AuraEnabled public String customerName;
+            @AuraEnabled public String customerId;
+            @AuraEnabled public String paymentDate;
+            @AuraEnabled public String paymentMode;
+            @AuraEnabled public String referenceNumber;
+            @AuraEnabled public String remarks;
+            @AuraEnabled public Decimal totalAmount;
+        }
     //Graph Data
     @AuraEnabled
     public static GraphData getGraphData(){
@@ -193,13 +290,15 @@ public without sharing class DMSPortalLwc
         system.debug('statusstatus '+status);
         system.debug('accountIdaccountId '+accountId);
         List<Invoice__c> invList = [SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                                    Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c
+                                    Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,
+                                    Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                                     FROM Invoice__c];
         system.debug('invlItsinvlist '+invList);
         if (status == 'All') {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c,Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 where Store__c =: accountId
                 AND Invoice_Date__c >= :frmDate
@@ -209,7 +308,8 @@ public without sharing class DMSPortalLwc
         } else if(status == 'GRN Pending'){
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 WHERE (GRN_Status__c = 'GRN Pending' OR GRN_Status__c ='')
                 AND Invoice_Date__c >= :frmDate
@@ -220,7 +320,8 @@ public without sharing class DMSPortalLwc
         }else if(status =='GRN Completed'){
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, isDisabled__c, Status__c, Total_Amount__c, Store__r.Name,
-                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name
+                Total_Quantity__c, Grand_Total__c, Total_Tax_Amount__c, Pending_Amount__c,GRN_Status__c,Invoice_No__c,SF_Order__r.Name,
+                Company_Name__c, GST_Number__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c, IGST_Amount__c
                 FROM Invoice__c
                 WHERE (GRN_Status__c = 'GRN Completed')
                 AND Invoice_Date__c >= :frmDate
@@ -248,6 +349,12 @@ public without sharing class DMSPortalLwc
             inD.TotalQuantity = i.Total_Quantity__c != null ? i.Total_Quantity__c :0 ; 
             inD.invoiceNo = i.Invoice_No__c != null ? i.Invoice_No__c: '';
             inD.orderId = i.SF_Order__r != null ? i.SF_Order__r.Name : '';
+            inD.companyName = i.Company_Name__c != null ? i.Company_Name__c : '';
+            inD.gstNumber = i.GST_Number__c != null ? i.GST_Number__c : '';
+            inD.nonTaxableAmount = i.Non_Taxable_Amount__c != null ? i.Non_Taxable_Amount__c : 0;
+            inD.sgstAmount = i.SGST_Amount__c != null ? i.SGST_Amount__c : 0;
+            inD.cgstAmount = i.CGST_Amount__c != null ? i.CGST_Amount__c : 0;
+            inD.igstAmount = i.IGST_Amount__c != null ? i.IGST_Amount__c : 0;
             invDt.add(inD);
         }
         dt.TotalInvoiceData = invDt;
@@ -269,7 +376,7 @@ public without sharing class DMSPortalLwc
         }
         
         List<Invoice_Item__c> invItems = [
-            SELECT Id, Product__r.Name, SKU__r.Name,Quantity__c,GST_Amount__c, Tax_Amount__c, Bill_Amount__c,Price_per_unit__c
+            SELECT Id, Product__r.Name, SKU__r.Name,Qyt__c,GST_Amount__c, Tax_Amount__c, Bill_Amount__c,Price_per_unit__c
             FROM Invoice_Item__c
             WHERE Invoice__c = :invoiceId
             ORDER BY Product__r.Name
@@ -277,10 +384,11 @@ public without sharing class DMSPortalLwc
         
         List<Invoice_Item_Data> itemDataList = new List<Invoice_Item_Data>();
         for (Invoice_Item__c item : invItems) {
+            
             Invoice_Item_Data data = new Invoice_Item_Data();
             data.Id = item.Id;
             data.ItemName = item.SKU__r != null ? item.SKU__r.Name : '';
-            data.Quantity = item.Quantity__c;
+            data.Quantity = item.Qyt__c;
             data.TaxAmount = item.GST_Amount__c;
             data.TotalAmount = item.Bill_Amount__c ;
             data.unitPrice = item.Price_per_unit__c ;
@@ -481,9 +589,30 @@ public without sharing class DMSPortalLwc
     }
     
     @AuraEnabled(cacheable=true)
+    public static List<ContentDistribution> getGRNImages(Id grnId) {
+        List<ContentDocumentLink> cdLinks = [
+            SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId = :grnId
+        ];
+        if (cdLinks.isEmpty()) {
+            return new List<ContentDistribution>();
+        }
+        Set<Id> contentDocIds = new Set<Id>();
+        for (ContentDocumentLink cdl : cdLinks) {
+            contentDocIds.add(cdl.ContentDocumentId);
+        }
+        List<Id> contentVersionIds = new List<Id>();
+        for (ContentVersion cv : [SELECT Id FROM ContentVersion WHERE ContentDocumentId IN :contentDocIds AND IsLatest = true]) {
+            contentVersionIds.add(cv.Id);
+        }
+        return [
+            SELECT Id, Name, DistributionPublicUrl FROM ContentDistribution WHERE ContentVersionId IN :contentVersionIds
+        ];
+    }
+
+    @AuraEnabled(cacheable=true)
     public static List<Goods_Received_Note__c> getGRNList(Date frmDate, Date toDate) {
         return [
-            SELECT Id, Name, Invoice__c, Invoice__r.Name, GRN_Date__c
+            SELECT Id, Name, Invoice__c, Invoice__r.Name, Invoice__r.Invoice_No__c, GRN_Date__c
             FROM Goods_Received_Note__c
             WHERE GRN_Date__c >= :frmDate
             AND GRN_Date__c <= :toDate
@@ -564,6 +693,37 @@ public without sharing class DMSPortalLwc
             }
         }
         
+        // Collect Product IDs for price lookup
+        Set<Id> productIds = new Set<Id>();
+        for (Distributor_Stock__c stock : latestStockMap.values()) {
+            if (stock.Product__c != null) {
+                productIds.add(stock.Product__c);
+            }
+        }
+
+        // Query Price_Book__c for primary customer prices
+        Map<Id, Decimal> priceBookMap = new Map<Id, Decimal>();
+        if (!productIds.isEmpty() && accountId != null) {
+            for (Price_Book__c pb : [
+                SELECT Product__c, Unit_Price__c FROM Price_Book__c
+                WHERE Customer_Type__c = 'Primary Customer'
+                AND Customer__c = :accountId
+                AND Product__c IN :productIds
+            ]) {
+                priceBookMap.put(pb.Product__c, pb.Unit_Price__c);
+            }
+        }
+
+        // Fallback: Query Product__c for List_Price__c
+        Map<Id, Decimal> productListPriceMap = new Map<Id, Decimal>();
+        if (!productIds.isEmpty()) {
+            for (Product__c prod : [
+                SELECT Id, List_Price__c FROM Product__c WHERE Id IN :productIds
+            ]) {
+                productListPriceMap.put(prod.Id, prod.List_Price__c);
+            }
+        }
+
         // Step 4: Build response list
         List<DistributorStock> distributorStockDataList = new List<DistributorStock>();
         for (Distributor_Stock__c i : latestStockMap.values()) {
@@ -587,6 +747,18 @@ public without sharing class DMSPortalLwc
 
             stockData.availableSaleableQuantity = i.Available_Saleable_Quantity__c;
             stockData.availableNonSaleableQuantity = i.Available_Nonsaleable_Quantity__c;
+
+            // Resolve unit price: Price_Book__c first, then Product__c fallback
+            Decimal resolvedPrice = 0;
+            if (priceBookMap.containsKey(i.Product__c)) {
+                resolvedPrice = priceBookMap.get(i.Product__c) != null ? priceBookMap.get(i.Product__c) : 0;
+            } else if (productListPriceMap.containsKey(i.Product__c)) {
+                resolvedPrice = productListPriceMap.get(i.Product__c) != null ? productListPriceMap.get(i.Product__c) : 0;
+            }
+            stockData.unitPrice = resolvedPrice;
+            Decimal availQty = i.Available_Saleable_Quantity__c != null ? i.Available_Saleable_Quantity__c : 0;
+            stockData.totalAmount = availQty * resolvedPrice;
+
             distributorStockDataList.add(stockData);
         }
         
@@ -597,18 +769,24 @@ public without sharing class DMSPortalLwc
     //Credit Notes
     @AuraEnabled
     public static DmsData allCreditNoteData(Date frmDate, date toDate,string status){
+
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        if(partnerUser.size() >0){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            accountId = contact[0].AccountId;
+        }
         DmsData dt = new DmsData();
-        List<Credit_Note__c> creditNotesList = new List<Credit_Note__c>();
-        String query = 'SELECT Id, Name,Claim__c,Claim__r.Name,	Credit_Date__c,Customer__c,Customer__r.Name,Status__c,'+
-            'Primary_Return__c,Primary_Return__r.Name,Total_Credit_Amount__c '+
-            'FROM Credit_Note__c WHERE Credit_Date__c >= :frmDate AND Credit_Date__c <= :toDate ';
+        List<Secondary_Credit_Note__c> creditNotesList = new List<Secondary_Credit_Note__c>();
+        String query = 'SELECT Id, Name, Claim__c, Claim__r.Name, Credit_Date__c, Customer__c, Customer__r.Name, Status__c, Reason__c, Amount__c, Description__c '+
+            'FROM Secondary_Credit_Note__c WHERE Distributor__c = :accountId AND Credit_Date__c >= :frmDate AND Credit_Date__c <= :toDate ';
         if (status != 'All' && status != '' && status != null) {
             query += ' AND Status__c = :status';
         }
         
         creditNotesList = Database.query(query);
         List<CreditNote> CreditNoteDataList = new List<CreditNote>();
-        for(Credit_Note__c i:creditNotesList){
+        for(Secondary_Credit_Note__c i:creditNotesList){
             date Dateval = i.Credit_Date__c;
             String formattedDate = Dateval != null ? DateTime.newInstance(Dateval.year(),Dateval.month(),Dateval.day()).format('dd/MM/yyyy') : '';
             CreditNote creditNote = new CreditNote();
@@ -618,16 +796,101 @@ public without sharing class DMSPortalLwc
             creditNote.customerId = i.Customer__c;
             creditNote.claimNo = i.Claim__r.Name;
             creditNote.claimId = i.Claim__c;
-            creditNote.primaryReturnNo = i.Primary_Return__c;
-            creditNote.primaryReturnId = i.Primary_Return__r.Name;
-            creditNote.creditDate =formattedDate;
+            creditNote.creditDate = formattedDate;
             creditNote.status = i.Status__c;
-            creditNote.creditAmount = i.Total_Credit_Amount__c;
+            creditNote.reason = i.Reason__c;
+            creditNote.creditAmount = i.Amount__c;
             CreditNoteDataList.add(creditNote);
         }
         dt.totalCreditNoteData = CreditNoteDataList;
-        dt.statusOptions = getStatusOptions('Credit_Note__c', 'Status__c');
+        dt.statusOptions = getStatusOptions('Secondary_Credit_Note__c', 'Status__c');
+        dt.reasonOptions = getStatusOptions('Secondary_Credit_Note__c', 'Reason__c');
         return dt;
+    }
+
+    @AuraEnabled
+    public static void saveCreditNote(String creditNoteJson) {
+        Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(creditNoteJson);
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        if(partnerUser.size() >0){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            accountId = contact[0].AccountId;
+        }
+        Secondary_Credit_Note__c cn = new Secondary_Credit_Note__c();
+        cn.Customer__c = (String) data.get('customerId');
+        cn.Credit_Date__c = Date.valueOf((String) data.get('noteDate'));
+        cn.Amount__c = Decimal.valueOf(String.valueOf(data.get('amount')));
+        cn.Reason__c = (String) data.get('reason');
+        cn.Distributor__c = accountId;
+        if (data.get('description') != null) {
+            cn.Description__c = (String) data.get('description');
+        }
+
+        insert cn;
+    }
+
+    //Secondary Debit Notes
+    @AuraEnabled
+    public static DmsData allDebitNoteData(Date frmDate, date toDate, String status){
+        DmsData dt = new DmsData();
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        if(partnerUser.size() >0){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            accountId = contact[0].AccountId;
+        }
+        List<Secondary_Debit_Note__c> debitNotesList = new List<Secondary_Debit_Note__c>();
+        String query = 'SELECT Id, Name, Note_Date__c, Customer__c, Customer__r.Name, Distributor__c, Distributor__r.Name, Status__c, Reason__c, Amount__c, Description__c, Secondary_Invoice__c, Secondary_Invoice__r.Name '+
+            'FROM Secondary_Debit_Note__c WHERE Distributor__c = :accountId AND Note_Date__c >= :frmDate AND Note_Date__c <= :toDate ';
+        if (status != 'All' && status != '' && status != null) {
+            query += ' AND Status__c = :status';
+        }
+        
+        debitNotesList = Database.query(query);
+        List<DebitNote> DebitNoteDataList = new List<DebitNote>();
+        for(Secondary_Debit_Note__c i : debitNotesList){
+            date Dateval = i.Note_Date__c;
+            String formattedDate = Dateval != null ? DateTime.newInstance(Dateval.year(),Dateval.month(),Dateval.day()).format('dd/MM/yyyy') : '';
+            DebitNote debitNote = new DebitNote();
+            debitNote.debitNoteNo = i.Name;
+            debitNote.debitNoteId = i.Id;
+            debitNote.customerName = i.Customer__r.Name;
+            debitNote.customerId = i.Customer__c;
+            debitNote.noteDate = formattedDate;
+            debitNote.status = i.Status__c;
+            debitNote.reason = i.Reason__c;
+            debitNote.amount = i.Amount__c;
+            debitNote.description = i.Description__c;
+            DebitNoteDataList.add(debitNote);
+        }
+        dt.totalDebitNoteData = DebitNoteDataList;
+        dt.statusOptions = getStatusOptions('Secondary_Debit_Note__c', 'Status__c');
+        dt.reasonOptions = getStatusOptions('Secondary_Debit_Note__c', 'Reason__c');
+        return dt;
+    }
+
+    @AuraEnabled
+    public static void saveDebitNote(String debitNoteJson) {
+        Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(debitNoteJson);
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        if(partnerUser.size() >0){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            accountId = contact[0].AccountId;
+        }
+
+        Secondary_Debit_Note__c dn = new Secondary_Debit_Note__c();
+        dn.Customer__c = (String) data.get('customerId');
+        dn.Note_Date__c = Date.valueOf((String) data.get('noteDate'));
+        dn.Amount__c = Decimal.valueOf(String.valueOf(data.get('amount')));
+        dn.Reason__c = (String) data.get('reason');
+        dn.Distributor__c = accountId;
+        if (data.get('description') != null) {
+            dn.Description__c = (String) data.get('description');
+        }
+
+        insert dn;
     }
     
     //Secoundary Invoices
@@ -645,14 +908,16 @@ public without sharing class DMSPortalLwc
         if (status == 'All' || status =='' || status == null) {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, Status__c, Store__r.Name,Total_Quantity__c,Grand_Total__c,
-                Total_Tax__c,  Customer__c,Customer__r.Name FROM Secondary_Invoice__c 
+                Total_Tax__c, Customer__c,Customer__r.Name,
+                Beat_Name__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c FROM Secondary_Invoice__c
                 WHERE Invoice_Date__c >= :frmDate  AND Invoice_Date__c <= :toDate AND Store__c =: accountId ORDER BY Name DESC
             ];
         }
         else {
             inv = [
                 SELECT Id, Name, Store__c, Invoice_Date__c, Status__c,Store__r.Name,Total_Quantity__c,Grand_Total__c,
-                Customer__c,Customer__r.Name,Total_Tax__c FROM Secondary_Invoice__c WHERE  Status__c = :status  AND Invoice_Date__c >= :frmDate 
+                Customer__c,Customer__r.Name,Total_Tax__c,
+                Beat_Name__c, Non_Taxable_Amount__c, SGST_Amount__c, CGST_Amount__c FROM Secondary_Invoice__c WHERE  Status__c = :status  AND Invoice_Date__c >= :frmDate
                 AND Invoice_Date__c <= :toDate
                 AND Store__c =: accountId
                 ORDER BY Name DESC
@@ -674,6 +939,10 @@ public without sharing class DMSPortalLwc
             inD.Status = i.Status__c;
             inD.tax = i.Total_Tax__c.setScale(2, RoundingMode.HALF_UP);
             inD.Quantity = i.Total_Quantity__c;
+            inD.beatName = i.Beat_Name__c != null ? i.Beat_Name__c : '';
+            inD.nonTaxableAmount = i.Non_Taxable_Amount__c != null ? i.Non_Taxable_Amount__c : 0;
+            inD.sgstAmount = i.SGST_Amount__c != null ? i.SGST_Amount__c : 0;
+            inD.cgstAmount = i.CGST_Amount__c != null ? i.CGST_Amount__c : 0;
             invDt.add(inD);
         }
         dt.totalSecoundaryInvoiceData = invDt;
@@ -688,6 +957,23 @@ public without sharing class DMSPortalLwc
             FROM Secondary_Invoice_Item__c
             WHERE Secondary_Invoice__c = :invoiceId
             ORDER BY Name 
+        ];
+    }
+
+    @AuraEnabled
+    public static List<Secondary_Invoice_Item__c> getSecondaryInvoiceItemsByReceiptId(Id receiptId) {
+        // Get the customer from the receipt
+        List<Secondary_Receipt__c> receipts = [SELECT Customer__c FROM Secondary_Receipt__c WHERE Id = :receiptId LIMIT 1];
+        if (receipts.isEmpty() || receipts[0].Customer__c == null) {
+            return new List<Secondary_Invoice_Item__c>();
+        }
+        Id customerId = receipts[0].Customer__c;
+        // Get all secondary invoice items for that customer's invoices
+        return [
+            SELECT Product__r.Name, Quantity__c, Tax_Amount__c, Unit_Price__c, Total_Amount__c, Tax_Percent__c, Store__r.Name, Secondary_Invoice__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Customer__c = :customerId
+            ORDER BY Name
         ];
     }
     
@@ -907,7 +1193,7 @@ public without sharing class DMSPortalLwc
         if (!newStocks.isEmpty()) {
             insert newStocks;
             for (Distributor_Stock__c stock : newStocks) {
-                String key = stock.Distributor__c + '_' + stock.Product_Name__c;
+                String key = stock.Distributor__c + '_' + stock.Product__c;
                 existingStockMap.put(key, stock);
             }
             
@@ -1042,7 +1328,7 @@ public without sharing class DMSPortalLwc
         if (!channelSet.isEmpty()) {
             Set<String> productIds = new Set<String>();
             List<Sales_Channel_To_SKU__c> channels = [SELECT Id, Name, SKU__r.Name,SKU__c,Delivery_Plant__c,Sales_Channel__c
-                                                      FROM Sales_Channel_To_SKU__c WHERE Sales_Channel__c IN :channelSet
+                                                      FROM Sales_Channel_To_SKU__c WHERE Sales_Channel__c IN: channelSet
                                                       and SKU__r.Is_Active__c = true];
             map<String,String> skuNameToSkuId = new map<String,String>();
             for (Sales_Channel_To_SKU__c channel : channels) {
@@ -1115,6 +1401,7 @@ public without sharing class DMSPortalLwc
             Total_Amount__c = totalAmount,
             Total_Quantity__c = totalQuantity,
             Customer__c = customerId,
+            Distributor__c = accountId,
             Return_Date__c = system.today()
         );
         insert secReturn;
@@ -1177,7 +1464,7 @@ public without sharing class DMSPortalLwc
         }
         
         return [
-            select Id,Name from Account where Id IN: CustomerIds
+            select Id,Name,Land_Mark__c,Street__c from Account where Id IN: CustomerIds
         ]; 
         
         
@@ -1255,7 +1542,7 @@ public without sharing class DMSPortalLwc
     @AuraEnabled
     public static List<Map<String, Object>> getOrderItems(String orderId) {
         List<Map<String, Object>> response = new List<Map<String, Object>>();
-        
+
         Id accountId;
         User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
         if (u.ContactId != null) {
@@ -1263,11 +1550,18 @@ public without sharing class DMSPortalLwc
                 SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1
             ].AccountId;
         }
-        
+
+        String beatName = '';
+        List<Order__c> orderList = [SELECT Beat_Name_New__c FROM Order__c WHERE Id = :orderId LIMIT 1];
+        if (!orderList.isEmpty() && orderList[0].Beat_Name_New__c != null) {
+            beatName = orderList[0].Beat_Name_New__c;
+        }
+
         List<Order_Item__c> ordList = [
             SELECT Id, Name, Product__c, Product__r.Name,
             Quantity__c, Unit_Price__c,Tax__c,
-            Tax_Percent__c, Tax_Amount__c, Total_Amount1__c,Secondary_Invoice_Pending_Quantity__c
+            Tax_Percent__c, Tax_Amount__c, Total_Amount1__c,Secondary_Invoice_Pending_Quantity__c,
+            Before_Category_Slab_Unit_Price__c,After_Category_Slab_Unit_Price__c,Before_Scheme_Unit_Price__c,After_Scheme_Unit_Price__c
             FROM Order_Item__c
             WHERE Order__c =: orderId
         ];
@@ -1299,6 +1593,11 @@ public without sharing class DMSPortalLwc
             Decimal taxAmt = (price * qty * taxPer) / 100;
             Decimal totalAmt = (price * qty) + taxAmt;
             
+            Decimal BeforeCategorySlabUnitPrice = item.Before_Category_Slab_Unit_Price__c;
+            Decimal AfterCategorySlabUnitPrice =  item.After_Category_Slab_Unit_Price__c;
+            Decimal BeforeSchemeUnitPrice = item.Before_Scheme_Unit_Price__c;
+            Decimal AfterSchemeUnitPrice = item.After_Scheme_Unit_Price__c;
+            
             row.put('OrderItemId', item.Id);
             row.put('ItemName', item.Name);
             row.put('ProductId', item.Product__c);
@@ -1308,6 +1607,13 @@ public without sharing class DMSPortalLwc
             row.put('TaxPercent', taxPer);
             row.put('TaxAmount', taxAmt);
             row.put('TotalAmount', totalAmt);
+            
+            row.put('BeforeCategorySlabUnitPrice', BeforeCategorySlabUnitPrice);
+            row.put('AfterCategorySlabUnitPrice', AfterCategorySlabUnitPrice);
+            row.put('BeforeSchemeUnitPrice', BeforeSchemeUnitPrice);
+            row.put('AfterSchemeUnitPrice', AfterSchemeUnitPrice);
+            row.put('BeatName', beatName);
+            
             row.put(
                 'availableQuantity',
                 stockMap.containsKey(item.Product__r.Name)
@@ -1439,7 +1745,7 @@ public without sharing class DMSPortalLwc
         if (!newStocks.isEmpty()) {
             insert newStocks;
             for (Distributor_Stock__c stock : newStocks) {
-                String key = stock.Distributor__c + '_' + stock.Product_Name__c;
+                String key = stock.Distributor__c + '_' + stock.Product__c;
                 existingStockMap.put(key, stock);
             }
             
@@ -1730,7 +2036,8 @@ public without sharing class DMSPortalLwc
             'Primary_Customer__r.Name, ' +
             'Customer__r.Secondary_Customer_Category__c, ' +
             'Customer__r.Customer_Status__c, ' +
-            'Sub_Stockiest__r.Name ' +
+            'Sub_Stockiest__r.Name ,' +
+            'Customer__r.Secondary_Outstanding_Amount__c ' +
             'FROM Product_Mapping__c ' +
             'WHERE Primary_Customer__c = :accountId ' +
             'AND Is_Executive_Active__c = true ' +
@@ -1778,6 +2085,7 @@ public without sharing class DMSPortalLwc
             d.customerType =  pm.Customer__r.Secondary_Customer_Type__c;
             d.customerCategory =  pm.Customer__r.Secondary_Customer_Category__c;
             d.status = pm.Customer__r.Customer_Status__c;
+            d.outStanding=  pm.Customer__r.Secondary_Outstanding_Amount__c != null ? pm.Customer__r.Secondary_Outstanding_Amount__c : 0;
             d.beatName = outletToBeatNames.containsKey(pm.Customer__c)
                 ? String.join(new List<String>(outletToBeatNames.get(pm.Customer__c)), ';')
                 : '';
@@ -1793,6 +2101,130 @@ public without sharing class DMSPortalLwc
         return rt;
     }
     
+     
+    @AuraEnabled
+    public static ReturnAccData getRefreshSecondaryCustomers(string status) {
+        
+        ReturnAccData rt = new ReturnAccData();
+        
+        // Get Logged-in User's Account 
+        Id accountId;
+        List<User> partnerUser = [
+            SELECT ContactId 
+            FROM User 
+            WHERE Id = :UserInfo.getUserId()
+            LIMIT 1
+        ];
+        
+        if (!partnerUser.isEmpty() && partnerUser[0].ContactId != null) {
+            List<Contact> contacts = [
+                SELECT AccountId 
+                FROM Contact 
+                WHERE Id = :partnerUser[0].ContactId
+                LIMIT 1
+            ];
+            if (!contacts.isEmpty()) {
+                accountId = contacts[0].AccountId;
+            }
+        }
+        
+        // Safety check
+        if (accountId == null) {
+            return rt;
+        }
+        
+        // Get Beat Mappings
+        List<Junction_Beat__c> beatItems = [
+            SELECT Account__c, Child_beat__r.Name
+            FROM Junction_Beat__c
+            WHERE Primary_Customer_Record_Id__c = :accountId
+        ];
+        
+        Map<Id, Set<String>> outletToBeatNames = new Map<Id, Set<String>>();
+        
+        for (Junction_Beat__c bt : beatItems) {
+            if (!outletToBeatNames.containsKey(bt.Account__c)) {
+                outletToBeatNames.put(bt.Account__c, new Set<String>());
+            }
+            outletToBeatNames.get(bt.Account__c).add(bt.Child_beat__r.Name);
+        }
+        
+        String query =
+            'SELECT Customer__c, ' +
+            'Secondary_Customer_Outlet_Id__c, ' +
+            'Secondary_Customer_Customer_Code__c, ' +
+            'Customer__r.Name, ' +
+            'Customer__r.State__c, ' +
+            'Customer__r.District__c, ' +
+            'Customer__r.Primary_Phone_Number__c, ' +
+            'Customer__r.Secondary_Customer_Type__c, ' +
+            'Primary_Customer__r.Name, ' +
+            'Customer__r.Secondary_Customer_Category__c, ' +
+            'Customer__r.Customer_Status__c, ' +
+            'Sub_Stockiest__r.Name ,' +
+            'Customer__r.Secondary_Outstanding_Amount__c ' +
+            'FROM Product_Mapping__c ' +
+            'WHERE Primary_Customer__c = :accountId ' +
+            'AND Is_Executive_Active__c = true ' +
+            'AND Customer__r.Customer_Status__c != null ';
+        
+        //Add status condition only when NOT “All”
+        if (status != 'All') {
+            query += ' AND Customer__r.Customer_Status__c = :status';
+        }
+        
+        List<Product_Mapping__c> mappings = Database.query(query);
+
+        
+        //Deduplication 
+        Set<Id> processedCustomerIds = new Set<Id>();
+        Set<Id> subStockiestCustomers = new Set<Id>();
+        
+        List<AccData> uniqueSecondaryCustomers = new List<AccData>();
+        Integer serialNo = 1;
+        for (Product_Mapping__c pm : mappings) {
+            
+            if (pm.Customer__c == null || processedCustomerIds.contains(pm.Customer__c)) {
+                continue;
+            }
+            
+            processedCustomerIds.add(pm.Customer__c);
+            
+            if (pm.Customer__r.Secondary_Customer_Type__c == 'Sub Stockiest') {
+                subStockiestCustomers.add(pm.Customer__c);
+            }
+            
+            AccData d = new AccData();
+            d.recordId = pm.Customer__c;
+            d.sNumber = serialNo++; 
+            d.secondaryCustomerId = pm.Customer__c;
+            d.secondaryCustomerName = pm.Customer__r.Name;
+            d.secondaryCustomerOutletId = pm.Secondary_Customer_Outlet_Id__c;
+            d.secondaryCustomerCode = pm.Secondary_Customer_Customer_Code__c;
+            d.primaryPhoneNumber = pm.Customer__r.Primary_Phone_Number__c;
+            d.state = pm.Customer__r.State__c;
+            d.district = pm.Customer__r.District__c;
+            d.primaryCustomerName = pm.Primary_Customer__r.Name;
+            d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
+            d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
+            d.customerType =  pm.Customer__r.Secondary_Customer_Type__c;
+            d.customerCategory =  pm.Customer__r.Secondary_Customer_Category__c;
+            d.status = pm.Customer__r.Customer_Status__c;
+            d.outStanding=  pm.Customer__r.Secondary_Outstanding_Amount__c != null ? pm.Customer__r.Secondary_Outstanding_Amount__c : 0;
+            d.beatName = outletToBeatNames.containsKey(pm.Customer__c)
+                ? String.join(new List<String>(outletToBeatNames.get(pm.Customer__c)), ';')
+                : '';
+            
+            uniqueSecondaryCustomers.add(d);
+        }
+        
+        rt.customerData = uniqueSecondaryCustomers;
+        rt.subStockiestCount = subStockiestCustomers.size();
+        rt.totalCustomersCount = processedCustomerIds.size();
+        rt.secondaryCustomerCount = rt.totalCustomersCount - rt.subStockiestCount;
+        
+        return rt;
+    }
     //=========================
     //Stock Adjustments
     //=========================
@@ -1945,7 +2377,7 @@ public without sharing class DMSPortalLwc
         if (!newStocks.isEmpty()) {
             insert newStocks;
             for (Distributor_Stock__c stock : newStocks) {
-                String key = stock.Distributor__c + '_' + stock.Product_Name__c;
+                String key = stock.Distributor__c + '_' + stock.Product__c;
                 existingStockMap.put(key, stock);
             }
             
@@ -2006,6 +2438,7 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public String status;
         @AuraEnabled public String customerType;
         @AuraEnabled public String customerCategory;
+        @AuraEnabled public decimal outStanding;
     }
     
     
@@ -2035,10 +2468,51 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public List<DistributorStock> totalDistributorStockData; 
         @AuraEnabled public List<Product_Category__c> productCategories;
         @AuraEnabled public List<CreditNote> totalCreditNoteData;
+        @AuraEnabled public List<DebitNote> totalDebitNoteData;
         @AuraEnabled public List<SecInvData> totalSecoundaryInvoiceData;
         @AuraEnabled public List<SReturnData> totalSecoundaryReturnData;
+        @AuraEnabled public List<SecondaryReceipt> totalSecondaryReceiptData;
         @AuraEnabled public String orderItemId;//added newly can remove
         @AuraEnabled public String orgUrl;
+        @AuraEnabled public List<Map<String, String>> reasonOptions;
+    }
+
+    @AuraEnabled
+    public static DmsData allSecondaryReceiptData(Date frmDate, Date toDate, String status) {
+        DmsData dt = new DmsData();
+        List<Secondary_Receipt__c> receiptList = [SELECT Id, Name, Payment_Date__c, Customer__c, Customer__r.Name, Payment_Mode__c, Reference_Number__c, Remarks__c, Total_Amount__c
+                                                  FROM Secondary_Receipt__c
+                                                  WHERE Payment_Date__c >= :frmDate AND Payment_Date__c <= :toDate];
+        List<SecondaryReceipt> receiptDataList = new List<SecondaryReceipt>();
+        for (Secondary_Receipt__c i : receiptList) {
+            String formattedDate = i.Payment_Date__c != null ? 
+                DateTime.newInstance(i.Payment_Date__c.year(), i.Payment_Date__c.month(), i.Payment_Date__c.day()).format('dd/MM/yyyy') : '';
+            SecondaryReceipt rec = new SecondaryReceipt();
+            rec.receiptNo = i.Name;
+            rec.receiptId = i.Id;
+            rec.customerName = i.Customer__r != null ? i.Customer__r.Name : '';
+            rec.customerId = i.Customer__c;
+            rec.paymentDate = formattedDate;
+            rec.paymentMode = i.Payment_Mode__c;
+            rec.referenceNumber = i.Reference_Number__c;
+            rec.remarks = i.Remarks__c;
+            rec.totalAmount = i.Total_Amount__c;
+            receiptDataList.add(rec);
+        }
+        dt.totalSecondaryReceiptData = receiptDataList;
+        return dt;
+    }
+
+    @AuraEnabled
+    public static void saveSecondaryReceipt(Secondary_Receipt__c receiptData, list<Secondary_Receipt_Item__c> recipetItems)
+    {
+    	insert receiptData;
+        
+        for(Secondary_Receipt_Item__c rec: recipetItems)
+        {
+            rec.Secondary_Receipt__c = receiptData.Id;
+        }
+        insert recipetItems;
     }
     public class OrdData {
         @AuraEnabled public String itemName;
@@ -2061,6 +2535,8 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public String name;
         @AuraEnabled public String InvDate;
         @AuraEnabled public String accId;
+        @AuraEnabled public Decimal paidAmount;
+        
         @AuraEnabled public String accName;
         @AuraEnabled public Decimal Amount;
         @AuraEnabled public String InvId;
@@ -2071,6 +2547,12 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public Decimal TotalQuantity;  // <-- Add this line
         @AuraEnabled public String invoiceNo;
         @AuraEnabled public String orderId;
+        @AuraEnabled public String companyName;
+        @AuraEnabled public String gstNumber;
+        @AuraEnabled public Decimal nonTaxableAmount;
+        @AuraEnabled public Decimal sgstAmount;
+        @AuraEnabled public Decimal cgstAmount;
+        @AuraEnabled public Decimal igstAmount;
     }
     public class PReturnData {
         @AuraEnabled public String productName;
@@ -2139,6 +2621,8 @@ public without sharing class DMSPortalLwc
         
         @AuraEnabled public decimal availableSaleableQuantity;
         @AuraEnabled public decimal availableNonSaleableQuantity;
+        @AuraEnabled public Decimal unitPrice;
+        @AuraEnabled public Decimal totalAmount;
     }
     public class CreditNote{
         @AuraEnabled public String creditNoteNo;
@@ -2151,19 +2635,38 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public String primaryReturnId;
         @AuraEnabled public String creditDate;
         @AuraEnabled public String status;
+        @AuraEnabled public String reason;
         @AuraEnabled public decimal creditAmount;
+    }
+    public class DebitNote{
+        @AuraEnabled public String debitNoteNo;
+        @AuraEnabled public String debitNoteId;
+        @AuraEnabled public String customerName;
+        @AuraEnabled public String customerId;
+        @AuraEnabled public String noteDate;
+        @AuraEnabled public String status;
+        @AuraEnabled public String reason;
+        @AuraEnabled public decimal amount;
+        @AuraEnabled public String description;
     }
     public class SecInvData {
         @AuraEnabled public String name;
         @AuraEnabled public String InvDate;
+        @AuraEnabled public Decimal paidAmount;
         @AuraEnabled public String accId;
         @AuraEnabled public String accName;
         @AuraEnabled public Decimal Amount;
         @AuraEnabled public String InvId;
         @AuraEnabled public String Status;
         @AuraEnabled public decimal tax;
+        @AuraEnabled public decimal pendingAmount;
+        
         @AuraEnabled public decimal Quantity;
         @AuraEnabled public boolean selected = false;
+        @AuraEnabled public String beatName;
+        @AuraEnabled public Decimal nonTaxableAmount;
+        @AuraEnabled public Decimal sgstAmount;
+        @AuraEnabled public Decimal cgstAmount;
     }
     public class SReturnData {
         @AuraEnabled public String productName;
@@ -2208,5 +2711,873 @@ public without sharing class DMSPortalLwc
         @AuraEnabled public String productId;
         @AuraEnabled public Integer quantity;
         
+    }
+
+    @AuraEnabled
+    public static List<Product__c> getProductGalleryData() {
+        Id accountId;
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        System.debug('partnerUser: ' + partnerUser);
+        if(partnerUser.size() > 0 && partnerUser[0].ContactId != null){
+            List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+            System.debug('contact: ' + contact);
+            if(contact.size() > 0 && contact[0].AccountId != null){
+                accountId = contact[0].AccountId;
+            }
+        }
+        System.debug('accountId: ' + accountId);
+
+        if (accountId == null) {
+            System.debug('No accountId found for community user');
+            return new List<Product__c>();
+        }
+
+        // Find sales channels mapped to this distributor account
+        Set<String> channelSet = new Set<String>();
+        List<Product_Mapping__c> mappings = [
+            SELECT Chanel__c 
+            FROM Product_Mapping__c 
+            WHERE Customer__c = :accountId
+        ];
+        for (Product_Mapping__c pm : mappings) {
+            if (pm.Chanel__c != null) {
+                channelSet.add(pm.Chanel__c);
+            }
+        }
+        System.debug('channelSet from mappings: ' + channelSet);
+
+        if (channelSet.isEmpty()) {
+            System.debug('No sales channels found for account: ' + accountId);
+            return new List<Product__c>();
+        }
+
+        // Get active SKU IDs for those sales channels
+        Set<Id> skuIds = new Set<Id>();
+        List<Sales_Channel_To_SKU__c> channels = [
+            SELECT SKU__c 
+            FROM Sales_Channel_To_SKU__c 
+            WHERE Sales_Channel__c IN :channelSet 
+            AND SKU__r.Is_Active__c = true
+        ];
+        for (Sales_Channel_To_SKU__c ch : channels) {
+            skuIds.add(ch.SKU__c);
+        }
+        System.debug('skuIds count: ' + skuIds.size());
+
+        if (skuIds.isEmpty()) {
+            return new List<Product__c>();
+        }
+
+        // Query products with price books for this account
+        List<Product__c> products = [
+            SELECT Id, Name, Channel__c, Category__c, Product_Category_Name__c, Product_Category1__c,
+            Product_Category1__r.Name, List_Price__c, MRP__c, Tax_Percent__c,
+            Tax_Class__c, CreatedDate, UOM__c, Selling_Category__c, Product_Image_Url__c,SKU_Code__c, Sku_Name__c,
+            (SELECT Id, Unit_Price__c, MRP__c, UOM__c, Customer__c, 
+             Customer_Type__c, Region__c, Secondary_Customer_Category__c
+             FROM Price_Books__r WHERE Customer__c = :accountId)
+            FROM Product__c 
+            WHERE Is_Active__c = true 
+            AND Id IN :skuIds
+            ORDER BY Channel__c ASC
+        ];
+        System.debug('products count: ' + products.size());
+        return products;
+    }
+
+    /**-----Secondary Customer Ledger-----**/
+    
+    // Wrapper class for opening balance
+    public class OpeningBalanceResult {
+        @AuraEnabled public Decimal balance;
+    } 
+    
+    // Wrapper class for ledger entry
+    public class LedgerEntry implements Comparable {
+        @AuraEnabled public String  transactionType;
+        @AuraEnabled public Date    transactionDate;
+        @AuraEnabled public String  transactionNo;
+        @AuraEnabled public String  description;
+        @AuraEnabled public String  referenceNo;
+        @AuraEnabled public Decimal amount;
+        @AuraEnabled public String  status;
+        
+        public Integer compareTo(Object compareTo) {
+            Date otherDate = ((LedgerEntry) compareTo).transactionDate;
+            if (transactionDate == otherDate) return 0;
+            if (transactionDate == null || transactionDate < otherDate) return -1;
+            return 1;
+        }
+    }
+    
+    // Wrapper class for secondary ledger result
+    public class SecondaryLedgerResult {
+        @AuraEnabled public List<LedgerEntry> ledgerData;
+        @AuraEnabled public List<Map<String, String>> statusOptions;
+    }
+    
+    // Get opening balance for a customer up to a specific date
+    @AuraEnabled
+    public static OpeningBalanceResult getOpeningBalance(String customerId, String asOfDate) {
+        OpeningBalanceResult result = new OpeningBalanceResult();
+        result.balance = 0;
+        
+        if (String.isBlank(asOfDate)) {
+            return result;
+        }
+        
+        Date cutoffDate = Date.valueOf(asOfDate);
+        Decimal totalDebits = 0;
+        Decimal totalCredits = 0;
+        
+        try {
+            // Sum all Secondary Invoices before cutoff date (DEBIT - increases balance)
+            List<AggregateResult> invoiceAgg = [
+                SELECT SUM(Grand_Total__c) totalAmount
+                FROM Secondary_Invoice__c
+                WHERE Customer__c = :customerId
+                AND Invoice_Date__c < :cutoffDate
+            ];
+            if (!invoiceAgg.isEmpty() && invoiceAgg[0].get('totalAmount') != null) {
+                totalDebits += (Decimal) invoiceAgg[0].get('totalAmount');
+            }
+            
+            // Sum all Secondary Debit Notes before cutoff date (DEBIT - increases balance)
+            List<AggregateResult> debitNoteAgg = [
+                SELECT SUM(Amount__c) totalAmount
+                FROM Secondary_Debit_Note__c
+                WHERE Customer__c = :customerId
+                AND Note_Date__c < :cutoffDate
+            ];
+            if (!debitNoteAgg.isEmpty() && debitNoteAgg[0].get('totalAmount') != null) {
+                totalDebits += (Decimal) debitNoteAgg[0].get('totalAmount');
+            }
+            
+            // Sum all Secondary Credit Notes before cutoff date (CREDIT - decreases balance)
+            List<AggregateResult> creditNoteAgg = [
+                SELECT SUM(Amount__c) totalAmount
+                FROM Secondary_Credit_Note__c
+                WHERE Customer__c = :customerId
+                AND Credit_Date__c < :cutoffDate
+            ];
+            if (!creditNoteAgg.isEmpty() && creditNoteAgg[0].get('totalAmount') != null) {
+                totalCredits += (Decimal) creditNoteAgg[0].get('totalAmount');
+            }
+            
+            // Sum all Secondary Returns before cutoff date (CREDIT - decreases balance)
+            List<AggregateResult> returnAgg = [
+                SELECT SUM(Total_Amount__c) totalAmount
+                FROM Return__c
+                WHERE Customer__c = :customerId
+                AND Return_Date__c < :cutoffDate
+                AND Customer_Type__c = 'Secondary Customer'
+            ];
+            if (!returnAgg.isEmpty() && returnAgg[0].get('totalAmount') != null) {
+                totalCredits += (Decimal) returnAgg[0].get('totalAmount');
+            }
+            
+            // Sum all Secondary Receipts before cutoff date (CREDIT - decreases balance)
+            List<AggregateResult> receiptAgg = [
+                SELECT SUM(Total_Amount__c) totalAmount
+                FROM Secondary_Receipt__c
+                WHERE Customer__c = :customerId
+                AND Payment_Date__c < :cutoffDate
+            ];
+            if (!receiptAgg.isEmpty() && receiptAgg[0].get('totalAmount') != null) {
+                totalCredits += (Decimal) receiptAgg[0].get('totalAmount');
+            }
+            
+            // Calculate opening balance: Debits - Credits
+            result.balance = totalDebits - totalCredits;
+            
+        } catch (Exception e) {
+            System.debug('Error calculating opening balance: ' + e.getMessage());
+        }
+        
+        return result;
+    }
+    
+    // Get secondary ledger transactions within date range for a customer
+    @AuraEnabled
+    public static SecondaryLedgerResult getSecondaryLedger(Id customerId, String fromDate, String toDate, String status) {
+        SecondaryLedgerResult result = new SecondaryLedgerResult();
+        result.ledgerData = new List<LedgerEntry>();
+        result.statusOptions = new List<Map<String, String>>();
+        
+        if (String.isBlank(fromDate) || String.isBlank(toDate)) {
+            return result;
+        }
+        
+        Date startDate = Date.valueOf(fromDate);
+        Date endDate = Date.valueOf(toDate);
+        
+        try {
+            // Fetch Secondary Invoices (DEBIT)
+            List<Secondary_Invoice__c> invoices = [
+                SELECT Id, Name, Invoice_Date__c, Grand_Total__c, Status__c
+                FROM Secondary_Invoice__c
+                WHERE Customer__c = :customerId
+                AND Invoice_Date__c >= :startDate
+                AND Invoice_Date__c <= :endDate
+                ORDER BY Invoice_Date__c ASC
+            ];
+            
+            for (Secondary_Invoice__c inv : invoices) {
+                LedgerEntry entry = new LedgerEntry();
+                entry.transactionType = 'Invoice';
+                entry.transactionDate = inv.Invoice_Date__c;
+                entry.transactionNo   = inv.Name;           // FIX: doc number
+                entry.description     = 'Secondary Invoice';
+                entry.referenceNo     = inv.Name;           // FIX: was inv.Id
+                entry.amount          = inv.Grand_Total__c;
+                entry.status          = inv.Status__c;
+                result.ledgerData.add(entry);
+            }
+            
+            // Fetch Secondary Returns (CREDIT)
+            List<Return__c> returns = [
+                SELECT Id, Name, Return_Date__c, Total_Amount__c
+                FROM Return__c
+                WHERE Customer__c = :customerId
+                AND Return_Date__c >= :startDate
+                AND Return_Date__c <= :endDate
+                AND Customer_Type__c = 'Secondary Customer'
+                ORDER BY Return_Date__c ASC
+            ];
+            
+            for (Return__c ret : returns) {
+                LedgerEntry entry = new LedgerEntry();
+                entry.transactionType = 'Return';
+                entry.transactionDate = ret.Return_Date__c;
+                entry.transactionNo   = ret.Name;           // FIX: doc number
+                entry.description     = 'Secondary Return';
+                entry.referenceNo     = ret.Name;           // FIX: was ret.Id
+                entry.amount          = ret.Total_Amount__c;
+                entry.status          = 'Completed';
+                result.ledgerData.add(entry);
+            }
+            
+            // Fetch Secondary Credit Notes (CREDIT)
+            List<Secondary_Credit_Note__c> creditNotes = [
+                SELECT Id, Name, Credit_Date__c, Amount__c, Status__c
+                FROM Secondary_Credit_Note__c
+                WHERE Customer__c = :customerId
+                AND Credit_Date__c >= :startDate
+                AND Credit_Date__c <= :endDate
+                ORDER BY Credit_Date__c ASC
+            ];
+            
+            for (Secondary_Credit_Note__c creditNote : creditNotes) {
+                LedgerEntry entry = new LedgerEntry();
+                entry.transactionType = 'Credit Note';
+                entry.transactionDate = creditNote.Credit_Date__c;
+                entry.transactionNo   = creditNote.Name;   // FIX: doc number
+                entry.description     = 'Secondary Credit Note';
+                entry.referenceNo     = creditNote.Name;   // FIX: was creditNote.Id
+                entry.amount          = creditNote.Amount__c;
+                entry.status          = creditNote.Status__c;
+                result.ledgerData.add(entry);
+            }
+            
+            // Fetch Secondary Debit Notes (DEBIT)
+            List<Secondary_Debit_Note__c> debitNotes = [
+                SELECT Id, Name, Note_Date__c, Amount__c, Status__c
+                FROM Secondary_Debit_Note__c
+                WHERE Customer__c = :customerId
+                AND Note_Date__c >= :startDate
+                AND Note_Date__c <= :endDate
+                ORDER BY Note_Date__c ASC
+            ];
+            
+            for (Secondary_Debit_Note__c debitNote : debitNotes) {
+                LedgerEntry entry = new LedgerEntry();
+                entry.transactionType = 'Debit Note';
+                entry.transactionDate = debitNote.Note_Date__c;
+                entry.transactionNo   = debitNote.Name;   // FIX: doc number
+                entry.description     = 'Secondary Debit Note';
+                entry.referenceNo     = debitNote.Name;   // FIX: was debitNote.Id
+                entry.amount          = debitNote.Amount__c;
+                entry.status          = debitNote.Status__c;
+                result.ledgerData.add(entry);
+            }
+            
+            // Fetch Secondary Receipts (CREDIT)
+            List<Secondary_Receipt__c> receipts = [
+                SELECT Id, Name, Payment_Date__c, Total_Amount__c, Payment_Mode__c
+                FROM Secondary_Receipt__c
+                WHERE Customer__c = :customerId
+                AND Payment_Date__c >= :startDate
+                AND Payment_Date__c <= :endDate
+                ORDER BY Payment_Date__c ASC
+            ];
+            
+            for (Secondary_Receipt__c rec : receipts) {
+                LedgerEntry entry = new LedgerEntry();
+                entry.transactionType = 'Receipt';
+                entry.transactionDate = rec.Payment_Date__c;
+                entry.transactionNo   = rec.Name;            // FIX: doc number
+                entry.description     = 'Secondary Receipt';
+                entry.referenceNo     = rec.Name;            // FIX: was rec.Id
+                entry.amount          = rec.Total_Amount__c;
+                entry.status          = rec.Payment_Mode__c;
+                result.ledgerData.add(entry);
+            }
+            
+            // Sort all ledger data by transaction date
+            result.ledgerData.sort();
+            
+            // Build status options
+            Map<String, String> allOption = new Map<String, String>();
+            allOption.put('label', 'All');
+            allOption.put('value', '');
+            result.statusOptions.add(allOption);
+            
+            Map<String, String> pendingOption = new Map<String, String>();
+            pendingOption.put('label', 'Pending');
+            pendingOption.put('value', 'Pending');
+            result.statusOptions.add(pendingOption);
+            
+            Map<String, String> paidOption = new Map<String, String>();
+            paidOption.put('label', 'Paid');
+            paidOption.put('value', 'Paid');
+            result.statusOptions.add(paidOption);
+            
+            Map<String, String> partialOption = new Map<String, String>();
+            partialOption.put('label', 'Partial');
+            partialOption.put('value', 'Partial');
+            result.statusOptions.add(partialOption);
+            
+        } catch (Exception e) {
+            System.debug('Error fetching secondary ledger: ' + e.getMessage());
+        }
+        
+        return result;
+    }
+
+    // ========== Debit Note & Advance Methods for Receipt Creation ==========
+
+    @AuraEnabled(cacheable=false)
+    public static List<DebitNoteData> getPendingDebitNotesByCustomer(Id customerId) {
+        List<DebitNoteData> result = new List<DebitNoteData>();
+        if (customerId == null) return result;
+        List<Secondary_Debit_Note__c> notes = [
+            SELECT Id, Name, Note_Date__c, Amount__c, Paid_Amount__c, Pending_Amount__c,
+                   Customer__c, Customer__r.Name, Status__c, Reason__c
+            FROM Secondary_Debit_Note__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+            ORDER BY Note_Date__c ASC
+        ];
+        for (Secondary_Debit_Note__c dn : notes) {
+            DebitNoteData data = new DebitNoteData();
+            data.name = dn.Name;
+            data.debitNoteId = dn.Id;
+            data.noteDate = dn.Note_Date__c != null ? DateTime.newInstance(dn.Note_Date__c.year(), dn.Note_Date__c.month(), dn.Note_Date__c.day()).format('dd/MM/yyyy') : '';
+            data.amount = dn.Amount__c;
+            data.paidAmount = dn.Paid_Amount__c;
+            data.pendingAmount = dn.Pending_Amount__c;
+            data.reason = dn.Reason__c;
+            result.add(data);
+        }
+        return result;
+    }
+
+
+    @AuraEnabled
+    public static void saveSecondaryReceiptWithDetails(
+        Secondary_Receipt__c receiptData,
+        List<Secondary_Receipt_Item__c> receiptItems,
+        List<Secondary_Receipt_Debit_Item__c> debitItems
+    ) {
+        insert receiptData;
+
+        if (receiptItems != null && !receiptItems.isEmpty()) {
+            for (Secondary_Receipt_Item__c rec : receiptItems) {
+                rec.Secondary_Receipt__c = receiptData.Id;
+            }
+            insert receiptItems;
+        }
+
+        if (debitItems != null && !debitItems.isEmpty()) {
+            for (Secondary_Receipt_Debit_Item__c rec : debitItems) {
+                rec.Secondary_Receipt__c = receiptData.Id;
+            }
+            insert debitItems;
+        }
+
+    }
+
+    // Wrapper classes for Debit Note and Advance data
+    public class DebitNoteData {
+        @AuraEnabled public String name;
+        @AuraEnabled public String debitNoteId;
+        @AuraEnabled public String noteDate;
+        @AuraEnabled public Decimal amount;
+        @AuraEnabled public Decimal paidAmount;
+        @AuraEnabled public Decimal pendingAmount;
+        @AuraEnabled public String reason;
+    }
+
+    public class AdvanceData {
+        @AuraEnabled public String name;
+        @AuraEnabled public String advanceId;
+        @AuraEnabled public String advanceDate;
+        @AuraEnabled public Decimal amount;
+        @AuraEnabled public Decimal usedAmount;
+        @AuraEnabled public Decimal availableAmount;
+        @AuraEnabled public String modeOfPayment;
+    }
+
+    // Aging Report wrapper classes
+    public class AgingBucket {
+        @AuraEnabled public String label;
+        @AuraEnabled public Decimal invoiceAmount;
+        @AuraEnabled public Decimal debitNoteAmount;
+        @AuraEnabled public Decimal totalAmount;
+    }
+
+    public class AgingReportData {
+        @AuraEnabled public List<AgingBucket> buckets;
+        @AuraEnabled public Decimal totalInvoicePending;
+        @AuraEnabled public Decimal totalDebitNotePending;
+        @AuraEnabled public Decimal totalAgingAmount;
+    }
+
+    @AuraEnabled
+    public static AgingReportData getSecondaryCustomerAgingReport(String customerId) {
+        AgingReportData report = new AgingReportData();
+        report.totalInvoicePending = 0;
+        report.totalDebitNotePending = 0;
+        report.totalAgingAmount = 0;
+
+        // Initialize buckets: 0-15, 16-30, 31-45, 45+
+        List<AgingBucket> buckets = new List<AgingBucket>();
+        String[] labels = new String[]{ '0-15', '16-30', '31-45', '45+' };
+        for (String lbl : labels) {
+            AgingBucket b = new AgingBucket();
+            b.label = lbl;
+            b.invoiceAmount = 0;
+            b.debitNoteAmount = 0;
+            b.totalAmount = 0;
+            buckets.add(b);
+        }
+
+        Date today = Date.today();
+
+        // Query pending invoices
+        List<Secondary_Invoice__c> invoices = [
+            SELECT Id, Invoice_Date__c, Pending_Amount__c
+            FROM Secondary_Invoice__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+        ];
+
+        for (Secondary_Invoice__c inv : invoices) {
+            Integer daysDiff = inv.Invoice_Date__c.daysBetween(today);
+            Integer bucketIndex;
+            if (daysDiff <= 15) {
+                bucketIndex = 0;
+            } else if (daysDiff <= 30) {
+                bucketIndex = 1;
+            } else if (daysDiff <= 45) {
+                bucketIndex = 2;
+            } else {
+                bucketIndex = 3;
+            }
+            buckets[bucketIndex].invoiceAmount += inv.Pending_Amount__c;
+            report.totalInvoicePending += inv.Pending_Amount__c;
+        }
+
+        // Query pending debit notes
+        List<Secondary_Debit_Note__c> debitNotes = [
+            SELECT Id, Note_Date__c, Pending_Amount__c
+            FROM Secondary_Debit_Note__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+        ];
+
+        for (Secondary_Debit_Note__c dn : debitNotes) {
+            Integer daysDiff = dn.Note_Date__c.daysBetween(today);
+            Integer bucketIndex;
+            if (daysDiff <= 15) {
+                bucketIndex = 0;
+            } else if (daysDiff <= 30) {
+                bucketIndex = 1;
+            } else if (daysDiff <= 45) {
+                bucketIndex = 2;
+            } else {
+                bucketIndex = 3;
+            }
+            buckets[bucketIndex].debitNoteAmount += dn.Pending_Amount__c;
+            report.totalDebitNotePending += dn.Pending_Amount__c;
+        }
+
+        // Calculate totals per bucket
+        for (AgingBucket b : buckets) {
+            b.totalAmount = b.invoiceAmount + b.debitNoteAmount;
+        }
+
+        report.buckets = buckets;
+        report.totalAgingAmount = report.totalInvoicePending + report.totalDebitNotePending;
+
+        return report;
+    }
+
+    // ==================== Claim Reports ====================
+
+    public class ClaimReportItem {
+        @AuraEnabled public String category;
+        @AuraEnabled public String customerName;
+        @AuraEnabled public String productName;
+        @AuraEnabled public Decimal beforePrice;
+        @AuraEnabled public Decimal afterPrice;
+        @AuraEnabled public Decimal quantity;
+        @AuraEnabled public Decimal claimAmount;
+        @AuraEnabled public Decimal totalAmount;
+        @AuraEnabled public Decimal beforeCategorySlabPrice;
+        @AuraEnabled public Decimal afterCategorySlabPrice;
+        @AuraEnabled public Decimal categorySlabClaimAmount;
+        @AuraEnabled public Decimal beforeSchemePrice;
+        @AuraEnabled public Decimal afterSchemePrice;
+        @AuraEnabled public Decimal schemeClaimAmount;
+        @AuraEnabled public Decimal totalClaimAmount;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getCategorySlabClaimCategorySummary(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c, Before_Category_Slab_Unit_Price__c,
+                   After_Category_Slab_Unit_Price__c, Category_Slab_Claim_Amount__c,
+                   Total_Amount__c, Secondary_Invoice__r.Secondary_Customer_Category__c
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Category_Slab_Claim_Amount__c > 0
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
+            ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.category = item.Secondary_Invoice__r.Secondary_Customer_Category__c;
+            r.productName = item.Product__r.Name;
+            r.beforePrice = item.Before_Category_Slab_Unit_Price__c;
+            r.afterPrice = item.After_Category_Slab_Unit_Price__c;
+            r.quantity = item.Quantity__c;
+            r.claimAmount = item.Category_Slab_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getCategorySlabClaimCategoryCustomerDetail(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c, Before_Category_Slab_Unit_Price__c,
+                   After_Category_Slab_Unit_Price__c, Category_Slab_Claim_Amount__c,
+                   Total_Amount__c, Secondary_Invoice__r.Secondary_Customer_Category__c,
+                   Secondary_Invoice__r.Customer__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Category_Slab_Claim_Amount__c > 0
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
+            ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.category = item.Secondary_Invoice__r.Secondary_Customer_Category__c;
+            r.customerName = item.Secondary_Invoice__r.Customer__r.Name;
+            r.productName = item.Product__r.Name;
+            r.beforePrice = item.Before_Category_Slab_Unit_Price__c;
+            r.afterPrice = item.After_Category_Slab_Unit_Price__c;
+            r.quantity = item.Quantity__c;
+            r.claimAmount = item.Category_Slab_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getSchemeClaimCustomerSummary(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c, Before_Scheme_Unit_Price__c,
+                   After_Scheme_Unit_Price__c, Scheme_Claim_Amount__c,
+                   Total_Amount__c, Secondary_Invoice__r.Customer__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Scheme_Claim_Amount__c > 0
+            ORDER BY Secondary_Invoice__r.Customer__r.Name, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.customerName = item.Secondary_Invoice__r.Customer__r.Name;
+            r.productName = item.Product__r.Name;
+            r.beforePrice = item.Before_Scheme_Unit_Price__c;
+            r.afterPrice = item.After_Scheme_Unit_Price__c;
+            r.quantity = item.Quantity__c;
+            r.claimAmount = item.Scheme_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getCombinedClaimCategoryCustomerSummary(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c,
+                   Before_Category_Slab_Unit_Price__c, After_Category_Slab_Unit_Price__c, Category_Slab_Claim_Amount__c,
+                   Before_Scheme_Unit_Price__c, After_Scheme_Unit_Price__c, Scheme_Claim_Amount__c,
+                   Total_Claim_Amount__c, Total_Amount__c,
+                   Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND Category_Slab_Claim_Amount__c > 0
+            AND Scheme_Claim_Amount__c > 0
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
+            ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.category = item.Secondary_Invoice__r.Secondary_Customer_Category__c;
+            r.customerName = item.Secondary_Invoice__r.Customer__r.Name;
+            r.productName = item.Product__r.Name;
+            r.quantity = item.Quantity__c;
+            r.beforeCategorySlabPrice = item.Before_Category_Slab_Unit_Price__c;
+            r.afterCategorySlabPrice = item.After_Category_Slab_Unit_Price__c;
+            r.categorySlabClaimAmount = item.Category_Slab_Claim_Amount__c;
+            r.beforeSchemePrice = item.Before_Scheme_Unit_Price__c;
+            r.afterSchemePrice = item.After_Scheme_Unit_Price__c;
+            r.schemeClaimAmount = item.Scheme_Claim_Amount__c;
+            r.totalClaimAmount = item.Total_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<ClaimReportItem> getTotalClaimCategoryCustomerSummary(String fromDate, String toDate) {
+        Id accountId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            accountId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+        Date frmDate = Date.valueOf(fromDate);
+        Date toDateVal = Date.valueOf(toDate);
+
+        List<Secondary_Invoice_Item__c> items = [
+            SELECT Product__r.Name, Quantity__c,
+                   Before_Category_Slab_Unit_Price__c, After_Category_Slab_Unit_Price__c, Category_Slab_Claim_Amount__c,
+                   Before_Scheme_Unit_Price__c, After_Scheme_Unit_Price__c, Scheme_Claim_Amount__c,
+                   Total_Claim_Amount__c, Total_Amount__c,
+                   Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name
+            FROM Secondary_Invoice_Item__c
+            WHERE Secondary_Invoice__r.Store__c = :accountId
+            AND Secondary_Invoice__r.Invoice_Date__c >= :frmDate
+            AND Secondary_Invoice__r.Invoice_Date__c <= :toDateVal
+            AND (Category_Slab_Claim_Amount__c > 0 OR Scheme_Claim_Amount__c > 0)
+            AND Secondary_Invoice__r.Secondary_Customer_Category__c != null
+            ORDER BY Secondary_Invoice__r.Secondary_Customer_Category__c, Secondary_Invoice__r.Customer__r.Name, Product__r.Name
+        ];
+
+        List<ClaimReportItem> result = new List<ClaimReportItem>();
+        for (Secondary_Invoice_Item__c item : items) {
+            ClaimReportItem r = new ClaimReportItem();
+            r.category = item.Secondary_Invoice__r.Secondary_Customer_Category__c;
+            r.customerName = item.Secondary_Invoice__r.Customer__r.Name;
+            r.productName = item.Product__r.Name;
+            r.quantity = item.Quantity__c;
+            r.beforeCategorySlabPrice = item.Before_Category_Slab_Unit_Price__c;
+            r.afterCategorySlabPrice = item.After_Category_Slab_Unit_Price__c;
+            r.categorySlabClaimAmount = item.Category_Slab_Claim_Amount__c;
+            r.beforeSchemePrice = item.Before_Scheme_Unit_Price__c;
+            r.afterSchemePrice = item.After_Scheme_Unit_Price__c;
+            r.schemeClaimAmount = item.Scheme_Claim_Amount__c;
+            r.totalClaimAmount = item.Total_Claim_Amount__c;
+            r.totalAmount = item.Total_Amount__c;
+            result.add(r);
+        }
+        return result;
+    }
+
+    // ==================== Outstanding Report ====================
+
+    public class OutstandingReportItem implements Comparable {
+        @AuraEnabled public String primaryCustomerSapCode;
+        @AuraEnabled public String primaryCustomerName;
+        @AuraEnabled public String secondaryCustomerCode;
+        @AuraEnabled public String secondaryCustomerName;
+        @AuraEnabled public String executiveCode;
+        @AuraEnabled public String executiveName;
+        @AuraEnabled public String beatName;
+        @AuraEnabled public String documentNumber;
+        @AuraEnabled public Date documentDate;
+        @AuraEnabled public Decimal documentAmount;
+        @AuraEnabled public Decimal collectedAmount;
+        @AuraEnabled public Decimal outstandingAmount;
+        @AuraEnabled public String documentType;
+
+        public Integer compareTo(Object compareTo) {
+            Date otherDate = ((OutstandingReportItem) compareTo).documentDate;
+            if (documentDate == otherDate) return 0;
+            if (documentDate == null || documentDate < otherDate) return -1;
+            return 1;
+        }
+    }
+
+    @AuraEnabled
+    public static List<OutstandingReportItem> getOutstandingReport(String customerId) {
+        List<OutstandingReportItem> result = new List<OutstandingReportItem>();
+
+        // Get the primary customer (Store/Distributor) account ID for this secondary customer
+        Id primaryCustomerId;
+        User u = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.ContactId != null) {
+            primaryCustomerId = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1].AccountId;
+        }
+
+
+        // Query Executive from Product_Mapping__c
+        String execCode = '';
+        String execName = '';
+        if (primaryCustomerId != null) {
+            List<Product_Mapping__c> pmList = [
+                SELECT Exectuive__r.Employee_Code__c, Exectuive__r.Name,Executive_Name1__c
+                FROM Product_Mapping__c
+                WHERE Customer__c = :customerId
+                AND Primary_Customer__c = :primaryCustomerId
+                AND Exectuive__c != null  Order by Exectuive__r.Heirarchial_Number__c ASC
+                LIMIT 1
+            ];
+            if (!pmList.isEmpty()) {
+                execCode = pmList[0].Exectuive__r.Employee_Code__c;
+                execName = pmList[0].Executive_Name1__c;
+            }
+        }
+
+        // Query Beat Name from Junction_Beat__c
+        String beatNameVal = '';
+        if (primaryCustomerId != null) {
+            List<Junction_Beat__c> jbList = [
+                SELECT Child_beat__r.Name
+                FROM Junction_Beat__c
+                WHERE Account__c = :customerId
+                AND Child_beat__r.Primary_Customer__c = :primaryCustomerId
+                LIMIT 1
+            ];
+            if (!jbList.isEmpty()) {
+                beatNameVal = jbList[0].Child_beat__r.Name;
+            }
+        }
+
+        // Secondary Invoices with outstanding amount
+        List<Secondary_Invoice__c> invoices = [
+            SELECT Name, Invoice_Date__c, Grand_Total__c, Paid_Invoice_Amount__c, Pending_Amount__c,
+                   Store__r.Name, Store__r.SAP_Customer_Code__c,Customer__r.Name, Customer__r.Customer_Code__c,
+                   Beat_Name__c,Executive_Name__c,Executive_Employee_Code__c
+            FROM Secondary_Invoice__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+            ORDER BY Invoice_Date__c ASC
+        ];
+
+        for (Secondary_Invoice__c inv : invoices) {
+            OutstandingReportItem item = new OutstandingReportItem();
+            item.primaryCustomerSapCode = inv.Store__r != null ? inv.Store__r.SAP_Customer_Code__c : '';
+            item.primaryCustomerName = inv.Store__r != null ? inv.Store__r.Name : '';
+            item.secondaryCustomerCode = inv.Customer__r != null ? inv.Customer__r.Customer_Code__c : '';
+            item.secondaryCustomerName = inv.Customer__r != null ? inv.Customer__r.Name : '';
+            item.executiveCode = inv.Executive_Employee_Code__c != null ? inv.Executive_Employee_Code__c : execCode;
+            item.executiveName = inv.Executive_Name__c != null ? inv.Executive_Name__c : execName;
+            item.beatName = inv.Beat_Name__c != null ? inv.Beat_Name__c : beatNameVal;
+            item.documentNumber = inv.Name;
+            item.documentDate = inv.Invoice_Date__c;
+            item.documentAmount = inv.Grand_Total__c != null ? inv.Grand_Total__c : 0;
+            item.collectedAmount = inv.Paid_Invoice_Amount__c != null ? inv.Paid_Invoice_Amount__c : 0;
+            item.outstandingAmount = inv.Pending_Amount__c != null ? inv.Pending_Amount__c : 0;
+            item.documentType = 'Invoice';
+            result.add(item);
+        }
+
+        // Secondary Debit Notes with outstanding amount
+        List<Secondary_Debit_Note__c> debitNotes = [
+            SELECT Name, Note_Date__c, Amount__c, Paid_Amount__c, Pending_Amount__c,
+                   Distributor__r.Name, Distributor__r.SAP_Customer_Code__c,
+                   Customer__r.Name, Customer__r.Customer_Code__c
+            FROM Secondary_Debit_Note__c
+            WHERE Customer__c = :customerId AND Pending_Amount__c > 0
+            ORDER BY Note_Date__c ASC
+        ];
+
+        for (Secondary_Debit_Note__c dn : debitNotes) {
+            OutstandingReportItem item = new OutstandingReportItem();
+            item.primaryCustomerSapCode = dn.Distributor__r != null ? dn.Distributor__r.SAP_Customer_Code__c : '';
+            item.primaryCustomerName = dn.Distributor__r != null ? dn.Distributor__r.Name : '';
+            item.secondaryCustomerCode = dn.Customer__r != null ? dn.Customer__r.Customer_Code__c : '';
+            item.secondaryCustomerName = dn.Customer__r != null ? dn.Customer__r.Name : '';
+            item.executiveCode = execCode;
+            item.executiveName = execName;
+            item.beatName = beatNameVal;
+            item.documentNumber = dn.Name;
+            item.documentDate = dn.Note_Date__c;
+            item.documentAmount = dn.Amount__c != null ? dn.Amount__c : 0;
+            item.collectedAmount = dn.Paid_Amount__c != null ? dn.Paid_Amount__c : 0;
+            item.outstandingAmount = dn.Pending_Amount__c != null ? dn.Pending_Amount__c : 0;
+            item.documentType = 'Debit Note';
+            result.add(item);
+        }
+
+        result.sort();
+        return result;
     }
 }

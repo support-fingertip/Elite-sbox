@@ -58,7 +58,7 @@
 @media screen and (max-width: 767px) {
     .screen-1 {
         padding: 5px;
-        height: 100vh;
+        height: 100dvh;
  
     }
     .screenWithOutHeight

@@ -18,6 +18,7 @@ public class SchemeLwc {
         @AuraEnabled public List<product__c> allProducts { get; set; }
         @AuraEnabled public List<Product_Category__c> allProductsCat { get; set; }
         @AuraEnabled public List<String> salesChannelPicklist {get;set;}
+        @AuraEnabled public List<String> secondaryCustomerCategoryPicklist {get;set;}
         @AuraEnabled public List<Exclude_Line_Item__c> excId { get; set; }
         @AuraEnabled public Exclude_Product__c excData { get; set; }
         @AuraEnabled public Scheme__c scheme { get; set; }
@@ -97,6 +98,14 @@ public class SchemeLwc {
             paymentTypeValues.add(picklistEntry.getLabel());
         }
         dt.salesChannelPicklist = paymentTypeValues;
+
+        List<String> categoryValues = new List<String>();
+        Schema.DescribeFieldResult categoryFieldResult = Buy_Product__c.Secondary_Customer_Category__c.getDescribe();
+        for (Schema.PicklistEntry pe : categoryFieldResult.getPicklistValues()) {
+            categoryValues.add(pe.getLabel());
+        }
+        dt.secondaryCustomerCategoryPicklist = categoryValues;
+
         dt.allProductsCat =[Select Id,Name from Product_Category__c];
         dt.allCategory = [SELECT id,name from Category__c];
         List<ListView> listViewRecords = [SELECT Id FROM ListView WHERE SObjectType = 'Scheme__c' AND Name = :'All' LIMIT 1];
@@ -108,8 +117,8 @@ public class SchemeLwc {
                          where id =: recordId];
             dt.buyPro = [select id,name,Sales_Channel__c,Scheme_Type__c,Sale_Value_Threshold__c,Scheme__c,Buy_Quantity__c,Buy_Value__c,Offer_Percent__c,Offer_Quantity__c,
                          Offer_Value__c,Min__c,Max__c,Product__c,Product__r.Name,Category__c,Category__r.Name,Discount__c,
-                         Per_Kg__c,Sale_Value__c
-                         from Buy_Product__c where 
+                         Per_Kg__c,Sale_Value__c,Secondary_Customer_Category__c
+                         from Buy_Product__c where
                          Scheme__c =: recordId];
             dt.allProducts = [SELECT Id, Name, Channel__c,SKU_Code__c FROM Product__c WHERE Is_Active__c = true];
             List<Exclude_Product__c> excPro = [select id from Exclude_Product__c where Scheme__c =: recordId Limit 1];
@@ -126,7 +135,8 @@ public class SchemeLwc {
     @AuraEnabled
     public static userData getAllProductById(String salesChannel) {
         userData dt = new userData();
-        List<Sales_Channel_To_SKU__c> channels = [SELECT Id, Name, SKU__c,Delivery_Plant__c FROM Sales_Channel_To_SKU__c WHERE Sales_Channel__c  =:salesChannel];
+        List<Sales_Channel_To_SKU__c> channels = [SELECT Id, Name, SKU__c,Delivery_Plant__c 
+                                                  FROM Sales_Channel_To_SKU__c WHERE Sales_Channel__c  =:salesChannel];
         Set<Id> productIds = new Set<Id>();
         for (Sales_Channel_To_SKU__c channel : channels) {
             productIds.add(channel.SKU__c);

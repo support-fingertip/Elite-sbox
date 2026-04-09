@@ -878,14 +878,15 @@ export default class ProductScreen4 extends LightningElement {
             return;
         }
 
-       /* if (this.isShowOwner == true && !this.OrderOwnerId) {
+        if (this.isShowOwner == true && !this.OrderOwnerId) {
+            this.isPageLoaded = false;
             this.genericDispatchToastEvent(
                 'Validation Error',
                 'Please fill the owner name',
                 'error'
             );
             return;
-        }*/
+        }
 
         const selectedDate = new Date(this.expectedDeliveryDate);
         const today = new Date();
@@ -925,6 +926,10 @@ export default class ProductScreen4 extends LightningElement {
                 Case_Qyt__c: item.crateQty,
                 Each_Qyt__c: item.eachQty,
                 Unit_price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
+                Before_Category_Slab_Unit_Price__c: item.originalUnitPrice || item.UnitPricePriceBook,
+                After_Category_Slab_Unit_Price__c: item.UnitPricePriceBook,
+                Before_Scheme_Unit_Price__c: item.UnitPricePriceBook,
+                After_Scheme_Unit_Price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
                 Tax__c: item.taxPercent || 0,
                 Tax_Amount__c: parseFloat(item.taxAmt),
                 Total_Amount__c: parseFloat(item.netValue)
@@ -2164,9 +2169,7 @@ export default class ProductScreen4 extends LightningElement {
                 const quantity = (crateQty * uomConv) + eachQty;
                 const netWeight = parseFloat(product.netWeight || 0); // NEW: Get net weight
 
-                //const baseUnitPrice = parseFloat(product.UnitPricePriceBook.toFixed(2) || 0);
-                const baseUnitPrice = parseFloat(Number(product.UnitPricePriceBook || 0).toFixed(2));
-
+                const baseUnitPrice = parseFloat(product.UnitPricePriceBook.toFixed(2) || 0);
                 const taxPercent = parseFloat(product.taxPercent || 0);
 
                 const taxAmt = (baseUnitPrice * quantity) * (taxPercent / 100);

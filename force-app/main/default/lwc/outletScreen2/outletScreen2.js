@@ -102,6 +102,17 @@ export default class OutletScreen2 extends NavigationMixin(LightningElement) {
         }
     }
 
+    @api validateInprogressVisitForVisitForm() {
+        if (this.isProgressVisit) {
+             this.genericDispatchToastEvent('Error','Please complete the in-progress visit before creating New Visit Form.','Error');
+            // Notify parent that switching is not allowed
+            this.dispatchEvent(new CustomEvent('visitformcheck', { detail: { canCreate: false } }));
+        } else {
+            // Notify parent that switching is allowed
+            this.dispatchEvent(new CustomEvent('visitformcheck', { detail: { canCreate: true } }));
+        }
+    }
+
     connectedCallback(){
         this.isParentComp = this.isParentComp ? true : false;
         this.containerClass = this.isDesktop ? 'slds-modal__container ' : '';

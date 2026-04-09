@@ -303,69 +303,62 @@
                                     </template>
 
                                     <template if:true={isModalOpen}>
-                                        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
-                                            <div class="slds-modal__container">
-                                                <header class="slds-modal__header">
-                                                    <h2 class="slds-text-heading_medium">{modalBody.headerName}</h2>
+                                        <div class="assign-modal-backdrop" onclick={closeModal}></div>
+                                        <section role="dialog" tabindex="-1" class="assign-modal-sheet">
+                                            <div class="assign-modal-container">
+                                                <header class="assign-modal-header">
+                                                    <h2 class="assign-modal-title">{modalBody.headerName}</h2>
+                                                    <button class="assign-modal-close" onclick={closeModal}>&#10005;</button>
                                                 </header>
-                                                <div class="slds-modal__content slds-p-around_medium">
-                                                    <lightning-input type="date" label={modalBody.dateLabel}
-                                                        value={startDate} onchange={handleStartDateChange}
-                                                        min={todaydate}>
-                                                    </lightning-input>
+                                                <div class="assign-modal-body">
+                                                    <div class="assign-modal-field">
+                                                        <lightning-input type="date" label={modalBody.dateLabel}
+                                                            value={startDate} onchange={handleStartDateChange}
+                                                            min={todaydate} variant="label-stacked">
+                                                        </lightning-input>
+                                                    </div>
 
-                                                    <div class="slds-form-element">
+                                                    <div class="assign-modal-field">
+                                                        <div class="assign-modal-lookup">
+                                                            <lightning-input type="search" name="beat"
+                                                                label={modalBody.beatLabel}
+                                                                value={filterBeatData.beatSearchKeyword}
+                                                                onchange={handleSearchChange}
+                                                                disabled={isBeatButton} placeholder="Search Beat..."
+                                                                is-loading={isLoading} required
+                                                                variant="label-stacked">
+                                                            </lightning-input>
 
-                                                        <div class="slds-form-element__control">
-                                                            <div class="lookupContainer">
-                                                                <lightning-input type="search" name="beat"
-                                                                    label={modalBody.beatLabel}
-                                                                    value={filterBeatData.beatSearchKeyword}
-                                                                    onchange={handleSearchChange}
-                                                                    disabled={isBeatButton} placeholder="Search Beat..."
-                                                                    is-loading={isLoading} required></lightning-input>
-
-                                                                <template if:true={showDropdown}>
-                                                                    <ul
-                                                                        class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid">
-                                                                        <template for:each={filteredBeatOptions}
-                                                                            for:item="beat">
-                                                                            <li key={beat.beatId}
-                                                                                class="slds-listbox__item"
-                                                                                onclick={handleOptionSelect}
-                                                                                data-id={beat.beatId}>
-                                                                                <div
-                                                                                    class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small">
-                                                                                    <span class="slds-media__body">
-                                                                                        <span
-                                                                                            class="slds-truncate">{beat.beatName}</span>
-                                                                                    </span>
-                                                                                </div>
-                                                                            </li>
-                                                                        </template>
-                                                                    </ul>
-                                                                </template>
-                                                            </div>
+                                                            <template if:true={showDropdown}>
+                                                                <ul class="assign-modal-dropdown">
+                                                                    <template for:each={filteredBeatOptions}
+                                                                        for:item="beat">
+                                                                        <li key={beat.beatId}
+                                                                            class="assign-modal-dropdown-item"
+                                                                            onclick={handleOptionSelect}
+                                                                            data-id={beat.beatId}>
+                                                                            {beat.beatName}
+                                                                        </li>
+                                                                    </template>
+                                                                </ul>
+                                                            </template>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <footer class="slds-modal__footer">
+                                                <footer class="assign-modal-footer">
                                                     <lightning-button variant="neutral" label="Cancel"
-                                                        onclick={closeModal}></lightning-button>&nbsp;
+                                                        onclick={closeModal} class="assign-modal-btn"></lightning-button>
                                                     <template lwc:if={autoCreatePJP}>
                                                         <lightning-button variant="brand" label="Create"
-                                                            onclick={handlePJPCreation}></lightning-button>
+                                                            onclick={handlePJPCreation} class="assign-modal-btn"></lightning-button>
                                                     </template>
                                                     <template lwc:else>
                                                         <lightning-button variant="brand" label="Save"
-                                                            onclick={handlePJPSave}></lightning-button>
-                                                        <!--  <lightning-button variant="brand" label="Save & New"
-                                                            onclick={handlePJPSaveNew}></lightning-button> -->
+                                                            onclick={handlePJPSave} class="assign-modal-btn"></lightning-button>
                                                     </template>
                                                 </footer>
                                             </div>
                                         </section>
-                                        <div class="slds-backdrop slds-backdrop_open"></div>
                                     </template>
                                 </template>
 
@@ -1048,13 +1041,18 @@
                                                     <th class="minwidth">Last Call Time</th>
 
                                                     <th class="minwidth">Total Outlets</th>
+                                                    <th class="minwidth">Total No of Beat & Non PJP Order</th>
+
                                                     <th class="minwidth">No of Outlets from Beat</th>
                                                     <th class="minwidth">No of Outlets Non PJP Order</th>
+                                                    <th class="minwidth">No of Outlets from Visit forms</th>
 
                                                     <th class="minwidth">TC %</th>
                                                     <th class="minwidth">TC</th>
                                                     <th class="minwidth">PJP TC</th>
                                                     <th class="minwidth">Non PJP Order TC</th>
+                                                    <th class="minwidth">Visit Form Unique Calls</th>
+                                                    <th class="minwidth">Visit Form Total Calls</th>
 
                                                     <th class="minwidth">Total PC %</th>
                                                     <th class="minwidth">Total PC</th>
@@ -1096,18 +1094,24 @@
                                                             <td>{row.Last_Visit_Time1__c}</td>
 
                                                             <td>{row.Total_No_of_Outlets__c}</td>
+                                                            <td>{row.Total_No_of_Beat_Non_PJP_Order__c}</td>
+
                                                             <td>{row.Total_Outlets__c}</td>
                                                             <td>{row.No_Of_Outlets_from_Non_PJP_Order__c}</td>
+                                                            <td>{row.No_of_Outlets_from_Visit_forms__c}</td>
 
                                                             <td>{row.Calls_Made__c}</td>
                                                             <td>{row.Total_Calls__c}</td>
                                                             <td>{row.Total_Visits__c}</td>
                                                             <td>{row.Non_PJP_Order_Calls__c}</td>
+                                                            <td>{row.Visit_Form_Unique_Calls__c}</td>
+                                                            <td>{row.Visit_Form_Total_Calls__c}</td>
 
                                                             <td>{row.Prouctive_Calls_Made__c}</td>
                                                             <td>{row.Total_Productive_Calls_Made__c}</td>
                                                             <td>{row.Total_Productive_Calls__c}</td>
                                                             <td>{row.Non_PJP_Productive_Calls__c}</td>
+                                                        
 
 
                                                             <td>{row.Total_Order_Amount__c}</td>

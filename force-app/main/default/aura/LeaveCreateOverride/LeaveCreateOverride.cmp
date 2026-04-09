@@ -153,6 +153,23 @@
                                                                          class="slds-combobox__input"
                                                                          readonly="{!not(empty(v.selectedUserId))}" />
                                                         
+                                                        <!-- Show X clear icon inside box when a user is selected 
+                                                        <aura:if isTrue="{!not(empty(v.selectedUserId))}">
+                                                            <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
+                                                                    onclick="{!c.handleClearUser}"
+                                                                    title="Clear selection"
+                                                                    style="cursor:pointer;">
+                                                                <lightning:icon iconName="utility:close" size="x-small" alternativeText="Clear"/>
+                                                            </button>
+                                                        </aura:if>
+                                                        
+                                                        
+                                                        <aura:if isTrue="{!empty(v.selectedUserId)}">
+                                                            <lightning:icon iconName="utility:search"
+                                                                            size="x-small"
+                                                                            class="slds-input__icon slds-input__icon_right slds-icon-text-default"
+                                                                            alternativeText="Search"/>
+                                                        </aura:if>-->
                                                         <!-- Show X clear icon inside box when a user is selected -->
                                                         <aura:if isTrue="{!not(empty(v.selectedUserId))}">
                                                             <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
@@ -163,8 +180,15 @@
                                                             </button>
                                                         </aura:if>
                                                         
-                                                        <!-- Show search icon when nothing selected -->
-                                                        <aura:if isTrue="{!empty(v.selectedUserId)}">
+                                                        <!-- Show spinner while searching -->
+                                                        <aura:if isTrue="{!and(empty(v.selectedUserId), v.isSearching)}">
+                                                            <lightning:spinner size="x-small" variant="brand"
+                                                                               class="slds-input__icon slds-input__icon_right"
+                                                                               alternativeText="Searching..."/>
+                                                        </aura:if>
+                                                        
+                                                        <!-- Show search icon when idle and nothing selected -->
+                                                        <aura:if isTrue="{!and(empty(v.selectedUserId), not(v.isSearching))}">
                                                             <lightning:icon iconName="utility:search"
                                                                             size="x-small"
                                                                             class="slds-input__icon slds-input__icon_right slds-icon-text-default"

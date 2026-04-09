@@ -38,9 +38,8 @@ public with sharing class SecondaryCustomerController {
                     Primary_Customer__r.SAP_Customer_Code__c,Sub_Stockiest__r.Outlet_Id__c,
                     Primary_Customer__r.Name,Sub_Stockiest__r.Name
                     FROM Product_Mapping__c
-                    WHERE Primary_Customer__c = :recordId
-                    and is_Executive_Active__c = true
-                    WITH SECURITY_ENFORCED  limit 1000
+                    WHERE Primary_Customer__c = :recordId and is_Executive_Active__c = true
+                    WITH SECURITY_ENFORCED
                 ];
             } else {
                 fileName = acc.Name
@@ -53,9 +52,8 @@ public with sharing class SecondaryCustomerController {
                     Primary_Customer__r.SAP_Customer_Code__c,Sub_Stockiest__r.Outlet_Id__c,  Customer__r.Secondary_Customer_Type__c,
                     Primary_Customer__r.Name,Sub_Stockiest__r.Name
                     FROM Product_Mapping__c
-                    WHERE Sub_Stockiest__c = :recordId
-                    and is_Executive_Active__c = true
-                    WITH SECURITY_ENFORCED limit 1000
+                    WHERE Sub_Stockiest__c = :recordId and is_Executive_Active__c = true
+                    WITH SECURITY_ENFORCED
                 ];
             }
         }

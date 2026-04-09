@@ -167,7 +167,21 @@
         <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Distributor Stocks</pluralLabel>
-    <searchLayouts></searchLayouts>
+    <searchLayouts>
+        <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
+        <excludedStandardButtons>Import</excludedStandardButtons>
+        <excludedStandardButtons>MassChangeOwner</excludedStandardButtons>
+        <excludedStandardButtons>PrintableListView</excludedStandardButtons>
+        <searchResultsAdditionalFields>Distributor__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>GRN_Quantity__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Primary_Return_Quantity__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>GRN_Saleable_Quantity__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Secondary_Return_Quantity__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Non_Saleable_to_Saleable_Quantity__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Written_Off_Quantity__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>GRN_Nonsaleable_Quantity__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Secondary_Return_Nonsaleable_Quantity__c</searchResultsAdditionalFields>
+    </searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

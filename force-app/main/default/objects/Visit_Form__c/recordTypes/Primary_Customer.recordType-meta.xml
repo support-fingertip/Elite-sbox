@@ -13,6 +13,18 @@
             <fullName>Existing Secondary Customer</fullName>
             <default>false</default>
         </values>
+        <values>
+            <fullName>New Outlet</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>New Primary Customer</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>New Sub Stockiest</fullName>
+            <default>false</default>
+        </values>
     </picklistValues>
     <picklistValues>
         <picklist>District__c</picklist>
@@ -3251,6 +3263,21 @@
         </values>
     </picklistValues>
     <picklistValues>
+        <picklist>Product__c</picklist>
+        <values>
+            <fullName>Bakery</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Bakery %26 Staple</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Staple</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
         <picklist>Secondary_Customer_Business_Type__c</picklist>
         <values>
             <fullName>Bakery</fullName>
@@ -3282,6 +3309,10 @@
         </values>
         <values>
             <fullName>Institution</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Others</fullName>
             <default>false</default>
         </values>
         <values>

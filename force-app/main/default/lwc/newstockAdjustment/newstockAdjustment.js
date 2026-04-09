@@ -192,7 +192,7 @@ export default class NewStockAdjustment extends LightningElement {
                 );
                 return;
             }
-            if (item.quantity && item.quantity > 0 && item.availablequantity < item.quantity) {
+            if (item.quantity && item.quantity > 0 && item.availablequantity > 0 && item.availablequantity < item.quantity) {
                 this.showToast(
                     'Validation Error',
                     `Row ${item.rowIndex}: Entered Quantity is more than Available Quantity`,

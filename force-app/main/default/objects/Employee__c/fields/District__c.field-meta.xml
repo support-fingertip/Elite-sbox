@@ -2460,6 +2460,10 @@
             <valueName>West Champaran</valueName>
         </valueSettings>
         <valueSettings>
+            <controllingFieldValue>Bihar</controllingFieldValue>
+            <valueName>Idukky</valueName>
+        </valueSettings>
+        <valueSettings>
             <controllingFieldValue>Chhattisgarh</controllingFieldValue>
             <valueName>Balod</valueName>
         </valueSettings>

@@ -3,15 +3,8 @@
     <fullName>Today</fullName>
     <columns>NAME</columns>
     <columns>Start_Day_Odometer_Reading_KM__c</columns>
-    <columns>Clock_In_Location__Latitude__s</columns>
-    <columns>Clock_In_Location__Longitude__s</columns>
-    <columns>Day_started_time__c</columns>
-    <columns>Clock_Out_Location__Longitude__s</columns>
-    <columns>Clock_Out_Location__Latitude__s</columns>
     <columns>Day_ended_time__c</columns>
-    <columns>KMs_Travelled__c</columns>
     <columns>Distance_Salesforce__c</columns>
-    <columns>Assigned_Beat__c</columns>
     <columns>Is_System_Ended__c</columns>
     <columns>Last_Visit__c</columns>
     <columns>CREATED_DATE</columns>

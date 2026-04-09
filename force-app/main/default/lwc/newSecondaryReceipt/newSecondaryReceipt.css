@@ -1,0 +1,369 @@
+/* =============================================
+   BASE LAYOUT
+   ============================================= */
+.orders {
+    z-index: 2;
+    padding: 0 0 20px 0;
+    color: #000;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--root-bg-linear-gradient), var(--root-bg-image);
+}
+/* newSecondaryReceipt.css */
+.empty-state {
+    width: 95%;
+    background: var(--lwc-colorBackgroundAlt);
+    border-radius: 8px;
+    border: 1px solid var(--lwc-colorBorderSeparator);
+}
+
+.metric-tile {
+    min-width: 120px;
+    padding: 12px 16px;
+    text-align: center;
+    background: white;
+    border-radius: 6px;
+}
+
+.tile-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--lwc-colorTextLabel);
+    margin: 0 0 4px;
+    letter-spacing: 0.5px;
+}
+
+.tile-value {
+    font-size: 14px;
+    color: var(--lwc-colorTextPlaceholder);
+    margin: 0;
+}
+
+.orderslayouts {
+    margin-left: 40px;
+    margin-right : 40px;
+    margin-bottom: 40px;
+}
+
+/* =============================================
+   NEW SECONDARY RECEIPT — HEADER BAR
+   ============================================= */
+.receipt-header-bar {
+    width: 95%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* move everything to right */
+    gap: 1rem;
+    padding: 1rem 0 0.6rem 0;
+    flex-wrap: wrap;
+}
+
+/* Title */
+.receipt-header-bar .order-title {
+    margin: 0;
+    white-space: nowrap;
+
+}
+
+/* Search */
+.receipt-header-bar .customer-search-container {
+    width: 300px;
+    min-width: 220px;
+    max-width: 400px;
+    position: relative;
+}
+
+/* Buttons */
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto; /* push buttons to extreme right */
+}
+
+/* =============================================
+   FORM / INVOICE CARD
+   ============================================= */
+.form-card {
+    width: 95%;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 1rem 1.25rem;
+    border: 1px solid #e0e0e0;
+    margin-top: 0;
+}
+
+/* =============================================
+   PENDING INVOICES CARD HEADER
+   ============================================= */
+.pending-invoices-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.pending-invoices-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+}
+
+.auto-fill-btn {
+    white-space: nowrap;
+    width: auto !important;
+    padding: 0 18px !important;
+}
+
+/* =============================================
+   AMOUNT WARNING MESSAGE
+   ============================================= */
+.amount-message {
+    color: #e67e22;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* =============================================
+   PENDING AMT COLOUR
+   ============================================= */
+.pending-amt {
+    color: #e74c3c;
+}
+
+/* =============================================
+   PAYING NOW INPUT
+   ============================================= */
+.paying-input {
+    width: 75px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 13px;
+}
+
+/* =============================================
+   TITLE (GENERAL)
+   ============================================= */
+.order-title1 {
+    margin: 0 0 0.4rem 0;
+    font-size: 28px;
+    color: #02323e;
+    font-weight: bold;
+}
+.order-title {
+    margin: 0 0 0.4rem 0;
+    font-size: 28px;
+    color: #02323e;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;      
+}
+
+
+/* =============================================
+   ORDER HEAD (list page)
+   ============================================= */
+.order-head {
+    margin: 10px 0;
+    margin-bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-filters {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px; /* Reduced gap for compact layout */
+}
+
+/* =============================================
+   LIST PAGE FILTERS ROW
+   ============================================= */
+.list-filters-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* =============================================
+   BUTTONS
+   ============================================= */
+.actionButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    min-width: 110px;
+    height: 33px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 0 14px;
+}
+
+.actionButton:hover {
+    background-color: #218838;
+}
+
+.actionButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.actionButton1 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    min-width: 110px;
+    height: 33px;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0 14px;
+}
+
+.actionButton1:hover {
+    background-color: #f8f9fa;
+}
+
+.download-btn {
+    min-width: unset;
+    width: 40px;
+    padding: 0 8px;
+}
+
+/* =============================================
+   CONTACTS TABLE
+   ============================================= */
+.contacts-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #fff;
+    display: block;
+    max-height: 65vh;
+}
+
+.contacts-table th,
+.contacts-table td {
+    text-align: left;
+    font-size: 14px;
+    padding: 12px 15px;
+    border-bottom: 1px solid #ccc;
+}
+
+.contacts-table th {
+    background-color: #02323e;
+    color: #fff;
+    font-weight: 400;
+    font-size: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.contacts-table tbody {
+    display: block;
+    max-height: 58vh;
+    overflow-y: auto;
+}
+
+.contacts-table thead,
+.contacts-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* =============================================
+   NO RECORDS
+   ============================================= */
+.no-records {
+    color: #e74c3c;
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.1rem;
+    padding: 20px 0;
+}
+
+/* =============================================
+   CUSTOMER SEARCH SUGGESTION BOX
+   ============================================= */
+.customer-search-container {
+    position: relative;
+}
+
+.suggestion-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.suggestion-box .slds-listbox__option:hover {
+    background-color: #f3f3f3;
+}
+
+/* =============================================
+   RECEIPT DETAIL MODAL
+   ============================================= */
+.receipt-detail-modal {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100vw; 
+    height: 100vh;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.receipt-detail-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    min-width: 320px;
+    max-width: 90vw;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 768px) {
+    .receipt-header-bar {
+        flex-direction: column;
+        align-items: flex-end; /* keep right alignment in mobile */
+    }
+
+    .customer-search-container {
+        width: 100%;
+    }
+}

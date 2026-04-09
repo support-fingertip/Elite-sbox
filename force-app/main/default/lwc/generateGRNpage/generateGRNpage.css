@@ -73,6 +73,33 @@
     background-color: #f3f3f3;
 }
 
+/* GRN Details Card */
+.grn-details-card {
+    width: 90%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.file-input {
+    display: block;
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+.image-preview {
+    margin-top: 10px;
+}
+
+.image-preview img {
+    max-width: 250px;
+    max-height: 200px;
+    border: 1px solid #d8dde6;
+    border-radius: 8px;
+}
+
 /* Table Container */
 .contacts-table {
     width: 90%;

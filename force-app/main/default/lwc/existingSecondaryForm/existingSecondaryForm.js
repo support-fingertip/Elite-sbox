@@ -215,7 +215,7 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
             this.showToast('Error', 'Please select Secondary Customer', 'error');
             return;
         }
-        if (!this.productCategory) {
+       /* if (!this.productCategory) {
             this.showToast('Error', 'Please select Product Category', 'error');
             return;
         }
@@ -234,19 +234,19 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
         if (!this.competitorRemarks) {
             this.showToast('Error', 'Please select competitor remarks', 'error');
             return;
-        }
+        }*/
         if (!this.generalRemarks) {
             this.showToast('Error', 'Please select general remarks', 'error');
             return;
         }
-        if (!this.competitorImageUploaded) {
+        /*if (!this.competitorImageUploaded) {
             this.showToast('Error', 'Please upload Competitor Product Image', 'error');
             return;
         }
         if (!this.secondaryCustomerImageUploaded) {
             this.showToast('Error', 'Please upload secondary customer image', 'error');
             return;
-        }
+        }*/
 
         this.isPageLoaded = true;
         let isResolved = false;

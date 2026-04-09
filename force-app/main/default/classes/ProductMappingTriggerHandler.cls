@@ -56,10 +56,14 @@ public without sharing class ProductMappingTriggerHandler {
         
         // Step 3: Map UserId → EmployeeId (for Exectuive__c fallback)
         Map<Id, Id> employeetoUserMap = new Map<Id, Id>();
+        Set<Id> activeUserIds = new Set<Id>();
         if (!exeIds.isEmpty()) {
             List<Employee__c> employeeList = [SELECT Id, User__c FROM Employee__c WHERE User__c IN :exeIds];
             for (Employee__c emp : employeeList) {
                 if (emp.User__c != null) { employeetoUserMap.put(emp.User__c, emp.Id); }
+            }
+            for (User u : [SELECT Id FROM User WHERE Id IN :exeIds AND IsActive = true]) {
+                activeUserIds.add(u.Id);
             }
         }
         
@@ -204,7 +208,9 @@ public without sharing class ProductMappingTriggerHandler {
                 // All validations passed. Now we applying sharing and assignments
                 if (pm.Customer__c != null) {
                     pm.OwnerId = pm.Exectuive__c;
-                    sharesToInsert.add(CustomSharingService.buildAccountShare(pm.Customer__c, pm.Exectuive__c));
+                    if (activeUserIds.contains(pm.Exectuive__c)) {
+                        sharesToInsert.add(CustomSharingService.buildAccountShare(pm.Customer__c, pm.Exectuive__c));
+                    }
                 }
             }
             
@@ -228,11 +234,18 @@ public without sharing class ProductMappingTriggerHandler {
         Map<Id, Id> customerToExecutiveMap = new Map<Id, Id>();
         Map<Id, Id> customerToEmployeeMap = new Map<Id, Id>();
         Set<Id> subStockiestIds = new Set<Id>();
-        
+        Map<Id, Set<Id>> primaryToSecondaryForSalesChannel = new Map<Id, Set<Id>>();
+
         for (Product_Mapping__c pm : newProductMappings) {
             if(pm.Customer_Type__c == 'Primary Customer' )
             {
                 primaryCustomerIdstoUpdateSalesChannel.add(pm.Customer__c);
+            }
+            if(pm.Customer_Type__c == 'Secondary Customer' && pm.Primary_Customer__c != null && pm.Customer__c != null) {
+                if (!primaryToSecondaryForSalesChannel.containsKey(pm.Primary_Customer__c)) {
+                    primaryToSecondaryForSalesChannel.put(pm.Primary_Customer__c, new Set<Id>());
+                }
+                primaryToSecondaryForSalesChannel.get(pm.Primary_Customer__c).add(pm.Customer__c);
             }
             //if the mapping is created by cloning we no need to assign the secondary customer under primary customer
             if (pm.Customer__c != null  && pm.Cloned_From_Employee_Replacement__c == false && pm.Cloning_From_Customer_Deactivation__c == false &&
@@ -343,7 +356,11 @@ public without sharing class ProductMappingTriggerHandler {
             //for the sharing the accounts to Order adminstator and Logistic Team
             updateSaleschannelandParentDeport(primaryCustomerIdstoUpdateSalesChannel);
         }
-   
+
+        if(!primaryToSecondaryForSalesChannel.isEmpty())
+        {
+            updateSecondarySalesChannelFromPrimary(primaryToSecondaryForSalesChannel);
+        }
 
         //Auto Mappnings of Secondary Customers
         if(Label.AutoShareSecondaryCustomersBasedOnPrimaryCustomer == 'TRUE')
@@ -556,7 +573,8 @@ public without sharing class ProductMappingTriggerHandler {
         Map<Id, Id> customerToExecutiveMap = new Map<Id, Id>();
         Map<Id, Id> customerToEmployeeMap = new Map<Id, Id>();
         Set<Id> subStockiestIds = new Set<Id>();
-        
+        Map<Id, Set<Id>> primaryToSecondaryForSalesChannel = new Map<Id, Set<Id>>();
+
         //Step 1: Getting requied Ids
         for (Product_Mapping__c newPM : newProductMappings) {
             Product_Mapping__c oldPM = oldProductMappings.get(newPM.Id);
@@ -565,6 +583,14 @@ public without sharing class ProductMappingTriggerHandler {
                 if(newPM.Customer_Type__c == 'Primary Customer')
                 {
                     primaryCustomerIdsToUpdateSalesChannel.add(newPM.Customer__c);
+                }
+            }
+            if(newPM.Customer_Type__c == 'Secondary Customer' && newPM.Primary_Customer__c != null && newPM.Customer__c != null) {
+                if(newPM.Primary_Customer__c != oldPM.Primary_Customer__c) {
+                    if (!primaryToSecondaryForSalesChannel.containsKey(newPM.Primary_Customer__c)) {
+                        primaryToSecondaryForSalesChannel.put(newPM.Primary_Customer__c, new Set<Id>());
+                    }
+                    primaryToSecondaryForSalesChannel.get(newPM.Primary_Customer__c).add(newPM.Customer__c);
                 }
             }
             
@@ -650,6 +676,10 @@ public without sharing class ProductMappingTriggerHandler {
             //Updating the Sales channel and Delivary plant on Account
             //for the sharing the accounts to Order adminstator and Logistic Team
             updateSaleschannelandParentDeport(primaryCustomerIdsToUpdateSalesChannel);
+        }
+        if(!primaryToSecondaryForSalesChannel.isEmpty())
+        {
+            updateSecondarySalesChannelFromPrimary(primaryToSecondaryForSalesChannel);
         }
         if(!subStockiestIds.isEmpty())
         {
@@ -837,8 +867,65 @@ public without sharing class ProductMappingTriggerHandler {
         }
 
         if (!accountsToUpdate.isEmpty()) {
-            Database.update(accountsToUpdate, false); 
+            Database.update(accountsToUpdate, false);
+        }
+
+        // Cascade Sales_Channel__c to Secondary Customers linked to these Primary Customers
+        List<Product_Mapping__c> secondaryMappings = [
+            SELECT Id, Customer__c, Primary_Customer__c
+            FROM Product_Mapping__c
+            WHERE Customer_Type__c = 'Secondary Customer'
+            AND Primary_Customer__c IN :primaryCustomerIds
+            AND Customer__c != null
+        ];
+
+        Map<Id, Set<Id>> primaryToSecondaryIds = new Map<Id, Set<Id>>();
+        for (Product_Mapping__c secPm : secondaryMappings) {
+            if (!primaryToSecondaryIds.containsKey(secPm.Primary_Customer__c)) {
+                primaryToSecondaryIds.put(secPm.Primary_Customer__c, new Set<Id>());
+            }
+            primaryToSecondaryIds.get(secPm.Primary_Customer__c).add(secPm.Customer__c);
+        }
+
+        if (!primaryToSecondaryIds.isEmpty()) {
+            List<Account> secondaryAccountsToUpdate = new List<Account>();
+            for (Account primaryAcc : accountsToUpdate) {
+                if (primaryToSecondaryIds.containsKey(primaryAcc.Id)) {
+                    for (Id secCustId : primaryToSecondaryIds.get(primaryAcc.Id)) {
+                        secondaryAccountsToUpdate.add(new Account(
+                            Id = secCustId,
+                            Sales_Channel__c = primaryAcc.Sales_Channel__c
+                        ));
+                    }
+                }
+            }
+            if (!secondaryAccountsToUpdate.isEmpty()) {
+                Database.update(secondaryAccountsToUpdate, false);
+            }
         }
     }
-    
+
+    public static void updateSecondarySalesChannelFromPrimary(Map<Id, Set<Id>> primaryToSecondaryCustomerIds) {
+        Map<Id, Account> primaryAccounts = new Map<Id, Account>(
+            [SELECT Id, Sales_Channel__c FROM Account WHERE Id IN :primaryToSecondaryCustomerIds.keySet()]
+        );
+
+        List<Account> accountsToUpdate = new List<Account>();
+        for (Id primaryCustId : primaryToSecondaryCustomerIds.keySet()) {
+            Account primaryAcc = primaryAccounts.get(primaryCustId);
+            if (primaryAcc != null) {
+                for (Id secondaryCustId : primaryToSecondaryCustomerIds.get(primaryCustId)) {
+                    accountsToUpdate.add(new Account(
+                        Id = secondaryCustId,
+                        Sales_Channel__c = primaryAcc.Sales_Channel__c
+                    ));
+                }
+            }
+        }
+
+        if (!accountsToUpdate.isEmpty()) {
+            Database.update(accountsToUpdate, false);
+        }
+    }
+
 }

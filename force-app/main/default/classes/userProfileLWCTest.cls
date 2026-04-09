@@ -973,15 +973,17 @@ public class userProfileLWCTest {
     
     @isTest
     static void test_allInvoiceData() {
-        // Step 1: Create test user
+        
+        // Step 1: Create User
         Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+        
         User u = new User(
             FirstName = 'Invoice',
             LastName = 'Tester',
-            Employee_Code__c = 'jhgjhgklsksksklfjhfyg97987',
+            Employee_Code__c = 'EMP001',
             Email = 'invoice@test.com',
             Username = 'invoiceuser' + System.currentTimeMillis() + '@test.com',
-            Alias = 'invuser',
+            Alias = 'invusr',
             TimeZoneSidKey = 'Asia/Kolkata',
             LocaleSidKey = 'en_US',
             EmailEncodingKey = 'UTF-8',
@@ -990,38 +992,76 @@ public class userProfileLWCTest {
         );
         insert u;
         
-        // Step 2: Create test Account to use as Store
-        Account store = new Account
-            (Name = 'Primary Customer',
-             Customer_Type__c = 'Primary Customer',
-             Pincode__c = '123456',
-             Primary_Phone_Number__c = '0776543210',
-             State__c = 'Karnataka',
-             District__c = 'Kolar');
-        insert store;
+        // Step 2: Account
+        Account acc = new Account(
+            Name = 'Test Customer',
+            Customer_Type__c = 'Primary Customer',
+            State__c = 'Karnataka',
+            District__c = 'Kolar'
+            
+        );
+        insert acc;
         
-        // Step 3: Create Invoice__c
+        // Step 3: Order (for Order__c != null condition)
+        Order ord = new Order(
+            Name = 'Test Order',
+            AccountId = acc.Id,
+            EffectiveDate = Date.today(),
+            Status = 'Draft',
+            OwnerId = u.Id
+        );
+        insert ord;
+        
+        // Step 4: Invoice
         Invoice__c inv = new Invoice__c(
             OwnerId = u.Id,
-            Store__c = store.Id,
-            Customer_Name__c = 'test',
-            Invoice_No__c = 'tests9s9s',
+            Store__c = acc.Id,
+            Customer_Name__c = 'Test',
+            Invoice_No__c = 'INV001',
             Invoice_Date__c = Date.today()
         );
         insert inv;
         
-        Date start = Date.today().addDays(-2);
-        Date enddate = Date.today().addDays(2);
+        // Step 5: Invoice Items
         
-        // Step 4: Test with status = 'All'
+        // Case 1: With Order__c
+        Invoice_item__c item1 = new Invoice_item__c(
+            Invoice__c = inv.Id,
+            Bill_Number__c = 'BILL001',
+            Bill_Date__c = Date.today(),
+            Bill_Amount__c = 100,
+            Qyt__c = 5,
+            Qyt_in_Each__c = 10,
+            Bill_to_party_name__c = 'Party A'
+        );
+        
+        // Case 2: Without Order__c
+        Invoice_item__c item2 = new Invoice_item__c(
+            Invoice__c = inv.Id,
+            Bill_Number__c = 'BILL002',
+            Bill_Date__c = Date.today(),
+            Bill_Amount__c = 200,
+            Qyt__c = 3,
+            Qyt_in_Each__c = 6,
+            Bill_to_party_name__c = 'Party B'
+        );
+        
+        insert new List<Invoice_item__c>{item1, item2};
+            
+            Date startDate = Date.today().addDays(-2);
+        Date endDate = Date.today().addDays(2);
+        
         Test.startTest();
-        userProfileLWC.allInvoiceData(u.Id, 'All', start, enddate);
         
-        userProfileLWC.allInvoiceData(u.Id, 'Open', start, enddate);
+        // Call method
+        userProfileLWC.userData result =
+            userProfileLWC.allInvoiceData(u.Id, 'All', startDate, endDate);
+        
         Test.stopTest();
+        
+        
     }
     
- 
     @isTest
     static void testAttendanceMethod() {
         // Create test user

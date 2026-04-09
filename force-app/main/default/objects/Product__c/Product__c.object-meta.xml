@@ -174,7 +174,7 @@
         <excludedStandardButtons>MassChangeOwner</excludedStandardButtons>
         <excludedStandardButtons>PrintableListView</excludedStandardButtons>
         <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
-        <searchResultsAdditionalFields>Product_Code__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>SKU_Code__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Product_Category1__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Tax_Class__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>HSN_Code__c</searchResultsAdditionalFields>
