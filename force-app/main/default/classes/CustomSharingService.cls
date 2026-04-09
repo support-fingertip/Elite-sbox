@@ -370,10 +370,19 @@ public class CustomSharingService {
      * mid-run failure never leaves a trigger permanently disabled for the
      * remainder of the transaction.
      *
-     * Order of operations matters: PJPs are transferred BEFORE beats, so
-     * BeatTrigger's after-update PJP_Item cleanup query
-     *   WHERE PJP__r.User__c IN :oldOwners
-     * matches zero rows and the items follow the transferred PJP.
+     * Order of operations matters:
+     *   1. Employee Customer Assignments FIRST - they establish the
+     *      primary-customer <-> executive link that Product Mapping
+     *      validation (ProductMappingTriggerHandler.beforeInsert/
+     *      beforeUpdate) looks up. If Product Mappings were transferred
+     *      first, the secondary-customer validation would raise
+     *      "Primary Customer is not yet mapped to this Executive".
+     *   2. Product Mappings second.
+     *   3. PJPs before beats, so BeatTrigger's after-update PJP_Item
+     *      cleanup query
+     *         WHERE PJP__r.User__c IN :oldOwners
+     *      matches zero rows and the items follow the transferred PJP.
+     *   4. Beats last.
      */
     public static void employeeTransfer(Map<String, String> oldToNewUserMap) {
         if (oldToNewUserMap == null || oldToNewUserMap.isEmpty()) return;
@@ -385,24 +394,11 @@ public class CustomSharingService {
         EmployeeCustomerAssignmentTriggerHandler.bypassForEmployeeTransfer = true;
 
         try {
-            /**---------- Step 1: Transfer Product Mappings ----------**/
-            List<Product_Mapping__c> mappingsToTransfer = [
-                SELECT Id, Exectuive__c
-                FROM Product_Mapping__c
-                WHERE Exectuive__c IN :oldUserIds
-            ];
-            for (Product_Mapping__c pm : mappingsToTransfer) {
-                String newExecutiveId = oldToNewUserMap.get(pm.Exectuive__c);
-                if (String.isNotBlank(newExecutiveId)) {
-                    pm.Exectuive__c = newExecutiveId;
-                }
-            }
-            if (!mappingsToTransfer.isEmpty()) {
-                System.debug('Employee Transfer - Updating ' + mappingsToTransfer.size() + ' Product Mappings');
-                logSaveErrors('Product Mapping', mappingsToTransfer, Database.update(mappingsToTransfer, false));
-            }
-
-            /**---------- Step 2: Transfer Employee Customer Assignments ----------**/
+            /**---------- Step 1: Transfer Employee Customer Assignments ----------**
+             * ECAs must move first so that Product Mapping validation (if
+             * it ever runs without the bypass) can find the primary
+             * customer linked to the new executive.
+             */
             List<Employee_Customer_Assignment__c> assignmentsToTransfer = [
                 SELECT Id, Executive__c
                 FROM Employee_Customer_Assignment__c
@@ -417,6 +413,23 @@ public class CustomSharingService {
             if (!assignmentsToTransfer.isEmpty()) {
                 System.debug('Employee Transfer - Updating ' + assignmentsToTransfer.size() + ' Employee Customer Assignments');
                 logSaveErrors('Assignment', assignmentsToTransfer, Database.update(assignmentsToTransfer, false));
+            }
+
+            /**---------- Step 2: Transfer Product Mappings ----------**/
+            List<Product_Mapping__c> mappingsToTransfer = [
+                SELECT Id, Exectuive__c
+                FROM Product_Mapping__c
+                WHERE Exectuive__c IN :oldUserIds
+            ];
+            for (Product_Mapping__c pm : mappingsToTransfer) {
+                String newExecutiveId = oldToNewUserMap.get(pm.Exectuive__c);
+                if (String.isNotBlank(newExecutiveId)) {
+                    pm.Exectuive__c = newExecutiveId;
+                }
+            }
+            if (!mappingsToTransfer.isEmpty()) {
+                System.debug('Employee Transfer - Updating ' + mappingsToTransfer.size() + ' Product Mappings');
+                logSaveErrors('Product Mapping', mappingsToTransfer, Database.update(mappingsToTransfer, false));
             }
 
             /**---------- Step 3: Transfer PJPs (Calendar Beats) ----------**
