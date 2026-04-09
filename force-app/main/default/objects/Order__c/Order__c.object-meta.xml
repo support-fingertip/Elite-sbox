@@ -169,7 +169,7 @@
     <externalSharingModel>Private</externalSharingModel>
     <label>Order Request</label>
     <nameField>
-        <displayFormat>ORD-{00000}</displayFormat>
+        <displayFormat>{00000}</displayFormat>
         <label>Order Id</label>
         <trackHistory>true</trackHistory>
         <type>AutoNumber</type>

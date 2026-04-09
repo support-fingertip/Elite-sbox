@@ -36,15 +36,25 @@ public class InvoiceHeaderTriggerHandler {
         // Example usage: assign owner or other logic
         for (Invoice__c inv : newInvoicesList) {
             String invoiceNumber = inv.Invoice_No__c;
+                        system.debug('inv.Order_OwnerId__c '+inv.Order_OwnerId__c );
+            system.debug('inv.SF_Order__c '+inv.SF_Order__c );
+            system.debug('inv.Customer_SAP_Code__c '+inv.Customer_SAP_Code__c );
+             system.debug('inv.Delivery_Plant__c '+inv.Delivery_Plant__c );
             if(inv.Is_Order_Owner_Active__c == True && inv.SF_Order__c != null && inv.Order_OwnerId__c != null){inv.OwnerId = inv.Order_OwnerId__c; }
-            else if((inv.SF_Order__c == null || inv.SF_Order__c == '') && (inv.Customer_SAP_Code__c != null && inv.Delivery_Plant__c != null))
+
+         /*   else if((inv.SF_Order__c == null || inv.SF_Order__c == '') && (inv.Customer_SAP_Code__c != null && inv.Delivery_Plant__c != null))
             {
+                system.debug('key p>>'+inv.Customer_SAP_Code__c + '_' + inv.Delivery_Plant__c);
+                
                 String key = inv.Customer_SAP_Code__c + '_' + inv.Delivery_Plant__c;
                 if (pairWithLowestHierarchy.containsKey(key)) {
+                     system.debug('key p>>'+pairWithLowestHierarchy.get(key));
                     Product_Mapping__c lowestMapping = pairWithLowestHierarchy.get(key);
-                    inv.OwnerId = lowestMapping.Exectuive__c; 
+                     if (String.isNotBlank(lowestMapping.Exectuive__c)) {
+                        inv.OwnerId = lowestMapping.Exectuive__c; 
+                    }
                 }
-            } 
+            } */
         }
     }
 }

@@ -42,4 +42,8 @@
         <field>Required_Approvers__c</field>
         <value xsi:type="xsd:string">ASM,RSM</value>
     </values>
+    <values>
+        <field>Show_Reportee_View__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
 </CustomMetadata>

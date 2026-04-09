@@ -1,0 +1,126 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="loading-container">
+            <c-loading-screen></c-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="orders layouts" style="margin:30px">
+            <!-- Header -->
+            <div class="report-header">
+                <div class="header-left">
+                    <button class="back-btn" onclick={handleBack}>
+                        <lightning-icon icon-name="utility:back" size="x-small"
+                            style="--slds-c-icon-color-foreground-default: white;">
+                        </lightning-icon>
+                        <span>Back</span> 
+                    </button>
+                    <h3 class="report-title">Outstanding Report: {customerName}</h3>
+                </div>
+                <div class="header-right">
+                    <div class="btn-wrapper download-dropdown">
+                        <button class="exportBtn" onclick={toggleDownloadMenu}>
+                            <span style="display:flex; align-items:center; gap:6px;">
+                                Download
+                                <lightning-icon icon-name="utility:download" alternative-text="Download"
+                                    size="x-small" style="--slds-c-icon-color-foreground-default: white;">
+                                </lightning-icon>
+                            </span>
+                        </button>
+                        <template lwc:if={showDownloadMenu}>
+                            <div class="download-menu">
+                                <ul>
+                                    <li onclick={handleExportCsv}>
+                                        <lightning-icon icon-name="doctype:csv" size="x-small"></lightning-icon>
+                                        Download CSV
+                                    </li>
+                                    <li onclick={handleExportXlsx}>
+                                        <lightning-icon icon-name="doctype:excel" size="x-small"></lightning-icon>
+                                        Download XLSX
+                                    </li>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <template lwc:if={hasData}>
+                <!-- Summary Card -->
+                <div class="summary-row">
+                    <div class="summary-card">
+                        <span class="summary-label">Total Amount</span>
+                        <span class="summary-value">{formattedTotalDocument}</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label">Total Collected</span>
+                        <span class="summary-value collected">{formattedTotalCollected}</span>
+                    </div>
+                    <div class="summary-card outstanding-card">
+                        <span class="summary-label">Total Outstanding</span>
+                        <span class="summary-value outstanding">{formattedTotalOutstanding}</span>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="report-card">
+                    <table class="outstanding-table">
+                        <thead>
+                            <tr>
+                                <th class="th-left">S.No</th>
+                                <th class="th-left">Type</th>
+                                <th class="th-left">Pri. SAP Code</th>
+                                <th class="th-left">Pri. Customer Name</th>
+                                <th class="th-left">Sec. Customer Code</th>
+                                <th class="th-left">Sec. Customer Name</th>
+                                <th class="th-left">Executive Code</th>
+                                <th class="th-left">Executive Name</th>
+                                <th class="th-left">Beat Name</th>
+                                <th class="th-left">Document No.</th>
+                                <th class="th-left">Document Date</th>
+                                <th class="th-right">Amount</th>
+                                <th class="th-right">Collected Amt</th>
+                                <th class="th-right">Outstanding Amt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={reportData} for:item="row">
+                                <tr key={row.key} class="data-row">
+                                    <td class="td-left">{row.sno}</td>
+                                    <td class="td-left">{row.documentType}</td>
+                                    <td class="td-left">{row.primaryCustomerSapCode}</td>
+                                    <td class="td-left">{row.primaryCustomerName}</td>
+                                    <td class="td-left">{row.secondaryCustomerCode}</td>
+                                    <td class="td-left">{row.secondaryCustomerName}</td>
+                                    <td class="td-left">{row.executiveCode}</td>
+                                    <td class="td-left">{row.executiveName}</td>
+                                    <td class="td-left">{row.beatName}</td>
+                                    <td class="td-left">{row.documentNumber}</td>
+                                    <td class="td-left">{row.formattedDate}</td>
+                                    <td class="td-right">{row.formattedDocAmount}</td>
+                                    <td class="td-right">{row.formattedCollected}</td>
+                                    <td class="td-right">{row.formattedOutstanding}</td>
+                                </tr>
+                            </template>
+                            <tr class="total-row">
+                                <td colspan="11" class="td-left total-label">Total</td>
+                                <td class="td-right total-val">{formattedTotalDocument}</td>
+                                <td class="td-right total-val">{formattedTotalCollected}</td>
+                                <td class="td-right total-val">{formattedTotalOutstanding}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- No Data -->
+            <template lwc:if={noData}>
+                <div class="empty-state">
+                    <span class="empty-state-icon">&#128203;</span>
+                    <h4 class="empty-state-title">No Outstanding Records</h4>
+                    <p class="empty-state-message">No outstanding invoices or debit notes found for this customer.</p>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

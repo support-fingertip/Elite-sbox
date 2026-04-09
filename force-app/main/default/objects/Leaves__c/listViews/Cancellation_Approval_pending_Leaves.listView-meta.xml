@@ -12,14 +12,9 @@
     <columns>Approver__c</columns>
     <filterScope>Everything</filterScope>
     <filters>
-        <field>Is_Current_User_Approver__c</field>
-        <operation>equals</operation>
-        <value>1</value>
-    </filters>
-    <filters>
         <field>Leave_Cancellation_Status__c</field>
         <operation>equals</operation>
-        <value>Cancellation Approved</value>
+        <value>Submitted for Cancellation</value>
     </filters>
     <label>Cancellation Approval pending Leaves</label>
 </ListView>

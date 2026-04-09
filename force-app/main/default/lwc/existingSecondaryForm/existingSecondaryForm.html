@@ -47,7 +47,7 @@
                     value={productCategory}
                     data-field="productCategory"
                     onchange={handleChange}
-                    required>
+                    >
                 </lightning-combobox>
 
                 <!-- Product Group -->
@@ -55,7 +55,6 @@
                     <div class="field">
                         <label class="label">
                             Product Group
-                            <span class="required">*</span>
                         </label>
                         <lightning-checkbox-group
                             options={groupOptions}
@@ -70,8 +69,7 @@
                     label="Competitor Name"
                     value={competitorName}
                     data-field="competitorName"
-                    onchange={handleChange}
-                    required>
+                    onchange={handleChange}>
                 </lightning-input>
 
                 <!-- Competitor Product -->
@@ -79,15 +77,13 @@
                     label="Competitor Product"
                     value={competitorProduct}
                     data-field="competitorProduct"
-                    onchange={handleChange}
-                    required>
+                    onchange={handleChange}>
                 </lightning-input>
 
                 <!-- Competitor Product Image -->
                 <div class="upload-field">
                     <label class="label">
                         Competitor Product Image
-                        <span class="required">*</span>
                     </label>
                     <div class="upload-wrapper">
                         <input
@@ -120,8 +116,7 @@
                     label="Competitor Remarks"
                     value={competitorRemarks}
                     data-field="competitorRemarks"
-                    onchange={handleChange}
-                    required>
+                    onchange={handleChange}>
                 </lightning-textarea>
 
                 <!-- General Remarks -->
@@ -137,7 +132,6 @@
                 <div class="upload-field">
                     <label class="label">
                         Secondary Customer Image
-                        <span class="required">*</span>
                     </label>
                     <div class="upload-wrapper">
                         <input

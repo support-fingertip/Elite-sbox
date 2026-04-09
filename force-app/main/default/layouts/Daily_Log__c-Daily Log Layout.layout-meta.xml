@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Layout xmlns="http://soap.sforce.com/2006/04/metadata">
-    <excludeButtons>OpenSlackRecordChannel</excludeButtons>
     <excludeButtons>Submit</excludeButtons>
     <layoutSections>
         <customLabel>false</customLabel>
@@ -347,6 +346,7 @@
         <excludeButtons>New</excludeButtons>
         <fields>NAME</fields>
         <fields>Visit_for__c</fields>
+        <fields>Actual_Start_Time__c</fields>
         <fields>Account1__c</fields>
         <fields>Status__c</fields>
         <fields>Approval_StatusFor__c</fields>
@@ -355,11 +355,14 @@
     </relatedLists>
     <relatedLists>
         <fields>NAME</fields>
-        <relatedList>Expenses_Line_Item__c.Daily_Log__c</relatedList>
+        <fields>CREATED_DATE</fields>
+        <fields>Customer_Type__c</fields>
+        <fields>Customer_Name__c</fields>
+        <relatedList>Visit_Form__c.Daily_Log__c</relatedList>
     </relatedLists>
     <relatedLists>
         <fields>NAME</fields>
-        <relatedList>Visit_Form__c.Daily_Log__c</relatedList>
+        <relatedList>Expenses_Line_Item__c.Daily_Log__c</relatedList>
     </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>

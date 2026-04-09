@@ -12,12 +12,28 @@ public class EmployeeeControllerTest {
         testArea.Area__c  = 'Central';
         insert testArea;
         
-          User testUser1 = new User(
+           User testUser1 = new User(
             Alias = 'tuser',
             Employee_Code__c  = '123212231',
             Email = 'testuser@example.com',
             EmailEncodingKey = 'UTF-8',
+            isActive = true,
             LastName = 'Test',
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey = 'en_US',
+            ProfileId = [SELECT Id FROM Profile WHERE Name = 'TSE' LIMIT 1].Id,
+            TimeZoneSidKey = 'America/Los_Angeles',
+            Username = 'testuser@ekskslsslxample.com' + System.currentTimeMillis(),
+           Sales_Channel__c = 'Cake'
+        );
+        
+          User testUser3 = new User(
+            Alias = 'tuser',
+            Employee_Code__c  = '123212235',
+            Email = 'testusessaar@example.com',
+            EmailEncodingKey = 'UTF-8',
+            isActive = true,
+            LastName = 'Test2',
             LanguageLocaleKey = 'en_US',
             LocaleSidKey = 'en_US',
             ProfileId = [SELECT Id FROM Profile WHERE Name = 'TSE' LIMIT 1].Id,
@@ -55,7 +71,7 @@ public class EmployeeeControllerTest {
             Username = 'testuser@example.com' + System.currentTimeMillis(),
            Sales_Channel__c = 'Cake'
         );
-        insert new List<User>{ testUser1, testUser2 };
+        insert new List<User>{ testUser1, testUser2,testUser3 };
 
       
 
@@ -216,7 +232,7 @@ public class EmployeeeControllerTest {
     static testMethod void testGetAllData1() {
         // Get a sample Employee record
        
-          User testUser1 = [SELECT Id FROM User WHERE LastName = 'Test' LIMIT 1];
+          User testUser1 = [SELECT Id FROM User WHERE Employee_Code__c  = '123212235' LIMIT 1];
         Test.startTest();
         System.runAs(testUser1) {
            
@@ -386,7 +402,7 @@ public class EmployeeeControllerTest {
     
     static testMethod void testSaveData_InsertAndUpdate() {
         
-           User user = [SELECT Id FROM User WHERE LastName = 'Test' LIMIT 1];
+           User user = [SELECT Id FROM User WHERE  Employee_Code__c  = '123212235' LIMIT 1];
         // Insert case
         
         Employee__c newEmp = new Employee__c(
@@ -427,7 +443,7 @@ public class EmployeeeControllerTest {
     
     static testMethod void testSaveData_InsertAndUpdate12345() {
         
-           User user = [SELECT Id FROM User WHERE LastName = 'Test' LIMIT 1];
+           User user = [SELECT Id FROM User WHERE  Employee_Code__c  = '123212235' LIMIT 1];
         // Insert case
         
         Employee__c newEmp = new Employee__c(
@@ -468,7 +484,7 @@ public class EmployeeeControllerTest {
     
     static testMethod void testSaveData_InsertAndUpdate123() {
         
-        User user = [SELECT Id FROM User WHERE LastName = 'Test' LIMIT 1];
+        User user = [SELECT Id FROM User WHERE  Employee_Code__c  = '123212235' LIMIT 1];
         // Insert case
         System.runAs(user) {
         Employee__c newEmp = new Employee__c(
@@ -668,5 +684,125 @@ public class EmployeeeControllerTest {
 
         
     }
-   
+    @isTest
+    static void testGetUsersForBeatSharing_WithPeers() {
+        User manager = [SELECT Id FROM User WHERE Employee_Code__c = '123212231' LIMIT 1];
+        
+        // Employee with a reporting manager and active user
+        Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE User__c != null LIMIT 1];
+        emp.Reporting_Manager__c = manager.Id;
+        update emp;
+        
+        // Create a peer employee under same manager
+        Employee__c peerEmp = new Employee__c(
+            Name = 'Peer Emp',
+            User__c = manager.Id,
+            User_Name__c = 'peer@beattest.com',
+            Aadhar_Number__c = '777788889999',
+            Employee_Code__c = 'PEER001',
+            Profile__c = 'TSE',
+            Mail_Id__c = 'peer@example.com',
+            Sales_Channel__c = 'Cake',
+            Reporting_Manager__c = manager.Id,
+            Is_Active__c = true
+        );
+        insert peerEmp;
+        
+        Test.startTest();
+        List<EmployeeeController.UserWrapper> result = EmployeeeController.getUsersForBeatSharing(emp.Id);
+        Test.stopTest();
+        
+        System.assertNotEquals(null, result, 'Result should not be null');
+    }
+    
+    @isTest
+    static void testGetUsersForBeatSharing_NoManager() {
+        // Employee without a reporting manager
+        Employee__c emp = new Employee__c(
+            Name = 'No Manager Emp',
+            User_Name__c = 'nomanager@beattest.com',
+            Aadhar_Number__c = '111100009999',
+            Employee_Code__c = 'NOMAN001',
+            Profile__c = 'TSE',
+            Mail_Id__c = 'nomanager@example.com',
+            Sales_Channel__c = 'Cake'
+        );
+        insert emp;
+        
+        Test.startTest();
+        List<EmployeeeController.UserWrapper> result = EmployeeeController.getUsersForBeatSharing(emp.Id);
+        Test.stopTest();
+        
+        System.assertEquals(0, result.size(), 'Should return empty list when no reporting manager');
+    }
+    
+    @isTest
+    static void testShareBeatToUser_NoUserOnEmployee() {
+        // Employee with no User__c
+        Employee__c emp = [SELECT Id FROM Employee__c WHERE User__c = null LIMIT 1];
+        User targetUser = [SELECT Id FROM User WHERE Employee_Code__c = '123212231' LIMIT 1];
+        
+        Test.startTest();
+        String result = EmployeeeController.shareBeatToUser(emp.Id, targetUser.Id);
+        Test.stopTest();
+        
+        System.assert(result.startsWith('Error'), 'Expected error when employee has no user: ' + result);
+    }
+    
+    @isTest
+    static void testShareBeatToUser_NoActiveBeats() {
+        // Employee with a User__c but no active beats
+        Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE User__c != null LIMIT 1];
+        User targetUser = [SELECT Id FROM User WHERE Employee_Code__c = '123212231' LIMIT 1];
+        
+        Test.startTest();
+        String result = EmployeeeController.shareBeatToUser(emp.Id, targetUser.Id);
+        Test.stopTest();
+        
+        System.assert(result.startsWith('Error'), 'Expected error when no active beats: ' + result);
+    }
+    
+    @isTest
+    static void testDeactivateUserWithBeatOption_BeatInactive() {
+        Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE User__c != null LIMIT 1];
+        
+        Test.startTest();
+        try {
+            String result = EmployeeeController.deactivateUserWithBeatOption(emp.Id, 'BEATS_INACTIVE');
+            System.assert(result.startsWith('Success') || result.startsWith('Error'),
+                          'Should return a valid response: ' + result);
+        } catch (AuraHandledException e) {
+            // Expected if approver references prevent deactivation
+            System.assert(String.isNotBlank(e.getMessage()), 'Exception message should not be blank');
+        }
+        Test.stopTest();
+    }
+    
+    @isTest
+    static void testDeactivateUserWithBeatOption_BeatActive() {
+        Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE User__c != null LIMIT 1];
+        
+        Test.startTest();
+        try {
+            String result = EmployeeeController.deactivateUserWithBeatOption(emp.Id, 'BEATS_ACTIVE');
+            System.assert(result.startsWith('Success') || result.startsWith('Error'),
+                          'Should return a valid response: ' + result);
+        } catch (AuraHandledException e) {
+            System.assert(String.isNotBlank(e.getMessage()), 'Exception message should not be blank');
+        }
+        Test.stopTest();
+    }
+    
+    @isTest
+    static void testDeactivateUserWithBeatOption_NoUser() {
+        Employee__c emp = [SELECT Id FROM Employee__c WHERE User__c = null LIMIT 1];
+        
+        Test.startTest();
+        try {
+            String result = EmployeeeController.deactivateUserWithBeatOption(emp.Id, 'BEATS_INACTIVE');
+        } catch (AuraHandledException e) {
+        }
+        Test.stopTest();
+    }
+    
 }

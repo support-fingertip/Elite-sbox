@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Session_Type_Restiction</fullName>
+    <active>true</active>
+    <errorConditionFormula>From_Date__c !=  To_Date__c
+&amp;&amp;  NOT(ISBLANK(TEXT(Session_Type__c)))</errorConditionFormula>
+    <errorDisplayField>Session_Type__c</errorDisplayField>
+    <errorMessage>Session Type selection is allowed only when the From Date and To Date are the same.</errorMessage>
+</ValidationRule>

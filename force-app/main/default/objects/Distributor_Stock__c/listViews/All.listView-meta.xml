@@ -3,13 +3,19 @@
     <fullName>All</fullName>
     <columns>NAME</columns>
     <columns>Distributor__c</columns>
-    <columns>Product__c</columns>
     <columns>GRN_Quantity__c</columns>
-    <columns>Secondary_Invoice_Quantity__c</columns>
     <columns>Primary_Return_Quantity__c</columns>
+    <columns>GRN_Saleable_Quantity__c</columns>
     <columns>Secondary_Return_Quantity__c</columns>
+    <columns>Secondary_Invoice_Quantity__c</columns>
     <columns>CREATED_DATE</columns>
     <columns>CREATEDBY_USER</columns>
+    <columns>Non_Saleable_to_Saleable_Quantity__c</columns>
+    <columns>Written_Off_Quantity__c</columns>
+    <columns>GRN_Nonsaleable_Quantity__c</columns>
+    <columns>Secondary_Return_Nonsaleable_Quantity__c</columns>
+    <columns>Saleable_to_Non_Saleable_Quantity__c</columns>
+    <columns>Product__c</columns>
     <filterScope>Everything</filterScope>
     <label>All</label>
 </ListView>

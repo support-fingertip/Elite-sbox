@@ -1,0 +1,65 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="no-scroll">
+            <c-loading-screen></c-loading-screen>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="orders layouts" id="ProductGalleryLayout">
+            <div class="order-head">
+                <h3 class="order-title">Product Gallery</h3>
+                <div class="order-filters">
+                    <lightning-combobox name="category" label="Category"
+                        class="custominputfieldSize" value={selectedCategory}
+                        placeholder="Select Category" options={categoryOptions}
+                        onchange={handleProductCategoryChange}>
+                    </lightning-combobox>
+                    <lightning-input type="search" label="Search"
+                        class="custominputfieldSize" placeholder="Product Name"
+                        name="productSearch" value={productSearchKey}
+                        onchange={handleProductSearch}>
+                    </lightning-input>
+                </div>
+            </div>
+
+            <template lwc:if={hasProducts}>
+                <div class="product-grid">
+                    <template for:each={filteredProducts} for:item="product">
+                        <div key={product.id} class="product-card">
+                            <div class="product-icon-wrapper">
+                                <template lwc:if={product.hasImage}>
+                                    <img src={product.imageUrl} alt={product.name} class="product-image" />
+                                </template>
+                                <template lwc:else>
+                                    <lightning-icon icon-name="standard:product" size="large"></lightning-icon>
+                                </template>
+                            </div>
+                            <div class="product-info">
+                            <h3 class="product-name" title={product.name}>{product.name}</h3>
+                            <p class="product-category">{product.category}</p>
+                            <template lwc:if={product.sku}>
+                                <p class="product-sku">SKU: {product.sku}</p>
+                            </template>
+                            <p class="product-channel">{product.channel}</p>
+                            <div class="product-price-row">
+                                   <span class="product-price">&#8377; {product.price}</span>
+                               </div>
+                            <template lwc:if={product.uom}>
+                                <p class="product-uom">{product.uom}</p>
+                            </template>
+                        </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="slds-align_absolute-center" style="padding: 40px; flex-direction: column;">
+                    <span style="color:red; font-size:large;">No products found!</span>
+                    <template lwc:if={errorMessage}>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">{errorMessage}</p>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

@@ -44,22 +44,6 @@
         <nameSegment>customNotificationAction</nameSegment>
     </actionCalls>
     <apiVersion>64.0</apiVersion>
-    <assignments>
-        <name>Get_Beat_Owner</name>
-        <label>Get Beat Owner</label>
-        <locationX>0</locationX>
-        <locationY>0</locationY>
-        <assignmentItems>
-            <assignToReference>BeatOwnerIDs</assignToReference>
-            <operator>Add</operator>
-            <value>
-                <elementReference>Iterating_over_beats.OwnerId</elementReference>
-            </value>
-        </assignmentItems>
-        <connector>
-            <targetReference>Notification_to_Owner</targetReference>
-        </connector>
-    </assignments>
     <environments>Default</environments>
     <formulas>
         <name>Datebefore15day</name>
@@ -76,7 +60,7 @@
         <collectionReference>Get_Beats_Older_than_15_days</collectionReference>
         <iterationOrder>Asc</iterationOrder>
         <nextValueConnector>
-            <targetReference>Get_Beat_Owner</targetReference>
+            <targetReference>Notification_to_Owner</targetReference>
         </nextValueConnector>
     </loops>
     <processMetadataValues>
@@ -115,8 +99,17 @@
                 <booleanValue>true</booleanValue>
             </value>
         </filters>
+        <filters>
+            <field>Owner_Is_Active__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
         <getFirstRecordOnly>false</getFirstRecordOnly>
         <object>Child_beat__c</object>
+        <sortField>CreatedDate</sortField>
+        <sortOrder>Asc</sortOrder>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordLookups>
@@ -156,13 +149,15 @@
         </filters>
         <object>Child_beat__c</object>
         <schedule>
+            <dayOfMonthToRun>0</dayOfMonthToRun>
             <frequency>Daily</frequency>
+            <frequencyNumber>0</frequencyNumber>
             <startDate>2025-06-06</startDate>
             <startTime>00:15:00.000Z</startTime>
         </schedule>
         <triggerType>Scheduled</triggerType>
     </start>
-    <status>Active</status>
+    <status>Obsolete</status>
     <variables>
         <name>BeatOwnerIDs</name>
         <dataType>String</dataType>

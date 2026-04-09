@@ -1,8 +1,8 @@
-global with sharing class ExpenseListViewController
+global with sharing class ExpenseListViewController 
 {
    /* //Expense Data
     @AuraEnabled
-    public static DataBox getExpenses()
+    public static DataBox getExpenses() 
     {
         DataBox dt = new DataBox();
         string userId = UserInfo.getUserId();

@@ -161,7 +161,14 @@
         <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Claims</pluralLabel>
-    <searchLayouts></searchLayouts>
+    <searchLayouts>
+        <excludedStandardButtons>OpenListInQuip</excludedStandardButtons>
+        <excludedStandardButtons>NewFromDocument</excludedStandardButtons>
+        <excludedStandardButtons>Import</excludedStandardButtons>
+        <excludedStandardButtons>MassChangeOwner</excludedStandardButtons>
+        <excludedStandardButtons>PrintableListView</excludedStandardButtons>
+        <excludedStandardButtons>MassAssignRecordLabel</excludedStandardButtons>
+    </searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

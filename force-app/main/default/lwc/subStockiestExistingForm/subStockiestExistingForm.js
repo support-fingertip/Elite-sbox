@@ -336,8 +336,8 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
                 newEvent.detail.status = 'success';
     
                 console.log('newEvent: ' + JSON.stringify(newEvent));
-                this.latitude = r.coords.latitude;
-                this.longitude = r.coords.longitude;
+                this.latitude = result.coords.latitude;
+                this.longitude = result.coords.longitude;
 
                 this.handleSubmit(); 
     
@@ -415,7 +415,6 @@ export default class ExistingSecondaryCustomer extends NavigationMixin(Lightning
         const groupValue = this.productGroups[0].value.join(';');
         saveSubStockistExistingMarketVisit({
             subStockistName: this.subStockiestName,
-            subStockiestName: this.subStockiestName,
             primaryCustomer: this.primaryCustomer,
             address: this.address,
             state: this.state,

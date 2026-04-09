@@ -1876,7 +1876,8 @@ public with sharing class userProfileLWC {
             Total_Calls__c, Non_PJP_Order_Calls__c,
             Total_Productive_Calls_Made__c, Non_PJP_Productive_Calls__c,
             No_Of_Outlets_from_Non_PJP_Order__c,
-            Total_No_of_Outlets__c, Calls_Made__c, Return_Calls__c,
+            Total_No_of_Outlets__c, Calls_Made__c, Return_Calls__c,No_of_Outlets_from_Visit_forms__c,
+            Total_No_of_Beat_Non_PJP_Order__c,Visit_Form_Total_Calls__c,Visit_Form_Unique_Calls__c,
             (SELECT minute_duration__c FROM Visits__r WHERE status__c = 'Completed')
             FROM Daily_Log__c
             WHERE DAY_ONLY(Day_started_time__c) >= :frmDate
@@ -1904,18 +1905,18 @@ public with sharing class userProfileLWC {
             AND From_Date__c <= :toDate
             AND To_Date__c >= :frmDate
             AND ApprovalStatus__c IN ('Leave Approved','Submitted for Approval','Not Submitted')
-            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation'
+            AND Leave_Cancellation_Status__c != 'Submitted for Cancellation' AND Leave_Cancellation_Status__c != 'Cancellation Approved'
             AND Session_Type__c = null
         ];
         
-        // =========================================================
-        //CONVERT LEAVES INTO DATE SET
-        //========================================================== 
-        Set<Date> leaveDates = new Set<Date>();
+        
+        // LEAVE MAP (Date → Leave Record)
+        // ======================================================== 
+        Map<Date, Leaves__c> leaveMap = new Map<Date, Leaves__c>();
         
         for (Leaves__c lv : leaveList) {
             for (Date d = lv.From_Date__c; d <= lv.To_Date__c; d = d.addDays(1)) {
-                leaveDates.add(d);
+                leaveMap.put(d, lv);
             }
         }
         
@@ -1936,13 +1937,50 @@ public with sharing class userProfileLWC {
             if (logMap.containsKey(currentDate)) {
                 
                 Daily_Log__c log = logMap.get(currentDate);
-                
                 record.put('Id', log.Id);
                 record.put('Name', log.Name);
                 record.put('Status', 'Present');
                 record.put('StartTime', String.valueOf(log.Start_time__c));
                 record.put('EndTime', String.valueOf(log.End_Time__c));
                 record.put('TotalHours', String.valueOf(log.Total_Working_Hours__c));
+                record.put('First_Visit_Time1__c', String.valueOf(log.First_Visit_Time1__c));
+                record.put('Last_Visit_Time1__c', String.valueOf(log.Last_Visit_Time1__c));
+                record.put('Total_Order_Amount__c', String.valueOf(log.Total_Order_Amount__c));
+                record.put('Primary_Order_Amount__c', String.valueOf(log.Primary_Order_Amount__c));
+                record.put('Secondary_Order_Amont__c', String.valueOf(log.Secondary_Order_Amont__c));
+                record.put('TLSD__c', String.valueOf(log.TLSD__c));
+                record.put('TLSD_Primary__c', String.valueOf(log.TLSD_Primary__c));
+                record.put('TLSD_Retailers_Outlets__c', String.valueOf(log.TLSD_Retailers_Outlets__c));
+                record.put('TLSD_Sub_Stockist__c', String.valueOf(log.TLSD_Sub_Stockist__c));
+                record.put('Assigned_Beat_Name__c', String.valueOf(log.Assigned_Beat_Name__c));
+                record.put('Worked_Beat_Name__c', String.valueOf(log.Worked_Beat_Name__c));
+                record.put('Beat_Switch_History__c', String.valueOf(log.Beat_Switch_History__c));
+                record.put('Distributor_Id__c', String.valueOf(log.Distributor_Id__c));
+                record.put('Distributor_Name__c', String.valueOf(log.Distributor_Name__c));
+                record.put('New_Calls__c', String.valueOf(log.New_Calls__c));
+                record.put('Collection_Calls__c', String.valueOf(log.Collection_Calls__c));
+                record.put('Stock_Calls__c', String.valueOf(log.Stock_Calls__c));
+                record.put('Total_Visits__c', String.valueOf(log.Total_Visits__c));
+                record.put('Outlets_Not_Visited__c', String.valueOf(log.Outlets_Not_Visited__c));
+                record.put('Total_Productive_Calls__c', String.valueOf(log.Total_Productive_Calls__c));
+                record.put('Prouctive_Calls_Made__c', String.valueOf(log.Prouctive_Calls_Made__c));
+                record.put('Total_Outlets__c', String.valueOf(log.Total_Outlets__c));
+                record.put('Distance_Travelled__c', String.valueOf(log.Distance_Travelled__c));
+                record.put('Distance_Travelled_by_Odometer__c', String.valueOf(log.Distance_Travelled_by_Odometer__c));
+                record.put('Total_Calls__c', String.valueOf(log.Total_Calls__c));
+                record.put('Non_PJP_Order_Calls__c', String.valueOf(log.Non_PJP_Order_Calls__c));
+                record.put('Total_Productive_Calls_Made__c', String.valueOf(log.Total_Productive_Calls_Made__c));
+                record.put('Non_PJP_Productive_Calls__c', String.valueOf(log.Non_PJP_Productive_Calls__c));
+                record.put('No_Of_Outlets_from_Non_PJP_Order__c', String.valueOf(log.No_Of_Outlets_from_Non_PJP_Order__c));
+                record.put('Total_No_of_Outlets__c', String.valueOf(log.Total_No_of_Outlets__c));
+                record.put('Calls_Made__c', String.valueOf(log.Calls_Made__c));
+                record.put('Return_Calls__c', String.valueOf(log.Return_Calls__c));
+                
+                record.put('No_of_Outlets_from_Visit_forms__c', String.valueOf(log.No_of_Outlets_from_Visit_forms__c));
+                record.put('Total_No_of_Beat_Non_PJP_Order__c', String.valueOf(log.Total_No_of_Beat_Non_PJP_Order__c));
+                record.put('Visit_Form_Unique_Calls__c', String.valueOf(log.Visit_Form_Unique_Calls__c));
+                record.put('Visit_Form_Total_Calls__c', String.valueOf(log.Visit_Form_Total_Calls__c));
+                
                 
                 Decimal totalVisitMinutes = 0;
                 for (Visit__c visit : log.Visits__r) {
@@ -1963,14 +2001,18 @@ public with sharing class userProfileLWC {
                 record.put('TotalVisits', '0 min');
             }
             
+            
+            // LEAVE (UPDATED)
             // =====================================================
-            // LEAVE
-            // =====================================================
-            else if (leaveDates.contains(currentDate)) {
+            else if (leaveMap.containsKey(currentDate)) {
                 
+                Leaves__c leave = leaveMap.get(currentDate);
+                
+                record.put('Id', leave.Id); // ✅ Added
                 record.put('Status', 'Leave');
                 record.put('TotalVisits', '0 min');
             }
+            
             
             // =====================================================
             // ABSENT

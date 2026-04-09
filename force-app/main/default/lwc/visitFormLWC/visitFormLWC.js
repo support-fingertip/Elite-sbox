@@ -1,40 +1,45 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track,api } from 'lwc';
 
 export default class VisitFormLWC extends LightningElement {
 
     @track selectedType = null;
-
-    newCustomerList = [
-
-        {
-            type: 'newPrimary',
-            title: 'New Primary Customer',
-            subtitle: 'Create visit form for new primary customer',
-            icon: 'standard:account'
-        },
-
-        {
-            type: 'subStockiestExisting',
-            title: 'Sub Stockiest - Existing Market Expansion',
-            subtitle: 'Existing market expansion',
-            icon: 'standard:channel_program_levels'
-        },
-
-        {
-            type: 'outletNew',
-            title: 'Outlet - New Market Expansion',
-            subtitle: 'New area expansion',
-            icon: 'standard:store'
-        },
-
-        {
-            type: 'outletExisting',
-            title: 'Outlet - Existing Market Expansion',
-            subtitle: 'Existing market expansion',
-            icon: 'standard:store'
+    @api isdsmssa;
+    newCustomerList = [];
+    
+    connectedCallback() {
+        let customerTypes = [
+            {
+                type: 'newPrimary',
+                title: 'New Primary Customer',
+                subtitle: 'Create visit form for new primary customer',
+                icon: 'standard:account'
+            },
+            {
+                type: 'subStockiestExisting',
+                title: 'Sub Stockiest - Existing Market Expansion',
+                subtitle: 'Existing market expansion',
+                icon: 'standard:channel_program_levels'
+            },
+            {
+                type: 'outletNew',
+                title: 'Outlet - New Market Expansion',
+                subtitle: 'New area expansion',
+                icon: 'standard:store'
+            },
+            {
+                type: 'outletExisting',
+                title: 'Outlet - Existing Market Expansion',
+                subtitle: 'Existing market expansion',
+                icon: 'standard:store'
+            }
+        ];
+        // Build list based on isdsmssa
+        if (this.isdsmssa) {
+            this.newCustomerList = customerTypes.filter(item => item.type !== 'newPrimary');
+        } else {
+            this.newCustomerList = customerTypes;
         }
-
-    ];
+    }
 
 
     // when clicking list item

@@ -1,5 +1,5 @@
 public without sharing class LeaveCreateOverrideCtrl {
-
+    
     @AuraEnabled
     public static Boolean checkUserRole() {
         Id userId = UserInfo.getUserId();
@@ -10,18 +10,18 @@ public without sharing class LeaveCreateOverrideCtrl {
         String profileName = users[0].Profile.Name;
         return (profileName == 'System Administrator' || profileName == 'HR');
     }
-
+    
     @AuraEnabled
     public static String validateLeaveDates(Map<String, Object> leaveData) {
         try {
             // Get data from the JS Map
             String userStr = (String)leaveData.get('User__c');
             Id targetUserId = String.isNotBlank(userStr) ? (Id)userStr : UserInfo.getUserId();
-
+            
             Date fromDt = Date.valueOf((String)leaveData.get('From_Date__c'));
             Date toDt = Date.valueOf((String)leaveData.get('To_Date__c'));
             String sessionType = (String)leaveData.get('Session_Type__c');
-
+            
             // Check for overlaps (Ignoring Cancelled/Rejected)
             List<Leaves__c> overlaps = [
                 SELECT Name, From_Date__c, To_Date__c, Session_Type__c
@@ -42,8 +42,8 @@ public without sharing class LeaveCreateOverrideCtrl {
                     && String.isNotBlank(sessionType) 
                     && String.isNotBlank(overlap.Session_Type__c)
                     && sessionType != overlap.Session_Type__c) {
-                    continue;
-                }
+                        continue;
+                    }
                 
                 return 'An existing leave request (' + overlap.Name + 
                     ') already exists for ' + overlap.From_Date__c.format() + ' to ' + overlap.To_Date__c.format();
@@ -53,75 +53,29 @@ public without sharing class LeaveCreateOverrideCtrl {
             throw new AuraHandledException('Validation Error: ' + e.getMessage());
         }
     }
-
-		//Added by pattu -- 25/02/26
-        @AuraEnabled
-        public static List<User> searchUsers(String searchTerm) {
-            if (String.isBlank(searchTerm) || searchTerm.length() < 2) {
-                return new List<User>();
-            }
-            
-            String wildcard = '%' + String.escapeSingleQuotes(searchTerm.trim()) + '%';
-            
-            List<User> results = new List<User>();
-            Set<Id> addedIds = new Set<Id>();
-            
-            // Search by Name
-            for (User u : [
-                SELECT Id, Name, Employee_Code__c, Vendor_Code__c, User_Id__c
-                FROM User
-                WHERE IsActive = true
-                AND Name LIKE :wildcard
-                LIMIT 10
-            ]) {
-                if (!addedIds.contains(u.Id)) {
-                    results.add(u);
-                    addedIds.add(u.Id);
-                }
-            }
-            
-            // Search by Employee Code
-            for (User u : [
-                SELECT Id, Name, Employee_Code__c, Vendor_Code__c, User_Id__c
-                FROM User
-                WHERE IsActive = true
-                AND Employee_Code__c LIKE :wildcard
-                LIMIT 10
-            ]) {
-                if (!addedIds.contains(u.Id)) {
-                    results.add(u);
-                    addedIds.add(u.Id);
-                }
-            }
-            
-            // Search by Vendor Code
-            for (User u : [
-                SELECT Id, Name, Employee_Code__c, Vendor_Code__c, User_Id__c
-                FROM User
-                WHERE IsActive = true
-                AND Vendor_Code__c LIKE :wildcard
-                LIMIT 10
-            ]) {
-                if (!addedIds.contains(u.Id)) {
-                    results.add(u);
-                    addedIds.add(u.Id);
-                }
-            }
-            
-            // Search by User_Id__c (Auto Number - use exact match or LIKE on text)
-            for (User u : [
-                SELECT Id, Name, Employee_Code__c, Vendor_Code__c, User_Id__c
-                FROM User
-                WHERE IsActive = true
-                AND User_Id__c LIKE :wildcard
-                LIMIT 10
-            ]) {
-                if (!addedIds.contains(u.Id)) {
-                    results.add(u);
-                    addedIds.add(u.Id);
-                }
-            }
-            
-            return results;
+    
+    //Added by pattu -- 25/02/26
+    // Added by pattu -- 25/02/26 (Optimized with SOSL)
+    @AuraEnabled(cacheable=true)
+    public static List<User> searchUsers(String searchTerm) {
+        if (String.isBlank(searchTerm) || searchTerm.trim().length() < 2) {
+            return new List<User>();
         }
+        
+        String trimmed  = String.escapeSingleQuotes(searchTerm.trim());
+        // SOSL searches Name, Employee_Code__c, Vendor_Code__c, User_Id__c
+        // in a single round-trip — much faster than 4 sequential SOQLs
+        String soslTerm = '*' + trimmed + '*';
+        
+        List<List<SObject>> searchResults = [
+            FIND :soslTerm
+            IN ALL FIELDS
+            RETURNING User(
+                Id, Name, Employee_Code__c, Vendor_Code__c, User_Id__c
+                WHERE IsActive = true
+            ) LIMIT 10
+        ];
+        
+        return (List<User>) searchResults[0];
+    }
 }

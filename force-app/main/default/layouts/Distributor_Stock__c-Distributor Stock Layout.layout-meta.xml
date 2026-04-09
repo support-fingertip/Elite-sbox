@@ -32,6 +32,10 @@
                 <behavior>Readonly</behavior>
                 <field>Written_Off_Quantity__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Distributor__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
@@ -53,6 +57,10 @@
             <layoutItems>
                 <behavior>Readonly</behavior>
                 <field>Saleable_to_Non_Saleable_Quantity__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Product__c</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsTopToBottom</style>
