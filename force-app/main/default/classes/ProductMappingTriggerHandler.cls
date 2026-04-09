@@ -1,7 +1,11 @@
 public without sharing class ProductMappingTriggerHandler {
-    
+
     public static Boolean isProductMappingAutoInsert = false;
     public static Boolean isProductMappingAutoUpdate = false;
+
+    // Set to true by bulk data movement flows (e.g. Employee Transfer) to
+    // bypass the heavy before/after update logic. Always reset in finally.
+    public static Boolean bypassForEmployeeTransfer = false;
     
     //Checking Primary Customer Access and Accont sharing
     public static void beforeInsert(List<Product_Mapping__c> newProductMappings) {
@@ -376,6 +380,7 @@ public without sharing class ProductMappingTriggerHandler {
     
     //Checking Primary Customer Access
     public static void beforeUpdate(List<Product_Mapping__c> newProductMappings, Map<Id, Product_Mapping__c> oldProductMappings) {
+        if (bypassForEmployeeTransfer) return;
         Map<String, Map<String, String>> paymentTermCreditDescriptionMap = newCustomerLwcController.getDependentMap(new Product_Mapping__c(), 'Payment_Term__c', 'Credit_Description__c');
         set<Id> userIds = new set<Id>();
         Set<Id> exeIds = new Set<Id>();
@@ -562,6 +567,7 @@ public without sharing class ProductMappingTriggerHandler {
     
     //sharing Customer acceess on update and sharing account based on primary custoemr assignment
     public static void afterUpdate(List<Product_Mapping__c> newProductMappings, Map<Id, Product_Mapping__c> oldProductMappings,Map<Id, Product_Mapping__c> newProductMappingsMap ) {
+        if (bypassForEmployeeTransfer) return;
         List<AccountShare> sharesToInsert = new List<AccountShare>();
         // For pair-based check
         Set<String> accountUserPairsToCheck = new Set<String>();
