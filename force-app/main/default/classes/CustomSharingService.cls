@@ -408,6 +408,7 @@ public class CustomSharingService {
                 String newExecutiveId = oldToNewUserMap.get(eca.Executive__c);
                 if (String.isNotBlank(newExecutiveId)) {
                     eca.Executive__c = newExecutiveId;
+                    eca.OwnerId = newExecutiveId;
                 }
             }
             if (!assignmentsToTransfer.isEmpty()) {
@@ -425,6 +426,7 @@ public class CustomSharingService {
                 String newExecutiveId = oldToNewUserMap.get(pm.Exectuive__c);
                 if (String.isNotBlank(newExecutiveId)) {
                     pm.Exectuive__c = newExecutiveId;
+                     pm.OwnerId = newExecutiveId;
                 }
             }
             if (!mappingsToTransfer.isEmpty()) {
