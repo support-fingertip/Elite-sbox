@@ -655,9 +655,123 @@ public class CustomSharingService {
         
         list<Calendar_beat__c> clonedPJPToDelete = [select Id from Calendar_beat__c where User__c  IN :userIds and Cloned_From_Employee_Replacement__c = true];
         delete clonedPJPToDelete;
-        
-        
+
+
     }
-    
-    
+
+    public static void employeeTransfer(Map<String, String> oldToNewUserMap) {
+        if (oldToNewUserMap == null || oldToNewUserMap.isEmpty()) return;
+
+        Set<String> oldUserIds = oldToNewUserMap.keySet();
+
+        /**---------- Step 1: Transfer Product Mappings ----------**/
+        List<Product_Mapping__c> mappingsToTransfer = [
+            SELECT Id, Exectuive__c
+            FROM Product_Mapping__c
+            WHERE Exectuive__c IN :oldUserIds
+        ];
+        for (Product_Mapping__c pm : mappingsToTransfer) {
+            String newExecutiveId = oldToNewUserMap.get(pm.Exectuive__c);
+            if (String.isNotBlank(newExecutiveId)) {
+                pm.Exectuive__c = newExecutiveId;
+            }
+        }
+        if (!mappingsToTransfer.isEmpty()) {
+            System.debug('Employee Transfer - Updating ' + mappingsToTransfer.size() + ' Product Mappings');
+            List<Database.SaveResult> pmResults = Database.update(mappingsToTransfer, false);
+            for (Integer i = 0; i < pmResults.size(); i++) {
+                if (!pmResults[i].isSuccess()) {
+                    for (Database.Error err : pmResults[i].getErrors()) {
+                        System.debug('Employee Transfer Error - Product Mapping Id: ' + mappingsToTransfer[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                    }
+                }
+            }
+        }
+
+        /**---------- Step 2: Transfer Employee Customer Assignments ----------**/
+        List<Employee_Customer_Assignment__c> assignmentsToTransfer = [
+            SELECT Id, Executive__c
+            FROM Employee_Customer_Assignment__c
+            WHERE Executive__c IN :oldUserIds
+        ];
+        for (Employee_Customer_Assignment__c eca : assignmentsToTransfer) {
+            String newExecutiveId = oldToNewUserMap.get(eca.Executive__c);
+            if (String.isNotBlank(newExecutiveId)) {
+                eca.Executive__c = newExecutiveId;
+            }
+        }
+        if (!assignmentsToTransfer.isEmpty()) {
+            System.debug('Employee Transfer - Updating ' + assignmentsToTransfer.size() + ' Employee Customer Assignments');
+            List<Database.SaveResult> ecaResults = Database.update(assignmentsToTransfer, false);
+            for (Integer i = 0; i < ecaResults.size(); i++) {
+                if (!ecaResults[i].isSuccess()) {
+                    for (Database.Error err : ecaResults[i].getErrors()) {
+                        System.debug('Employee Transfer Error - Assignment Id: ' + assignmentsToTransfer[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                    }
+                }
+            }
+        }
+
+        /**---------- Step 3: Transfer Beats (User__c + OwnerId) ----------**/
+        List<Child_beat__c> beatsToTransfer = [
+            SELECT Id, User__c, OwnerId
+            FROM Child_beat__c
+            WHERE OwnerId IN :oldUserIds OR User__c IN :oldUserIds
+        ];
+        for (Child_beat__c beat : beatsToTransfer) {
+            String newUserId = null;
+            if (beat.OwnerId != null && oldToNewUserMap.containsKey(beat.OwnerId)) {
+                newUserId = oldToNewUserMap.get(beat.OwnerId);
+            } else if (beat.User__c != null && oldToNewUserMap.containsKey(beat.User__c)) {
+                newUserId = oldToNewUserMap.get(beat.User__c);
+            }
+            if (String.isNotBlank(newUserId)) {
+                beat.User__c = newUserId;
+                beat.OwnerId = newUserId;
+            }
+        }
+        if (!beatsToTransfer.isEmpty()) {
+            System.debug('Employee Transfer - Updating ' + beatsToTransfer.size() + ' Beats');
+            List<Database.SaveResult> beatResults = Database.update(beatsToTransfer, false);
+            for (Integer i = 0; i < beatResults.size(); i++) {
+                if (!beatResults[i].isSuccess()) {
+                    for (Database.Error err : beatResults[i].getErrors()) {
+                        System.debug('Employee Transfer Error - Beat Id: ' + beatsToTransfer[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                    }
+                }
+            }
+        }
+
+        /**---------- Step 4: Transfer PJPs (Calendar Beats) ----------**/
+        List<Calendar_beat__c> pjpsToTransfer = [
+            SELECT Id, User__c
+            FROM Calendar_beat__c
+            WHERE User__c IN :oldUserIds
+        ];
+        for (Calendar_beat__c pjp : pjpsToTransfer) {
+            String newUserId = oldToNewUserMap.get(pjp.User__c);
+            if (String.isNotBlank(newUserId)) {
+                pjp.User__c = newUserId;
+            }
+        }
+        if (!pjpsToTransfer.isEmpty()) {
+            System.debug('Employee Transfer - Updating ' + pjpsToTransfer.size() + ' PJPs');
+            List<Database.SaveResult> pjpResults = Database.update(pjpsToTransfer, false);
+            for (Integer i = 0; i < pjpResults.size(); i++) {
+                if (!pjpResults[i].isSuccess()) {
+                    for (Database.Error err : pjpResults[i].getErrors()) {
+                        System.debug('Employee Transfer Error - PJP Id: ' + pjpsToTransfer[i].Id + ' - ' + err.getStatusCode() + ': ' + err.getMessage());
+                    }
+                }
+            }
+        }
+
+        /**---------- Step 5: Approvers Replacement ----------**/
+        System.enqueueJob(new ApproverReplacementQueue(oldToNewUserMap, oldUserIds));
+
+        /**---------- Step 6: User Role Hierarchy Update ----------**/
+        updateUserRoleHierarchy(oldToNewUserMap);
+    }
+
+
 }

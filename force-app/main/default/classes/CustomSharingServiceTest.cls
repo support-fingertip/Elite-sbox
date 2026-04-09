@@ -899,4 +899,151 @@ public class CustomSharingServiceTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void testEmployeeTransferEmptyInputs() {
+        // Covers null / empty early-return branches of employeeTransfer
+        Test.startTest();
+        CustomSharingService.employeeTransfer(null);
+        CustomSharingService.employeeTransfer(new Map<String, String>());
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testEmployeeTransferFullFlow() {
+        // Covers all 6 steps of employeeTransfer:
+        // Product_Mapping, Employee_Customer_Assignment, Child_beat, Calendar_beat,
+        // ApproverReplacementQueue enqueue, and updateUserRoleHierarchy (@future).
+        User oldUser = [SELECT Id FROM User WHERE Employee_Code__C = '123sfgg212231' LIMIT 1];
+        User newUser = [SELECT Id FROM User WHERE Employee_Code__C = '1232122DDD343' LIMIT 1];
+
+        Account acc = new Account(
+            Name = 'Transfer Account',
+            Pincode__c = '560001',
+            Primary_Phone_Number__c = '8176543210',
+            State__c = 'Karnataka',
+            District__c = 'Kolar'
+        );
+        insert acc;
+
+        area__c tr = new area__c(
+            Name = 'transfer area',
+            Sales_Channel__c = 'CPD',
+            Region__c = 'Kerala',
+            Area__c = 'Central'
+        );
+        insert tr;
+
+        // Step 1 target: Product_Mapping__c with Exectuive__c = oldUser
+        Product_Mapping__c pm = new Product_Mapping__c(
+            Customer__c = acc.Id,
+            Payment_Term__c = '0003',
+            Area__c = tr.Id,
+            Exectuive__c = oldUser.Id
+        );
+        insert pm;
+
+        // Step 2 target: Employee_Customer_Assignment__c with Executive__c = oldUser
+        Employee__c emp = new Employee__c(
+            Name = 'Transfer Emp',
+            OwnerId = oldUser.Id,
+            User__c = oldUser.Id,
+            IsDataUpload__c = true,
+            Mail_Id__c = 'transfer@gmail.com',
+            Aadhar_Number__c = '555577663390',
+            Profile__c = 'ASM',
+            Sales_Channel__c = 'TN',
+            User_Name__c = 'transfer@tstasm.com'
+        );
+        insert emp;
+
+        Employee_Customer_Assignment__c eca = new Employee_Customer_Assignment__c(
+            Executive__c = oldUser.Id,
+            Employee__c = emp.Id,
+            Customer__c = acc.Id
+        );
+        insert eca;
+
+        // Step 3 target: Child_beat__c with OwnerId = oldUser
+        Child_beat__c beatOwner = new Child_beat__c(
+            Name = 'Transfer Beat Owner',
+            OwnerId = oldUser.Id,
+            User__c = oldUser.Id,
+            Beat_Type__c = 'Primary',
+            Active__c = true,
+            Cloned_From_Customer_Deactivation__c = true,
+            Cloned_From_Employee_Replacement__c = true
+        );
+        insert beatOwner;
+
+        // Step 4 target: Calendar_beat__c with User__c = oldUser
+        Calendar_beat__c pjp = new Calendar_beat__c(
+            OwnerId = oldUser.Id,
+            User__c = oldUser.Id,
+            Active__c = true
+        );
+        insert pjp;
+
+        Map<String, String> oldToNewMap = new Map<String, String>{
+            oldUser.Id => newUser.Id
+        };
+
+        Test.startTest();
+        CustomSharingService.employeeTransfer(oldToNewMap);
+        Test.stopTest();
+
+        // Verify Product Mapping was transferred
+        Product_Mapping__c updatedPm = [SELECT Id, Exectuive__c FROM Product_Mapping__c WHERE Id = :pm.Id];
+        System.assertEquals(newUser.Id, updatedPm.Exectuive__c,
+            'Product Mapping executive should be transferred to new user');
+
+        // Verify Employee Customer Assignment was transferred
+        Employee_Customer_Assignment__c updatedEca = [SELECT Id, Executive__c FROM Employee_Customer_Assignment__c WHERE Id = :eca.Id];
+        System.assertEquals(newUser.Id, updatedEca.Executive__c,
+            'Employee Customer Assignment executive should be transferred to new user');
+
+        // Verify Child Beat owner/user was transferred
+        Child_beat__c updatedBeat = [SELECT Id, OwnerId, User__c FROM Child_beat__c WHERE Id = :beatOwner.Id];
+        System.assertEquals(newUser.Id, updatedBeat.OwnerId,
+            'Beat owner should be transferred to new user');
+        System.assertEquals(newUser.Id, updatedBeat.User__c,
+            'Beat user should be transferred to new user');
+
+        // Verify Calendar Beat was transferred
+        Calendar_beat__c updatedPjp = [SELECT Id, User__c FROM Calendar_beat__c WHERE Id = :pjp.Id];
+        System.assertEquals(newUser.Id, updatedPjp.User__c,
+            'Calendar Beat user should be transferred to new user');
+    }
+
+    @IsTest
+    static void testEmployeeTransferBeatUserOnlyMatch() {
+        // Covers the else-if branch in Step 3 where beat.OwnerId is NOT in the map
+        // but beat.User__c is - the beat is still transferred.
+        User oldUser = [SELECT Id FROM User WHERE Employee_Code__C = '123sfgg212231' LIMIT 1];
+        User newUser = [SELECT Id FROM User WHERE Employee_Code__C = '1232122DDD343' LIMIT 1];
+
+        // Beat owned by newUser but User__c points to oldUser
+        Child_beat__c beat = new Child_beat__c(
+            Name = 'User Only Match Beat',
+            OwnerId = newUser.Id,
+            User__c = oldUser.Id,
+            Beat_Type__c = 'Primary',
+            Active__c = true,
+            Cloned_From_Customer_Deactivation__c = true,
+            Cloned_From_Employee_Replacement__c = true
+        );
+        insert beat;
+
+        Map<String, String> oldToNewMap = new Map<String, String>{
+            oldUser.Id => newUser.Id
+        };
+
+        Test.startTest();
+        CustomSharingService.employeeTransfer(oldToNewMap);
+        Test.stopTest();
+
+        Child_beat__c updated = [SELECT Id, User__c, OwnerId FROM Child_beat__c WHERE Id = :beat.Id];
+        System.assertEquals(newUser.Id, updated.User__c,
+            'Beat User__c should be transferred via the else-if branch');
+    }
+
 }
