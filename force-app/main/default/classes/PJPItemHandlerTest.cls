@@ -122,7 +122,7 @@ private class PJPItemHandlerTest {
             User__c = UserInfo.getUserId()
         );
         insert pjp;
-      
+
         PJP_Item__c pjpItem1 = new PJP_Item__c(PJP__c = pjp.Id, Beat__c = null, Date__c = Date.today(), Status__c = 'Approved');
          insert pjpItem1;
         PJP_Item__c pjpItem2 = new PJP_Item__c(PJP__c = pjp.Id, Beat__c = null, Date__c = Date.today(), Status__c = 'Approved');
@@ -135,7 +135,198 @@ private class PJPItemHandlerTest {
             // Verify if the expected error message is in the exception
             System.assert(e.getMessage().contains('A PJP Item for this PJP and Date already exists. Please update the existing item instead of creating a new one.'), 'Expected validation error not found.');
         }
-        
+
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testHandleValidationsIntraBatchDuplicate() {
+        // Covers the intra-batch duplicate detection branch of handleValidations
+        Calendar_beat__c pjp = new Calendar_beat__c(
+            OwnerId = UserInfo.getUserId(),
+            User__c = UserInfo.getUserId()
+        );
+        insert pjp;
+
+        // Two items in the same batch with same PJP and Date
+        List<PJP_Item__c> items = new List<PJP_Item__c>{
+            new PJP_Item__c(PJP__c = pjp.Id, Date__c = Date.today(), Status__c = 'Submitted'),
+            new PJP_Item__c(PJP__c = pjp.Id, Date__c = Date.today(), Status__c = 'Submitted')
+        };
+
+        Test.startTest();
+        try {
+            insert items;
+            System.assert(false, 'Expected an error for intra-batch duplicate PJP items');
+        } catch (DmlException e) {
+            System.assert(e.getMessage().contains('Duplicate PJP Item'),
+                'Expected intra-batch duplicate error, got: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testHandleValidationsBeatUserMismatch() {
+        // Covers the "Beat is not assigned to the same user as the PJP" branch
+        Id adminUserId = UserInfo.getUserId();
+        Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+        User otherUser = new User(
+            FirstName = 'Beat',
+            LastName = 'Owner',
+            Email = 'beatowner@example.com',
+            Username = 'beatowner' + System.currentTimeMillis() + '@example.com',
+            Alias = 'bowns',
+            ProfileId = p.Id,
+            Employee_Code__c = 'BOWNEREMP001',
+            TimeZoneSidKey = 'Asia/Kolkata',
+            LocaleSidKey = 'en_US',
+            EmailEncodingKey = 'UTF-8',
+            LanguageLocaleKey = 'en_US'
+        );
+        insert otherUser;
+
+        // Use runAs to avoid Mixed DML after the User insert above
+        Calendar_beat__c pjp;
+        Child_beat__c beat;
+        System.runAs(otherUser) {
+            pjp = new Calendar_beat__c(
+                OwnerId = adminUserId,
+                User__c = adminUserId
+            );
+            insert pjp;
+
+            beat = new Child_beat__c(
+                Name = 'Other User Beat',
+                OwnerId = otherUser.Id,
+                Beat_Type__c = 'Primary',
+                Active__c = true
+            );
+            insert beat;
+        }
+
+        PJP_Item__c pjpItem = new PJP_Item__c(
+            PJP__c = pjp.Id,
+            Beat__c = beat.Id,
+            Date__c = Date.today().addDays(5),
+            Status__c = 'Submitted'
+        );
+
+        Test.startTest();
+        try {
+            insert pjpItem;
+            System.assert(false, 'Expected an error for beat/user mismatch');
+        } catch (DmlException e) {
+            System.assert(e.getMessage().contains('Beat is not assigned to the same user'),
+                'Expected beat/user mismatch error, got: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testAutoApprovePJPForAdminOrManager() {
+        // Covers autoApprovePJPForAdminOrManager - admin path approves items
+        // for PJPs owned by other users.
+        Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+        User pjpUser = new User(
+            FirstName = 'PJP',
+            LastName = 'Owner',
+            Email = 'pjpowner@example.com',
+            Username = 'pjpowner' + System.currentTimeMillis() + '@example.com',
+            Alias = 'pown',
+            ProfileId = p.Id,
+            Employee_Code__c = 'PJPOWNEREMP001',
+            TimeZoneSidKey = 'Asia/Kolkata',
+            LocaleSidKey = 'en_US',
+            EmailEncodingKey = 'UTF-8',
+            LanguageLocaleKey = 'en_US'
+        );
+        insert pjpUser;
+
+        // Wrap non-setup DML in runAs to avoid Mixed DML after User insert
+        PJP_Item__c item;
+        System.runAs(pjpUser) {
+            Calendar_beat__c pjp = new Calendar_beat__c(
+                OwnerId = pjpUser.Id,
+                User__c = pjpUser.Id
+            );
+            insert pjp;
+
+            Child_beat__c beat = new Child_beat__c(
+                Name = 'Auto Approve Beat',
+                OwnerId = pjpUser.Id,
+                Beat_Type__c = 'Primary',
+                Active__c = true
+            );
+            insert beat;
+
+            item = new PJP_Item__c(
+                PJP__c = pjp.Id,
+                Beat__c = beat.Id,
+                Assigned_Beat__c = beat.Id,
+                Date__c = Date.today().addDays(10),
+                Status__c = 'Submitted'
+            );
+            insert item;
+        }
+
+        // Reload to get the formula OwnerId__c populated
+        PJP_Item__c reloaded = [
+            SELECT Id, OwnerId__c, Status__c, Beat__c, Assigned_Beat__c
+            FROM PJP_Item__c
+            WHERE Id = :item.Id
+        ];
+
+        Test.startTest();
+        // Running as the default test user (System Administrator) - should auto approve
+        PJPItemHandler.autoApprovePJPForAdminOrManager(new List<PJP_Item__c>{ reloaded });
+        Test.stopTest();
+
+        System.assertEquals('Approved', reloaded.Status__c,
+            'Admin should auto-approve PJP items owned by other users');
+    }
+
+    @isTest
+    static void testAutoApprovePJPForAdminOrManager_SelfOwned() {
+        // Covers the branch where item.OwnerId__c == currentUserId - should NOT be approved
+        Calendar_beat__c pjp = new Calendar_beat__c(
+            OwnerId = UserInfo.getUserId(),
+            User__c = UserInfo.getUserId()
+        );
+        insert pjp;
+
+        PJP_Item__c item = new PJP_Item__c(
+            PJP__c = pjp.Id,
+            Date__c = Date.today().addDays(20),
+            Status__c = 'Submitted'
+        );
+        insert item;
+
+        PJP_Item__c reloaded = [
+            SELECT Id, OwnerId__c, Status__c
+            FROM PJP_Item__c
+            WHERE Id = :item.Id
+        ];
+
+        Test.startTest();
+        PJPItemHandler.autoApprovePJPForAdminOrManager(new List<PJP_Item__c>{ reloaded });
+        Test.stopTest();
+
+        // Status should remain unchanged when owner is the current user
+        System.assertEquals('Submitted', reloaded.Status__c,
+            'Items owned by current user should not be auto-approved');
+    }
+
+    @isTest
+    static void testUpdatePjpItemsAfterApproval_NoItems() {
+        // Covers early-return path when there are no matching items to update
+        Calendar_beat__c pjp = new Calendar_beat__c(
+            OwnerId = UserInfo.getUserId(),
+            User__c = UserInfo.getUserId()
+        );
+        insert pjp;
+
+        Test.startTest();
+        PJPItemHandler.updatePjpItemsAfterApproval(pjp.Id);
         Test.stopTest();
     }
 }
