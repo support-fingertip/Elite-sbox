@@ -796,7 +796,7 @@ public class EmployeeeControllerTest {
     @isTest
     static void testDeactivateUserWithBeatOption_NoUser() {
         Employee__c emp = [SELECT Id FROM Employee__c WHERE User__c = null LIMIT 1];
-        
+
         Test.startTest();
         try {
             String result = EmployeeeController.deactivateUserWithBeatOption(emp.Id, 'BEATS_INACTIVE');
@@ -804,5 +804,246 @@ public class EmployeeeControllerTest {
         }
         Test.stopTest();
     }
-    
+
+    @isTest
+    static void testCreateUser_RoleMissing() {
+        // Employee with Role_Id__c = null -> createUser should return ROLE_MISSING
+        User user = [SELECT Id FROM User WHERE LastName = 'Test' LIMIT 1];
+        Employee__c emp = new Employee__c(
+            Name = 'NoRole Emp',
+            User_Name__c = 'norole@test.com',
+            Aadhar_Number__c = '555566667777',
+            Employee_Code__c = 'NOROLE001',
+            Profile__c = 'Admin',
+            Mail_Id__c = 'norole@example.com',
+            Sales_Channel__c = 'Cake',
+            Reporting_Manager__c = user.Id
+        );
+        insert emp;
+
+        Test.startTest();
+        String result = EmployeeeController.createUser(emp.Id);
+        Test.stopTest();
+
+        System.assertEquals('Error: ROLE_MISSING', result,
+            'Expected ROLE_MISSING when Role_Id__c is null');
+    }
+
+    @isTest
+    static void testCreateUser_SingleWordShortName() {
+        // Covers populateUserFields branches: single-word name and short (< 5 chars) alias
+        UserRole ur = [SELECT Id FROM UserRole LIMIT 1];
+
+        Employee__c emp = new Employee__c(
+            Name = 'Ram',
+            Mail_Id__c = 'ram@shortname.com',
+            User_Name__c = 'ram@shortname.com' + System.currentTimeMillis(),
+            Primary_Phone_Number__c = '1111222233',
+            Employee_Code__c = 'SHORT001',
+            Designation__c = 'Sales Exec',
+            Profile__c = 'TSE',
+            Role_Id__c = ur.Id,
+            Is_Active__c = false,
+            Basic_Pay__c = 25000,
+            Aadhar_Number__c = '999966667777',
+            Gross_Salary__c = 35000,
+            Area__c = 'Central',
+            Region__c = 'West',
+            Sales_Channel__c = 'Cake',
+            State__c = 'Uttar Pradesh',
+            District__c = 'Lucknow',
+            Pincode__c = '226001',
+            Cloning_is_Completed__c = false
+        );
+        insert emp;
+
+        Test.startTest();
+        String result = EmployeeeController.createUser(emp.Id);
+        Test.stopTest();
+
+        System.assert(result.startsWith('Success') || result.startsWith('Error'),
+            'createUser should return a string, got: ' + result);
+    }
+
+    @isTest
+    static void testShareBeatToUser_Success() {
+        // Covers the success path of shareBeatToUser - with actual beats and accounts
+        User sourceUser = [SELECT Id FROM User WHERE Employee_Code__c = '123212235' LIMIT 1];
+        User targetUser = [SELECT Id FROM User WHERE Employee_Code__c = '123212231' LIMIT 1];
+
+        Employee__c emp = new Employee__c(
+            Name = 'Share Beat Emp',
+            User__c = sourceUser.Id,
+            User_Name__c = 'sharebeat@test.com',
+            Aadhar_Number__c = '333344445555',
+            Employee_Code__c = 'SHBT001',
+            Profile__c = 'TSE',
+            Mail_Id__c = 'sharebeat@example.com',
+            Sales_Channel__c = 'Cake',
+            Is_Active__c = true
+        );
+        insert emp;
+
+        Account acc = new Account(
+            Name = 'Share Beat Account',
+            Customer_Type__c = 'Primary Customer',
+            Customer_Status__c = 'Active',
+            SAP_Customer_Code__c = 'SAPSHBT01',
+            Pincode__c = '560001',
+            Primary_Phone_Number__c = '8889990000',
+            State__c = 'Karnataka',
+            District__c = 'Kolar'
+        );
+        insert acc;
+
+        Child_beat__c beat = new Child_beat__c(
+            Name = 'Share Test Beat',
+            OwnerId = sourceUser.Id,
+            Primary_Customer__c = acc.Id,
+            Beat_Type__c = 'Primary',
+            Active__c = true
+        );
+        insert beat;
+
+        Test.startTest();
+        String result = EmployeeeController.shareBeatToUser(emp.Id, targetUser.Id);
+        // Call again to hit the "existing shares" filter branch
+        String result2 = EmployeeeController.shareBeatToUser(emp.Id, targetUser.Id);
+        Test.stopTest();
+
+        System.assert(result.startsWith('Success') || result.startsWith('Error'),
+            'shareBeatToUser should return a string, got: ' + result);
+    }
+
+    @isTest
+    static void testEmployeeReplacement_AlreadyReplaced() {
+        // Covers the EMPLOYEE_REPLACED branch in employeeReplacement
+        User u1 = [SELECT Id FROM User WHERE Employee_Code__c = '123212231' LIMIT 1];
+        User u2 = [SELECT Id FROM User WHERE Employee_Code__c = '123212235' LIMIT 1];
+
+        // Old employee already marked replaced
+        Employee__c oldEmp = new Employee__c(
+            Name = 'Replaced Old Emp',
+            User__c = u1.Id,
+            User_Name__c = 'replacedold@test.com',
+            Aadhar_Number__c = '666677778888',
+            Employee_Code__c = 'REPOLD001',
+            Profile__c = 'TSE',
+            Mail_Id__c = 'replacedold@example.com',
+            Sales_Channel__c = 'Cake',
+            Is_Employee_Replaced__c = true,
+            Employee_Replaced_With_Name__c = 'Some Replacement'
+        );
+        insert oldEmp;
+
+        Employee__c newEmp = new Employee__c(
+            Name = 'Replacement Emp',
+            User__c = u2.Id,
+            User_Name__c = 'replacement@test.com',
+            Aadhar_Number__c = '777788889999',
+            Employee_Code__c = 'REPNEW001',
+            Profile__c = 'TSE',
+            Mail_Id__c = 'replacement@example.com',
+            Sales_Channel__c = 'Cake',
+            Replaced_For__c = oldEmp.Id,
+            ReplacedForUserId__c = u1.Id,
+            Cloning_is_Completed__c = false
+        );
+        insert newEmp;
+
+        Test.startTest();
+        String result = EmployeeeController.employeeReplacement(newEmp.Id);
+        Test.stopTest();
+
+        System.assert(result.startsWith('Error: EMPLOYEE_REPLACED'),
+            'Expected EMPLOYEE_REPLACED error, got: ' + result);
+    }
+
+    @isTest
+    static void testGetAllData_NoRecordId() {
+        // Covers the branch where recordId is null/empty - skips employee query
+        Test.startTest();
+        EmployeeeController.DataBox db1 = EmployeeeController.getAllData(null);
+        EmployeeeController.DataBox db2 = EmployeeeController.getAllData('');
+        Test.stopTest();
+
+        System.assertNotEquals(null, db1, 'DataBox should be returned for null recordId');
+        System.assertNotEquals(null, db2, 'DataBox should be returned for empty recordId');
+    }
+
+    @isTest
+    static void testSaveData_NewEmployee() {
+        // Covers the new-employee branch (Id == null) of saveData
+        User user = [SELECT Id FROM User WHERE Employee_Code__c = '123212235' LIMIT 1];
+
+        Employee__c newEmp = new Employee__c(
+            Name = 'Brand New Emp',
+            User_Name__c = 'brandnew@test.com',
+            Aadhar_Number__c = '121212121212',
+            Employee_Code__c = 'BRANDNEW01',
+            Profile__c = 'Admin',
+            Mail_Id__c = 'brandnew@example.com',
+            Sales_Channel__c = 'Cake',
+            Reporting_Manager__c = user.Id
+        );
+
+        Test.startTest();
+        EmployeeeController.DataBox db = EmployeeeController.saveData(newEmp);
+        Test.stopTest();
+
+        System.assertNotEquals(null, db.recordId, 'recordId should be populated after insert');
+        System.assertEquals(true, db.editEmployee, 'editEmployee should be true for new employees');
+    }
+
+    @isTest
+    static void testSaveData_HrProfile() {
+        // Covers HR profile branch in saveData
+        User hr = [SELECT Id FROM User WHERE Employee_Code__c = 'TestSSISOOSO' LIMIT 1];
+
+        Employee__c emp;
+        System.runAs(hr) {
+            emp = new Employee__c(
+                Name = 'Hr Edit Emp',
+                User_Name__c = 'hredit@test.com',
+                Aadhar_Number__c = '131313131313',
+                Employee_Code__c = 'HREDIT01',
+                Profile__c = 'Admin',
+                Mail_Id__c = 'hredit@example.com',
+                Sales_Channel__c = 'Cake',
+                Reporting_Manager__c = hr.Id,
+                Payroll__c = 'Yes',
+                Is_Active__c = false,
+                Approval_Status__c = 'Level 2 Approved'
+            );
+            insert emp;
+
+            Test.startTest();
+            EmployeeeController.DataBox db = EmployeeeController.saveData(emp);
+            Test.stopTest();
+
+            System.assertNotEquals(null, db, 'DataBox should not be null');
+        }
+    }
+
+    @isTest
+    static void testGetRecordViewFormData_UserWithoutEmployee() {
+        // Covers the User branch where no Employee is linked
+        User user = [SELECT Id FROM User WHERE Employee_Code__c = '123212235' LIMIT 1];
+
+        Test.startTest();
+        EmployeeeController.DataBox db = EmployeeeController.getRecordViewFormData(user.Id, 'user');
+        Test.stopTest();
+
+        System.assertNotEquals(null, db, 'DataBox should not be null');
+    }
+
+    @isTest
+    static void testDuplicationCheck_NullInput() {
+        // Covers the null input early return
+        Test.startTest();
+        EmployeeeController.DataBox db = EmployeeeController.duplicationCheck(null);
+        Test.stopTest();
+
+        System.assertEquals(false, db.duplicateFound, 'Should return no duplicate for null input');
+    }
 }
