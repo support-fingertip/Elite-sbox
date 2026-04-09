@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description>Add products and licenses, and review subscription details.</description>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <label>Your Account</label>
+    <navType>Standard</navType>
+    <tabs>standard-OnlineSalesHome</tabs>
+    <tabs>standard-SalesforceContract</tabs>
+    <tabs>standard-SalesforceInvoice</tabs>
+    <tabs>standard-SalesforceProductCatalog</tabs>
+    <tabs>Product__c</tabs>
+    <tabs>Product_Category__c</tabs>
+    <tabs>Scheme__c</tabs>
+    <tabs>Price_Book__c</tabs>
+    <tabs>Order__c</tabs>
+    <tabs>Expense__c</tabs>
+    <tabs>Shelf_Stock__c</tabs>
+    <tabs>Price_Change__c</tabs>
+    <tabs>City__c</tabs>
+    <tabs>Travel_Eligibility__c</tabs>
+    <tabs>Error_Log__c</tabs>
+    <tabs>Plant_Stock__c</tabs>
+    <tabs>Expenses_Line_Item__c</tabs>
+    <tabs>Apex_Log__c</tabs>
+    <tabs>Leaves__c</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

@@ -7,5 +7,6 @@
     "**/bower_components": true,
     "**/.sfdx": true,
     "**/.sf": true
-  }
+  },
+  "xml.preferences.showSchemaDocumentationType": "none"
 }
