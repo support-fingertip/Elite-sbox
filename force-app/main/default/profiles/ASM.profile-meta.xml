@@ -918,11 +918,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingHandlerTest</apexClass>
@@ -946,11 +946,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingHandlerTest</apexClass>

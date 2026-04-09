@@ -1562,15 +1562,18 @@
                                         for:item="cust">
                                         <tr key={cust.secondaryCustomerId}>
                                             <td style="width:4%">{cust.sNumber}</td>
-                                            <td style="width:13%">{cust.secondaryCustomerName}</td>
-                                            <td style="width:8%">{cust.secondaryCustomerCode}</td>
-                                            <td style="width:8%">{cust.customerType}</td>
-                                            <td style="width:9%">{cust.customerCategory}</td>
-                                            <td style="width:9%">{cust.status}</td>
-                                            <td style="width:9%">{cust.primaryPhoneNumber}</td>
-                                            <td style="width:9%">{cust.beatName}</td>
-                                            <td style="width:9%">{cust.district}</td>
-                                            <td class="text-right" style="width:9%">{cust.outStanding}</td>
+                                            <td style="width:13%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.secondaryCustomerName}</td>
+                                            <td style="width:8%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.secondaryCustomerCode}</td>
+                                            <td style="width:8%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.customerType}</td>
+                                            <td style="width:9%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.customerCategory}</td>
+                                            <td style="width:9%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.status}</td>
+                                            <td style="width:9%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.primaryPhoneNumber}</td>
+                                            <!-- Beat Name td -->
+                                            <td style="width:9%; word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.beatName}</td>
+                                            <!-- District td -->
+                                            <td style="width:9%; word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.district}</td>
+                                            <!-- Outstanding td -->
+                                            <td class="text-right" style="width:9%; word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.outStanding}</td>
                                             <td style="width:13%">
                                                 <div class="report-dropdown">
                                                     <button class="aging-report-btn" data-id={cust.secondaryCustomerId} onclick={toggleReportMenu}>View Report</button>

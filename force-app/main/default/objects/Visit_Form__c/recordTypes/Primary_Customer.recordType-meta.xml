@@ -3312,6 +3312,10 @@
             <default>false</default>
         </values>
         <values>
+            <fullName>Others</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Restaurant</fullName>
             <default>false</default>
         </values>

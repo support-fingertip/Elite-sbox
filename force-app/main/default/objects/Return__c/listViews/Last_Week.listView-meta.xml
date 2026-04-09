@@ -3,8 +3,12 @@
     <fullName>Last_Week</fullName>
     <columns>NAME</columns>
     <columns>Customer__c</columns>
+    <columns>Total_Quantity__c</columns>
     <columns>Visit__c</columns>
+    <columns>Distributor__c</columns>
+    <columns>Customer_Type__c</columns>
     <columns>Return_Date__c</columns>
+    <columns>Total_Amount__c</columns>
     <columns>CREATED_DATE</columns>
     <columns>CREATEDBY_USER</columns>
     <filterScope>Everything</filterScope>

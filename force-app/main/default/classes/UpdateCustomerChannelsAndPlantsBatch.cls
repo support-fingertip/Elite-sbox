@@ -59,6 +59,40 @@ public class UpdateCustomerChannelsAndPlantsBatch implements Database.Batchable<
             Database.update(accountsToUpdate, false);
         }
 
+        // Cascade Sales_Channel__c to Secondary Customers linked to these Primary Customers
+        List<Product_Mapping__c> secondaryMappings = [
+            SELECT Id, Customer__c, Primary_Customer__c
+            FROM Product_Mapping__c
+            WHERE Customer_Type__c = 'Secondary Customer'
+            AND Primary_Customer__c IN :allCustomerIds
+            AND Customer__c != null
+        ];
+
+        Map<Id, Set<Id>> primaryToSecondaryIds = new Map<Id, Set<Id>>();
+        for (Product_Mapping__c secPm : secondaryMappings) {
+            if (!primaryToSecondaryIds.containsKey(secPm.Primary_Customer__c)) {
+                primaryToSecondaryIds.put(secPm.Primary_Customer__c, new Set<Id>());
+            }
+            primaryToSecondaryIds.get(secPm.Primary_Customer__c).add(secPm.Customer__c);
+        }
+
+        if (!primaryToSecondaryIds.isEmpty()) {
+            List<Account> secondaryAccountsToUpdate = new List<Account>();
+            for (Account primaryAcc : accountsToUpdate) {
+                if (primaryToSecondaryIds.containsKey(primaryAcc.Id)) {
+                    for (Id secCustId : primaryToSecondaryIds.get(primaryAcc.Id)) {
+                        secondaryAccountsToUpdate.add(new Account(
+                            Id = secCustId,
+                            Sales_Channel__c = primaryAcc.Sales_Channel__c
+                        ));
+                    }
+                }
+            }
+            if (!secondaryAccountsToUpdate.isEmpty()) {
+                Database.update(secondaryAccountsToUpdate, false);
+            }
+        }
+
         System.debug('Batch execution finished. Updated ' + accountsToUpdate.size() + ' accounts.');
     }
 }
