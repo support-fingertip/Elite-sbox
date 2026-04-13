@@ -1,8 +1,10 @@
 ({
     trasferRecords: function(component, event, helper) {
-        console.log('Entered createUser');
-        
-        var action = component.get("c.employeeReplacement");
+        console.log('Entered trasferRecords');
+
+        var mode = component.get("v.mode") || 'clone';
+        var actionName = mode === 'transfer' ? 'c.employeeTransferAction' : 'c.employeeReplacement';
+        var action = component.get(actionName);
         action.setParams({ "recordId": component.get("v.recordId") });
 
         action.setCallback(this, function(response) {

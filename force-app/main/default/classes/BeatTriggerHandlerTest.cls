@@ -45,7 +45,7 @@ public class BeatTriggerHandlerTest {
     
     // Helper method to create test data
     private static void createTestData() {
-         Profile p = [SELECT Id FROM Profile WHERE Name='System Administrator'];
+         Profile p = [SELECT Id FROM Profile WHERE Name='ASM'];
          UserRole testRole = [SELECT Id FROM UserRole LIMIT 1];
         // Create a test User
         User testUser = new User(
@@ -164,10 +164,10 @@ public class BeatTriggerHandlerTest {
         
         User subUser = [SELECT Id FROM User WHERE Username = 'subuser@example.com'];
         Account prim = [select Id from Account where Sap_Customer_Code__c='2234' limit 1];
-        
+         User subUser1 = [SELECT Id FROM User WHERE Username ='testuser109rtyed56@testorg.com'];
         system.runAs(subUser){
             
-            // Step 2: Create a Child_beat__c record to trigger the handleValidations method
+// Step 2: Create a Child_beat__c record to trigger the handleValidations method
             Child_beat__c newBeat = new Child_beat__c(
                 Beat_Id_Text__c = '111444',
                 Name = 'Test Beat for Validation',
@@ -181,6 +181,12 @@ public class BeatTriggerHandlerTest {
             // Step 3: Simulate inserting the new beat record
             Test.startTest();
             insert newBeat;
+                List<Child_beat__c> bt=new List<Child_beat__c>{ newBeat };
+                newBeat.name='aca';
+           newBeat.OwnerId=subUser1.id;
+                update newBeat;
+                map<id,Child_beat__c> btM=new map<id,Child_beat__c>{  newBeat.Id => newBeat };
+                BeatTriggerHandler.validateOwnerChangeProfile(bt,btM);
             Test.stopTest();
             
             // Step 4: Query the created Product_Mapping__c and Employee_Customer_Assignment__c records
@@ -199,7 +205,7 @@ public class BeatTriggerHandlerTest {
     @isTest
     static void testBeforeInsert11() {
         
-           Test.startTest();
+          
         user testUser = [select Id,Name from User where Employee_Code__C = '123sfgg212231' limit 1];   
         
         user testUser2 = [select Id,Name from User where Employee_Code__C = '1232122DDD343' limit 1];   
@@ -350,6 +356,7 @@ public class BeatTriggerHandlerTest {
         insert duplicateRecord1;
         Child_beat__c bt = [select Id ,name,OwnerId,Beat_Type__c,Cloned_From_Employee_Replacement__c,
                             Cloned_From_Customer_Deactivation__c from Child_beat__c where Beat_Id_Text__c ='111444'];
+        Test.startTest();
         BeatTriggerHandler.handleValidations(new List<Child_beat__c>{bt});
         Test.stopTest();
         
@@ -418,6 +425,8 @@ public class BeatTriggerHandlerTest {
        // System.assertEquals(sec.Id, productMappings[0].Customer__c, 'The Account/Customer should be mapped.');
        // System.assertEquals(prim.Id, productMappings[0].Primary_Customer__c, 'The Primary Customer should be mapped.');
         //System.assertEquals('001xx0000035P3zAA', productMappings[0].Sub_Stockiest__c, 'The Sub Stockist should be mapped.');
+        
+        
         }
         
        
@@ -446,6 +455,7 @@ public class BeatTriggerHandlerTest {
             Test.startTest();
             try {
                 insert newBeat;
+               
             } catch (DmlException e) {
                 //system.debug('Error:' + e.getMessage());
                 System.assert(e.getMessage().contains('Primary Customer is not yet mapped'), 'The validation error should have been triggered.');

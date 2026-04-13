@@ -409,6 +409,10 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>EmployeeCustomerAssignTrigHandTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>EmployeeCustomerAssignmentController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -466,6 +470,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeSubordinateControllerTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>EmployeeTransferService</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -4163,6 +4171,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Employee__c.Activation_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Employee__c.Active__c</field>
         <readable>true</readable>
@@ -4370,6 +4383,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Employee__c.IMEI_No__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Employee__c.In_Activation_Date__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
