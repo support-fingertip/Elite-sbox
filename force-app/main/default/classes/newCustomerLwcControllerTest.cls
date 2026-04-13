@@ -82,6 +82,157 @@ public class newCustomerLwcControllerTest {
     }
 
     @isTest
+    static void testGetInitialData() {
+        Account testAccount = new Account(
+            Name = 'Initial Data Account',
+            SAP_Customer_Code__c = '88112233',
+            Customer_Status__c = 'Active',
+            Primary_Phone_Number__c = '9988776655',
+            Customer_Type__c = 'Primary Customer',
+            District__c = 'Kolar',
+            State__c = 'Karnataka',
+            Pincode__c = '60001'
+        );
+        insert testAccount;
+
+        Test.startTest();
+        newCustomerLwcController.DataBox db = newCustomerLwcController.getInitialData(testAccount.Id);
+        Test.stopTest();
+
+        // Heavy collections that the new method should NOT populate
+        System.assertEquals(null, db.userList, 'userList should not be preloaded by getInitialData');
+        System.assertEquals(null, db.primaryCustomerList, 'primaryCustomerList should not be preloaded by getInitialData');
+        System.assert(db.executiveWiseAccounts == null || db.executiveWiseAccounts.isEmpty(), 'executiveWiseAccounts should be empty');
+        System.assert(db.primaryToSubStockiestMap == null || db.primaryToSubStockiestMap.isEmpty(), 'primaryToSubStockiestMap should be empty');
+        System.assert(db.executiveToSubStockiestIds == null || db.executiveToSubStockiestIds.isEmpty(), 'executiveToSubStockiestIds should be empty');
+
+        // Lookups that should still come back
+        System.assertNotEquals(null, db.parentDeportList);
+        System.assertNotEquals(null, db.areaList);
+        System.assertNotEquals(null, db.currentAccount);
+    }
+
+    @isTest
+    static void testSearchExecutives() {
+        User existing = [SELECT Id, Name, Employee_Code__c FROM User WHERE Employee_Code__c = '123sfgg212231' LIMIT 1];
+
+        Test.startTest();
+        // Match by employee code
+        List<User> byCode = newCustomerLwcController.searchExecutives('123sfgg212231', false);
+        // Match by name
+        List<User> byName = newCustomerLwcController.searchExecutives(existing.Name, false);
+        // Empty term short-circuits
+        List<User> emptyTerm = newCustomerLwcController.searchExecutives('', false);
+        // Primary flag excludes SSA/DSM users (existing test users have Is_SSA_DSM__c = false so still included)
+        List<User> byCodePrimary = newCustomerLwcController.searchExecutives('123sfgg212231', true);
+        Test.stopTest();
+
+        System.assert(byCode != null, 'byCode result should not be null');
+        System.assert(byName != null, 'byName result should not be null');
+        System.assertEquals(0, emptyTerm.size(), 'Empty search term should return no users');
+        System.assert(byCodePrimary != null, 'isPrimary search should run');
+    }
+
+    @isTest
+    static void testSearchPrimaryCustomers() {
+        User testUser = [SELECT Id FROM User WHERE Employee_Code__c = '123sfgg212231' LIMIT 1];
+
+        Account primaryAcc = new Account(
+            Name = 'Searchable Super Stockist',
+            SAP_Customer_Code__c = 'SAP-9999',
+            Customer_Status__c = 'Active',
+            Customer_Type__c = 'Primary Customer',
+            Primary_Customer_Type__c = 'Superstockiest',
+            Primary_Phone_Number__c = '7000000001',
+            District__c = 'Kolar',
+            State__c = 'Karnataka',
+            Pincode__c = '60001'
+        );
+        insert primaryAcc;
+
+        Product_Mapping__c pm = new Product_Mapping__c(
+            Customer__c = primaryAcc.Id,
+            Exectuive__c = testUser.Id,
+            Chanel__c = 'CPD',
+            Parent_Depot__c = '1100',
+            Child_Depot__c = '1100'
+        );
+        insert pm;
+
+        Test.startTest();
+        // Match by name
+        List<Account> byName = newCustomerLwcController.searchPrimaryCustomers('Searchable', testUser.Id, false);
+        // Match by SAP code
+        List<Account> byCode = newCustomerLwcController.searchPrimaryCustomers('SAP-9999', testUser.Id, false);
+        // Substockiest mode keeps it because the account is a Superstockiest
+        List<Account> subMode = newCustomerLwcController.searchPrimaryCustomers('Searchable', testUser.Id, true);
+        // Empty term and missing executive short-circuit
+        List<Account> emptyTerm = newCustomerLwcController.searchPrimaryCustomers('', testUser.Id, false);
+        List<Account> noExec = newCustomerLwcController.searchPrimaryCustomers('Searchable', null, false);
+        Test.stopTest();
+
+        System.assertEquals(1, byName.size(), 'Should find primary customer by name');
+        System.assertEquals(1, byCode.size(), 'Should find primary customer by SAP code');
+        System.assertEquals(1, subMode.size(), 'Superstockiest should still be found in sub-stockiest mode');
+        System.assertEquals(0, emptyTerm.size(), 'Empty term returns empty list');
+        System.assertEquals(0, noExec.size(), 'Null executive returns empty list');
+    }
+
+    @isTest
+    static void testSearchSubstockiests() {
+        User testUser = [SELECT Id FROM User WHERE Employee_Code__c = '123sfgg212231' LIMIT 1];
+
+        Account primaryAcc = new Account(
+            Name = 'Primary For Sub Search',
+            Customer_Status__c = 'Active',
+            Customer_Type__c = 'Primary Customer',
+            Primary_Customer_Type__c = 'Superstockiest',
+            Primary_Phone_Number__c = '7000000002',
+            District__c = 'Kolar',
+            State__c = 'Karnataka',
+            Pincode__c = '60001'
+        );
+        insert primaryAcc;
+
+        Account subAcc = new Account(
+            Name = 'Searchable Sub Stockist',
+            Customer_Code__c = 'SUB-001',
+            Customer_Status__c = 'Active',
+            Customer_Type__c = 'Secondary Customer',
+            Secondary_Customer_Type__c = 'Sub Stockiest',
+            Primary_Phone_Number__c = '7000000003',
+            District__c = 'Kolar',
+            State__c = 'Karnataka',
+            Pincode__c = '60001'
+        );
+        insert subAcc;
+
+        Product_Mapping__c subMapping = new Product_Mapping__c(
+            Customer__c = subAcc.Id,
+            Primary_Customer__c = primaryAcc.Id,
+            Exectuive__c = testUser.Id,
+            Chanel__c = 'CPD',
+            Parent_Depot__c = '1100',
+            Child_Depot__c = '1100'
+        );
+        insert subMapping;
+
+        Test.startTest();
+        List<Account> byName = newCustomerLwcController.searchSubstockiests('Searchable', primaryAcc.Id, testUser.Id);
+        List<Account> byCode = newCustomerLwcController.searchSubstockiests('SUB-001', primaryAcc.Id, testUser.Id);
+        List<Account> emptyTerm = newCustomerLwcController.searchSubstockiests('', primaryAcc.Id, testUser.Id);
+        List<Account> noPrimary = newCustomerLwcController.searchSubstockiests('Searchable', null, testUser.Id);
+        List<Account> noExec = newCustomerLwcController.searchSubstockiests('Searchable', primaryAcc.Id, null);
+        Test.stopTest();
+
+        System.assertEquals(1, byName.size(), 'Should find sub-stockiest by name');
+        System.assertEquals(1, byCode.size(), 'Should find sub-stockiest by customer code');
+        System.assertEquals(0, emptyTerm.size(), 'Empty term returns empty list');
+        System.assertEquals(0, noPrimary.size(), 'Null primary returns empty list');
+        System.assertEquals(0, noExec.size(), 'Null executive returns empty list');
+    }
+
+    @isTest
     static void testGetAvailableRecordTypes() {
         Test.startTest();
         newCustomerLwcController.getAvailableRecordTypes();
