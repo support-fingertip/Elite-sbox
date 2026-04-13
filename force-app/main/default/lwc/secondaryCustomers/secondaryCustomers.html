@@ -8,8 +8,11 @@
                 alternative-text="Download CSV"
                 title="Download CSV"
                 onclick={downloadCSV}
-                disabled={showNoRecords}
+                disabled={isDownloadDisabled}
             ></lightning-button-icon>
+            <template lwc:if={isDownloading}>
+                <lightning-spinner alternative-text="Preparing CSV" size="x-small"></lightning-spinner>
+            </template>
         </div>
         <template lwc:if={isLoading}>
             <c-loading-screen size="1"></c-loading-screen>
