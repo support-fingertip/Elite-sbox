@@ -12,11 +12,22 @@
             </div>
         </div>
 
+        <!-- Download icon in the card header -->
+        <div slot="actions">
+            <lightning-button-icon
+                icon-name="utility:download"
+                variant="border-filled"
+                alternative-text="Download CSV"
+                title="Download CSV"
+                onclick={downloadCSV}
+                disabled={isDownloadDisabled}
+            ></lightning-button-icon>
+        </div>
+
         <!-- Search -->
-        <lightning-input 
-            type="search" 
-            label="Search Products" 
-            value={searchKey} 
+        <lightning-input
+            type="search"
+            label="Search Products"
             onchange={handleSearch}
             style="margin: 5px 10px;"
         ></lightning-input>
@@ -51,7 +62,7 @@
                                         {group.date}
                                     </td>
                                     <td colspan="8" style="font-weight:bold; background:#f4f6f9;">
-                            
+
                                     </td>
                                 </tr>
 
@@ -77,6 +88,16 @@
                         </tbody>
                     </table>
                 </div>
+
+                <template if:true={hasMore}>
+                    <div class="slds-align_absolute-center slds-m-vertical_small">
+                        <lightning-button
+                            label={loadMoreLabel}
+                            variant="neutral"
+                            onclick={handleLoadMore}
+                        ></lightning-button>
+                    </div>
+                </template>
             </template>
 
             <!-- No Records -->
