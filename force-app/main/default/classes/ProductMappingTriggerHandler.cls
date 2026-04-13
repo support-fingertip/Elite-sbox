@@ -358,12 +358,12 @@ public without sharing class ProductMappingTriggerHandler {
         {
             //Updating the Sales channel and Delivary plant on Account
             //for the sharing the accounts to Order adminstator and Logistic Team
-            updateSaleschannelandParentDeport(primaryCustomerIdstoUpdateSalesChannel);
+            System.enqueueJob(new UpdateSalesChannelAndDepotQueueable(primaryCustomerIdstoUpdateSalesChannel));
         }
 
         if(!primaryToSecondaryForSalesChannel.isEmpty())
         {
-            updateSecondarySalesChannelFromPrimary(primaryToSecondaryForSalesChannel);
+            System.enqueueJob(new UpdateSecondarySalesChannelQueueable(primaryToSecondaryForSalesChannel));
         }
 
         //Auto Mappnings of Secondary Customers
@@ -373,11 +373,11 @@ public without sharing class ProductMappingTriggerHandler {
                 database.insert(subStockistMappings,false);
             }
             if (!secondaryCustomerMappings.isEmpty()) {
-                database.insert(secondaryCustomerMappings,false); 
+                database.insert(secondaryCustomerMappings,false);
             }
         }
     }
-    
+
     //Checking Primary Customer Access
     public static void beforeUpdate(List<Product_Mapping__c> newProductMappings, Map<Id, Product_Mapping__c> oldProductMappings) {
         if (bypassForEmployeeTransfer) return;
@@ -681,11 +681,11 @@ public without sharing class ProductMappingTriggerHandler {
         {
             //Updating the Sales channel and Delivary plant on Account
             //for the sharing the accounts to Order adminstator and Logistic Team
-            updateSaleschannelandParentDeport(primaryCustomerIdsToUpdateSalesChannel);
+            System.enqueueJob(new UpdateSalesChannelAndDepotQueueable(primaryCustomerIdsToUpdateSalesChannel));
         }
         if(!primaryToSecondaryForSalesChannel.isEmpty())
         {
-            updateSecondarySalesChannelFromPrimary(primaryToSecondaryForSalesChannel);
+            System.enqueueJob(new UpdateSecondarySalesChannelQueueable(primaryToSecondaryForSalesChannel));
         }
         if(!subStockiestIds.isEmpty())
         {
@@ -821,11 +821,11 @@ public without sharing class ProductMappingTriggerHandler {
         {
             //Updating the Sales channel and Delivary plant on Account
             //for the sharing the accounts to Order adminstator and Logistic Team
-            updateSaleschannelandParentDeport(primaryCustomerIds);
+            System.enqueueJob(new UpdateSalesChannelAndDepotQueueable(primaryCustomerIds));
         }
     }
-    
-    
+
+
     public static void updateSaleschannelandParentDeport(Set<Id> primaryCustomerIds)
     {
                 
