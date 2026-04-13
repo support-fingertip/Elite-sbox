@@ -67,15 +67,31 @@ public with sharing class SecondaryCustomerController {
         decimal secondaryCustomerCount = 0;
         decimal subStockiestCount = 0;
         decimal totalCustomersCount = 0;
-        
+
+        // Dedup key differs by context:
+        //  - Primary Customer view  -> (Customer + Sub_Stockiest), so same secondary under
+        //    different sub-stockiests still appears as separate rows
+        //  - Sub Stockiest view     -> Customer only (Sub_Stockiest__c is fixed = recordId)
+        Boolean isPrimaryCustomerContext = !lstAccount.isEmpty()
+            && lstAccount[0].Customer_Type__c == 'Primary Customer';
+
         for (Product_Mapping__c pm : mappings) {
             if (String.isNotBlank(pm.Customer__c) && String.isNotBlank(pm.Exectuive__c)) {
                 uniqueCustomers.add(pm.Customer__c);
-                
+
                 if (pm.Customer__r.Secondary_Customer_Type__c == 'Sub Stockiest') {
                     subStockiestCustomers.add(pm.Customer__c);
                 }
-                
+
+                String dedupKey = isPrimaryCustomerContext
+                    ? (pm.Customer__c + '|' + (pm.Sub_Stockiest__c != null ? String.valueOf(pm.Sub_Stockiest__c) : ''))
+                    : String.valueOf(pm.Customer__c);
+
+                if (seenCustomerIds.contains(dedupKey)) {
+                    continue;
+                }
+                seenCustomerIds.add(dedupKey);
+
                 Data d = new Data();
                 d.recordId = pm.Id;
                 d.secondaryCustomerName = pm.Customer__r != null ? pm.Customer__r.Name : '';
