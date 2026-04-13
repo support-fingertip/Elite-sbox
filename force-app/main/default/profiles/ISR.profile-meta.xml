@@ -1109,6 +1109,14 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>UpdateSalesChannelAndDepotQueueable</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>UpdateSecondarySalesChannelQueueable</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>UpdateUsersQueueable</apexClass>
         <enabled>true</enabled>
     </classAccesses>

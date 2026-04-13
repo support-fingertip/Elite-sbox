@@ -156,8 +156,14 @@ public with sharing class newCustomerLwcController {
         List<Id> substockistIds = executiveToSubStockiestIds.containsKey(userId) ? executiveToSubStockiestIds.get(userId) : new List<Id>();
         
         db.beatList = [select Id,Name,Sub_Stockist__c,Primary_Customer__c,Sub_Stockiest_Name__c,Primary_Customer_Name__c,
-                       Primary_Customer_Type__c,Beat_Type__c,Owner_Name__c,OwnerId from Child_beat__c where OwnerId ='005fs0000009t8XAAQ'
-                    
+                       Primary_Customer_Type__c,Beat_Type__c,Owner_Name__c,OwnerId from Child_beat__c where OwnerId =: userId
+                       AND (
+                           (Primary_Customer__c IN :primaryCustomerIds AND Sub_Stockist__c = null)
+                           OR
+                           (Sub_Stockist__c IN :substockistIds AND Primary_Customer__c IN :primaryCustomerIds)
+                           OR
+                           (Primary_Customer__c = null AND Sub_Stockist__c = null)                           
+                       )
                       ];
         
        

@@ -250,6 +250,7 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
                 this.productMappingList = [{
                     sObjectType: 'Product_Mapping__c',
                     Id: null,
+                    Customer__c:null,
                     index:1,
                     Area__c: null,
                     Area_Name__c: null,
