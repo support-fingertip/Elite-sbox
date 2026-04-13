@@ -2,9 +2,14 @@ import { LightningElement, api } from 'lwc';
 import getProductMappings from '@salesforce/apex/SecondaryCustomerController.getProductMappings';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
+const PAGE_SIZE = 100;
+const SEARCH_DEBOUNCE_MS = 300;
+
 export default class SecondaryCustomers extends LightningElement {
     @api recordId;
     productMappings = [];
+    filteredMappings = [];
+    visibleMappings = [];
     searchKey = '';
     isLoading = false;
     fileName = '';
@@ -13,18 +18,21 @@ export default class SecondaryCustomers extends LightningElement {
     secondaryCustomerCount = 0;
     label='Secondary Customers'
 
-    get filteredData() {
-        if (!this.searchKey) return this.productMappings;
-        const key = this.searchKey.toLowerCase();
-        return this.productMappings.filter(item =>
-            (item.secondaryCustomerName && item.secondaryCustomerName.toLowerCase().includes(key)) ||
-            (item.secondaryCustomerOutletId && item.secondaryCustomerOutletId.toLowerCase().includes(key)) ||
-            (item.secondaryCustomerCode && item.secondaryCustomerCode.toLowerCase().includes(key))
-        );
-    }
+    _visibleCount = PAGE_SIZE;
+    _searchDebounceId;
 
     get showNoRecords() {
-        return this.filteredData.length === 0;
+        return this.filteredMappings.length === 0;
+    }
+
+    get hasMore() {
+        return this.visibleMappings.length < this.filteredMappings.length;
+    }
+
+    get loadMoreLabel() {
+        const remaining = this.filteredMappings.length - this.visibleMappings.length;
+        const next = Math.min(PAGE_SIZE, remaining);
+        return `Load More (${next} of ${remaining} remaining)`;
     }
 
     connectedCallback() {
@@ -41,7 +49,7 @@ export default class SecondaryCustomers extends LightningElement {
                 this.subStockiestCount = data.subStockiestCount || 0;
                 this.secondaryCustomerCount = data.secondaryCustomerCount || 0;
                 this.label = 'Secondary Customers'+' ( '+ this.totalCustomersCount +' )';
-       
+                this._applyFilterAndPaginate();
                 this.isLoading = false;
             })
             .catch((error) => {
@@ -51,7 +59,35 @@ export default class SecondaryCustomers extends LightningElement {
     }
 
     handleSearch(event) {
-        this.searchKey = event.target.value;
+        const value = event.target.value;
+        // Debounce so each keystroke doesn't re-filter a large list
+        if (this._searchDebounceId) {
+            clearTimeout(this._searchDebounceId);
+        }
+        this._searchDebounceId = setTimeout(() => {
+            this.searchKey = value;
+            this._visibleCount = PAGE_SIZE;
+            this._applyFilterAndPaginate();
+        }, SEARCH_DEBOUNCE_MS);
+    }
+
+    handleLoadMore() {
+        this._visibleCount += PAGE_SIZE;
+        this.visibleMappings = this.filteredMappings.slice(0, this._visibleCount);
+    }
+
+    _applyFilterAndPaginate() {
+        const key = (this.searchKey || '').toLowerCase();
+        if (!key) {
+            this.filteredMappings = this.productMappings;
+        } else {
+            this.filteredMappings = this.productMappings.filter(item =>
+                (item.secondaryCustomerName && item.secondaryCustomerName.toLowerCase().includes(key)) ||
+                (item.secondaryCustomerOutletId && item.secondaryCustomerOutletId.toLowerCase().includes(key)) ||
+                (item.secondaryCustomerCode && item.secondaryCustomerCode.toLowerCase().includes(key))
+            );
+        }
+        this.visibleMappings = this.filteredMappings.slice(0, this._visibleCount);
     }
 
     downloadCSV() {

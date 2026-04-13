@@ -16,7 +16,7 @@
         </template>
         <template lwc:else>
             <div class="slds-p-around_small">
-                <template if:true={filteredData.length}>
+                <template if:true={filteredMappings.length}>
                     <p>
                     <strong>Sub Stockiest : {subStockiestCount}</strong>
                     </p>
@@ -26,19 +26,18 @@
                 </template>
 
 
-                <lightning-input 
-                    type="search" 
-                    label="Search Customers" 
-                    value={searchKey} 
+                <lightning-input
+                    type="search"
+                    label="Search Customers"
                     onchange={handleSearch}
                     style="margin-bottom: 5px;"
                 ></lightning-input>
 
-                <template if:true={filteredData.length}>
+                <template if:true={filteredMappings.length}>
 
                     <!-- Scrollable content box -->
                     <div style="max-height: 300px; overflow-y: auto; border: 1px solid #d8dde6; padding: 0.5rem;">
-                        <template for:each={filteredData} for:item="item">
+                        <template for:each={visibleMappings} for:item="item">
                             <div key={item.secondaryCustomerId} class="slds-box slds-m-bottom_x-small">
                                 <p>
                                     <strong>Secondary Customer:</strong>
@@ -51,6 +50,16 @@
                             </div>
                         </template>
                     </div>
+
+                    <template if:true={hasMore}>
+                        <div class="slds-align_absolute-center slds-m-top_small">
+                            <lightning-button
+                                label={loadMoreLabel}
+                                variant="neutral"
+                                onclick={handleLoadMore}
+                            ></lightning-button>
+                        </div>
+                    </template>
                 </template>
 
                 <template if:true={showNoRecords}>
