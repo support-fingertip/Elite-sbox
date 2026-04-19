@@ -1606,12 +1606,10 @@
                         </table>
 
                         <template lwc:if={hasMoreSecondaryCustomers}>
-                            <div class="slds-align_absolute-center slds-m-top_small">
-                                <lightning-button
-                                    label={loadMoreSecondaryCustomersLabel}
-                                    variant="neutral"
-                                    onclick={handleSecondaryCustomerLoadMore}>
-                                </lightning-button>
+                            <div class="slds-align_absolute-center slds-m-top_small slds-m-bottom_small">
+                                <button class="exportBtn" onclick={handleSecondaryCustomerLoadMore}>
+                                    {loadMoreSecondaryCustomersLabel}
+                                </button>
                             </div>
                         </template>
                     </div>
