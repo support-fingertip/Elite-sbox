@@ -1,30 +1,47 @@
 import { LightningElement, api } from 'lwc';
 import getProductMappings from '@salesforce/apex/SecondaryCustomerController.getProductMappings';
+import getAllProductMappingsForCsv from '@salesforce/apex/SecondaryCustomerController.getAllProductMappingsForCsv';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+
+const PAGE_SIZE = 100;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export default class SecondaryCustomers extends LightningElement {
     @api recordId;
     productMappings = [];
+    filteredMappings = [];
+    visibleMappings = [];
     searchKey = '';
     isLoading = false;
+    isDownloading = false;
     fileName = '';
     totalCustomersCount = 0;
     subStockiestCount = 0;
     secondaryCustomerCount = 0;
     label='Secondary Customers'
 
-    get filteredData() {
-        if (!this.searchKey) return this.productMappings;
-        const key = this.searchKey.toLowerCase();
-        return this.productMappings.filter(item =>
-            (item.secondaryCustomerName && item.secondaryCustomerName.toLowerCase().includes(key)) ||
-            (item.secondaryCustomerOutletId && item.secondaryCustomerOutletId.toLowerCase().includes(key)) ||
-            (item.secondaryCustomerCode && item.secondaryCustomerCode.toLowerCase().includes(key))
-        );
-    }
+    _visibleCount = PAGE_SIZE;
+    _searchDebounceId;
 
     get showNoRecords() {
-        return this.filteredData.length === 0;
+        return this.filteredMappings.length === 0;
+    }
+
+    get isDownloadDisabled() {
+        // Disable when the on-screen list is empty *or* a fetch is already in flight.
+        // Note: Even if the deduped list is empty (rare), CSV download is gated by
+        // the same condition since the underlying primary has no mappings.
+        return this.isDownloading || this.totalCustomersCount === 0;
+    }
+
+    get hasMore() {
+        return this.visibleMappings.length < this.filteredMappings.length;
+    }
+
+    get loadMoreLabel() {
+        const remaining = this.filteredMappings.length - this.visibleMappings.length;
+        const next = Math.min(PAGE_SIZE, remaining);
+        return `Load More (${next} of ${remaining} remaining)`;
     }
 
     connectedCallback() {
@@ -41,7 +58,7 @@ export default class SecondaryCustomers extends LightningElement {
                 this.subStockiestCount = data.subStockiestCount || 0;
                 this.secondaryCustomerCount = data.secondaryCustomerCount || 0;
                 this.label = 'Secondary Customers'+' ( '+ this.totalCustomersCount +' )';
-       
+                this._applyFilterAndPaginate();
                 this.isLoading = false;
             })
             .catch((error) => {
@@ -51,26 +68,80 @@ export default class SecondaryCustomers extends LightningElement {
     }
 
     handleSearch(event) {
-        this.searchKey = event.target.value;
+        const value = event.target.value;
+        // Debounce so each keystroke doesn't re-filter a large list
+        if (this._searchDebounceId) {
+            clearTimeout(this._searchDebounceId);
+        }
+        this._searchDebounceId = setTimeout(() => {
+            this.searchKey = value;
+            this._visibleCount = PAGE_SIZE;
+            this._applyFilterAndPaginate();
+        }, SEARCH_DEBOUNCE_MS);
+    }
+
+    handleLoadMore() {
+        this._visibleCount += PAGE_SIZE;
+        this.visibleMappings = this.filteredMappings.slice(0, this._visibleCount);
+    }
+
+    _applyFilterAndPaginate() {
+        const key = (this.searchKey || '').toLowerCase();
+        if (!key) {
+            this.filteredMappings = this.productMappings;
+        } else {
+            this.filteredMappings = this.productMappings.filter(item =>
+                (item.secondaryCustomerName && item.secondaryCustomerName.toLowerCase().includes(key)) ||
+                (item.secondaryCustomerOutletId && item.secondaryCustomerOutletId.toLowerCase().includes(key)) ||
+                (item.secondaryCustomerCode && item.secondaryCustomerCode.toLowerCase().includes(key))
+            );
+        }
+        this.visibleMappings = this.filteredMappings.slice(0, this._visibleCount);
     }
 
     downloadCSV() {
-        if (!this.productMappings || this.productMappings.length === 0) {
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Warning',
-                    message: 'No data available to download.',
-                    variant: 'warning'
-                })
-            );
+        if (this.isDownloading) {
             return;
         }
+        this.isDownloading = true;
+        // Fetch the full (non-deduped) list on demand so the CSV contains
+        // every Product_Mapping__c row, not just the UI's unique-customer rows.
+        getAllProductMappingsForCsv({ recordId: this.recordId })
+            .then((data) => {
+                const rows = (data && data.customerData) || [];
+                if (rows.length === 0) {
+                    this.dispatchEvent(
+                        new ShowToastEvent({
+                            title: 'Warning',
+                            message: 'No data available to download.',
+                            variant: 'warning'
+                        })
+                    );
+                    return;
+                }
+                this._writeCsv(rows, data.fileName || this.fileName);
+            })
+            .catch((error) => {
+                console.error('Error fetching CSV data:', error);
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error',
+                        message: 'Failed to download CSV. Please try again.',
+                        variant: 'error'
+                    })
+                );
+            })
+            .finally(() => {
+                this.isDownloading = false;
+            });
+    }
 
+    _writeCsv(rows, fileName) {
         try {
             const bom = '\uFEFF'; // Excel-compatible BOM
             let csv = bom + 'Salesforce.com Id,Secondary Customer,Outlet ID,Customer Code,Primary Phone Number,State,Disrict,Executive Name,Executive Code,Beat Id\n';
 
-            this.productMappings.forEach(item => {
+            rows.forEach(item => {
                 const row = [
                     item.recordId || '',
                     item.secondaryCustomerName || '',
@@ -91,7 +162,7 @@ export default class SecondaryCustomers extends LightningElement {
             const blob = new Blob([csv], { type: 'application/octet-stream' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = this.fileName+'_Secondary_Customers.csv';
+            link.download = (fileName || '') + '_Secondary_Customers.csv';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -101,7 +172,7 @@ export default class SecondaryCustomers extends LightningElement {
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error',
-                    message: 'Failed to download CSV. Please try again.',
+                    message: 'Failed to generate CSV. Please try again.',
                     variant: 'error'
                 })
             );

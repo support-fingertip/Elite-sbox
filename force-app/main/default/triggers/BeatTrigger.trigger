@@ -70,11 +70,11 @@ trigger BeatTrigger on Child_beat__c (after insert,before insert,before update,a
                         ownerIds.add(Trigger.oldMap.get(beat.Id).OwnerId); 
                     }
                 }
-                if(!beatIds.isEmpty() && !ownerIds.isEmpty()){
+                if(!beatIds.isEmpty() && !ownerIds.isEmpty() && !BeatTriggerHandler.bypassForEmployeeTransfer){
                     if(Label.Enable_Mapping_Validation == 'TRUE'){
                         BeatTriggerHandler.createSecMappings(Trigger.new);
                     }
-                    
+
                     //For Old User we are Deleting the PJP Items
                     List<PJP_Item__c> items = [select Id from PJP_Item__c where Beat__c IN: beatIds and PJP__r.User__c IN: ownerIds];
                     

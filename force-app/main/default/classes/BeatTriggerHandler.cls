@@ -10,9 +10,15 @@ Ver 	Date 			Author 			Modification
 *********************************************************
 */
 public without sharing class BeatTriggerHandler {
-    
+
+    // Set to true by bulk data movement flows (e.g. Employee Transfer) to
+    // bypass the heavy validation/mapping logic that would otherwise run per
+    // beat and blow the CPU time limit. Always reset in a finally block.
+    public static Boolean bypassForEmployeeTransfer = false;
+
     public static void handleValidations(List<Child_beat__c> beats){
-        
+        if (bypassForEmployeeTransfer) return;
+
         Set<Id> exeIds = new Set<Id>();
         Set<Id> primaryCustomerIds = new Set<Id>();
         Set<Id> subStockiestCustomerIds = new Set<Id>();
@@ -245,6 +251,7 @@ public without sharing class BeatTriggerHandler {
     public static void validateOwnerChangeProfile(List<Child_beat__c> newBeats, Map<Id, Child_beat__c> oldMap) {
         // Skip validation if current user is System Administrator
         String profileName = [SELECT Name FROM Profile WHERE Id = :UserInfo.getProfileId() LIMIT 1].Name;
+       system.debug('profileName>>'+profileName);
         if (profileName == 'System Administrator') return;
 
         Set<Id> changedUserIds = new Set<Id>();
@@ -311,7 +318,8 @@ public without sharing class BeatTriggerHandler {
     }
 
     public static void createSecMappings(List<Child_beat__c> beats){
-        
+        if (bypassForEmployeeTransfer) return;
+
         List<Junction_Beat__c> items = [select Id,Name,Child_Beat__c,Account__c,Beat_Primary_Customer__c,Beat_Substockiest__c,Beat_OwnerId__c,
                                         Payroll_Employee__c,Beat_Type__c
                                         from Junction_Beat__c where Child_Beat__c IN :beats];

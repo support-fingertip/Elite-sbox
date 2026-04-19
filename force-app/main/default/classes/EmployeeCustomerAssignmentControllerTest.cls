@@ -3,6 +3,8 @@ public class EmployeeCustomerAssignmentControllerTest {
 
     @TestSetup
     static void setup() {
+        Profile adminProfile = [SELECT Id FROM Profile WHERE Name = 'System Administrator' LIMIT 1];
+        UserRole testRole = [SELECT Id FROM UserRole LIMIT 1];
         // Create test user
         User testUser = new User(
             Alias = 'tuser',
@@ -22,7 +24,7 @@ public class EmployeeCustomerAssignmentControllerTest {
         // Create deactivated user
         User deactivatedUser = new User(
             Alias = 'duser',
-             Employee_Code__c  = '123212233',
+            Employee_Code__c  = '1232122343',
             Email = 'deactuser@example.com',
             EmailEncodingKey = 'UTF-8',
             LastName = 'Deact',
@@ -31,11 +33,10 @@ public class EmployeeCustomerAssignmentControllerTest {
             ProfileId = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1].Id,
             TimeZoneSidKey = 'America/Los_Angeles',
             Username = 'deactuser@example.com' + System.currentTimeMillis(),
-          	IsActive = false,
+          	IsActive = true,
              Sales_Channel__c = 'Cake'
         );
         insert deactivatedUser;
-
         
         area__c area = new area__c();
         area.Name = 'test11121';
@@ -43,6 +44,9 @@ public class EmployeeCustomerAssignmentControllerTest {
         area.Region__c =	'Kerala';
         area.Area__c  = 'Central';
         insert area;
+        
+        
+
 
         // Create Employee__c
         Employee__c emp = new Employee__c(
@@ -216,13 +220,34 @@ public class EmployeeCustomerAssignmentControllerTest {
         
     }
 
-    @isTest
+    @isTest 
     static void testInsertExecutiveCustomerMapping() {
+        
+        
+        user managerUser = [select Id,Name from User where Employee_Code__C = '123212231' limit 1];   
+        
+        user exe = [select Id,Name from User where Employee_Code__C = '1232122343' limit 1];   
         Account acc = [SELECT Id FROM Account WHERE Customer_Type__c = 'Primary Customer' and Name='Primary Customer 2' LIMIT 1];
         Employee__c emp = [SELECT Id FROM Employee__c LIMIT 1];
+        
+ 
+        area__c tr = new area__c();
+        tr.Name = 'test1ddssssa1121';
+        tr.Sales_Channel__c = 'CPD';
+        tr.Region__c =	'Kerala';
+        tr.Area__c  = 'Central';
+        insert tr;
+        Product_Mapping__c pm1 = new Product_Mapping__c(
+            Customer__c = acc.Id,
+            Area__c = tr.Id,
+            Chanel__c = 'CPD',
+            Payment_Term__c = '0003',
+            Exectuive__c = exe.Id
+        );
+
         Employee_Customer_Assignment__c eca = new Employee_Customer_Assignment__c(
             Customer__c = acc.Id,
-            Executive__c = UserInfo.getUserId(),
+            Executive__c = exe.Id,
             Employee__c = emp.Id
         );
 
@@ -266,7 +291,7 @@ public class EmployeeCustomerAssignmentControllerTest {
     @isTest
     static void testSaveProductMappings() {
              area__c area = new area__c();
-        area.Name = 'test111www21';
+        area.Name = 'test111ssswww2akakaka1';
         area.Sales_Channel__c = 'CPD';
         area.Region__c =	'Kerala';
         area.Area__c  = 'Central';

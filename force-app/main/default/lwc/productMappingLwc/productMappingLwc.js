@@ -7,8 +7,13 @@ import { RefreshEvent } from 'lightning/refresh';
 import modal from "@salesforce/resourceUrl/custommodalcss";
 import { CloseActionScreenEvent } from "lightning/actions";
 import { loadStyle } from "lightning/platformResourceLoader"
-import GET_ALL_DATA from '@salesforce/apex/newCustomerLwcController.getAllData';
+import GET_INITIAL_DATA from '@salesforce/apex/newCustomerLwcController.getInitialData';
+import searchExecutives from '@salesforce/apex/newCustomerLwcController.searchExecutives';
+import searchPrimaryCustomers from '@salesforce/apex/newCustomerLwcController.searchPrimaryCustomers';
+import searchSubstockiests from '@salesforce/apex/newCustomerLwcController.searchSubstockiests';
 import saveProductData from '@salesforce/apex/newCustomerLwcController.saveProductData';
+
+const SEARCH_DEBOUNCE_MS = 300;
 export default class ProductMappingLwc  extends NavigationMixin(LightningElement) {
     currectRecordId;
     isLoading = false;
@@ -27,6 +32,8 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
         Area_Name__c: null,
         Exectuive__c: null,
         Executive_Name__c:null,
+        executiveTerritoryId:'',
+        executiveTerritoryName:'',
         Parent_Depot__c:'',
         Child_Depot__c:'',
         Chanel__c:'',
@@ -58,7 +65,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
         isDistributorReadOnly:false,
 
         isSubstockiestDisabled :true,
-        relatedSubStockiest:[],
         Sub_Stockiest__c:'',
         Sub_Stockiest_Name__c:'',
         isShowSubstockistValues:false,
@@ -66,7 +72,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
 
      },
     ];
-    executives=[];
     searchedExecutives = [];
     areas=[];
     searchedAreas = [];
@@ -82,7 +87,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
     hasRendered = false;
 
     paymentTermCreditDescriptionMap = {};
-    primaryCustomerList = [];
     paymentTypeList = [];
     incotermList = [];
     pdpDayList = [];
@@ -99,13 +103,11 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
     parentDeportChildDeportMap = {};
     //Sub Stockiest
     searchedSubStockiests = [];
-    primaryToSubStockiestMap = {};
     paymenttypeToOrdertypeMap = {};
     isSubstockiest = false;
-    executiveWiseAccounts = {};
-    executiveToSubStockiestIds = {};
     orderTypeDependencyList = [];
     paymentType = '';
+    _searchDebounceTimer;
 
     @api set recordId(value) {
         this.currentRecordId = value;
@@ -142,19 +144,14 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
         }
         this.isLoading = true;
         console.log('record Id'+recordId);
-        GET_ALL_DATA({accountId:recordId})
+        GET_INITIAL_DATA({accountId:recordId})
         .then(result => {
-            this.primaryToSubStockiestMap = result.primaryToSubStockiestMap;
-            this.executiveWiseAccounts = result.executiveWiseAccounts;
-            this.executiveToSubStockiestIds = result.executiveToSubStockiestIds;
-            this.ParentDeportOptions = result.parentDeportList; 
-            this.executives = result.userList;
+            this.ParentDeportOptions = result.parentDeportList;
             this.areas = result.areaList;
             this.PDPDays = result.PDPList;
             this.parentDeportChildDeportMap = result.parentDeportChildDeportMap || {};
             this.paymentTermCreditDescriptionMap = result.paymentTermCreditDescriptionMap || {};
             this.paymenttypeToOrdertypeMap = result.paymenttypeToOrdertypeMap || {};
-            this.primaryCustomerList = result.primaryCustomerList;
             this.incotermList =  result.incotermList;
             this.paymemtTermList = result.paymemtTermList;
             this.orderTypeDependencyList = result.orderTypeDependencyList || []; 
@@ -199,9 +196,11 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
                         Area_Name__c:  pm.Area__r ? pm.Area__r.Name : '',
                         Exectuive__c:  pm.Exectuive__c,
                         Executive_Name__c: pm.Exectuive__r ? pm.Exectuive__r.Name:'',
+                        executiveTerritoryId: pm.Exectuive__r ? (pm.Exectuive__r.Territory__c || '') : '',
+                        executiveTerritoryName: pm.Exectuive__r ? (pm.Exectuive__r.Territory_Name__c || '') : '',
                         Parent_Depot__c:pm.Parent_Depot__c,
                         Child_Depot__c:pm.Child_Depot__c,
-                        
+
                         Customer__c:pm.Customer__c,
                         PDP_Name__c:pm.PDP_Name__c,
                         PDP_Day__c:pm.PDP_Day__c,
@@ -234,7 +233,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
                         isDistributorReadOnly:pm.Primary_Customer__c ? true: false,
 
                         isSubstockiestDisabled :pm.Primary_Customer_Type__c == 'Superstockiest' ? false : true,
-                        relatedSubStockiest: this.primaryToSubStockiestMap[pm.Primary_Customer__c] || [],
                         Sub_Stockiest__c: this.isSubstockiest ? '':pm.Sub_Stockiest__c,
                         Sub_Stockiest_Name__c: this.isSubstockiest ? '': pm.Sub_Stockiest__r ? pm.Sub_Stockiest__r.Name:'',
                         isShowSubstockistValues:false,
@@ -250,11 +248,14 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
                 this.productMappingList = [{
                     sObjectType: 'Product_Mapping__c',
                     Id: null,
+                    Customer__c:null,
                     index:1,
                     Area__c: null,
                     Area_Name__c: null,
                     Exectuive__c: null,
                     Executive_Name__c:null,
+                    executiveTerritoryId:'',
+                    executiveTerritoryName:'',
                     Parent_Depot__c:'',
                     Child_Depot__c:'',
                     Chanel__c:'',
@@ -287,7 +288,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
                     isDistributorReadOnly:false,
 
                     isSubstockiestDisabled :true,
-                    relatedSubStockiest:[],
                     Sub_Stockiest__c:'',
                     Sub_Stockiest_Name__c:'',
                     isShowSubstockistValues:false,
@@ -307,35 +307,41 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
     }
 
      /**--------Product Mapping Screeen--------**/
+    //Debounce a search action so we only fire one Apex call after the user stops typing
+    debounceSearch(action){
+        if (this._searchDebounceTimer) {
+            clearTimeout(this._searchDebounceTimer);
+        }
+        this._searchDebounceTimer = setTimeout(action, SEARCH_DEBOUNCE_MS);
+    }
+
     //Executive Search
     handleExectieSearch(event){
         const index = event.target.dataset.index;
-        let searchValueName = event.target.value;
+        const searchValueName = event.target.value;
         if(searchValueName){
-            let objData = this.executives;
-            let searchedData = [];
-            for (let i = 0; i < objData.length; i++) {
-                const objName = objData[i];
-                // Skip if customer is Primary and executive is SSA/DSM
-                if ( this.showPrimaryfields && objName.Is_SSA_DSM__c === true) {
-                    continue;
-                }
-                const nameMatch = objName.Name && objName.Name.toLowerCase().includes(searchValueName.toLowerCase());
-                const codeMatch = objName.Employee_Code__c && objName.Employee_Code__c.toLowerCase().includes(searchValueName.toLowerCase());
-
-                if (nameMatch || codeMatch) {
-                    searchedData.push(objName);
-                    if (searchedData.length >= 50) break;
-                }
-            }
-            this.productMappingList[index].isShowExecutiveValues = searchedData != 0 ? true : false;
-            this.searchedExecutives = searchedData;
+            const isPrimary = this.showPrimaryfields === true;
+            this.debounceSearch(() => {
+                searchExecutives({ searchTerm: searchValueName, isPrimary: isPrimary })
+                    .then(result => {
+                        const list = result || [];
+                        this.searchedExecutives = list;
+                        this.productMappingList[index].isShowExecutiveValues = list.length > 0;
+                    })
+                    .catch(error => {
+                        console.error('searchExecutives error', error);
+                        this.searchedExecutives = [];
+                        this.productMappingList[index].isShowExecutiveValues = false;
+                    });
+            });
         }
         else
         {
             this.productMappingList[index].isShowExecutiveValues = false;
             this.productMappingList[index].Executive_Name__c = '';
             this.productMappingList[index].Exectuive__c = '';
+            this.productMappingList[index].executiveTerritoryId = '';
+            this.productMappingList[index].executiveTerritoryName = '';
             this.productMappingList[index].productMappingchannelOptions = [];
             this.productMappingList[index].Primary_Customer_Name__c = '';
             this.productMappingList[index].Primary_Customer__c = '';
@@ -346,8 +352,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
             this.productMappingList[index].Sub_Stockiest__c = '';
             this.productMappingList[index].Sub_Stockiest_Name__c = '';
             this.productMappingList[index].isSubStockiestReadOnly = false;
-            this.primaryCustomerList = [];
-            this.productMappingList[index].relatedSubStockiest = [];
         }
 
     }
@@ -355,15 +359,25 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
     {
         const index = event.currentTarget.dataset.index;
         const userid = event.currentTarget.dataset.id;
+        const exec = (this.searchedExecutives || []).find(e => e.Id === userid);
+        const channels = exec && exec.Sales_Channel__c
+            ? exec.Sales_Channel__c.split(';')
+            : [];
+        // Cache this executive's sales channels so subsequent rows / handlers don't need a refetch
+        if (exec) {
+            this.userIdToSalesChannelsMap = {
+                ...this.userIdToSalesChannelsMap,
+                [userid]: channels
+            };
+        }
         this.productMappingList[index].Exectuive__c = userid;
         this.productMappingList[index].Executive_Name__c = event.currentTarget.dataset.name;
+        this.productMappingList[index].executiveTerritoryId = exec ? (exec.Territory__c || '') : '';
+        this.productMappingList[index].executiveTerritoryName = exec ? (exec.Territory_Name__c || '') : '';
         this.productMappingList[index].isShowExecutiveValues = false;
-        this.productMappingList[index].productMappingchannelOptions = this.getPicklistValueFromList(
-            this.userIdToSalesChannelsMap[userid] || []
-        );
+        this.productMappingList[index].productMappingchannelOptions = this.getPicklistValueFromList(channels);
         this.productMappingList[index].isExecutiveReadOnly = true;
         this.productMappingList[index].isDistributorReadOnly = false;
-        this.primaryCustomerList = this.executiveWiseAccounts[userid];
         this.productMappingList[index].Chanel__c = '';
     }
 
@@ -419,32 +433,28 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
     //Primary Customer Search
     handlePrimaryCustomerSearch(event){
         const index = event.target.dataset.index;
-        let searchValueName = event.target.value;
-        const userid = this.productMappingList[index].Exectuive__c;
+        const searchValueName = event.target.value;
+        const executiveId = this.productMappingList[index].Exectuive__c;
         if(searchValueName){
-            let objData = this.executiveWiseAccounts[userid] || [];
-            let searchedData = [];
-            if(objData)
-            {
-                for (let i = 0; i < objData.length; i++) {
-                    const objName = objData[i];
-                    // If Substockiest, filter only Superstockiest
-                    if (this.isSubstockiest && objName.Primary_Customer_Type__c !== 'Superstockiest') {
-                        continue;
-                    }
-
-                    const nameMatch = objName.Name && objName.Name.toLowerCase().includes(searchValueName.toLowerCase());
-                    const sapCode = objName.SAP_Customer_Code__c || '';
-                    const sapCodeMatch = sapCode.toLowerCase().includes(searchValueName.toLowerCase());
-                
-                    if (nameMatch || sapCodeMatch) {
-                        searchedData.push(objName);
-                        if (searchedData.length >= 50) break; // Limit to 50 matches
-                    }
-                }
+            if (!executiveId) {
+                this.serchedProductPrimaryCustomers = [];
+                this.productMappingList[index].isShowPrimaryCustomerValues = false;
+                return;
             }
-            this.productMappingList[index].isShowPrimaryCustomerValues = searchedData != 0 ? true : false;
-            this.serchedProductPrimaryCustomers = searchedData;
+            const isSubstockiest = this.isSubstockiest === true;
+            this.debounceSearch(() => {
+                searchPrimaryCustomers({ searchTerm: searchValueName, executiveId: executiveId, isSubstockiest: isSubstockiest })
+                    .then(result => {
+                        const list = result || [];
+                        this.serchedProductPrimaryCustomers = list;
+                        this.productMappingList[index].isShowPrimaryCustomerValues = list.length > 0;
+                    })
+                    .catch(error => {
+                        console.error('searchPrimaryCustomers error', error);
+                        this.serchedProductPrimaryCustomers = [];
+                        this.productMappingList[index].isShowPrimaryCustomerValues = false;
+                    });
+            });
         }
         else
         {
@@ -464,60 +474,54 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
     selectCustomer(event) {
         const index = event.currentTarget.dataset.index;
         const selectedCustomerId = event.currentTarget.dataset.customerid;
-        const primarycustomerType = event.currentTarget.dataset.customertype; 
-        const selectedExecutive =   this.productMappingList[index].Exectuive__c;
+        const primarycustomerType = event.currentTarget.dataset.customertype;
 
-        //let accountData = this.accountData; 
         // If no duplicate, proceed to set the values
         this.productMappingList[index].Primary_Customer__c = selectedCustomerId;
         this.productMappingList[index].Primary_Customer_Name__c = event.currentTarget.dataset.name;
         this.productMappingList[index].isShowPrimaryCustomerValues = false;
         this.productMappingList[index].isDistributorReadOnly = true;
-    
+
         this.searchedSubStockiests = [];
         this.productMappingList[index].isShowSubstockistValues = false;
+        // Sub-stockiests are now searched dynamically from Apex via handleSubstockiestSearch,
+        // so we just enable/disable the input here based on whether this primary is a Superstockiest.
         if( primarycustomerType == 'Superstockiest' && !this.showPrimaryfields
             &&   !this.isSubstockiest)
         {
             this.productMappingList[index].isSubstockiestDisabled = false;
-            const subStockists = this.primaryToSubStockiestMap[selectedCustomerId] || [];
-            const assignedSubstociestIds  = this.executiveToSubStockiestIds[selectedExecutive] || [];
-
-            // Filter subStockists based on assignedSubstociestId
-            const filteredSubStockists = subStockists.filter(acc => assignedSubstociestIds.includes(acc.Id));
-
-            this.productMappingList[index].relatedSubStockiest = filteredSubStockists || [];
         }
         else
         {
             this.productMappingList[index].isSubstockiestDisabled = true;
-            this.productMappingList[index].relatedSubStockiest = [];
         }
     }
-  
+
     //Sub Stockiest Search
     handleSubstockiestSearch(event){
         const index = event.target.dataset.index;
-        let searchValueName = event.target.value;
+        const searchValueName = event.target.value;
+        const primaryCustomerId = this.productMappingList[index].Primary_Customer__c;
+        const executiveId = this.productMappingList[index].Exectuive__c;
         if(searchValueName){
-            let objData = this.productMappingList[index].relatedSubStockiest;
-            let searchedData = [];
-            if(objData)
-            {
-                for (let i = 0; i < objData.length; i++) {
-                    const objName = objData[i];
-                    const nameMatch = objName.Name && objName.Name.toLowerCase().includes(searchValueName.toLowerCase());
-                    const code = objName.Customer_Code__c || '';
-                    const codeMatch = code.toLowerCase().includes(searchValueName.toLowerCase());
-                
-                    if (nameMatch || codeMatch) {
-                        searchedData.push(objName);
-                        if (searchedData.length >= 50) break;
-                    }
-                }
+            if (!primaryCustomerId || !executiveId) {
+                this.searchedSubStockiests = [];
+                this.productMappingList[index].isShowSubstockistValues = false;
+                return;
             }
-            this.productMappingList[index].isShowSubstockistValues = searchedData != 0 ? true : false;
-            this.searchedSubStockiests = searchedData;
+            this.debounceSearch(() => {
+                searchSubstockiests({ searchTerm: searchValueName, primaryCustomerId: primaryCustomerId, executiveId: executiveId })
+                    .then(result => {
+                        const list = result || [];
+                        this.searchedSubStockiests = list;
+                        this.productMappingList[index].isShowSubstockistValues = list.length > 0;
+                    })
+                    .catch(error => {
+                        console.error('searchSubstockiests error', error);
+                        this.searchedSubStockiests = [];
+                        this.productMappingList[index].isShowSubstockistValues = false;
+                    });
+            });
         }
         else
         {
@@ -566,33 +570,27 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
                     updatedItem.Credit_Description__c = firstValue || '';
                 }
                 else if (field === 'Chanel__c') {
-                    // Get Executive Id from current row
-                    const executiveId = item.Exectuive__c;
-                    console.log('executiveId'+executiveId);
-                    if (executiveId && this.executives && this.areas) {
-                        // Find executive record
-                        const executiveRecord = this.executives.find(exec => exec.Id === executiveId);
-                        if (executiveRecord && executiveRecord.Territory__c && executiveRecord.Territory_Name__c) {
-                            // Find territory record by Id
-                            const territoryRecord = this.areas.find(area => area.Id === executiveRecord.Territory__c);
-                            if (territoryRecord) {
-                                // Compare Sales_Channel__c with selected channel value
-                                if (
-                                    territoryRecord.Sales_Channel__c &&
-                                    territoryRecord.Sales_Channel__c.toLowerCase() === value.toLowerCase()
-                                ) {
-                                    updatedItem.Area__c = executiveRecord.Territory__c;
-                                    updatedItem.Area_Name__c = executiveRecord.Territory_Name__c;
-                                    updatedItem.isShowAreaValues = false;
-                                    updatedItem.isTerritoryReadOnly = true;
-                                }
-                                else
-                                {
-                                    updatedItem.Area__c = '';
-                                    updatedItem.Area_Name__c = '';
-                                    updatedItem.isShowAreaValues = false;
-                                    updatedItem.isTerritoryReadOnly = false;
-                                }
+                    // Use the executive's territory captured on the row at selection / load time
+                    const territoryId = item.executiveTerritoryId;
+                    const territoryName = item.executiveTerritoryName;
+                    if (territoryId && territoryName && this.areas) {
+                        const territoryRecord = this.areas.find(area => area.Id === territoryId);
+                        if (territoryRecord) {
+                            if (
+                                territoryRecord.Sales_Channel__c &&
+                                territoryRecord.Sales_Channel__c.toLowerCase() === value.toLowerCase()
+                            ) {
+                                updatedItem.Area__c = territoryId;
+                                updatedItem.Area_Name__c = territoryName;
+                                updatedItem.isShowAreaValues = false;
+                                updatedItem.isTerritoryReadOnly = true;
+                            }
+                            else
+                            {
+                                updatedItem.Area__c = '';
+                                updatedItem.Area_Name__c = '';
+                                updatedItem.isShowAreaValues = false;
+                                updatedItem.isTerritoryReadOnly = false;
                             }
                         }
                     }
@@ -650,6 +648,8 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
             Area_Name__c: null,
             Exectuive__c: null,
             Executive_Name__c:null,
+            executiveTerritoryId:'',
+            executiveTerritoryName:'',
             Parent_Depot__c:'',
             Child_Depot__c:'',
             Chanel__c:'',
@@ -678,14 +678,12 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
             isDistributorReadOnly:false,
 
             isSubstockiestDisabled :true,
-            relatedSubStockiest:[],
             Sub_Stockiest__c:'',
             Sub_Stockiest_Name__c:'',
             isShowSubstockistValues:false,
             isSubStockiestReadOnly:false,
          }
         this.productMappingList = [...this.productMappingList, newRow];
-         this.primaryCustomerList = [];
     }
     removeProductMappingRow(event) {
         const index = Number(event.target.dataset.index);
@@ -711,6 +709,8 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
                 Area_Name__c: null,
                 Exectuive__c: null,
                 Executive_Name__c:null,
+                executiveTerritoryId:'',
+                executiveTerritoryName:'',
                 Parent_Depot__c:'',
                 Child_Depot__c:'',
                 Chanel__c:'',
@@ -738,7 +738,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
                 isDistributorReadOnly:false,
 
                 isSubstockiestDisabled :true,
-                relatedSubStockiest:[],
                 Sub_Stockiest__c:'',
                 Sub_Stockiest_Name__c:'',
                 isShowSubstockistValues:false,
@@ -763,7 +762,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
     cloneProductMappingRow(event) {
         const index = Number(event.target.dataset.index);
         const itemToClone = this.productMappingList[index];
-        let executiveId = itemToClone.Exectuive__c;
 
         // Deep clone the item
         const clonedItem = JSON.parse(JSON.stringify(itemToClone));
@@ -772,7 +770,6 @@ export default class ProductMappingLwc  extends NavigationMixin(LightningElement
         const newIndex = this.productMappingList.length;
         clonedItem.index = newIndex;
         clonedItem.Id = null;
-        this.primaryCustomerList = this.executiveWiseAccounts[executiveId];
 
         // Add the cloned item to the list
         this.productMappingList = [...this.productMappingList, clonedItem];

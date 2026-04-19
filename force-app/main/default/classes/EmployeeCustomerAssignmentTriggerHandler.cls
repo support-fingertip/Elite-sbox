@@ -1,8 +1,12 @@
-public class EmployeeCustomerAssignmentTriggerHandler 
+public class EmployeeCustomerAssignmentTriggerHandler
 {
+    // Set to true by bulk data movement flows (e.g. Employee Transfer) to
+    // bypass the heavy before/after update logic. Always reset in finally.
+    public static Boolean bypassForEmployeeTransfer = false;
+
     //before Insert Sharing the accounts based on assignment
     public static void beforeInsert(List<Employee_Customer_Assignment__c> newPrimaryAssignments) {
-        
+
         Set<Id> exeIds = new Set<Id>();
         Set<Id> customerIds = new Set<Id>();
         // step 1: Getting Ids and Mapping Owner Id
@@ -238,7 +242,8 @@ public class EmployeeCustomerAssignmentTriggerHandler
      
     //Duplication check and validating the primary customer assignments
     public static void beforeUpdate(List<Employee_Customer_Assignment__c> newPrimaryAssignments, Map<Id, Employee_Customer_Assignment__c> oldPrimaryAssignmentsMap) {
-        
+        if (bypassForEmployeeTransfer) return;
+
         // Step 1: Build a Set of new Employee-Customer pairs to check
         Set<String> newEmpCustKeys = new Set<String>();
         Set<Id> newMappingIds = new Set<Id>(); // to avoid self-check
@@ -360,6 +365,7 @@ public class EmployeeCustomerAssignmentTriggerHandler
     
     //After Update Auto mapping of Secondary customer and sharing of Primary customers
     public static void afterUpdate(List<Employee_Customer_Assignment__c> newPrimaryAssignments, Map<Id, Employee_Customer_Assignment__c> oldPrimaryAssignmentsMap) {
+        if (bypassForEmployeeTransfer) return;
         List<AccountShare> sharesToInsert = new List<AccountShare>();
         Set<Id> accountIdsToRemove = new Set<Id>();
         Set<Id> userIdsToRemove = new Set<Id>();

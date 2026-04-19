@@ -2,26 +2,37 @@ public with sharing class SecondaryCustomerController {
 
     @AuraEnabled(cacheable=true)
     public static ReturnData getProductMappings(Id recordId) {
+        return buildReturnData(recordId, true);
+    }
+
+    // Separate, non-cached endpoint used by the Download CSV button so the
+    // export contains every Product_Mapping__c row (not the deduped UI list).
+    @AuraEnabled
+    public static ReturnData getAllProductMappingsForCsv(Id recordId) {
+        return buildReturnData(recordId, false);
+    }
+
+    private static ReturnData buildReturnData(Id recordId, Boolean dedupe) {
         ReturnData rt = new ReturnData();
         String fileName = '';
-        
+
         List<Account> lstAccount = [
-            SELECT Id, Name, Customer_Type__c, SAP_Customer_Code__c, Customer_Code__c, Outlet_Id__c 
-            FROM Account 
-            WHERE Id = :recordId 
+            SELECT Id, Name, Customer_Type__c, SAP_Customer_Code__c, Customer_Code__c, Outlet_Id__c
+            FROM Account
+            WHERE Id = :recordId
         ];
-        
+
         List<Junction_Beat__c> beatItems = [  SELECT Id, Account__c, Beat_Id__c  FROM Junction_Beat__c WHERE Primary_Customer_Record_Id__c = :recordId];
-        
+
         Map<Id, Set<String>> outletToBeatIds = new Map<Id, Set<String>>();
-        
+
         for (Junction_Beat__c bt : beatItems) {
             if (!outletToBeatIds.containsKey(bt.Account__c)) {
                 outletToBeatIds.put(bt.Account__c, new Set<String>());
             }
             outletToBeatIds.get(bt.Account__c).add(bt.Beat_Id__c);
         }
-        
+
 
         List<Product_Mapping__c> mappings = new List<Product_Mapping__c>();
 
@@ -32,8 +43,8 @@ public with sharing class SecondaryCustomerController {
                 fileName = acc.Name + (String.isNotBlank(acc.SAP_Customer_Code__c) ? ('_' + acc.SAP_Customer_Code__c) : '');
 
                 mappings = [
-                    SELECT Id, Customer__c, Secondary_Customer_Outlet_Id__c,Customer__r.State__c,Customer__r.District__c,Customer__r.Primary_Phone_Number__c,
-                    Secondary_Customer_Customer_Code__c, Customer__r.Name,Executive_Employee_Code__c,Exectuive__r.Name,
+                    SELECT Id, Customer__c, Sub_Stockiest__c, Secondary_Customer_Outlet_Id__c,Customer__r.State__c,Customer__r.District__c,Customer__r.Primary_Phone_Number__c,
+                    Secondary_Customer_Customer_Code__c, Customer__r.Name,Executive_Employee_Code__c,Exectuive__c,Exectuive__r.Name,
                     Customer__r.Secondary_Customer_Type__c,
                     Primary_Customer__r.SAP_Customer_Code__c,Sub_Stockiest__r.Outlet_Id__c,
                     Primary_Customer__r.Name,Sub_Stockiest__r.Name
@@ -47,8 +58,8 @@ public with sharing class SecondaryCustomerController {
                     + (String.isNotBlank(acc.Outlet_Id__c) ? ('_' + acc.Outlet_Id__c) : '');
 
                 mappings = [
-                    SELECT Id, Customer__c, Secondary_Customer_Outlet_Id__c,Customer__r.State__c,Customer__r.District__c,Customer__r.Primary_Phone_Number__c,
-                    Secondary_Customer_Customer_Code__c, Customer__r.Name,Executive_Employee_Code__c,Exectuive__r.Name,
+                    SELECT Id, Customer__c, Sub_Stockiest__c, Secondary_Customer_Outlet_Id__c,Customer__r.State__c,Customer__r.District__c,Customer__r.Primary_Phone_Number__c,
+                    Secondary_Customer_Customer_Code__c, Customer__r.Name,Executive_Employee_Code__c,Exectuive__c,Exectuive__r.Name,
                     Primary_Customer__r.SAP_Customer_Code__c,Sub_Stockiest__r.Outlet_Id__c,  Customer__r.Secondary_Customer_Type__c,
                     Primary_Customer__r.Name,Sub_Stockiest__r.Name
                     FROM Product_Mapping__c
@@ -61,21 +72,39 @@ public with sharing class SecondaryCustomerController {
         rt.fileName = fileName;
 
         Set<String> seenCustomerIds = new Set<String>();
-        List<Data> uniqueSecondaryCustomers = new List<Data>();
+        List<Data> resultRows = new List<Data>();
         Set<Id> uniqueCustomers = new Set<Id>();
         Set<Id> subStockiestCustomers = new Set<Id>();
         decimal secondaryCustomerCount = 0;
         decimal subStockiestCount = 0;
         decimal totalCustomersCount = 0;
-        
+
+        // Dedup key differs by context:
+        //  - Primary Customer view  -> (Customer + Sub_Stockiest), so same secondary under
+        //    different sub-stockiests still appears as separate rows
+        //  - Sub Stockiest view     -> Customer only (Sub_Stockiest__c is fixed = recordId)
+        Boolean isPrimaryCustomerContext = !lstAccount.isEmpty()
+            && lstAccount[0].Customer_Type__c == 'Primary Customer';
+
         for (Product_Mapping__c pm : mappings) {
             if (String.isNotBlank(pm.Customer__c) && String.isNotBlank(pm.Exectuive__c)) {
                 uniqueCustomers.add(pm.Customer__c);
-                
+
                 if (pm.Customer__r.Secondary_Customer_Type__c == 'Sub Stockiest') {
                     subStockiestCustomers.add(pm.Customer__c);
                 }
-                
+
+                if (dedupe) {
+                    String dedupKey = isPrimaryCustomerContext
+                        ? (pm.Customer__c + '|' + (pm.Sub_Stockiest__c != null ? String.valueOf(pm.Sub_Stockiest__c) : ''))
+                        : String.valueOf(pm.Customer__c);
+
+                    if (seenCustomerIds.contains(dedupKey)) {
+                        continue;
+                    }
+                    seenCustomerIds.add(dedupKey);
+                }
+
                 Data d = new Data();
                 d.recordId = pm.Id;
                 d.secondaryCustomerName = pm.Customer__r != null ? pm.Customer__r.Name : '';
@@ -88,23 +117,23 @@ public with sharing class SecondaryCustomerController {
                 d.executiveName = pm.Exectuive__r != null ? pm.Exectuive__r.Name : '';
                 d.executiveCode = pm.Executive_Employee_Code__c;
                 d.primaryCustomer = pm.Primary_Customer__r != null  ? pm.Primary_Customer__r.SAP_Customer_Code__c : '';
-                d.subStockiest = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Outlet_Id__c : ''; 
+                d.subStockiest = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Outlet_Id__c : '';
                 d.primaryCustomerName = pm.Primary_Customer__r != null  ? pm.Primary_Customer__r.Name : '';
-                d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : ''; 
+                d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
                 // Set BeatId using outletToBeatIds
                 if (outletToBeatIds.containsKey(pm.Customer__c)) {
                     d.beatId = String.join(new List<String>(outletToBeatIds.get(pm.Customer__c)), ';');
                 } else {
                     d.beatId = '';
                 }
-                uniqueSecondaryCustomers.add(d);
+                resultRows.add(d);
             }
         }
-        // final counts
+        // final counts (always based on unique customers regardless of row mode)
         subStockiestCount = subStockiestCustomers.size();
         secondaryCustomerCount = uniqueCustomers.size() - subStockiestCount;
         totalCustomersCount = uniqueCustomers.size();
-        rt.customerData = uniqueSecondaryCustomers;
+        rt.customerData = resultRows;
         rt.subStockiestCount = subStockiestCount;
         rt.secondaryCustomerCount = secondaryCustomerCount;
         rt.totalCustomersCount = totalCustomersCount;
@@ -135,8 +164,5 @@ public with sharing class SecondaryCustomerController {
         @AuraEnabled public String executiveName;
         @AuraEnabled public String executiveCode;
         @AuraEnabled public String beatId;
-        
-        
-        
     }
 }

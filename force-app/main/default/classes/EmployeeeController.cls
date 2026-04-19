@@ -177,6 +177,7 @@ public class EmployeeeController {
                 updateEmployee.Id = employeeId;
                 updateEmployee.User__c = userId;
                 updateEmployee.Employee_Activated_Date__c = Date.today();
+                updateEmployee.Activation_Date__c = system.now();
                 updateEmployee.OwnerId = userId;
                 updateEmployee.Is_Active__c = true;
                 update updateEmployee;
@@ -277,7 +278,8 @@ public class EmployeeeController {
         Employee__c emp = new Employee__c(
             Id = employeeId,
             Is_Active__c = false,
-            Is_User_Deactivated__c = true
+            Is_User_Deactivated__c = true,
+            In_Activation_Date__c = system.now()
         );
         update emp;
         
@@ -367,7 +369,69 @@ public class EmployeeeController {
         }
     }
 
-    
+
+    /**
+     * Transfer (in-place) variant of Employee Replacement.
+     * Instead of cloning records from old user to new user, this updates
+     * existing Product Mappings, Employee Customer Assignments, Beats and
+     * PJPs so that they now belong to the new DSM. Beats have both User__c
+     * and OwnerId updated (the "user tag" on Child_beat__c).
+     */
+    @AuraEnabled
+    public static String employeeTransferAction(Id recordId) {
+        try {
+            List<Employee__c> employeeList = [
+                SELECT Id, Name, User__c, ReplacedForUserId__c, Cloning_is_Completed__c,
+                    Replaced_For__c, Replaced_For__r.Is_Employee_Replaced__c, Replaced_For__r.Employee_Replaced_With_Name__c
+                FROM Employee__c
+                WHERE Id = :recordId
+            ];
+
+            if (employeeList.isEmpty()) { return 'Error: EMPLOYEE_NOT_FOUND'; }
+
+            Employee__c emp = employeeList[0];
+
+            // Validate required fields
+            if (emp.User__c == null || emp.ReplacedForUserId__c == null || emp.Replaced_For__c == null) {
+                return 'Error: REPLACEMENT_MISSING';
+            }
+
+            // Already replaced?
+            if (emp.Replaced_For__r != null && emp.Replaced_For__r.Is_Employee_Replaced__c) {
+                return 'Error: EMPLOYEE_REPLACED::' + emp.Replaced_For__r.Employee_Replaced_With_Name__c;
+            }
+
+            if (emp.Cloning_is_Completed__c) {
+                return 'Error: CLONING_COMPLETED';
+            }
+
+            Map<String, String> oldToNewUserMap = new Map<String, String>();
+            oldToNewUserMap.put(emp.ReplacedForUserId__c, emp.User__c);
+
+            // Run transfer in without-sharing context
+            EmployeeTransferService.transferEmployee(oldToNewUserMap);
+
+            // Mark new employee complete
+            emp.Cloning_is_Completed__c = true;
+
+            // Mark replacement done on old employee
+            Employee__c oldEmployee = new Employee__c(
+                Id = emp.Replaced_For__c,
+                Is_Employee_Replaced__c = true,
+                Employee_Replaced_With_Name__c = emp.Name
+            );
+
+            System.debug('Employee Transfer Done for Employee: ' + emp.Id);
+            System.enqueueJob(new EmployeeReplacementUpdateQueue(new List<Employee__c>{ emp, oldEmployee }));
+
+            return 'Success: Employee records (Beats, PJPs, Product Mappings, Customer Assignments) successfully transferred to new DSM.';
+        } catch (Exception ex) {
+            System.debug('Exception in employeeTransferAction: ' + ex.getMessage());
+            return 'Error: ' + ex.getMessage();
+        }
+    }
+
+
     /**----------LWC Controller ---------**/
     public class DataBox{
         @AuraEnabled public string profileName;
@@ -908,19 +972,15 @@ public class EmployeeeController {
             if (emp.User__c == null) {
                 throw new AuraHandledException('No associated User to deactivate.');
             }
+            
             // Call existing deactivation logic
             deactivateUser(recordId);
-
-            // If BEATS_INACTIVE, deactivate all beats (cascade trigger handles beat items)
+ 
+            // If BEATS_INACTIVE, deactivate all beats asynchronously
             if (beatOption == 'BEATS_INACTIVE') {
-                List<Child_beat__c> userBeats = [SELECT Id FROM Child_beat__c WHERE OwnerId = :emp.User__c AND Active__c = true];
-                if (!userBeats.isEmpty()) {
-                    for (Child_beat__c b : userBeats) {
-                        b.Active__c = false;
-                    }
-                    Database.update(userBeats, false);
-                }
+                deactivateUserBeats(emp.User__c);
             }
+
 
             // Share customer access to hierarchy
             CustomSharingService.shareCustomerAccessToHierarchy(emp.User__c);
@@ -930,6 +990,22 @@ public class EmployeeeController {
             throw ex;
         } catch (Exception ex) {
             return 'Error: ' + ex.getMessage();
+        }
+    }
+    
+    @future
+    public static void deactivateUserBeats(Id userId) {
+        List<Child_beat__c> userBeats = [
+            SELECT Id 
+            FROM Child_beat__c 
+            WHERE OwnerId = :userId 
+            AND Active__c = true
+        ];
+        if (!userBeats.isEmpty()) {
+            for (Child_beat__c b : userBeats) {
+                b.Active__c = false;
+            }
+            update userBeats;
         }
     }
 
@@ -968,65 +1044,88 @@ public class EmployeeeController {
         }
         return result;
     }
-
+    
     @AuraEnabled
     public static String shareBeatToUser(Id employeeId, Id targetUserId) {
         try {
             Employee__c emp = [SELECT Id, User__c FROM Employee__c WHERE Id = :employeeId LIMIT 1];
             if (emp.User__c == null) return 'Error: No user associated with this employee.';
-
+            
             // Get all active beats of source employee
-            List<Child_beat__c> sourceBeats = [SELECT Id, Primary_Customer__c FROM Child_beat__c WHERE OwnerId = :emp.User__c AND Active__c = true];
-
+            List<Child_beat__c> sourceBeats = [
+                SELECT Id, Primary_Customer__c 
+                FROM Child_beat__c 
+                WHERE OwnerId = :emp.User__c 
+                AND Active__c = true
+            ];
             if (sourceBeats.isEmpty()) return 'Error: No active beats found for this employee.';
-
+            
+            // Collect Primary_Customer__c account IDs
             Set<Id> accountIds = new Set<Id>();
+            Set<Id> sourceBeatIds = new Set<Id>();
             for (Child_beat__c beat : sourceBeats) {
                 if (beat.Primary_Customer__c != null) accountIds.add(beat.Primary_Customer__c);
+                sourceBeatIds.add(beat.Id);
             }
-
+            
+            // Collect Junction_Beat__c account IDs
+            List<Junction_Beat__c> beatItems = [
+                SELECT Id, Account__c, Child_beat__c 
+                FROM Junction_Beat__c 
+                WHERE Child_beat__c IN :sourceBeatIds
+                AND Account__c != null
+            ];
+            for (Junction_Beat__c jb : beatItems) {
+                accountIds.add(jb.Account__c);
+            }
+            
+            // Share Account records
             List<AccountShare> sharesToInsert = new List<AccountShare>();
             Set<Id> existingAccountIds = new Set<Id>();
-            for (AccountShare s : [SELECT AccountId FROM AccountShare WHERE AccountId IN :accountIds AND UserOrGroupId = :targetUserId]) {
+            for (AccountShare s : [
+                SELECT AccountId FROM AccountShare 
+                WHERE AccountId IN :accountIds 
+                AND UserOrGroupId = :targetUserId
+            ]) {
                 existingAccountIds.add(s.AccountId);
             }
-
             for (Id accId : accountIds) {
                 if (!existingAccountIds.contains(accId)) {
                     sharesToInsert.add(CustomSharingService.buildAccountShare(accId, targetUserId));
                 }
             }
-
             if (!sharesToInsert.isEmpty()) {
                 Database.insert(sharesToInsert, false);
             }
-
-            // Share Child_beat__c records as well
+            
+            // Share Child_beat__c records
             List<Child_beat__Share> beatSharesToInsert = new List<Child_beat__Share>();
             Set<Id> existingBeatIds = new Set<Id>();
-            for (Child_beat__Share s : [SELECT ParentId FROM Child_beat__Share WHERE ParentId IN :sourceBeats AND UserOrGroupId = :targetUserId]) {
+            for (Child_beat__Share s : [
+                SELECT ParentId FROM Child_beat__Share 
+                WHERE ParentId IN :sourceBeatIds 
+                AND UserOrGroupId = :targetUserId
+            ]) {
                 existingBeatIds.add(s.ParentId);
             }
-
             for (Child_beat__c beat : sourceBeats) {
                 if (!existingBeatIds.contains(beat.Id)) {
                     Child_beat__Share beatShare = new Child_beat__Share();
                     beatShare.ParentId = beat.Id;
                     beatShare.UserOrGroupId = targetUserId;
-                    beatShare.AccessLevel = 'Edit'; // or 'Read' if only read access is needed
+                    beatShare.AccessLevel = 'Edit';
                     beatShare.RowCause = Schema.Child_beat__Share.RowCause.Manual;
                     beatSharesToInsert.add(beatShare);
                 }
             }
-
             if (!beatSharesToInsert.isEmpty()) {
                 Database.insert(beatSharesToInsert, false);
             }
-
+            
             return 'Success: Beats and accounts shared successfully';
+            
         } catch (Exception ex) {
             return 'Error: ' + ex.getMessage();
         }
     }
-    
 }

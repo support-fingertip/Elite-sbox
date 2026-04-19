@@ -1,7 +1,11 @@
 public without sharing class ProductMappingTriggerHandler {
-    
+
     public static Boolean isProductMappingAutoInsert = false;
     public static Boolean isProductMappingAutoUpdate = false;
+
+    // Set to true by bulk data movement flows (e.g. Employee Transfer) to
+    // bypass the heavy before/after update logic. Always reset in finally.
+    public static Boolean bypassForEmployeeTransfer = false;
     
     //Checking Primary Customer Access and Accont sharing
     public static void beforeInsert(List<Product_Mapping__c> newProductMappings) {
@@ -281,7 +285,7 @@ public without sharing class ProductMappingTriggerHandler {
             list<Product_Mapping__c>  secondaryMappingswithPrimarycustomer = [
                 SELECT Id, Customer__c, Primary_Customer__c, Sub_Stockiest__c, Secondary_Customer_Type__c
                 FROM Product_Mapping__c
-                WHERE Primary_Customer__c IN :primaryCustomerIds
+                WHERE Primary_Customer__c IN :primaryCustomerIds and is_Executive_Active__c = true
             ];
             secondaryMappings.addAll(secondaryMappingswithPrimarycustomer);
             
@@ -293,7 +297,7 @@ public without sharing class ProductMappingTriggerHandler {
             list<Product_Mapping__c> secondaryMappingswithSubStokiest = [
                 SELECT Id, Customer__c, Primary_Customer__c, Sub_Stockiest__c, Secondary_Customer_Type__c
                 FROM Product_Mapping__c
-                WHERE Sub_Stockiest__c IN :subStockiestIds
+                WHERE Sub_Stockiest__c IN :subStockiestIds  and is_Executive_Active__c = true
             ];
             secondaryMappings.addAll(secondaryMappingswithSubStokiest);
         }
@@ -354,12 +358,12 @@ public without sharing class ProductMappingTriggerHandler {
         {
             //Updating the Sales channel and Delivary plant on Account
             //for the sharing the accounts to Order adminstator and Logistic Team
-            updateSaleschannelandParentDeport(primaryCustomerIdstoUpdateSalesChannel);
+            System.enqueueJob(new UpdateSalesChannelAndDepotQueueable(primaryCustomerIdstoUpdateSalesChannel));
         }
 
         if(!primaryToSecondaryForSalesChannel.isEmpty())
         {
-            updateSecondarySalesChannelFromPrimary(primaryToSecondaryForSalesChannel);
+            System.enqueueJob(new UpdateSecondarySalesChannelQueueable(primaryToSecondaryForSalesChannel));
         }
 
         //Auto Mappnings of Secondary Customers
@@ -369,13 +373,14 @@ public without sharing class ProductMappingTriggerHandler {
                 database.insert(subStockistMappings,false);
             }
             if (!secondaryCustomerMappings.isEmpty()) {
-                database.insert(secondaryCustomerMappings,false); 
+                database.insert(secondaryCustomerMappings,false);
             }
         }
     }
-    
+
     //Checking Primary Customer Access
     public static void beforeUpdate(List<Product_Mapping__c> newProductMappings, Map<Id, Product_Mapping__c> oldProductMappings) {
+        if (bypassForEmployeeTransfer) return;
         Map<String, Map<String, String>> paymentTermCreditDescriptionMap = newCustomerLwcController.getDependentMap(new Product_Mapping__c(), 'Payment_Term__c', 'Credit_Description__c');
         set<Id> userIds = new set<Id>();
         Set<Id> exeIds = new Set<Id>();
@@ -562,6 +567,7 @@ public without sharing class ProductMappingTriggerHandler {
     
     //sharing Customer acceess on update and sharing account based on primary custoemr assignment
     public static void afterUpdate(List<Product_Mapping__c> newProductMappings, Map<Id, Product_Mapping__c> oldProductMappings,Map<Id, Product_Mapping__c> newProductMappingsMap ) {
+        if (bypassForEmployeeTransfer) return;
         List<AccountShare> sharesToInsert = new List<AccountShare>();
         // For pair-based check
         Set<String> accountUserPairsToCheck = new Set<String>();
@@ -675,11 +681,11 @@ public without sharing class ProductMappingTriggerHandler {
         {
             //Updating the Sales channel and Delivary plant on Account
             //for the sharing the accounts to Order adminstator and Logistic Team
-            updateSaleschannelandParentDeport(primaryCustomerIdsToUpdateSalesChannel);
+            System.enqueueJob(new UpdateSalesChannelAndDepotQueueable(primaryCustomerIdsToUpdateSalesChannel));
         }
         if(!primaryToSecondaryForSalesChannel.isEmpty())
         {
-            updateSecondarySalesChannelFromPrimary(primaryToSecondaryForSalesChannel);
+            System.enqueueJob(new UpdateSecondarySalesChannelQueueable(primaryToSecondaryForSalesChannel));
         }
         if(!subStockiestIds.isEmpty())
         {
@@ -815,11 +821,11 @@ public without sharing class ProductMappingTriggerHandler {
         {
             //Updating the Sales channel and Delivary plant on Account
             //for the sharing the accounts to Order adminstator and Logistic Team
-            updateSaleschannelandParentDeport(primaryCustomerIds);
+            System.enqueueJob(new UpdateSalesChannelAndDepotQueueable(primaryCustomerIds));
         }
     }
-    
-    
+
+
     public static void updateSaleschannelandParentDeport(Set<Id> primaryCustomerIds)
     {
                 
@@ -829,7 +835,8 @@ public without sharing class ProductMappingTriggerHandler {
         
         //Primary Mapping to Update Salechannel and Delivay Plant
         list<Product_Mapping__c>  primaryMappings = [ SELECT Id, Customer__c, Chanel__c, Child_Depot__c
-                                                     FROM Product_Mapping__c WHERE Customer_Type__c = 'Primary Customer' 
+                                                     FROM Product_Mapping__c WHERE Customer_Type__c = 'Primary Customer'
+                                                     AND is_Executive_Active__c = true
                                                      and Customer__c =:primaryCustomerIds AND (Chanel__c != null OR Child_Depot__c != null)];
         
         // Group Chanel and Delivery_Plant per Customer
@@ -876,6 +883,7 @@ public without sharing class ProductMappingTriggerHandler {
             FROM Product_Mapping__c
             WHERE Customer_Type__c = 'Secondary Customer'
             AND Primary_Customer__c IN :primaryCustomerIds
+            AND is_Executive_Active__c = true
             AND Customer__c != null
         ];
 

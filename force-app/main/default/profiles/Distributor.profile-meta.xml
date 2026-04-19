@@ -409,6 +409,10 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>EmployeeCustomerAssignTrigHandTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>EmployeeCustomerAssignmentController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -466,6 +470,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeSubordinateControllerTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>EmployeeTransferService</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -1099,6 +1107,14 @@
     <classAccesses>
         <apexClass>UpdateProductiveVisitBatch</apexClass>
         <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>UpdateSalesChannelAndDepotQueueable</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>UpdateSecondarySalesChannelQueueable</apexClass>
+        <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateUsersQueueable</apexClass>
@@ -4164,6 +4180,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Employee__c.Activation_Date__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Employee__c.Active__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -4370,6 +4391,11 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Employee__c.IMEI_No__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Employee__c.In_Activation_Date__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
