@@ -350,6 +350,10 @@ export default class NavigationComponent extends LightningElement {
         isshowData: false
     };
 
+    SECONDARY_CUSTOMER_PAGE_SIZE = 100;
+    @track visibleSecondaryCustomers = [];
+    _secondaryVisibleCount = 100;
+
     @track secondaryCustomerLedgerFilter = {
         fromDate: '',
         toDate: '',
@@ -785,6 +789,8 @@ export default class NavigationComponent extends LightningElement {
                 this.secoundaryCustomerFilter.allSecondaryCustomers = result.customerData || [];
                 this.secoundaryCustomerFilter.isshowData =
                     result.customerData && result.customerData.length > 0;
+                this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
+                this._applySecondaryCustomerPagination();
             })
             .catch(error => {
                 console.error('Error fetching secondary customers:', error);
@@ -805,6 +811,8 @@ export default class NavigationComponent extends LightningElement {
             this.secoundaryCustomerFilter.allSecondaryCustomers = result.customerData || [];
             this.secoundaryCustomerFilter.isshowData =
                 result.customerData && result.customerData.length > 0;
+            this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
+            this._applySecondaryCustomerPagination();
         })
         .catch(error => {
             console.error('Error fetching secondary customers:', error);
@@ -812,6 +820,28 @@ export default class NavigationComponent extends LightningElement {
         .finally(() => {
             this.isSubPartLoad = false;
         });
+    }
+
+    get hasMoreSecondaryCustomers() {
+        return this.visibleSecondaryCustomers.length <
+            (this.secoundaryCustomerFilter.originalSecondaryCustomers || []).length;
+    }
+
+    get loadMoreSecondaryCustomersLabel() {
+        const total = (this.secoundaryCustomerFilter.originalSecondaryCustomers || []).length;
+        const remaining = total - this.visibleSecondaryCustomers.length;
+        const next = Math.min(this.SECONDARY_CUSTOMER_PAGE_SIZE, remaining);
+        return `Load More (${next} of ${remaining} remaining)`;
+    }
+
+    _applySecondaryCustomerPagination() {
+        const src = this.secoundaryCustomerFilter.originalSecondaryCustomers || [];
+        this.visibleSecondaryCustomers = src.slice(0, this._secondaryVisibleCount);
+    }
+
+    handleSecondaryCustomerLoadMore() {
+        this._secondaryVisibleCount += this.SECONDARY_CUSTOMER_PAGE_SIZE;
+        this._applySecondaryCustomerPagination();
     }
 
     handleSecondaryCustomerStatusChange(event) {
@@ -831,6 +861,8 @@ export default class NavigationComponent extends LightningElement {
             ];
             this.secoundaryCustomerFilter.isshowData =
                 this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
+            this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
+            this._applySecondaryCustomerPagination();
             return;
         }
 
@@ -845,6 +877,8 @@ export default class NavigationComponent extends LightningElement {
         // Show / hide data
         this.secoundaryCustomerFilter.isshowData =
             this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
+        this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
+        this._applySecondaryCustomerPagination();
     }
 
     handleViewAgingReport(event) {
@@ -871,6 +905,7 @@ export default class NavigationComponent extends LightningElement {
                 ...c,
                 showReportMenu: c.secondaryCustomerId === custId ? !c.showReportMenu : false
             }));
+        this._applySecondaryCustomerPagination();
     }
 
     handleViewOutstandingReport(event) {
