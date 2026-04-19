@@ -280,14 +280,15 @@ public with sharing class newCustomerLwcController {
         Set<Id> customerIds = new Set<Id>();
         for (Product_Mapping__c pm : [SELECT Customer__c FROM Product_Mapping__c
                                       WHERE Exectuive__c = :executiveId AND Customer__c != null
+                                      and  Customer_Type__c = 'Primary Customer'
                                       LIMIT 50000]) {
             customerIds.add(pm.Customer__c);
         }
         for (Employee_Customer_Assignment__c eca : [SELECT Customer__c FROM Employee_Customer_Assignment__c
-                                                    WHERE (Executive__c = :executiveId OR Employee__c = :executiveId)
+                                                    WHERE (Executive__c = :executiveId )
                                                     AND Customer__c != null
                                                     LIMIT 50000]) {
-            customerIds.add(eca.Customer__c);
+                                                        customerIds.add(eca.Customer__c);
         }
         if (customerIds.isEmpty()) {
             return new List<Account>();
@@ -323,7 +324,8 @@ public with sharing class newCustomerLwcController {
         Set<Id> subStockiestIds = new Set<Id>();
         for (Product_Mapping__c pm : [SELECT Customer__c FROM Product_Mapping__c
                                       WHERE Customer__r.Customer_Type__c = 'Secondary Customer'
-                                      AND Primary_Customer__c = :primaryCustomerId
+                                      AND Primary_Customer__c = :primaryCustomerId 
+                                      AND Secondary_Customer_Type__c = 'Sub Stockiest'
                                       AND Exectuive__c = :executiveId
                                       AND Customer__c != null
                                       LIMIT 50000]) {

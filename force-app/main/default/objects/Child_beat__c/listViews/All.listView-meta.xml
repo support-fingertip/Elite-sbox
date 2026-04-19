@@ -5,7 +5,6 @@
     <columns>Beat_Id_Text__c</columns>
     <columns>Beat_Type__c</columns>
     <columns>Primary_Customer__c</columns>
-    <columns>Primary_Customer_Code__c</columns>
     <columns>Sub_Stockist__c</columns>
     <columns>Total_Items__c</columns>
     <columns>Order_Number__c</columns>
@@ -15,5 +14,10 @@
     <columns>OWNER.LAST_NAME</columns>
     <columns>LAST_UPDATE</columns>
     <filterScope>Everything</filterScope>
+    <filters>
+        <field>Owner_Name__c</field>
+        <operation>contains</operation>
+        <value>TEST 2032</value>
+    </filters>
     <label>All</label>
 </ListView>
