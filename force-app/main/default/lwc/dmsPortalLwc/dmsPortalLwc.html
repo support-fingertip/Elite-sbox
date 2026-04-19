@@ -1558,7 +1558,7 @@
 
                             <tbody style="min-height:200px">
                                 <template lwc:if={secoundaryCustomerFilter.isshowData}>
-                                    <template for:each={secoundaryCustomerFilter.originalSecondaryCustomers}
+                                    <template for:each={visibleSecondaryCustomers}
                                         for:item="cust">
                                         <tr key={cust.secondaryCustomerId}>
                                             <td style="width:4%">{cust.sNumber}</td>
@@ -1604,6 +1604,16 @@
                                 </template>
                             </tbody>
                         </table>
+
+                        <template lwc:if={hasMoreSecondaryCustomers}>
+                            <div class="slds-align_absolute-center slds-m-top_small">
+                                <lightning-button
+                                    label={loadMoreSecondaryCustomersLabel}
+                                    variant="neutral"
+                                    onclick={handleSecondaryCustomerLoadMore}>
+                                </lightning-button>
+                            </div>
+                        </template>
                     </div>
                 </template>
             </template>
