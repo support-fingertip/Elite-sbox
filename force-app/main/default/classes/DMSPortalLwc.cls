@@ -2778,11 +2778,12 @@ public without sharing class DMSPortalLwc {
             SELECT Id, Name, Channel__c, Category__c, Product_Category_Name__c, Product_Category1__c,
             Product_Category1__r.Name, List_Price__c, MRP__c, Tax_Percent__c,
             Tax_Class__c, CreatedDate, UOM__c, Selling_Category__c, Product_Image_Url__c,SKU_Code__c, Sku_Name__c,
-            (SELECT Id, Unit_Price__c, MRP__c, UOM__c, Customer__c, 
+            Product_Group__c, Product_Sub_Group__c, Alternate_UOM__c, Uom_Conversion__c,
+            (SELECT Id, Unit_Price__c, MRP__c, UOM__c, Customer__c,
              Customer_Type__c, Region__c, Secondary_Customer_Category__c
              FROM Price_Books__r WHERE Customer__c = :accountId)
-            FROM Product__c 
-            WHERE Is_Active__c = true 
+            FROM Product__c
+            WHERE Is_Active__c = true
             AND Id IN :skuIds
             ORDER BY Channel__c ASC
         ];
