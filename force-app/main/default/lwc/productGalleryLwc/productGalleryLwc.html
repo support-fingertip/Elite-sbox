@@ -47,6 +47,12 @@
                             <div class="product-info">
                             <h3 class="product-name" title={product.name}>{product.name}</h3>
                             <p class="product-category">{product.category}</p>
+                            <template lwc:if={product.productGroup}>
+                                <p class="product-group">Product Group: {product.productGroup}</p>
+                            </template>
+                            <template lwc:if={product.productSubGroup}>
+                                <p class="product-sub-group">Product Sub Group: {product.productSubGroup}</p>
+                            </template>
                             <template lwc:if={product.sku}>
                                 <p class="product-sku">SKU: {product.sku}</p>
                             </template>

@@ -154,6 +154,14 @@
     font-weight: 500;
 }
 
+.product-group,
+.product-sub-group {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 2px 0;
+    font-weight: 500;
+}
+
 .no-scroll {
     overflow: hidden;
 }
