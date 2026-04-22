@@ -62,7 +62,7 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Home', label: 'Home' },
         { id: 'Orders', label: 'Primary Orders' },
         { id: 'Invoices', label: 'Primary Invoices' },
-        { id: 'Returns', label: 'Primary Returns' },
+        { id: 'Returns', label: 'Sale Return' },
         { id: 'Payments', label: 'Receipts' },
         { id: 'GRN', label: 'GRNs' },
         { id: 'Claims', label: 'Claims' },
@@ -388,6 +388,7 @@ export default class NavigationComponent extends LightningElement {
 
     invoiceIdToDownloadPdf = '';
     isShowNewAdjustStock = false;
+    customerNameWithCode = '';
 
 
     /*Dynamic Tabs */
@@ -1295,6 +1296,7 @@ export default class NavigationComponent extends LightningElement {
 
                 //this.ordFilter.statusVal = result.statusOptions;
                 this.ordFilter.allordData = this.addRowIndex(uniqueOrders);
+                this.customerNameWithCode = result.customerNameWithCode;
                 this.ordFilter.originalOrdData = this.addRowIndex(uniqueOrders);
                 this.ordFilter.isOrderDataExisted = uniqueOrders.length !== 0;
                 this.isSubPartLoad = false;

@@ -207,6 +207,9 @@ public without sharing class DMSPortalLwc {
             accountId = contact[0].AccountId;
         }
         
+        Account acc = [select Id,Name,SAP_Customer_Code__c from Account where Id =:accountId ];
+        dt.customerNameWithCode = acc.Name +'( '+acc.SAP_Customer_Code__c + ')';
+        
         // Build SOQL query for Order__c with Order_Items__r subquery
         String query = 'SELECT Id, Name, Account__c, Account__r.Name, Total_Quantity__c, Grand_Total__c, Order_Date__c,Total_Weight_in_KG__c,Base_Amount__c,Total_Tax_Amount__c, ' +
             '(SELECT Id, Name, Product__c, Product__r.Name, Quantity__c, Total_Amount__c, Tax_Percent__c, Unit_price__c,NET_WEIGHT__c,Non_Taxable_Order_Value__c,Tax_Amount__c FROM Order_Items__r) ' +
@@ -252,7 +255,6 @@ public without sharing class DMSPortalLwc {
             order.items = new List<Order_Item__c>(); // Use a custom wrapper for items
             
             for (Order_Item__c item : o.Order_Items__r) {
-                Order_Item__c oi = new Order_Item__c();
                 order.items.add(item);
             }
             System.debug('Order ' + o.Name + ' has ' + order.items.size() + ' items: ' + order.items);
@@ -1546,11 +1548,16 @@ public without sharing class DMSPortalLwc {
         }
 
         String beatName = '';
-        List<Order__c> orderList = [SELECT Beat_Name_New__c FROM Order__c WHERE Id = :orderId LIMIT 1];
-        if (!orderList.isEmpty() && orderList[0].Beat_Name_New__c != null) {
-            beatName = orderList[0].Beat_Name_New__c;
+        String gstNumber = '';
+        List<Order__c> orderList = [SELECT Beat_Name_New__c, Account__r.GST_Number__c  FROM Order__c WHERE Id = :orderId LIMIT 1];
+        if (!orderList.isEmpty()) {
+            if (orderList[0].Beat_Name_New__c != null) {
+                beatName = orderList[0].Beat_Name_New__c;
+            }
+            if (orderList[0].Account__r.GST_Number__c != null) {
+                gstNumber = orderList[0].Account__r.GST_Number__c;
+            }
         }
-
         List<Order_Item__c> ordList = [
             SELECT Id, Name, Product__c, Product__r.Name,
             Quantity__c, Unit_Price__c,Tax__c,
@@ -1607,7 +1614,7 @@ public without sharing class DMSPortalLwc {
             row.put('BeforeSchemeUnitPrice', BeforeSchemeUnitPrice);
             row.put('AfterSchemeUnitPrice', AfterSchemeUnitPrice);
             row.put('BeatName', beatName);
-            
+            row.put('gstNumber', gstNumber);
             row.put(
                 'availableQuantity',
                 stockMap.containsKey(item.Product__r.Name)
@@ -2452,6 +2459,7 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public Decimal receivedQty;
     }
     public class DmsData{
+        @AuraEnabled public String customerNameWithCode;
         @AuraEnabled public List<ordData> TotalOrderData;
         @AuraEnabled public List<InvData> TotalInvoiceData;
         @AuraEnabled public List<Map<String, String>> statusOptions;

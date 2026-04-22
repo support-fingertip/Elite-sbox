@@ -161,7 +161,7 @@
     <externalSharingModel>ControlledByParent</externalSharingModel>
     <label>Secondary Invoice</label>
     <nameField>
-        <displayFormat>Sec-Inv - {0000}</displayFormat>
+        <displayFormat>{YYYY} / {MM} / {0000}</displayFormat>
         <label>Secondary Invoice Name</label>
         <trackHistory>false</trackHistory>
         <type>AutoNumber</type>

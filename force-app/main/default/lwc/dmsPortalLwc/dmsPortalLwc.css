@@ -333,7 +333,7 @@ lightning-combobox,
 .order-title {
     margin: 0;
     text-align: left;
-    font-size: 30px; /* Smaller title size */
+    font-size: 25px; /* Smaller title size */
     color: #02323e;
     font-weight: bold;
 }
