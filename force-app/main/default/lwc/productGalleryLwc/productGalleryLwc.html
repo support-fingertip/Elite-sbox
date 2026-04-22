@@ -14,6 +14,16 @@
                         placeholder="Select Category" options={categoryOptions}
                         onchange={handleProductCategoryChange}>
                     </lightning-combobox>
+                    <lightning-combobox name="productGroup" label="Product Group"
+                        class="custominputfieldSize" value={selectedProductGroup}
+                        placeholder="Select Product Group" options={productGroupOptions}
+                        onchange={handleProductGroupChange}>
+                    </lightning-combobox>
+                    <lightning-combobox name="productSubGroup" label="Product Sub Group"
+                        class="custominputfieldSize" value={selectedProductSubGroup}
+                        placeholder="Select Product Sub Group" options={productSubGroupOptions}
+                        onchange={handleProductSubGroupChange}>
+                    </lightning-combobox>
                     <lightning-input type="search" label="Search"
                         class="custominputfieldSize" placeholder="Product Name"
                         name="productSearch" value={productSearchKey}
@@ -46,6 +56,9 @@
                                </div>
                             <template lwc:if={product.uom}>
                                 <p class="product-uom">{product.uom}</p>
+                            </template>
+                            <template lwc:if={product.hasConversion}>
+                                <p class="product-conversion">({product.conversionText})</p>
                             </template>
                         </div>
                         </div>
