@@ -675,6 +675,7 @@ public without sharing class DMSPortalLwc {
         // Step 2: Get all stock records for that distributor
         List<Distributor_Stock__c> allStockList = [
             SELECT Id, Name, Distributor__r.Name, Distributor__c, GRN_Quantity__c,Product__c, Product__r.Name,
+            Product__r.Product_Group__c, Product__r.Product_Sub_Group__c,
             GRN_Saleable_Quantity__c,GRN_Nonsaleable_Quantity__c,Secondary_Return_Saleable_Quantity__c,Secondary_Return_Nonsaleable_Quantity__c,
             Primary_Return_Quantity__c,Secondary_Invoice_Quantity__c,Available_Saleable_Quantity__c,Available_Nonsaleable_Quantity__c,
             Saleable_to_Non_Saleable_Quantity__c,Non_Saleable_to_Saleable_Quantity__c,Written_Off_Quantity__c,
@@ -730,6 +731,8 @@ public without sharing class DMSPortalLwc {
             stockData.customerId = i.Distributor__c;
             stockData.productName = i.Product__r.Name;
             stockData.productId = i.Product__c;
+            stockData.productGroup = i.Product__r.Product_Group__c;
+            stockData.productSubGroup = i.Product__r.Product_Sub_Group__c;
             stockData.GRNSaleableQuantity = i.GRN_Saleable_Quantity__c;
             stockData.GRNNonSaleableQuantity = i.GRN_Nonsaleable_Quantity__c;
             stockData.SecondaryReturnSaleableQuantity = i.Secondary_Return_Saleable_Quantity__c;
@@ -1201,8 +1204,13 @@ public without sharing class DMSPortalLwc {
         
         // Step 6: Insert GRN items
         insert items;
-        
-        // Step 7: Return GRN ID
+
+        // Step 7: Enqueue email notification with PDF (TSE + reporting managers)
+        if (!Test.isRunningTest() && accountId != null) {
+            System.enqueueJob(new GRNNotificationQueueable(grn.Id, accountId));
+        }
+
+        // Step 8: Return GRN ID
         return grn.Id;
     }
     
@@ -2628,6 +2636,8 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public decimal availableNonSaleableQuantity;
         @AuraEnabled public Decimal unitPrice;
         @AuraEnabled public Decimal totalAmount;
+        @AuraEnabled public String productGroup;
+        @AuraEnabled public String productSubGroup;
     }
     public class CreditNote{
         @AuraEnabled public String creditNoteNo;

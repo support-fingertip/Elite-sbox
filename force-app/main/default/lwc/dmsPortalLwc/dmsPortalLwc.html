@@ -30,10 +30,6 @@
                         </template>
                     </div>
                 </div>
-
-                <div class="second-div">
-                    <c-user-profile-menu></c-user-profile-menu>
-                </div>
             </div>
             <!--Home Page-->
             <template lwc:if={showHome}>
@@ -865,51 +861,55 @@
                             </div>
                         </div>
                         <div style="overflow-x: auto; width: 95%; border-radius:10px;">
-                        <table class="contacts-table" style="min-width: 1800px; width: 100%;">
+                        <table class="contacts-table" style="min-width: 2000px; width: 100%;">
                             <thead>
                                 <tr>
-                                    <th style="width:13%">SKU</th>
-                                    <th style="width:6%">GRN Sale Qty</th>
-                                    <th style="width:6%">GRN Non-Sale Qty</th>
-                                    <th style="width:6%">Secondary Invoice Qty</th>
-                                    <th style="width:6%">Primary Return Qty</th>
-                                    <th style="width:6%">Secondary Return Sale Qty</th>
-                                    <th style="width:6%">Secondary Return Non-Sale Qty</th>
-                                    <th style="width:6%">Sale → Non-Sale Qty</th>
-                                    <th style="width:6%">Non-Sale → Sale Qty</th>
-                                    <th style="width:6%">Written Off Qty</th>
-                                    <th style="width:8%">Available Sale Qty</th>
-                                    <th style="width:8%">Available Non-Sale Qty</th>
+                                    <th style="width:10%">SKU</th>
+                                    <th style="width:8%">Product Group</th>
+                                    <th style="width:8%">Product Sub Group</th>
+                                    <th style="width:5%">GRN Sale Qty</th>
+                                    <th style="width:5%">GRN Non-Sale Qty</th>
+                                    <th style="width:5%">Secondary Invoice Qty</th>
+                                    <th style="width:5%">Primary Return Qty</th>
+                                    <th style="width:5%">Secondary Return Sale Qty</th>
+                                    <th style="width:5%">Secondary Return Non-Sale Qty</th>
+                                    <th style="width:5%">Sale → Non-Sale Qty</th>
+                                    <th style="width:5%">Non-Sale → Sale Qty</th>
+                                    <th style="width:5%">Written Off Qty</th>
+                                    <th style="width:7%">Available Sale Qty</th>
+                                    <th style="width:7%">Available Non-Sale Qty</th>
                                     <th style="width:7%">Unit Price</th>
-                                    <th style="width:7%">Total Amount</th>
+                                    <th style="width:8%">Total Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template lwc:if={stockFilter.isDataExisted}>
                                     <template for:each={stockFilter.allStockData} for:item="row">
                                         <tr key={row.claimName}>
-                                            <td style="width:13%">
+                                            <td style="width:10%">
                                                 {row.productName}
                                             </td>
-                                            <td style="width:6%">{row.GRNSaleableQuantity}</td>
-                                            <td style="width:6%">{row.GRNNonSaleableQuantity}</td>
-                                            <td style="width:6%">{row.secoundryInvoiceQty}</td>
-                                            <td style="width:6%">{row.primaryReturnQty}</td>
-                                            <td style="width:6%">{row.SecondaryReturnSaleableQuantity}</td>
-                                            <td style="width:6%">{row.SecondaryReturnNonSaleableQuantity}</td>
-                                            <td style="width:6%">{row.salebletoNonSaleableQty}</td>
-                                            <td style="width:6%">{row.nonSaleabletoSaleableQty}</td>
-                                            <td style="width:6%">{row.writtenOffQty}</td>
-                                            <td style="width:8%">{row.availableSaleableQuantity}</td>
-                                            <td style="width:8%">{row.availableNonSaleableQuantity}</td>
+                                            <td style="width:8%">{row.productGroup}</td>
+                                            <td style="width:8%">{row.productSubGroup}</td>
+                                            <td style="width:5%">{row.GRNSaleableQuantity}</td>
+                                            <td style="width:5%">{row.GRNNonSaleableQuantity}</td>
+                                            <td style="width:5%">{row.secoundryInvoiceQty}</td>
+                                            <td style="width:5%">{row.primaryReturnQty}</td>
+                                            <td style="width:5%">{row.SecondaryReturnSaleableQuantity}</td>
+                                            <td style="width:5%">{row.SecondaryReturnNonSaleableQuantity}</td>
+                                            <td style="width:5%">{row.salebletoNonSaleableQty}</td>
+                                            <td style="width:5%">{row.nonSaleabletoSaleableQty}</td>
+                                            <td style="width:5%">{row.writtenOffQty}</td>
+                                            <td style="width:7%">{row.availableSaleableQuantity}</td>
+                                            <td style="width:7%">{row.availableNonSaleableQuantity}</td>
                                             <td style="width:7%">{row.unitPrice}</td>
-                                            <td style="width:7%">{row.totalAmount}</td>
+                                            <td style="width:8%">{row.totalAmount}</td>
                                         </tr>
                                     </template>
                                 </template>
                                 <template lwc:else>
                                     <tr>
-                                        <td colspan="14">
+                                        <td colspan="16">
                                             <div class="slds-truncate" style="text-align:center">
                                                 <span style="color:red;padding:10px;font-size:large">No
                                                     records found!</span>
