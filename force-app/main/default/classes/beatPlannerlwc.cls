@@ -2538,6 +2538,7 @@ global with sharing class beatPlannerlwc {
                 item.Product__c = (String)product.get('Product__c');
                 item.Product_Category__c = (String)product.get('Product_Category__c');
                 item.Quantity__c = (Decimal)product.get('Quantity__c');
+                item.SKU_Weight__c = (Decimal)product.get('SKU_Weight__c');
                 
                 // Get UOM from the map (default to empty string if not found)
                 Decimal eachQty = (Decimal)product.get('Each_Qyt__c');

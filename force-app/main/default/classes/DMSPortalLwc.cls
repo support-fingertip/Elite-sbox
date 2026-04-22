@@ -85,18 +85,18 @@ public without sharing class DMSPortalLwc {
         }
         return result;
     }
-        // Wrapper for Secondary Receipt
-        public class SecondaryReceipt {
-            @AuraEnabled public String receiptNo;
-            @AuraEnabled public String receiptId;
-            @AuraEnabled public String customerName;
-            @AuraEnabled public String customerId;
-            @AuraEnabled public String paymentDate;
-            @AuraEnabled public String paymentMode;
-            @AuraEnabled public String referenceNumber;
-            @AuraEnabled public String remarks;
-            @AuraEnabled public Decimal totalAmount;
-        }
+    // Wrapper for Secondary Receipt
+    public class SecondaryReceipt {
+        @AuraEnabled public String receiptNo;
+        @AuraEnabled public String receiptId;
+        @AuraEnabled public String customerName;
+        @AuraEnabled public String customerId;
+        @AuraEnabled public String paymentDate;
+        @AuraEnabled public String paymentMode;
+        @AuraEnabled public String referenceNumber;
+        @AuraEnabled public String remarks;
+        @AuraEnabled public Decimal totalAmount;
+    }
     //Graph Data
     @AuraEnabled
     public static GraphData getGraphData(){
@@ -208,8 +208,8 @@ public without sharing class DMSPortalLwc {
         }
         
         // Build SOQL query for Order__c with Order_Items__r subquery
-        String query = 'SELECT Id, Name, Account__c, Account__r.Name, Total_Quantity__c, Grand_Total__c, Order_Date__c, ' +
-            '(SELECT Id, Name, Product__c, Product__r.Name, Quantity__c, Total_Amount__c, Tax_Amount__c, Tax_Percent__c, Unit_price__c FROM Order_Items__r) ' +
+        String query = 'SELECT Id, Name, Account__c, Account__r.Name, Total_Quantity__c, Grand_Total__c, Order_Date__c,Total_Weight_in_KG__c,Base_Amount__c,Total_Tax_Amount__c, ' +
+            '(SELECT Id, Name, Product__c, Product__r.Name, Quantity__c, Total_Amount__c, Tax_Percent__c, Unit_price__c,NET_WEIGHT__c,Non_Taxable_Order_Value__c,Tax_Amount__c FROM Order_Items__r) ' +
             'FROM Order__c ' +
             'WHERE Order_Date__c >= :frmDate AND Order_Date__c <= :toDate ' +
             'AND Account__c =: accountId ';
@@ -246,20 +246,14 @@ public without sharing class DMSPortalLwc {
             order.customerId = o.Account__c;
             order.customerName = o.Account__r.Name;
             order.tax = 0;
+            order.totalWeight = o.Total_Weight_in_KG__c;
+            order.baseAmount = o.Base_Amount__c;
+            order.taxAmount =o.Total_Tax_Amount__c;
             order.items = new List<Order_Item__c>(); // Use a custom wrapper for items
             
             for (Order_Item__c item : o.Order_Items__r) {
                 Order_Item__c oi = new Order_Item__c();
-                oi.Id = item.Id;
-                oi.Product__c = item.Product__c;
-                oi.Product_Name__c = item.Product__r.Name;
-                oi.Quantity__c = item.Quantity__c;
-                oi.Total_Amount__c = item.Total_Amount__c != null ?  item.Total_Amount__c  :0 ;
-                oi.Tax_Amount__c = item.Tax_Amount__c != null ? item.Tax_Amount__c : 0;
-                oi.Tax_Percent__c = item.Tax_Percent__c != null ?item.Tax_Percent__c : 0.0 ;  // Added Tax Percent
-                oi.Unit_price__c = item.Unit_price__c!= null ?  item.Unit_price__c :0;    // Added Unit Price
-                
-                order.items.add(oi);
+                order.items.add(item);
             }
             System.debug('Order ' + o.Name + ' has ' + order.items.size() + ' items: ' + order.items);
             
@@ -2524,7 +2518,10 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public Decimal quantity;
         @AuraEnabled public Decimal invoicedQuantity;
         @AuraEnabled public String orderDate;
-        @AuraEnabled public Decimal amount;
+        @AuraEnabled public Decimal amount; 
+        @AuraEnabled public Decimal totalWeight;
+        @AuraEnabled public Decimal baseAmount;
+        @AuraEnabled public Decimal taxAmount;
         @AuraEnabled public Decimal tax;
         @AuraEnabled public String status;
         @AuraEnabled public String customerId;

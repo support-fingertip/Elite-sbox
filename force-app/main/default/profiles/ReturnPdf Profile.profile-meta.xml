@@ -6760,6 +6760,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Order_Item__c.Order_Item_Weight__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Order_Item__c.Order_Number__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -6846,6 +6851,11 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Order_Item__c.SKU_Name__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Order_Item__c.SKU_Weight__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -7021,6 +7031,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Order__c.Account__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Order__c.Base_Amount__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -7451,6 +7466,16 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Order__c.Total_Quantity__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Order__c.Total_Tax_Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Order__c.Total_Weight_in_KG__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
