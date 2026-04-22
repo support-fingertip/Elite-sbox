@@ -9,7 +9,7 @@
             <style type="text/css">
                 /* Page Setup */
                 @page {
-                    size: A4 portrait;
+                    size: {!pageSize} portrait;
                     margin: 0.3cm;
                 }
                 

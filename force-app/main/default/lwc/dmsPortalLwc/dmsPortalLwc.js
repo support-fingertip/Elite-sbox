@@ -390,6 +390,13 @@ export default class NavigationComponent extends LightningElement {
     isShowNewAdjustStock = false;
     customerNameWithCode = '';
 
+    @track showPageSizeModal = false;
+    @track selectedPdfPageSize = 'A4';
+    pageSizeOptions = [
+        { label: 'A4', value: 'A4' },
+        { label: 'A5', value: 'A5' }
+    ];
+
 
     /*Dynamic Tabs */
     get primaryTabs() {
@@ -2346,12 +2353,22 @@ export default class NavigationComponent extends LightningElement {
 
 
     downloadSecondaryInvoicePdf() {
-        console.log('this.invoiceIdToDownloadPdf=='+this.invoiceIdToDownloadPdf);
-        // Build URL
-        const urlOpen = `${orgUrl}/GTInvoice?id=${this.invoiceIdToDownloadPdf}`;
+        this.selectedPdfPageSize = 'A4';
+        this.showPageSizeModal = true;
+    }
 
+    handlePageSizeChange(event) {
+        this.selectedPdfPageSize = event.detail.value;
+    }
+
+    confirmDownloadSecondaryInvoicePdf() {
+        const urlOpen = `${orgUrl}/GTInvoice?id=${this.invoiceIdToDownloadPdf}&pageSize=${this.selectedPdfPageSize}`;
         window.open(urlOpen, "_blank");
+        this.showPageSizeModal = false;
+    }
 
+    closePageSizeModal() {
+        this.showPageSizeModal = false;
     }
 
 

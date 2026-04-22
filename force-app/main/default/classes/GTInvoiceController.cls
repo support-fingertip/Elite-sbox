@@ -16,10 +16,14 @@ public without sharing class GTInvoiceController {
     public Decimal totalIgstAmount{ get; set; }
     
     public boolean isStateMatching{ get; set; }
-    
+
+    public String pageSize { get; set; }
+
     public GTInvoiceController(ApexPages.StandardController controller) {
- 
+
         recid = ApexPages.currentPage().getParameters().get('id');
+        pageSize = ApexPages.currentPage().getParameters().get('pageSize');
+        if (pageSize != 'A5') { pageSize = 'A4'; }
         NumberTOWordConvertion nwcObj = new NumberTOWordConvertion();
         wrapper = new DistributorWrapper();
 
