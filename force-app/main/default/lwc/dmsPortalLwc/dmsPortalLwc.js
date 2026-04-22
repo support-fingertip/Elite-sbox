@@ -50,7 +50,7 @@ import { loadScript } from 'lightning/platformResourceLoader';
 import SHEETJS from '@salesforce/resourceUrl/SheetJS';
 import { refreshApex } from '@salesforce/apex';
 const TAB_WIDTH = 145;     // realistic average width per tab
-const RESERVED_WIDTH = 300; // logo + profile + More button + spacing
+const RESERVED_WIDTH = 180; // logo + More button + spacing
 
 export default class NavigationComponent extends LightningElement {
     //Varible related to tab Function

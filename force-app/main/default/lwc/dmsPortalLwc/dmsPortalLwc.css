@@ -390,6 +390,7 @@ white-space: nowrap;
 .contacts-table tbody {
   display: block;  /* To make the body scrollable */
   max-height: 65vh;  /* Adjust the height to control the scrollable area */
+  overflow-x: hidden;  /* Outer wrapper owns the single horizontal scrollbar */
   overflow-y: auto;  /* Enable vertical scrolling */
   padding-bottom: 5px;  /* Prevent last row from being clipped */
 }
