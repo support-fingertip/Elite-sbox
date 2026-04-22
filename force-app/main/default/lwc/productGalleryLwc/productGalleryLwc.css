@@ -162,6 +162,13 @@
     font-weight: 500;
 }
 
+.product-mrp {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 2px 0;
+    font-weight: 500;
+}
+
 .no-scroll {
     overflow: hidden;
 }

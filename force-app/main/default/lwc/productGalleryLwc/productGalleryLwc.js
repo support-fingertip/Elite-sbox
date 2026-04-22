@@ -87,12 +87,15 @@ export default class ProductGalleryLwc extends LightningElement {
                     const uomConversion = (p.Uom_Conversion__c != null) ? p.Uom_Conversion__c : '';
                     const uom = p.UOM__c || '';
                     const hasConversion = !!alternateUom && uomConversion !== '' && !!uom;
+                    const price = (p.List_Price__c != null) ? Number(p.List_Price__c).toFixed(4) : '';
+                    const mrp = (p.MRP__c != null) ? Number(p.MRP__c).toFixed(4) : '';
                     return {
                         id: p.Id,
                         name: p.Name,
                         sku: p.SKU_Code__c || '',
-                        price: p.List_Price__c,
-                        mrp: p.MRP__c,
+                        price: price,
+                        mrp: mrp,
+                        hasMrp: mrp !== '',
                         category: p.Category__c || 'Uncategorized',
                         channel: p.Channel__c,
                         uom: uom,
