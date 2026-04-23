@@ -2,6 +2,7 @@ public without sharing class GRNPdfController {
 
     public Goods_Received_Note__c grn { get; set; }
     public List<Goods_Received_Note_Item__c> items { get; set; }
+    public Account customer { get; set; }
 
     public GRNPdfController(ApexPages.StandardController controller) {
         Id grnId = ApexPages.currentPage().getParameters().get('id');
@@ -25,5 +26,17 @@ public without sharing class GRNPdfController {
             WHERE Goods_Received_Note__c = :grnId
             ORDER BY Product__r.Name
         ];
+
+        Id customerId = ApexPages.currentPage().getParameters().get('customerId');
+        if (customerId != null) {
+            List<Account> accs = [
+                SELECT Id, Name, SAP_Customer_Code__c, GST_Number__c,
+                       State__c, District__c, Land_Mark__c, Street__c
+                FROM Account
+                WHERE Id = :customerId
+                LIMIT 1
+            ];
+            if (!accs.isEmpty()) customer = accs[0];
+        }
     }
 }
