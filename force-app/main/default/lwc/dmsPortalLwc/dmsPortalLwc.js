@@ -908,11 +908,25 @@ export default class NavigationComponent extends LightningElement {
 
     toggleReportMenu(event) {
         const custId = event.currentTarget.dataset.id;
+        const rect = event.currentTarget.getBoundingClientRect();
+        // Menu width matches .report-dropdown-menu min-width (100px); nudge
+        // it so its right edge aligns with the button for a clean open.
+        const menuWidth = 140;
+        const top = rect.bottom + 4;
+        const left = Math.max(8, rect.right - menuWidth);
+        const style = `top:${top}px; left:${left}px;`;
         this.secoundaryCustomerFilter.originalSecondaryCustomers =
-            this.secoundaryCustomerFilter.originalSecondaryCustomers.map(c => ({
-                ...c,
-                showReportMenu: c.secondaryCustomerId === custId ? !c.showReportMenu : false
-            }));
+            this.secoundaryCustomerFilter.originalSecondaryCustomers.map(c => {
+                if (c.secondaryCustomerId === custId) {
+                    const open = !c.showReportMenu;
+                    return {
+                        ...c,
+                        showReportMenu: open,
+                        reportMenuStyle: open ? style : ''
+                    };
+                }
+                return { ...c, showReportMenu: false, reportMenuStyle: '' };
+            });
         this._applySecondaryCustomerPagination();
     }
 

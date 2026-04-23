@@ -341,6 +341,109 @@ lightning-combobox,
     font-size: 20px;
     margin-bottom: 0px;
 }
+.contacts-table {
+width: 95%;
+border-collapse: separate;
+border-spacing: 0;
+border-radius: 10px;
+border: 1px solid #ccc;
+overflow: visible;
+background-color: #fff;
+ display: block;  /* To allow scroll on table body */
+}
+
+
+.contacts-table th,
+.contacts-table td {
+color: #fff;
+border: none;
+text-align: left;
+font-size: 14px;
+padding: 15px;
+border-bottom: 1px solid #ccc;
+}
+
+.contacts-table th:last-child,
+.contacts-table td:last-child {
+border-right: none;
+}
+
+.contacts-table th {
+background-color: var(--header-bg-color);
+font-weight: 400;
+font-size: 16px;
+   position: sticky;
+     z-index: 1;
+}
+
+.contacts-table td {
+font-size: 14px;
+color: var(--table-text-color);
+white-space: nowrap;
+/* font-weight: 500; */
+
+}
+
+
+
+
+.contacts-table tbody {
+  display: block;  /* To make the body scrollable */
+  max-height: 65vh;  /* Adjust the height to control the scrollable area */
+  overflow-x: hidden;  /* Outer wrapper owns the single horizontal scrollbar */
+  overflow-y: auto;  /* Enable vertical scrolling */
+  padding-bottom: 5px;  /* Prevent last row from being clipped */
+}
+
+.contacts-table thead,
+.contacts-table tbody tr {
+  display: table;  /* Keep the rows inside the table */
+  width: 100%;
+  table-layout: fixed;  /* Prevent the columns from resizing */
+}
+.contacts-table tr:first-child th:first-child {
+border-top-left-radius: 10px;
+}
+
+.contacts-table tr:first-child th:last-child {
+border-top-right-radius: 10px;
+}
+
+.contacts-table tr:last-child td:first-child {
+border-bottom-left-radius: 10px;
+}
+
+.contacts-table tr:last-child td:last-child {
+border-bottom-right-radius: 10px;
+}
+
+.contacts-table tr:last-child td {
+border: none;
+}
+
+.contacts-table tr th:nth-child(2),
+.contacts-table tr th:nth-child(3),
+.contacts-table tr th:nth-child(4),
+.contacts-table tr th:nth-child(5),
+.contacts-table tr th:nth-child(6),
+.contacts-table tr th:nth-child(7),
+.contacts-table tr th:nth-child(8),
+.contacts-table tr th:nth-child(9),
+.contacts-table tr th:nth-child(10),
+.contacts-table tr th:nth-child(11),
+.contacts-table tr th:nth-child(12),
+.contacts-table tr th:nth-child(13),
+.contacts-table tr th:nth-child(14),
+.contacts-table tr th:nth-child(15),
+.contacts-table tr th:nth-child(16),
+.contacts-table tr th:nth-child(17)
+{
+border-left: #fff 1px solid;
+}
+
+/* ===== Secondary Customer table (scrollable wrapper) overrides ===== */
+/* Only rules inside .contacts-table-scroll apply — other .contacts-table
+   tables on the page keep the original layout above. */
 .contacts-table-scroll {
     width: 95%;
     max-height: 65vh;
@@ -351,111 +454,94 @@ lightning-combobox,
     position: relative;
 }
 
-.contacts-table {
+.contacts-table-scroll .contacts-table {
     width: max-content;
     min-width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    background-color: #fff;
+    display: table;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
     table-layout: auto;
 }
 
-.contacts-table th,
-.contacts-table td {
-    color: #fff;
-    border: none;
-    text-align: left;
-    font-size: 14px;
-    padding: 15px;
-    border-bottom: 1px solid #ccc;
-    vertical-align: top;
+.contacts-table-scroll .contacts-table thead {
+    display: table-header-group;
 }
 
-.contacts-table th:last-child,
-.contacts-table td:last-child {
-    border-right: none;
+.contacts-table-scroll .contacts-table tbody {
+    display: table-row-group;
+    max-height: none;
+    overflow: visible;
+    padding-bottom: 0;
 }
 
-.contacts-table th {
-    background-color: var(--header-bg-color);
-    font-weight: 400;
-    font-size: 16px;
+.contacts-table-scroll .contacts-table tbody tr {
+    display: table-row;
+    width: auto;
+    table-layout: auto;
+}
+
+.contacts-table-scroll .contacts-table th {
     position: sticky;
     top: 0;
     z-index: 2;
 }
 
-.contacts-table td {
-    font-size: 14px;
-    color: var(--table-text-color);
+.contacts-table-scroll .contacts-table td {
     white-space: normal;
     word-wrap: break-word;
     word-break: break-word;
     background-color: #fff;
+    vertical-align: top;
 }
 
-/* Sticky Action column (last column) */
-.contacts-table th.sticky-col,
-.contacts-table td.sticky-col {
+/* Sticky Action column */
+.contacts-table-scroll .contacts-table th.sticky-col,
+.contacts-table-scroll .contacts-table td.sticky-col {
     position: sticky;
     right: 0;
     box-shadow: -2px 0 4px rgba(0, 0, 0, 0.08);
 }
 
-.contacts-table th.sticky-col {
+.contacts-table-scroll .contacts-table th.sticky-col {
     background-color: var(--header-bg-color);
     z-index: 3;
 }
 
-.contacts-table td.sticky-col {
+.contacts-table-scroll .contacts-table td.sticky-col {
     background-color: #fff;
     z-index: 1;
 }
 
-.contacts-table tr:first-child th:first-child {
-    border-top-left-radius: 10px;
-}
+/* Per-column min-widths so content fits cleanly and the table can scroll horizontally */
+.contacts-table-scroll .contacts-table th:nth-child(1),  .contacts-table-scroll .contacts-table td:nth-child(1)  { min-width: 50px; }
+.contacts-table-scroll .contacts-table th:nth-child(2),  .contacts-table-scroll .contacts-table td:nth-child(2)  { min-width: 170px; }
+.contacts-table-scroll .contacts-table th:nth-child(3),  .contacts-table-scroll .contacts-table td:nth-child(3)  { min-width: 110px; }
+.contacts-table-scroll .contacts-table th:nth-child(4),  .contacts-table-scroll .contacts-table td:nth-child(4)  { min-width: 110px; }
+.contacts-table-scroll .contacts-table th:nth-child(5),  .contacts-table-scroll .contacts-table td:nth-child(5)  { min-width: 130px; }
+.contacts-table-scroll .contacts-table th:nth-child(6),  .contacts-table-scroll .contacts-table td:nth-child(6)  { min-width: 110px; }
+.contacts-table-scroll .contacts-table th:nth-child(7),  .contacts-table-scroll .contacts-table td:nth-child(7)  { min-width: 130px; }
+.contacts-table-scroll .contacts-table th:nth-child(8),  .contacts-table-scroll .contacts-table td:nth-child(8)  { min-width: 140px; }
+.contacts-table-scroll .contacts-table th:nth-child(9),  .contacts-table-scroll .contacts-table td:nth-child(9)  { min-width: 180px; }
+.contacts-table-scroll .contacts-table th:nth-child(10), .contacts-table-scroll .contacts-table td:nth-child(10) { min-width: 140px; }
+.contacts-table-scroll .contacts-table th:nth-child(11), .contacts-table-scroll .contacts-table td:nth-child(11) { min-width: 150px; }
+.contacts-table-scroll .contacts-table th:nth-child(12), .contacts-table-scroll .contacts-table td:nth-child(12) { min-width: 160px; }
+.contacts-table-scroll .contacts-table th:nth-child(13), .contacts-table-scroll .contacts-table td:nth-child(13) { min-width: 130px; }
+.contacts-table-scroll .contacts-table th:nth-child(14), .contacts-table-scroll .contacts-table td:nth-child(14) { min-width: 130px; }
+.contacts-table-scroll .contacts-table th:nth-child(15), .contacts-table-scroll .contacts-table td:nth-child(15) { min-width: 160px; }
+.contacts-table-scroll .contacts-table th:nth-child(16), .contacts-table-scroll .contacts-table td:nth-child(16) { min-width: 180px; }
+.contacts-table-scroll .contacts-table th:nth-child(17), .contacts-table-scroll .contacts-table td:nth-child(17) { min-width: 100px; }
+.contacts-table-scroll .contacts-table th:nth-child(18), .contacts-table-scroll .contacts-table td:nth-child(18) { min-width: 130px; }
+.contacts-table-scroll .contacts-table th:nth-child(19), .contacts-table-scroll .contacts-table td:nth-child(19) { min-width: 140px; }
 
-.contacts-table tr:first-child th:last-child {
-    border-top-right-radius: 10px;
+/* Report dropdown positioned with fixed so overflow:auto on the scroll
+   wrapper doesn't clip it. JS sets top/left from the button's bounding rect. */
+.report-dropdown-menu--fixed {
+    position: fixed;
+    top: auto;
+    left: auto;
+    z-index: 1100;
 }
-
-.contacts-table tr:last-child td:first-child {
-    border-bottom-left-radius: 10px;
-}
-
-.contacts-table tr:last-child td:last-child {
-    border-bottom-right-radius: 10px;
-}
-
-.contacts-table tr:last-child td {
-    border-bottom: none;
-}
-
-.contacts-table tr th:nth-child(n+2) {
-    border-left: #fff 1px solid;
-}
-
-/* Per-column min-widths keep content on a single column and force horizontal scroll */
-.contacts-table th:nth-child(1),  .contacts-table td:nth-child(1)  { min-width: 50px; }
-.contacts-table th:nth-child(2),  .contacts-table td:nth-child(2)  { min-width: 170px; }
-.contacts-table th:nth-child(3),  .contacts-table td:nth-child(3)  { min-width: 110px; }
-.contacts-table th:nth-child(4),  .contacts-table td:nth-child(4)  { min-width: 110px; }
-.contacts-table th:nth-child(5),  .contacts-table td:nth-child(5)  { min-width: 130px; }
-.contacts-table th:nth-child(6),  .contacts-table td:nth-child(6)  { min-width: 110px; }
-.contacts-table th:nth-child(7),  .contacts-table td:nth-child(7)  { min-width: 130px; }
-.contacts-table th:nth-child(8),  .contacts-table td:nth-child(8)  { min-width: 140px; }
-.contacts-table th:nth-child(9),  .contacts-table td:nth-child(9)  { min-width: 180px; }
-.contacts-table th:nth-child(10), .contacts-table td:nth-child(10) { min-width: 140px; }
-.contacts-table th:nth-child(11), .contacts-table td:nth-child(11) { min-width: 150px; }
-.contacts-table th:nth-child(12), .contacts-table td:nth-child(12) { min-width: 160px; }
-.contacts-table th:nth-child(13), .contacts-table td:nth-child(13) { min-width: 130px; }
-.contacts-table th:nth-child(14), .contacts-table td:nth-child(14) { min-width: 130px; }
-.contacts-table th:nth-child(15), .contacts-table td:nth-child(15) { min-width: 160px; }
-.contacts-table th:nth-child(16), .contacts-table td:nth-child(16) { min-width: 180px; }
-.contacts-table th:nth-child(17), .contacts-table td:nth-child(17) { min-width: 100px; }
-.contacts-table th:nth-child(18), .contacts-table td:nth-child(18) { min-width: 130px; }
-.contacts-table th:nth-child(19), .contacts-table td:nth-child(19) { min-width: 140px; }
 
 
 .reportbody{

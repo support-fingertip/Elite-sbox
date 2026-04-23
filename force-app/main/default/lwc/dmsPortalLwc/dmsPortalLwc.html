@@ -1622,7 +1622,7 @@
                                                     <div class="report-dropdown">
                                                         <button class="aging-report-btn" data-id={cust.secondaryCustomerId} onclick={toggleReportMenu}>View Report</button>
                                                         <template lwc:if={cust.showReportMenu}>
-                                                            <div class="report-dropdown-menu">
+                                                            <div class="report-dropdown-menu report-dropdown-menu--fixed" style={cust.reportMenuStyle}>
                                                                 <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewAgingReport}>Aging Report</div>
                                                                 <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewOutstandingReport}>Outstanding Report</div>
                                                             </div>
