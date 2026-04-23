@@ -341,105 +341,121 @@ lightning-combobox,
     font-size: 20px;
     margin-bottom: 0px;
 }
-.contacts-table {
-width: 95%;
-border-collapse: separate;
-border-spacing: 0;
-border-radius: 10px;
-border: 1px solid #ccc;
-overflow: visible;
-background-color: #fff;
- display: block;  /* To allow scroll on table body */
+.contacts-table-scroll {
+    width: 95%;
+    max-height: 65vh;
+    overflow: auto;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #fff;
+    position: relative;
 }
 
+.contacts-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #fff;
+    table-layout: auto;
+}
 
 .contacts-table th,
 .contacts-table td {
-color: #fff;
-border: none;
-text-align: left;
-font-size: 14px;
-padding: 15px;
-border-bottom: 1px solid #ccc;
+    color: #fff;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    padding: 15px;
+    border-bottom: 1px solid #ccc;
+    vertical-align: top;
 }
 
 .contacts-table th:last-child,
 .contacts-table td:last-child {
-border-right: none;
+    border-right: none;
 }
 
 .contacts-table th {
-background-color: var(--header-bg-color);
-font-weight: 400;
-font-size: 16px;
-   position: sticky; 
-     z-index: 1;
+    background-color: var(--header-bg-color);
+    font-weight: 400;
+    font-size: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .contacts-table td {
-font-size: 14px;
-color: var(--table-text-color);
-white-space: nowrap;
-/* font-weight: 500; */
-
+    font-size: 14px;
+    color: var(--table-text-color);
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+    background-color: #fff;
 }
 
-
-
-
-.contacts-table tbody {
-  display: block;  /* To make the body scrollable */
-  max-height: 65vh;  /* Adjust the height to control the scrollable area */
-  overflow-x: hidden;  /* Outer wrapper owns the single horizontal scrollbar */
-  overflow-y: auto;  /* Enable vertical scrolling */
-  padding-bottom: 5px;  /* Prevent last row from being clipped */
+/* Sticky Action column (last column) */
+.contacts-table th.sticky-col,
+.contacts-table td.sticky-col {
+    position: sticky;
+    right: 0;
+    box-shadow: -2px 0 4px rgba(0, 0, 0, 0.08);
 }
 
-.contacts-table thead,
-.contacts-table tbody tr {
-  display: table;  /* Keep the rows inside the table */
-  width: 100%;
-  table-layout: fixed;  /* Prevent the columns from resizing */
+.contacts-table th.sticky-col {
+    background-color: var(--header-bg-color);
+    z-index: 3;
 }
+
+.contacts-table td.sticky-col {
+    background-color: #fff;
+    z-index: 1;
+}
+
 .contacts-table tr:first-child th:first-child {
-border-top-left-radius: 10px;
+    border-top-left-radius: 10px;
 }
 
 .contacts-table tr:first-child th:last-child {
-border-top-right-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 .contacts-table tr:last-child td:first-child {
-border-bottom-left-radius: 10px;
+    border-bottom-left-radius: 10px;
 }
 
 .contacts-table tr:last-child td:last-child {
-border-bottom-right-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 .contacts-table tr:last-child td {
-border: none;
+    border-bottom: none;
 }
 
-.contacts-table tr th:nth-child(2),
-.contacts-table tr th:nth-child(3),
-.contacts-table tr th:nth-child(4),
-.contacts-table tr th:nth-child(5),
-.contacts-table tr th:nth-child(6),
-.contacts-table tr th:nth-child(7),
-.contacts-table tr th:nth-child(8),
-.contacts-table tr th:nth-child(9),
-.contacts-table tr th:nth-child(10),
-.contacts-table tr th:nth-child(11),
-.contacts-table tr th:nth-child(12),
-.contacts-table tr th:nth-child(13),
-.contacts-table tr th:nth-child(14),
-.contacts-table tr th:nth-child(15),
-.contacts-table tr th:nth-child(16),
-.contacts-table tr th:nth-child(17)
-{
-border-left: #fff 1px solid;
+.contacts-table tr th:nth-child(n+2) {
+    border-left: #fff 1px solid;
 }
+
+/* Per-column min-widths keep content on a single column and force horizontal scroll */
+.contacts-table th:nth-child(1),  .contacts-table td:nth-child(1)  { min-width: 50px; }
+.contacts-table th:nth-child(2),  .contacts-table td:nth-child(2)  { min-width: 170px; }
+.contacts-table th:nth-child(3),  .contacts-table td:nth-child(3)  { min-width: 110px; }
+.contacts-table th:nth-child(4),  .contacts-table td:nth-child(4)  { min-width: 110px; }
+.contacts-table th:nth-child(5),  .contacts-table td:nth-child(5)  { min-width: 130px; }
+.contacts-table th:nth-child(6),  .contacts-table td:nth-child(6)  { min-width: 110px; }
+.contacts-table th:nth-child(7),  .contacts-table td:nth-child(7)  { min-width: 130px; }
+.contacts-table th:nth-child(8),  .contacts-table td:nth-child(8)  { min-width: 140px; }
+.contacts-table th:nth-child(9),  .contacts-table td:nth-child(9)  { min-width: 180px; }
+.contacts-table th:nth-child(10), .contacts-table td:nth-child(10) { min-width: 140px; }
+.contacts-table th:nth-child(11), .contacts-table td:nth-child(11) { min-width: 150px; }
+.contacts-table th:nth-child(12), .contacts-table td:nth-child(12) { min-width: 160px; }
+.contacts-table th:nth-child(13), .contacts-table td:nth-child(13) { min-width: 130px; }
+.contacts-table th:nth-child(14), .contacts-table td:nth-child(14) { min-width: 130px; }
+.contacts-table th:nth-child(15), .contacts-table td:nth-child(15) { min-width: 160px; }
+.contacts-table th:nth-child(16), .contacts-table td:nth-child(16) { min-width: 180px; }
+.contacts-table th:nth-child(17), .contacts-table td:nth-child(17) { min-width: 100px; }
+.contacts-table th:nth-child(18), .contacts-table td:nth-child(18) { min-width: 130px; }
+.contacts-table th:nth-child(19), .contacts-table td:nth-child(19) { min-width: 140px; }
 
 
 .reportbody{

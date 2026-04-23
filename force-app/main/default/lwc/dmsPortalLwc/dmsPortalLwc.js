@@ -946,7 +946,9 @@ export default class NavigationComponent extends LightningElement {
             const headers = [
                 'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
                 'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
-                'District', 'Outstanding'
+                'Email ID', 'Aadhaar No', 'GST Number', 'Contact Person',
+                'PAN Number', 'District', 'Landmark', 'Street', 'Pincode',
+                'Outstanding'
             ];
 
             const rows = data.map(cust => [
@@ -958,7 +960,15 @@ export default class NavigationComponent extends LightningElement {
                 cust.status                || '',
                 cust.primaryPhoneNumber    || '',
                 cust.beatName              || '',
+                cust.email                 || '',
+                cust.aadhaarNo             || '',
+                cust.gstNumber             || '',
+                cust.contactPersonName     || '',
+                cust.panNumber             || '',
                 cust.district              || '',
+                cust.landmark              || '',
+                cust.street                || '',
+                cust.pincode               || '',
                 cust.outStanding           || ''
             ]);
 
@@ -1006,7 +1016,9 @@ export default class NavigationComponent extends LightningElement {
                 const headers = [
                     'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
                     'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
-                    'District', 'Outstanding'
+                    'Email ID', 'Aadhaar No', 'GST Number', 'Contact Person',
+                    'PAN Number', 'District', 'Landmark', 'Street', 'Pincode',
+                    'Outstanding'
                 ];
 
                 const rows = data.map(cust => [
@@ -1018,7 +1030,15 @@ export default class NavigationComponent extends LightningElement {
                     cust.status                || '',
                     cust.primaryPhoneNumber    || '',
                     cust.beatName              || '',
+                    cust.email                 || '',
+                    cust.aadhaarNo             || '',
+                    cust.gstNumber             || '',
+                    cust.contactPersonName     || '',
+                    cust.panNumber             || '',
                     cust.district              || '',
+                    cust.landmark              || '',
+                    cust.street                || '',
+                    cust.pincode               || '',
                     cust.outStanding           || ''
                 ]);
 
@@ -1034,7 +1054,15 @@ export default class NavigationComponent extends LightningElement {
                     { wch: 12 },  // Status
                     { wch: 14 },  // Primary Phone
                     { wch: 18 },  // Beat Name
+                    { wch: 24 },  // Email ID
+                    { wch: 16 },  // Aadhaar No
+                    { wch: 18 },  // GST Number
+                    { wch: 20 },  // Contact Person
+                    { wch: 14 },  // PAN Number
                     { wch: 14 },  // District
+                    { wch: 20 },  // Landmark
+                    { wch: 24 },  // Street
+                    { wch: 10 },  // Pincode
                     { wch: 14 }   // Outstanding
                 ];
 
