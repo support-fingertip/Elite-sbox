@@ -1128,7 +1128,6 @@ public without sharing class DMSPortalLwc {
         
     }
     
-    
     @AuraEnabled
     public static Id createGRN(Id invoiceId, List<Goods_Received_Note_Item__c> items) {
         
@@ -1144,15 +1143,13 @@ public without sharing class DMSPortalLwc {
         }
         
         // Step 1: Create GRN parent record
-        Goods_Received_Note__c grn = new Goods_Received_Note__c(Invoice__c = invoiceId,	GRN_Date__c = System.today());
+        Goods_Received_Note__c grn = new Goods_Received_Note__c(Invoice__c = invoiceId,    GRN_Date__c = System.today());
         insert grn;
         
         invoice__c inv =  new invoice__c();
         inv.Id = invoiceId;
         inv.GRN_Status__c = 'GRN Completed';
         update inv;
-        
-        
         
         // Step 3: Create a set of keys for existing stocks (accountId_productId)
         Set<String> keySet = new Set<String>();
@@ -1204,23 +1201,13 @@ public without sharing class DMSPortalLwc {
         
         // Step 6: Insert GRN items
         insert items;
-
-        // Step 7: Render the GRN PDF synchronously so the VF controller's SOQL
-        // sees the just-inserted items (async getContentAsPDF from a Queueable
-        // can miss freshly committed rows), then hand the blob to the Queueable
-        // for email delivery.
+        // Step 7: Enqueue email notification with PDF (TSE + reporting managers)
         if (!Test.isRunningTest() && accountId != null) {
-            PageReference pdfPage = Page.GRNPdf;
-            pdfPage.getParameters().put('id', grn.Id);
-            pdfPage.getParameters().put('customerId', accountId);
-            Blob pdfBlob = pdfPage.getContentAsPDF();
-            System.enqueueJob(new GRNNotificationQueueable(grn.Id, accountId, pdfBlob));
+            System.enqueueJob(new GRNNotificationQueueable(grn.Id, accountId));
         }
-
         // Step 8: Return GRN ID
         return grn.Id;
     }
-    
     // Optional: fetch invoices and their line items for LWC display
     @AuraEnabled(cacheable=true)
     public static List<Invoice__c> getInvoicesByIds(List<Id> invoiceIds) {
