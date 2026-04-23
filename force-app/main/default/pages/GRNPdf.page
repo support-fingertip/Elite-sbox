@@ -63,6 +63,27 @@
                 </tr>
             </table>
 
+            <apex:outputPanel rendered="{!customer != null}" layout="block">
+                <table class="meta">
+                    <tr><td colspan="2"><strong>Customer Details</strong></td></tr>
+                    <tr>
+                        <td><strong>Customer Name:</strong> {!customer.Name}</td>
+                        <td><strong>SAP Code:</strong> {!customer.SAP_Customer_Code__c}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>GST Number:</strong> {!customer.GST_Number__c}</td>
+                        <td><strong>State:</strong> {!customer.State__c}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>District:</strong> {!customer.District__c}</td>
+                        <td><strong>Land Mark:</strong> {!customer.Land_Mark__c}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><strong>Street:</strong> {!customer.Street__c}</td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+
             <table class="items">
                 <thead>
                     <tr>

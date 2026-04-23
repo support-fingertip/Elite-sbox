@@ -40,8 +40,20 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
         if (grnList.isEmpty()) return;
         Goods_Received_Note__c grn = grnList[0];
 
+        Account acc;
+        List<Account> accList = [
+            SELECT Id, Name, SAP_Customer_Code__c, Primary_Customer_Type__c,
+                   Email_ID__c, Primary_Phone_Number__c,
+                   State__c, District__c, Land_Mark__c, Street__c
+            FROM Account
+            WHERE Id = :primaryCustomerId
+            LIMIT 1
+        ];
+        if (!accList.isEmpty()) acc = accList[0];
+
         PageReference pdfPage = Page.GRNPdf;
         pdfPage.getParameters().put('id', grnId);
+        pdfPage.getParameters().put('customerId', primaryCustomerId);
         Blob pdfBlob = Test.isRunningTest()
             ? Blob.valueOf('Test PDF content')
             : pdfPage.getContentAsPDF();
@@ -56,11 +68,27 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
             LIMIT 1
         ];
         mail.setOrgWideEmailAddressId(owea.Id);
-        mail.setSubject('GRN Created: ' + grn.Name);
-        mail.setPlainTextBody(
-            'A Goods Received Note (' + grn.Name + ') has been created. ' +
-            'Please find the details in the attached PDF.\n\nRegards,\nELITE FOODS PRIVATE LIMITED'
-        );
+
+        String custName = (acc != null && acc.Name != null) ? acc.Name : '';
+        String sapCode  = (acc != null && acc.SAP_Customer_Code__c != null) ? acc.SAP_Customer_Code__c : '';
+        mail.setSubject('GRN Created: ' + grn.Name
+            + ' | Customer: ' + custName
+            + (String.isNotBlank(sapCode) ? ' (SAP: ' + sapCode + ')' : ''));
+
+        String body =
+            'A Goods Received Note (' + grn.Name + ') has been created.\n\n' +
+            'Customer Details:\n' +
+            'Customer Name        : ' + safe(acc != null ? acc.Name : null) + '\n' +
+            'SAP Code             : ' + safe(acc != null ? acc.SAP_Customer_Code__c : null) + '\n' +
+            'Primary Customer Type: ' + safe(acc != null ? acc.Primary_Customer_Type__c : null) + '\n' +
+            'Email                : ' + safe(acc != null ? acc.Email_ID__c : null) + '\n' +
+            'Phone                : ' + safe(acc != null ? acc.Primary_Phone_Number__c : null) + '\n' +
+            'State                : ' + safe(acc != null ? acc.State__c : null) + '\n' +
+            'District             : ' + safe(acc != null ? acc.District__c : null) + '\n' +
+            'Land Mark            : ' + safe(acc != null ? acc.Land_Mark__c : null) + '\n' +
+            'Street               : ' + safe(acc != null ? acc.Street__c : null) + '\n\n' +
+            'Please find the details in the attached PDF.\n\nRegards,\nELITE FOODS PRIVATE LIMITED';
+        mail.setPlainTextBody(body);
 
         Messaging.EmailFileAttachment att = new Messaging.EmailFileAttachment();
         att.setFileName('GRN_' + grn.Name + '.pdf');
@@ -73,4 +101,6 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
             Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
         }
     }
+
+    private static String safe(String v) { return String.isBlank(v) ? '-' : v; }
 }
