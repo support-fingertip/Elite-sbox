@@ -1,13 +1,27 @@
 public without sharing class GRNPdfController {
 
+    // Hand-off from async callers (e.g. GRNNotificationQueueable) to avoid
+    // replication-lag issues where getContentAsPDF() can't see freshly
+    // committed records during the async PDF render.
+    public static Goods_Received_Note__c preloadedGrn;
+    public static List<Goods_Received_Note_Item__c> preloadedItems;
+    public static Account preloadedCustomer;
+
     public Goods_Received_Note__c grn { get; set; }
     public List<Goods_Received_Note_Item__c> items { get; set; }
     public Account customer { get; set; }
 
     public GRNPdfController(ApexPages.StandardController controller) {
-        Id grnId = ApexPages.currentPage().getParameters().get('id');
         items = new List<Goods_Received_Note_Item__c>();
 
+        if (preloadedGrn != null) {
+            grn = preloadedGrn;
+            if (preloadedItems != null) items = preloadedItems;
+            customer = preloadedCustomer;
+            return;
+        }
+
+        Id grnId = ApexPages.currentPage().getParameters().get('id');
         if (grnId == null) return;
 
         List<Goods_Received_Note__c> grnList = [

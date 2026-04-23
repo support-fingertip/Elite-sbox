@@ -87,6 +87,7 @@
             <table class="items">
                 <thead>
                     <tr>
+                        <th class="right">S.No</th>
                         <th>Product</th>
                         <th class="right">Invoiced Quantity</th>
                         <th class="right">Received Saleable Qty</th>
@@ -94,8 +95,11 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <apex:variable var="rowNum" value="{!0}"/>
                     <apex:repeat value="{!items}" var="item">
+                        <apex:variable var="rowNum" value="{!rowNum + 1}"/>
                         <tr>
+                            <td class="right">{!rowNum}</td>
                             <td>{!item.Product__r.Name}</td>
                             <td class="right">{!item.Invoiced_Quantity__c}</td>
                             <td class="right">{!item.Received_Saleable_Quantity__c}</td>
