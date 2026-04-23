@@ -534,15 +534,6 @@ border-left: #fff 1px solid;
 .contacts-table-scroll .contacts-table th:nth-child(18), .contacts-table-scroll .contacts-table td:nth-child(18) { min-width: 130px; }
 .contacts-table-scroll .contacts-table th:nth-child(19), .contacts-table-scroll .contacts-table td:nth-child(19) { min-width: 140px; }
 
-/* Report dropdown positioned with fixed so overflow:auto on the scroll
-   wrapper doesn't clip it. JS sets top/left from the button's bounding rect. */
-.report-dropdown-menu--fixed {
-    position: fixed;
-    top: auto;
-    left: auto;
-    z-index: 1100;
-}
-
 
 .reportbody{
 flex-direction: row;
