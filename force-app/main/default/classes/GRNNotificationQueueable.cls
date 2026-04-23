@@ -35,14 +35,23 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
         if (toAddresses.isEmpty()) return;
         system.debug('GRN Notification4');
         List<Goods_Received_Note__c> grnList = [
-            SELECT Id, Name FROM Goods_Received_Note__c WHERE Id = :grnId LIMIT 1
+            SELECT Id, Name, GRN_Date__c, Invoice__c, Invoice__r.Name
+            FROM Goods_Received_Note__c WHERE Id = :grnId LIMIT 1
         ];
         if (grnList.isEmpty()) return;
         Goods_Received_Note__c grn = grnList[0];
 
+        List<Goods_Received_Note_Item__c> grnItems = [
+            SELECT Product__r.Name, Invoiced_Quantity__c,
+                   Received_Saleable_Quantity__c, Received_Nonsaleable_Quantity__c
+            FROM Goods_Received_Note_Item__c
+            WHERE Goods_Received_Note__c = :grnId
+            ORDER BY Product__r.Name
+        ];
+
         Account acc;
         List<Account> accList = [
-            SELECT Id, Name, SAP_Customer_Code__c, Primary_Customer_Type__c,
+            SELECT Id, Name, SAP_Customer_Code__c, GST_Number__c, Primary_Customer_Type__c,
                    Email_ID__c, Primary_Phone_Number__c,
                    State__c, District__c, Land_Mark__c, Street__c
             FROM Account
@@ -50,6 +59,12 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
             LIMIT 1
         ];
         if (!accList.isEmpty()) acc = accList[0];
+
+        // Hand preloaded data to the VF controller so getContentAsPDF() doesn't
+        // miss the freshly committed items due to async render visibility quirks.
+        GRNPdfController.preloadedGrn = grn;
+        GRNPdfController.preloadedItems = grnItems;
+        GRNPdfController.preloadedCustomer = acc;
 
         PageReference pdfPage = Page.GRNPdf;
         pdfPage.getParameters().put('id', grnId);
