@@ -534,6 +534,13 @@ border-left: #fff 1px solid;
 .contacts-table-scroll .contacts-table th:nth-child(18), .contacts-table-scroll .contacts-table td:nth-child(18) { min-width: 130px; }
 .contacts-table-scroll .contacts-table th:nth-child(19), .contacts-table-scroll .contacts-table td:nth-child(19) { min-width: 140px; }
 
+/* Compact report-type modal */
+.report-type-modal {
+    width: 100%;
+    max-width: 360px;
+    min-width: auto;
+}
+
 
 .reportbody{
 flex-direction: row;

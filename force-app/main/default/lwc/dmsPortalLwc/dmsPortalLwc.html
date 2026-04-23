@@ -1648,19 +1648,18 @@
                         <!-- Report type selection popup (Outstanding / Aging) -->
                         <template lwc:if={showReportTypeModal}>
                             <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
-                                <div class="slds-modal__container">
+                                <div class="slds-modal__container report-type-modal">
                                     <header class="slds-modal__header">
                                         <h2 class="slds-text-heading_medium">Select Report Type</h2>
                                     </header>
                                     <div class="slds-modal__content slds-p-around_medium">
-                                        <lightning-radio-group
+                                        <lightning-combobox
                                             name="reportType"
                                             label="Report"
-                                            options={reportTypeOptions}
                                             value={selectedReportType}
-                                            type="radio"
+                                            options={reportTypeOptions}
                                             onchange={handleReportTypeChange}>
-                                        </lightning-radio-group>
+                                        </lightning-combobox>
                                     </div>
                                     <footer class="slds-modal__footer">
                                         <button class="actionButton" onclick={closeReportTypeModal}>Cancel</button>
