@@ -1569,71 +1569,86 @@
                             </div>
                         </div>
 
-                        <table class="contacts-table" >
-                            <thead>
-                                <tr>
-                                    <th style="width:4%">S.No.</th>
-                                    <th style="width:13%">Customer Name</th>
-                                    <th style="width:8%">Customer Code</th>
-                                    <th style="width:8%">Customer Type</th>
-                                    <th style="width:9%">Customer Category</th>
-                                    <th style="width:9%">Customer Status</th>
-                                    <th style="width:9%">Primary Phone</th>
-                                    <th style="width:9%">Beat Name</th>
-                                    <th style="width:9%">District</th>
-                                    <th style="width:9%">Outstanding</th>
-                                    <th style="width:13%">Action</th>
-                                </tr>
-                            </thead>
+                        <div class="contacts-table-scroll">
+                            <table class="contacts-table">
+                                <thead>
+                                    <tr>
+                                        <th>S.No.</th>
+                                        <th>Customer Name</th>
+                                        <th>Customer Code</th>
+                                        <th>Customer Type</th>
+                                        <th>Customer Category</th>
+                                        <th>Customer Status</th>
+                                        <th>Primary Phone</th>
+                                        <th>Beat Name</th>
+                                        <th>Email ID</th>
+                                        <th>Aadhaar No</th>
+                                        <th>GST Number</th>
+                                        <th>Contact Person</th>
+                                        <th>PAN Number</th>
+                                        <th>District</th>
+                                        <th>Landmark</th>
+                                        <th>Street</th>
+                                        <th>Pincode</th>
+                                        <th>Outstanding</th>
+                                        <th class="sticky-col">Action</th>
+                                    </tr>
+                                </thead>
 
-                            <tbody style="min-height:200px">
-                                <template lwc:if={secoundaryCustomerFilter.isshowData}>
-                                    <template for:each={visibleSecondaryCustomers}
-                                        for:item="cust">
-                                        <tr key={cust.secondaryCustomerId}>
-                                            <td style="width:4%">{cust.sNumber}</td>
-                                            <td style="width:13%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.secondaryCustomerName}</td>
-                                            <td style="width:8%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.secondaryCustomerCode}</td>
-                                            <td style="width:8%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.customerType}</td>
-                                            <td style="width:9%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.customerCategory}</td>
-                                            <td style="width:9%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.status}</td>
-                                            <td style="width:9%;word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.primaryPhoneNumber}</td>
-                                            <!-- Beat Name td -->
-                                            <td style="width:9%; word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.beatName}</td>
-                                            <!-- District td -->
-                                            <td style="width:9%; word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.district}</td>
-                                            <!-- Outstanding td -->
-                                            <td class="text-right" style="width:9%; word-wrap: break-word; word-break: break-word; white-space: normal;">{cust.outStanding}</td>
-                                            <td style="width:13%">
-                                                <div class="report-dropdown">
-                                                    <button class="aging-report-btn" data-id={cust.secondaryCustomerId} onclick={toggleReportMenu}>View Report</button>
-                                                    <template lwc:if={cust.showReportMenu}>
-                                                        <div class="report-dropdown-menu">
-                                                            <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewAgingReport}>Aging Report</div>
-                                                            <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewOutstandingReport}>Outstanding Report</div>
+                                <tbody style="min-height:200px">
+                                    <template lwc:if={secoundaryCustomerFilter.isshowData}>
+                                        <template for:each={visibleSecondaryCustomers}
+                                            for:item="cust">
+                                            <tr key={cust.secondaryCustomerId}>
+                                                <td>{cust.sNumber}</td>
+                                                <td>{cust.secondaryCustomerName}</td>
+                                                <td>{cust.secondaryCustomerCode}</td>
+                                                <td>{cust.customerType}</td>
+                                                <td>{cust.customerCategory}</td>
+                                                <td>{cust.status}</td>
+                                                <td>{cust.primaryPhoneNumber}</td>
+                                                <td>{cust.beatName}</td>
+                                                <td>{cust.email}</td>
+                                                <td>{cust.aadhaarNo}</td>
+                                                <td>{cust.gstNumber}</td>
+                                                <td>{cust.contactPersonName}</td>
+                                                <td>{cust.panNumber}</td>
+                                                <td>{cust.district}</td>
+                                                <td>{cust.landmark}</td>
+                                                <td>{cust.street}</td>
+                                                <td>{cust.pincode}</td>
+                                                <td class="text-right">{cust.outStanding}</td>
+                                                <td class="sticky-col">
+                                                    <div class="report-dropdown">
+                                                        <button class="aging-report-btn" data-id={cust.secondaryCustomerId} onclick={toggleReportMenu}>View Report</button>
+                                                        <template lwc:if={cust.showReportMenu}>
+                                                            <div class="report-dropdown-menu">
+                                                                <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewAgingReport}>Aging Report</div>
+                                                                <div class="report-dropdown-item" data-id={cust.secondaryCustomerId} data-name={cust.secondaryCustomerName} onclick={handleViewOutstandingReport}>Outstanding Report</div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </template>
+
+                                    <template lwc:else>
+                                        <tr>
+                                            <td colspan="19">
+                                                <div style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                                        <div class="slds-truncate">
+                                                            <span style="color:red; font-size:large;">
+                                                                No records found!
+                                                            </span>
                                                         </div>
-                                                    </template>
                                                 </div>
                                             </td>
                                         </tr>
                                     </template>
-                                </template>
-
-                                <template lwc:else>
-                                    <tr>
-                                        <td colspan="6" >
-                                            <div style="height: 200px; display: flex; align-items: center; justify-content: center;">
-                                                    <div class="slds-truncate">
-                                                        <span style="color:red; font-size:large;">
-                                                            No records found!
-                                                        </span>
-                                                    </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
 
                      
                     </div>

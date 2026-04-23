@@ -2040,41 +2040,49 @@ public without sharing class DMSPortalLwc {
             'Customer__r.Secondary_Customer_Category__c, ' +
             'Customer__r.Customer_Status__c, ' +
             'Sub_Stockiest__r.Name ,' +
-            'Customer__r.Secondary_Outstanding_Amount__c ' +
+            'Customer__r.Secondary_Outstanding_Amount__c, ' +
+            'Customer__r.Email_ID__c, ' +
+            'Customer__r.Aadhaar_No__c, ' +
+            'Customer__r.GST_Number__c, ' +
+            'Customer__r.Contact_Person_Name__c, ' +
+            'Customer__r.PAN_Number__c, ' +
+            'Customer__r.Land_Mark__c, ' +
+            'Customer__r.Street__c, ' +
+            'Customer__r.Pincode__c ' +
             'FROM Product_Mapping__c ' +
             'WHERE Primary_Customer__c = :accountId ' +
             'AND Is_Executive_Active__c = true ' +
             'AND Customer__r.Customer_Status__c != null ';
-        
+
         //Add status condition only when NOT “All”
         if (status != 'All') {
             query += ' AND Customer__r.Customer_Status__c = :status';
         }
-        
+
         List<Product_Mapping__c> mappings = Database.query(query);
 
-        
-        //Deduplication 
+
+        //Deduplication
         Set<Id> processedCustomerIds = new Set<Id>();
         Set<Id> subStockiestCustomers = new Set<Id>();
-        
+
         List<AccData> uniqueSecondaryCustomers = new List<AccData>();
         Integer serialNo = 1;
         for (Product_Mapping__c pm : mappings) {
-            
+
             if (pm.Customer__c == null || processedCustomerIds.contains(pm.Customer__c)) {
                 continue;
             }
-            
+
             processedCustomerIds.add(pm.Customer__c);
-            
+
             if (pm.Customer__r.Secondary_Customer_Type__c == 'Sub Stockiest') {
                 subStockiestCustomers.add(pm.Customer__c);
             }
-            
+
             AccData d = new AccData();
             d.recordId = pm.Customer__c;
-            d.sNumber = serialNo++; 
+            d.sNumber = serialNo++;
             d.secondaryCustomerId = pm.Customer__c;
             d.secondaryCustomerName = pm.Customer__r.Name;
             d.secondaryCustomerOutletId = pm.Secondary_Customer_Outlet_Id__c;
@@ -2084,7 +2092,6 @@ public without sharing class DMSPortalLwc {
             d.district = pm.Customer__r.District__c;
             d.primaryCustomerName = pm.Primary_Customer__r.Name;
             d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
-            d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
             d.customerType =  pm.Customer__r.Secondary_Customer_Type__c;
             d.customerCategory =  pm.Customer__r.Secondary_Customer_Category__c;
             d.status = pm.Customer__r.Customer_Status__c;
@@ -2092,19 +2099,27 @@ public without sharing class DMSPortalLwc {
             d.beatName = outletToBeatNames.containsKey(pm.Customer__c)
                 ? String.join(new List<String>(outletToBeatNames.get(pm.Customer__c)), ';')
                 : '';
-            
+            d.email             = pm.Customer__r.Email_ID__c;
+            d.aadhaarNo         = pm.Customer__r.Aadhaar_No__c;
+            d.gstNumber         = pm.Customer__r.GST_Number__c;
+            d.contactPersonName = pm.Customer__r.Contact_Person_Name__c;
+            d.panNumber         = pm.Customer__r.PAN_Number__c;
+            d.landmark          = pm.Customer__r.Land_Mark__c;
+            d.street            = pm.Customer__r.Street__c;
+            d.pincode           = pm.Customer__r.Pincode__c;
+
             uniqueSecondaryCustomers.add(d);
         }
-        
+
         rt.customerData = uniqueSecondaryCustomers;
         rt.subStockiestCount = subStockiestCustomers.size();
         rt.totalCustomersCount = processedCustomerIds.size();
         rt.secondaryCustomerCount = rt.totalCustomersCount - rt.subStockiestCount;
-        
+
         return rt;
     }
-    
-     
+
+
     @AuraEnabled
     public static ReturnAccData getRefreshSecondaryCustomers(string status) {
         
@@ -2165,41 +2180,49 @@ public without sharing class DMSPortalLwc {
             'Customer__r.Secondary_Customer_Category__c, ' +
             'Customer__r.Customer_Status__c, ' +
             'Sub_Stockiest__r.Name ,' +
-            'Customer__r.Secondary_Outstanding_Amount__c ' +
+            'Customer__r.Secondary_Outstanding_Amount__c, ' +
+            'Customer__r.Email_ID__c, ' +
+            'Customer__r.Aadhaar_No__c, ' +
+            'Customer__r.GST_Number__c, ' +
+            'Customer__r.Contact_Person_Name__c, ' +
+            'Customer__r.PAN_Number__c, ' +
+            'Customer__r.Land_Mark__c, ' +
+            'Customer__r.Street__c, ' +
+            'Customer__r.Pincode__c ' +
             'FROM Product_Mapping__c ' +
             'WHERE Primary_Customer__c = :accountId ' +
             'AND Is_Executive_Active__c = true ' +
             'AND Customer__r.Customer_Status__c != null ';
-        
+
         //Add status condition only when NOT “All”
         if (status != 'All') {
             query += ' AND Customer__r.Customer_Status__c = :status';
         }
-        
+
         List<Product_Mapping__c> mappings = Database.query(query);
 
-        
-        //Deduplication 
+
+        //Deduplication
         Set<Id> processedCustomerIds = new Set<Id>();
         Set<Id> subStockiestCustomers = new Set<Id>();
-        
+
         List<AccData> uniqueSecondaryCustomers = new List<AccData>();
         Integer serialNo = 1;
         for (Product_Mapping__c pm : mappings) {
-            
+
             if (pm.Customer__c == null || processedCustomerIds.contains(pm.Customer__c)) {
                 continue;
             }
-            
+
             processedCustomerIds.add(pm.Customer__c);
-            
+
             if (pm.Customer__r.Secondary_Customer_Type__c == 'Sub Stockiest') {
                 subStockiestCustomers.add(pm.Customer__c);
             }
-            
+
             AccData d = new AccData();
             d.recordId = pm.Customer__c;
-            d.sNumber = serialNo++; 
+            d.sNumber = serialNo++;
             d.secondaryCustomerId = pm.Customer__c;
             d.secondaryCustomerName = pm.Customer__r.Name;
             d.secondaryCustomerOutletId = pm.Secondary_Customer_Outlet_Id__c;
@@ -2209,7 +2232,6 @@ public without sharing class DMSPortalLwc {
             d.district = pm.Customer__r.District__c;
             d.primaryCustomerName = pm.Primary_Customer__r.Name;
             d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
-            d.subStockiestName = pm.Sub_Stockiest__r != null ? pm.Sub_Stockiest__r.Name : '';
             d.customerType =  pm.Customer__r.Secondary_Customer_Type__c;
             d.customerCategory =  pm.Customer__r.Secondary_Customer_Category__c;
             d.status = pm.Customer__r.Customer_Status__c;
@@ -2217,10 +2239,18 @@ public without sharing class DMSPortalLwc {
             d.beatName = outletToBeatNames.containsKey(pm.Customer__c)
                 ? String.join(new List<String>(outletToBeatNames.get(pm.Customer__c)), ';')
                 : '';
-            
+            d.email             = pm.Customer__r.Email_ID__c;
+            d.aadhaarNo         = pm.Customer__r.Aadhaar_No__c;
+            d.gstNumber         = pm.Customer__r.GST_Number__c;
+            d.contactPersonName = pm.Customer__r.Contact_Person_Name__c;
+            d.panNumber         = pm.Customer__r.PAN_Number__c;
+            d.landmark          = pm.Customer__r.Land_Mark__c;
+            d.street            = pm.Customer__r.Street__c;
+            d.pincode           = pm.Customer__r.Pincode__c;
+
             uniqueSecondaryCustomers.add(d);
         }
-        
+
         rt.customerData = uniqueSecondaryCustomers;
         rt.subStockiestCount = subStockiestCustomers.size();
         rt.totalCustomersCount = processedCustomerIds.size();
@@ -2437,11 +2467,19 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String state;
         @AuraEnabled public String district;
         @AuraEnabled public String beatName;
-        @AuraEnabled public Integer sNumber; 
+        @AuraEnabled public Integer sNumber;
         @AuraEnabled public String status;
         @AuraEnabled public String customerType;
         @AuraEnabled public String customerCategory;
         @AuraEnabled public decimal outStanding;
+        @AuraEnabled public String email;
+        @AuraEnabled public String aadhaarNo;
+        @AuraEnabled public String gstNumber;
+        @AuraEnabled public String contactPersonName;
+        @AuraEnabled public String panNumber;
+        @AuraEnabled public String landmark;
+        @AuraEnabled public String street;
+        @AuraEnabled public String pincode;
     }
     
     
