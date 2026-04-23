@@ -463,7 +463,7 @@ export default class NavigationComponent extends LightningElement {
     /*  Calculate based on screen width */
     calculateTabs() {
         // Always show 9 tabs in the header
-        this.visibleTabCount = 9;
+        this.visibleTabCount = 10;
     }
     toggleMoreMenu(event) {
         event.stopPropagation();

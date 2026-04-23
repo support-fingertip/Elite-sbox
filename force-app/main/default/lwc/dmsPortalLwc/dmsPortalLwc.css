@@ -433,7 +433,10 @@ border: none;
 .contacts-table tr th:nth-child(11),
 .contacts-table tr th:nth-child(12),
 .contacts-table tr th:nth-child(13),
-.contacts-table tr th:nth-child(14)
+.contacts-table tr th:nth-child(14),
+.contacts-table tr th:nth-child(15),
+.contacts-table tr th:nth-child(16),
+.contacts-table tr th:nth-child(17)
 {
 border-left: #fff 1px solid;
 }

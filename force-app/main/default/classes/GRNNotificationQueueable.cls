@@ -1,4 +1,4 @@
-public class GRNNotificationQueueable implements Queueable {
+public class GRNNotificationQueueable implements Queueable,  Database.AllowsCallouts  {
 
     private Id grnId;
     private Id primaryCustomerId;
@@ -9,8 +9,9 @@ public class GRNNotificationQueueable implements Queueable {
     }
 
     public void execute(QueueableContext ctx) {
+        system.debug('GRN Notification1');
         if (grnId == null || primaryCustomerId == null) return;
-
+        system.debug('GRN Notification2');
         Set<Id> execIds = new Set<Id>();
         for (Product_Mapping__c pm : [
             SELECT Exectuive__c
@@ -19,6 +20,7 @@ public class GRNNotificationQueueable implements Queueable {
         ]) {
             execIds.add(pm.Exectuive__c);
         }
+        system.debug('GRN Notification3');
         if (execIds.isEmpty()) return;
 
         Set<String> toAddresses = new Set<String>();
@@ -31,7 +33,7 @@ public class GRNNotificationQueueable implements Queueable {
             if (u.Manager != null && u.Manager.Email != null) toAddresses.add(u.Manager.Email);
         }
         if (toAddresses.isEmpty()) return;
-
+        system.debug('GRN Notification4');
         List<Goods_Received_Note__c> grnList = [
             SELECT Id, Name FROM Goods_Received_Note__c WHERE Id = :grnId LIMIT 1
         ];
@@ -46,6 +48,14 @@ public class GRNNotificationQueueable implements Queueable {
 
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         mail.setToAddresses(new List<String>(toAddresses));
+        // Set sender using Org-Wide Email Address (Name = "System Admin Email")
+        OrgWideEmailAddress owea = [
+            SELECT Id 
+            FROM OrgWideEmailAddress 
+            WHERE DisplayName = 'Elite Admin' // or use Address = 'admin@yourdomain.com'
+            LIMIT 1
+        ];
+        mail.setOrgWideEmailAddressId(owea.Id);
         mail.setSubject('GRN Created: ' + grn.Name);
         mail.setPlainTextBody(
             'A Goods Received Note (' + grn.Name + ') has been created. ' +
@@ -58,10 +68,6 @@ public class GRNNotificationQueueable implements Queueable {
         att.setContentType('application/pdf');
         mail.setFileAttachments(new Messaging.EmailFileAttachment[] { att });
 
-        List<OrgWideEmailAddress> oweaList = [
-            SELECT Id FROM OrgWideEmailAddress WHERE DisplayName = 'Elite Admin' LIMIT 1
-        ];
-        if (!oweaList.isEmpty()) mail.setOrgWideEmailAddressId(oweaList[0].Id);
 
         if (!Test.isRunningTest()) {
             Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });

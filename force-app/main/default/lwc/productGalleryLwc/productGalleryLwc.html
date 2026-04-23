@@ -58,11 +58,8 @@
                             </template>
                             <p class="product-channel">{product.channel}</p>
                             <div class="product-price-row">
-                                   <span class="product-price">&#8377; {product.price}</span>
-                               </div>
-                            <template lwc:if={product.hasMrp}>
-                                <p class="product-mrp">MRP: &#8377; {product.mrp}</p>
-                            </template>
+                                   <span class="product-price">MRP: &#8377; {product.mrp}</span>
+                            </div>
                             <template lwc:if={product.uom}>
                                 <p class="product-uom">{product.uom}</p>
                             </template>

@@ -54,6 +54,10 @@
                 <behavior>Readonly</behavior>
                 <field>Pending_Amount__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>Aging_in_Days__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns/>
         <style>TwoColumnsTopToBottom</style>
