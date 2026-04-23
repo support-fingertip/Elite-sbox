@@ -354,6 +354,13 @@ export default class NavigationComponent extends LightningElement {
     @track visibleSecondaryCustomers = [];
     _secondaryVisibleCount = 100;
 
+    @track showReportTypeModal = false;
+    @track selectedReportType = 'outstanding';
+    reportTypeOptions = [
+        { label: 'Outstanding Report', value: 'outstanding' },
+        { label: 'Aging Report', value: 'aging' }
+    ];
+
     @track secondaryCustomerLedgerFilter = {
         fromDate: '',
         toDate: '',
@@ -889,13 +896,6 @@ export default class NavigationComponent extends LightningElement {
         this._applySecondaryCustomerPagination();
     }
 
-    handleViewAgingReport(event) {
-        this.selectedAgingCustomerId = event.currentTarget.dataset.id;
-        this.selectedAgingCustomerName = event.currentTarget.dataset.name;
-        this.isShowSecondaryCustomers = false;
-        this.showSecondaryCustomerAgingReport = true;
-    }
-
     handleAgingReportBack() {
         this.showSecondaryCustomerAgingReport = false;
         this.isShowSecondaryCustomers = true;
@@ -906,35 +906,29 @@ export default class NavigationComponent extends LightningElement {
         this.getCustomerData();
     }
 
-    toggleReportMenu(event) {
-        const custId = event.currentTarget.dataset.id;
-        const rect = event.currentTarget.getBoundingClientRect();
-        // Menu width matches .report-dropdown-menu min-width (100px); nudge
-        // it so its right edge aligns with the button for a clean open.
-        const menuWidth = 140;
-        const top = rect.bottom + 4;
-        const left = Math.max(8, rect.right - menuWidth);
-        const style = `top:${top}px; left:${left}px;`;
-        this.secoundaryCustomerFilter.originalSecondaryCustomers =
-            this.secoundaryCustomerFilter.originalSecondaryCustomers.map(c => {
-                if (c.secondaryCustomerId === custId) {
-                    const open = !c.showReportMenu;
-                    return {
-                        ...c,
-                        showReportMenu: open,
-                        reportMenuStyle: open ? style : ''
-                    };
-                }
-                return { ...c, showReportMenu: false, reportMenuStyle: '' };
-            });
-        this._applySecondaryCustomerPagination();
-    }
-
-    handleViewOutstandingReport(event) {
+    openReportTypeModal(event) {
         this.selectedAgingCustomerId = event.currentTarget.dataset.id;
         this.selectedAgingCustomerName = event.currentTarget.dataset.name;
+        this.selectedReportType = 'outstanding';
+        this.showReportTypeModal = true;
+    }
+
+    handleReportTypeChange(event) {
+        this.selectedReportType = event.detail.value;
+    }
+
+    closeReportTypeModal() {
+        this.showReportTypeModal = false;
+    }
+
+    confirmReportView() {
+        this.showReportTypeModal = false;
         this.isShowSecondaryCustomers = false;
-        this.showOutstandingReport = true;
+        if (this.selectedReportType === 'aging') {
+            this.showSecondaryCustomerAgingReport = true;
+        } else {
+            this.showOutstandingReport = true;
+        }
     }
 
     handleOutstandingReportBack() {
