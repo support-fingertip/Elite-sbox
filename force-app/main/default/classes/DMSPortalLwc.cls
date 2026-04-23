@@ -1205,9 +1205,16 @@ public without sharing class DMSPortalLwc {
         // Step 6: Insert GRN items
         insert items;
 
-        // Step 7: Enqueue email notification with PDF (TSE + reporting managers)
+        // Step 7: Render the GRN PDF synchronously so the VF controller's SOQL
+        // sees the just-inserted items (async getContentAsPDF from a Queueable
+        // can miss freshly committed rows), then hand the blob to the Queueable
+        // for email delivery.
         if (!Test.isRunningTest() && accountId != null) {
-            System.enqueueJob(new GRNNotificationQueueable(grn.Id, accountId));
+            PageReference pdfPage = Page.GRNPdf;
+            pdfPage.getParameters().put('id', grn.Id);
+            pdfPage.getParameters().put('customerId', accountId);
+            Blob pdfBlob = pdfPage.getContentAsPDF();
+            System.enqueueJob(new GRNNotificationQueueable(grn.Id, accountId, pdfBlob));
         }
 
         // Step 8: Return GRN ID

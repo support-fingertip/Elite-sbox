@@ -2,16 +2,17 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
 
     private Id grnId;
     private Id primaryCustomerId;
+    private Blob pdfBlob;
 
-    public GRNNotificationQueueable(Id grnId, Id primaryCustomerId) {
+    public GRNNotificationQueueable(Id grnId, Id primaryCustomerId, Blob pdfBlob) {
         this.grnId = grnId;
         this.primaryCustomerId = primaryCustomerId;
+        this.pdfBlob = pdfBlob;
     }
 
     public void execute(QueueableContext ctx) {
-        system.debug('GRN Notification1');
         if (grnId == null || primaryCustomerId == null) return;
-        system.debug('GRN Notification2');
+
         Set<Id> execIds = new Set<Id>();
         for (Product_Mapping__c pm : [
             SELECT Exectuive__c
@@ -20,7 +21,6 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
         ]) {
             execIds.add(pm.Exectuive__c);
         }
-        system.debug('GRN Notification3');
         if (execIds.isEmpty()) return;
 
         Set<String> toAddresses = new Set<String>();
@@ -33,25 +33,16 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
             if (u.Manager != null && u.Manager.Email != null) toAddresses.add(u.Manager.Email);
         }
         if (toAddresses.isEmpty()) return;
-        system.debug('GRN Notification4');
+
         List<Goods_Received_Note__c> grnList = [
-            SELECT Id, Name, GRN_Date__c, Invoice__c, Invoice__r.Name
-            FROM Goods_Received_Note__c WHERE Id = :grnId LIMIT 1
+            SELECT Id, Name FROM Goods_Received_Note__c WHERE Id = :grnId LIMIT 1
         ];
         if (grnList.isEmpty()) return;
         Goods_Received_Note__c grn = grnList[0];
 
-        List<Goods_Received_Note_Item__c> grnItems = [
-            SELECT Product__r.Name, Invoiced_Quantity__c,
-                   Received_Saleable_Quantity__c, Received_Nonsaleable_Quantity__c
-            FROM Goods_Received_Note_Item__c
-            WHERE Goods_Received_Note__c = :grnId
-            ORDER BY Product__r.Name
-        ];
-
         Account acc;
         List<Account> accList = [
-            SELECT Id, Name, SAP_Customer_Code__c, GST_Number__c, Primary_Customer_Type__c,
+            SELECT Id, Name, SAP_Customer_Code__c, Primary_Customer_Type__c,
                    Email_ID__c, Primary_Phone_Number__c,
                    State__c, District__c, Land_Mark__c, Street__c
             FROM Account
@@ -60,26 +51,16 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
         ];
         if (!accList.isEmpty()) acc = accList[0];
 
-        // Hand preloaded data to the VF controller so getContentAsPDF() doesn't
-        // miss the freshly committed items due to async render visibility quirks.
-        GRNPdfController.preloadedGrn = grn;
-        GRNPdfController.preloadedItems = grnItems;
-        GRNPdfController.preloadedCustomer = acc;
-
-        PageReference pdfPage = Page.GRNPdf;
-        pdfPage.getParameters().put('id', grnId);
-        pdfPage.getParameters().put('customerId', primaryCustomerId);
-        Blob pdfBlob = Test.isRunningTest()
-            ? Blob.valueOf('Test PDF content')
-            : pdfPage.getContentAsPDF();
+        Blob attachmentBlob = (pdfBlob != null)
+            ? pdfBlob
+            : Blob.valueOf('GRN PDF unavailable');
 
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         mail.setToAddresses(new List<String>(toAddresses));
-        // Set sender using Org-Wide Email Address (Name = "System Admin Email")
         OrgWideEmailAddress owea = [
-            SELECT Id 
-            FROM OrgWideEmailAddress 
-            WHERE DisplayName = 'Elite Admin' // or use Address = 'admin@yourdomain.com'
+            SELECT Id
+            FROM OrgWideEmailAddress
+            WHERE DisplayName = 'Elite Admin'
             LIMIT 1
         ];
         mail.setOrgWideEmailAddressId(owea.Id);
@@ -107,10 +88,9 @@ public class GRNNotificationQueueable implements Queueable,  Database.AllowsCall
 
         Messaging.EmailFileAttachment att = new Messaging.EmailFileAttachment();
         att.setFileName('GRN_' + grn.Name + '.pdf');
-        att.setBody(pdfBlob);
+        att.setBody(attachmentBlob);
         att.setContentType('application/pdf');
         mail.setFileAttachments(new Messaging.EmailFileAttachment[] { att });
-
 
         if (!Test.isRunningTest()) {
             Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
