@@ -35,6 +35,7 @@ private class GRNNotificationQueueableTest {
         insert grn;
 
         Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+        String uniqueSuffix = String.valueOf(DateTime.now().getTime());
         User exec = new User(
             Alias = 'grnexec',
             Email = 'grnexec@example.com',
@@ -44,7 +45,8 @@ private class GRNNotificationQueueableTest {
             LocaleSidKey = 'en_US',
             ProfileId = p.Id,
             TimeZoneSidKey = 'America/Los_Angeles',
-            Username = 'grnexec-' + DateTime.now().getTime() + '@example.com.test',
+            Username = 'grnexec-' + uniqueSuffix + '@example.com.test',
+            Employee_Code__c = 'GRNEXEC-' + uniqueSuffix,
             Sales_Channel__c = 'CPD'
         );
         insert exec;
