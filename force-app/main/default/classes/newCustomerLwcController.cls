@@ -156,13 +156,192 @@ public with sharing class newCustomerLwcController {
         List<Id> substockistIds = executiveToSubStockiestIds.containsKey(userId) ? executiveToSubStockiestIds.get(userId) : new List<Id>();
         
         db.beatList = [select Id,Name,Sub_Stockist__c,Primary_Customer__c,Sub_Stockiest_Name__c,Primary_Customer_Name__c,
-                       Primary_Customer_Type__c,Beat_Type__c,Owner_Name__c,OwnerId from Child_beat__c where OwnerId ='005fs0000009t8XAAQ'
-                    
+                       Primary_Customer_Type__c,Beat_Type__c,Owner_Name__c,OwnerId from Child_beat__c where OwnerId =: userId
+                       AND (
+                           (Primary_Customer__c IN :primaryCustomerIds AND Sub_Stockist__c = null)
+                           OR
+                           (Sub_Stockist__c IN :substockistIds AND Primary_Customer__c IN :primaryCustomerIds)
+                           OR
+                           (Primary_Customer__c = null AND Sub_Stockist__c = null)                           
+                       )
                       ];
         
-       
+
         return db;
     }
+
+    /**
+     * Lighter alternative to getAllData: returns picklists, dependent maps, current account
+     * info and existing product mappings for the given account, but skips the heavy
+     * preloaded executives/accounts/sub-stockiest mappings. The LWC fetches those on demand
+     * via searchExecutives / searchPrimaryCustomers / searchSubstockiests.
+     */
+    @AuraEnabled
+    public static DataBox getInitialData(String accountId) {
+        DataBox db = new DataBox();
+        String userId = UserInfo.getUserId();
+        User userRecord = [SELECT Id,Name,isAdmin__c,Profile.Name,Sales_Channel__c,Territory__c,Territory_Name__c FROM User WHERE Id = :userId LIMIT 1];
+        String profileNameValue = userRecord.Profile.Name;
+        db.profileName = profileNameValue;
+        db.RecordTypeList = newCustomerLwcController.getAvailableRecordTypes();
+        db.parentDeportList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','Parent_Depot__c');
+        db.currentUserRecord = userRecord;
+        db.paymentTypeList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','Payment_Type__c');
+        db.incotermList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','Inco_Terms__c');
+        db.paymemtTermList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','Payment_Term__c');
+        db.divisionList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','Division__c');
+        db.distributonChannelList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','Distribution_Channel__c');
+        db.salesOfficeList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','Sales_Office__c');
+        db.orderTypeList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','Order_Type__c');
+        db.pdpDayList = GetPicklistValues.extractPicklistValues('Product_Mapping__c','PDP_Day__c');
+
+        db.parentDeportChildDeportMap = getDependentMap(new Product_Mapping__c(), 'Parent_Depot__c', 'Child_Depot__c');
+        db.paymentTermCreditDescriptionMap = getDependentMap(new Product_Mapping__c(), 'Payment_Term__c', 'Credit_Description__c');
+        db.paymenttypeToOrdertypeMap = getDependentMap(new Account(), 'Payment_Type__c', 'Order_Type__c');
+
+        db.areaList = [SELECT Id,Name,Sales_Channel__c FROM Area__c];
+
+        db.OTPVerificationSkipCustomerTypes = label.OTPVerificationSkipCustomerTypes;
+        db.OTPVerificationSkipSalesChannels = label.CNN_Skip_Sales_Channels;
+
+        db.employeeAccess = [SELECT Id,Edit_Credit_Information__c,Map_Executive_In_Product_Mapping__c FROM Employee_Creation_Access__mdt
+                             WHERE Label = :profileNameValue];
+        db.orderTypeDependencyList = [SELECT Sales_Channel__c, Payment_Type__c, Division__c, Order_Type__c FROM Order_Type_Dependency__mdt];
+
+        if (accountId != null && accountId != '') {
+            db.customerType = [SELECT Id,Customer_Type__c FROM Account WHERE Id = :accountId LIMIT 1].Customer_Type__c;
+            db.currentAccount = [SELECT Id,Customer_Type__c,Payment_Type__c,Secondary_Customer_Type__c FROM Account WHERE Id = :accountId LIMIT 1];
+
+            db.productMappingList = [SELECT Id,Name,Customer__c,Customer__r.Customer_Type__c,PDP_Name__c,PDP_Day__c,Parent_Depot__c,Executive_Name__c,Exectuive__c,
+                                     Child_Depot__c,Chanel__c,Area_Name__c,Area__c,Area__r.Name, Credit_Terms__c, Credit_Limit__c,Payment_Type__c,Exectuive__r.Name,
+                                     Exectuive__r.Territory__c,Exectuive__r.Territory_Name__c,Exectuive__r.Sales_Channel__c,
+                                     Payment_Term__c,Credit_Description__c,Inco_Terms__c,Primary_Customer_Name__c,Primary_Customer__c,Primary_Customer__r.Name,
+                                     Sub_Stockiest__r.Name,Primary_Customer_Type__c,
+                                     Order_Type__c,Distribution_Channel__c,Sales_Office__c, Division__c,Sub_Stockiest__c,Sub_Stockiest_Name__c
+                                     FROM Product_Mapping__c WHERE Customer__c = :accountId ORDER BY createdDate];
+        }
+
+        // Build userIdToSalesChannelsMap only for executives referenced by existing product mappings
+        Map<Id, List<String>> userIdToSalesChannelsMap = new Map<Id, List<String>>();
+        if (db.productMappingList != null) {
+            for (Product_Mapping__c pm : db.productMappingList) {
+                if (pm.Exectuive__c != null && pm.Exectuive__r != null && !userIdToSalesChannelsMap.containsKey(pm.Exectuive__c)) {
+                    List<String> channels = String.isNotBlank(pm.Exectuive__r.Sales_Channel__c)
+                        ? pm.Exectuive__r.Sales_Channel__c.split(';')
+                        : new List<String>();
+                    userIdToSalesChannelsMap.put(pm.Exectuive__c, channels);
+                }
+            }
+        }
+        db.userIdToSalesChannelsMap = userIdToSalesChannelsMap;
+
+        return db;
+    }
+
+    /**
+     * Dynamic search for executives by name or employee code, scoped to the role hierarchy
+     * under the running user. Excludes SSA/DSM users when searching for a Primary Customer
+     * mapping (mirrors the client-side filter that previously ran on preloaded data).
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<User> searchExecutives(String searchTerm, Boolean isPrimary) {
+        if (String.isBlank(searchTerm)) {
+            return new List<User>();
+        }
+        Set<Id> userIds = RoleHeirarchyUtility.getUsersUnderRoleHierarchy(UserInfo.getUserId());
+        if (userIds == null || userIds.isEmpty()) {
+            return new List<User>();
+        }
+        String likeTerm = '%' + searchTerm + '%';
+        if (isPrimary == true) {
+            return [SELECT Id, Name, Employee_Code__c, ManagerId, Manager.ManagerId, Profile.Name, Sales_Channel__c, Is_SSA_DSM__c, Territory_Name__c, Territory__c
+                    FROM User
+                    WHERE Id IN :userIds AND IsActive = true AND Is_SSA_DSM__c = false
+                    AND (Name LIKE :likeTerm OR Employee_Code__c LIKE :likeTerm)
+                    LIMIT 50];
+        }
+        return [SELECT Id, Name, Employee_Code__c, ManagerId, Manager.ManagerId, Profile.Name, Sales_Channel__c, Is_SSA_DSM__c, Territory_Name__c, Territory__c
+                FROM User
+                WHERE Id IN :userIds AND IsActive = true
+                AND (Name LIKE :likeTerm OR Employee_Code__c LIKE :likeTerm)
+                LIMIT 50];
+    }
+
+    /**
+     * Dynamic search for Primary Customer accounts assigned to a given executive (via
+     * Product_Mapping__c or Employee_Customer_Assignment__c). When called from a
+     * Sub Stockiest creation flow, only Superstockiest primaries are returned.
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<Account> searchPrimaryCustomers(String searchTerm, Id executiveId, Boolean isSubstockiest) {
+        if (String.isBlank(searchTerm) || executiveId == null) {
+            return new List<Account>();
+        }
+        Set<Id> customerIds = new Set<Id>();
+        for (Product_Mapping__c pm : [SELECT Customer__c FROM Product_Mapping__c
+                                      WHERE Exectuive__c = :executiveId AND Customer__c != null
+                                      and  Customer_Type__c = 'Primary Customer'
+                                      LIMIT 50000]) {
+            customerIds.add(pm.Customer__c);
+        }
+        for (Employee_Customer_Assignment__c eca : [SELECT Customer__c FROM Employee_Customer_Assignment__c
+                                                    WHERE (Executive__c = :executiveId )
+                                                    AND Customer__c != null
+                                                    LIMIT 50000]) {
+                                                        customerIds.add(eca.Customer__c);
+        }
+        if (customerIds.isEmpty()) {
+            return new List<Account>();
+        }
+        String likeTerm = '%' + searchTerm + '%';
+        if (isSubstockiest == true) {
+            return [SELECT Id, Name, SAP_Customer_Code__c, Customer_Code__c, Primary_Customer_Type__c
+                    FROM Account
+                    WHERE Id IN :customerIds AND Customer_Type__c = 'Primary Customer'
+                    AND Customer_Status__c IN ('Active','Activation Pending')
+                    AND Primary_Customer_Type__c = 'Superstockiest'
+                    AND (Name LIKE :likeTerm OR SAP_Customer_Code__c LIKE :likeTerm)
+                    LIMIT 50];
+        }
+        return [SELECT Id, Name, SAP_Customer_Code__c, Customer_Code__c, Primary_Customer_Type__c
+                FROM Account
+                WHERE Id IN :customerIds AND Customer_Type__c = 'Primary Customer'
+                AND Customer_Status__c IN ('Active','Activation Pending')
+                AND (Name LIKE :likeTerm OR SAP_Customer_Code__c LIKE :likeTerm)
+                LIMIT 50];
+    }
+
+    /**
+     * Dynamic search for Sub-Stockiest accounts mapped to a given primary customer and
+     * executive via Product_Mapping__c (replaces the preloaded primaryToSubStockiestMap
+     * intersected with executiveToSubStockiestIds filter that ran on the client).
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<Account> searchSubstockiests(String searchTerm, Id primaryCustomerId, Id executiveId) {
+        if (String.isBlank(searchTerm) || primaryCustomerId == null || executiveId == null) {
+            return new List<Account>();
+        }
+        Set<Id> subStockiestIds = new Set<Id>();
+        for (Product_Mapping__c pm : [SELECT Customer__c FROM Product_Mapping__c
+                                      WHERE Customer__r.Customer_Type__c = 'Secondary Customer'
+                                      AND Primary_Customer__c = :primaryCustomerId 
+                                      AND Secondary_Customer_Type__c = 'Sub Stockiest'
+                                      AND Exectuive__c = :executiveId
+                                      AND Customer__c != null
+                                      LIMIT 50000]) {
+            subStockiestIds.add(pm.Customer__c);
+        }
+        if (subStockiestIds.isEmpty()) {
+            return new List<Account>();
+        }
+        String likeTerm = '%' + searchTerm + '%';
+        return [SELECT Id, Name, Customer_Code__c
+                FROM Account
+                WHERE Id IN :subStockiestIds
+                AND (Name LIKE :likeTerm OR Customer_Code__c LIKE :likeTerm)
+                LIMIT 50];
+    }
+
     @AuraEnabled
     public static List<RecordType> getAvailableRecordTypes() {
         // Get all record types for the Account object

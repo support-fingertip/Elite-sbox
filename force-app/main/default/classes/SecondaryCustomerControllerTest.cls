@@ -106,14 +106,31 @@ public class SecondaryCustomerControllerTest {
         pm.Area__c = tr.Id;
         pm.Primary_Customer__c = acc.Id;
         insert pm;
-        
+
         pm.Payment_Term__c = '0004';
         pm.Exectuive__c = testUser2.Id;
         update pm;
-        
-        
-        SecondaryCustomerController.getProductMappings(acc.Id);
-        
+
+        // Second mapping with the same Customer + Sub_Stockiest as the first
+        // so the deduped call collapses to one row while the CSV call returns both.
+        Product_Mapping__c pm2 = new Product_Mapping__c();
+        pm2.Customer__c = acc.Id;
+        pm2.Payment_Term__c = '0003';
+        pm2.Chanel__c = 'CPD';
+        pm2.Exectuive__c = testUser.Id;
+        pm2.Area__c = tr.Id;
+        pm2.Primary_Customer__c = acc.Id;
+        insert pm2;
+
+        SecondaryCustomerController.ReturnData deduped =
+            SecondaryCustomerController.getProductMappings(acc.Id);
+        SecondaryCustomerController.ReturnData full =
+            SecondaryCustomerController.getAllProductMappingsForCsv(acc.Id);
+
+        System.assert(deduped.customerData.size() <= full.customerData.size(),
+            'CSV export should never be smaller than the deduped UI list');
+        System.assertEquals(deduped.totalCustomersCount, full.totalCustomersCount,
+            'Unique customer count should match between UI and CSV endpoints');
     }
     
 }

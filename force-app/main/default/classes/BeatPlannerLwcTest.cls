@@ -844,14 +844,14 @@ insert tar;
         // Shelf Stock
         Shelf_Stock__c shelf = new Shelf_Stock__c(Visit__c = visit.Id, Total_Stock_Level__c = 50, Total_Sales_Quantity__c = 20);
         insert shelf;
-
+        Account acc1 = [Select Id,Name from Account where Customer_Type__c = 'Primary Customer' LIMIT 1];
         // Return & Return Item
-        Return__c ret = new Return__c(Visit__c = visit.Id, Total_Amount__c = 100, Total_Quantity__c = 5);
+        Return__c ret = new Return__c(Visit__c = visit.Id, Total_Amount__c = 100, Total_Quantity__c = 5,Customer__c =acc1.Id,Return_Date__c = Date.today() );
         insert ret;
-
+        
         Return_Item__c returnItem = new Return_Item__c(Return__c = ret.Id, Quantity__c = 5);
         insert returnItem;
-
+        beatPlannerlwc.getSummeryData(visit.Id, 'return');
         // Collection & Collection Item
         Collection__c collection = new Collection__c(Visit__c = visit.Id, Mode_of_Payment__c = 'Cash', Reference_Number__c = 'REF123');
         insert collection;
@@ -1370,7 +1370,8 @@ insert tar;
     static void testGetSummeryDataOrder() {
         Visit__c vs = [SELECT Id,Account1__c FROM Visit__c LIMIT 1];
         Test.startTest();
-       beatPlannerlwc.getSummeryData(vs.Id, 'order');
+        beatPlannerlwc.getSummeryData(vs.Id, 'order');
+       
         Test.stopTest();
        
     }
@@ -1434,8 +1435,10 @@ insert tar;
     
     @isTest
     static void testSaveReturn() {
+           Account acc = [Select Id,Name from Account where Customer_Type__c = 'Primary Customer' LIMIT 1];
         // Create a test Return__c record
         Return__c ret = new Return__c();
+        ret.Customer__c = acc.Id;
       
         
         // Create related Return Items

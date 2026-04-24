@@ -9,7 +9,7 @@
             <style type="text/css">
                 /* Page Setup */
                 @page {
-                    size: A4 portrait;
+                    size: {!pageSize} portrait;
                     margin: 0.3cm;
                 }
                 
@@ -313,8 +313,8 @@
                             <th style="width: 4%;">Qty<br/>in<br/>cases</th>
                             <th style="width: 4%;">Qty<br/>in<br/>units</th>
                             <th style="width: 6%;">Quantity<br/>in<br/>Kgs/Gms</th>
-                            <th style="width: 4%;">Free</th>
-                            <th style="width: 4%;">Rate</th>
+                            <th style="width: 4%;">Free/Scheme</th>
+                            <th style="width: 4%;">Basic Rate</th>
                             <th style="width: 6%;">Taxable<br/>amount</th>
                             <th style="width: 4%;">CGST<br/>%</th>
                             <th style="width: 6%;">CGST<br/>Amount</th>
@@ -483,7 +483,7 @@
                         </tr>
                         <tr class="summary-row">
                             <td colspan="17" class="text-left"><strong>r/off</strong></td>
-                            <td class="text-right"><strong>-0</strong></td>
+                            <td class="text-right"><strong>{!rOff}</strong></td>
                         </tr>
                         <tr class="summary-row">
                             <td colspan="17" class="text-left"><strong>Grand Total</strong></td>
@@ -525,12 +525,12 @@
                 <!-- Declaration and Bank Details -->
                 <div class="declaration-section">
                     <strong>Declaration :</strong><br/>
-                    <strong>Payment mode - cash</strong><br/><br/>
-                    <strong>Bank Details-</strong><br/>
-                    <strong>Bank Beneficiary Name -</strong><br/>
-                    <strong>Account No. -</strong><br/>
-                    <strong>Account Type -</strong><br/>
-                    <strong>IFSC Code -</strong>
+                    <strong>Payment mode - </strong><br/><br/>
+                    <strong>Bank Details- </strong><br/>
+                    Bank Beneficiary Name - {!bankBeneficiaryName} <br/>
+                    Account No. - {!accountNo}<br/>
+                    Branch - {!branch}<br/>
+                    IFSC Code - {!ifscCode}
                 </div>
                 
                 <!-- Signature Section -->

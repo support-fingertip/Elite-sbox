@@ -343,15 +343,37 @@ public with sharing class EmployeeCustomerAssignmentController {
         }
         
         
+        /**First Get One Executive **/
         
         
-        /**---------- All Secoudary Customer---------**/
-        list<Product_Mapping__c> AllSproductMappings  = [
-            SELECT Id, Name, Customer__c,Customer__r.Name,Customer__r.Secondary_Customer_Type__c,Sub_Stockiest__c,Sub_Stockiest__r.Name,
-            Customer__r.Secondary_Customer_Business_Type__c,Primary_Customer__c,Exectuive__c,Primary_Customer__r.Name,
-            Customer__r.Primary_Phone_Number__c,Employee__c,Customer__r.Customer_Code__c,Customer__r.Outlet_Id__c FROM Product_Mapping__c WHERE
-            Customer__r.Customer_Type__c = 'Secondary Customer' And Primary_Customer__c  IN :primaryCustomerIds
-            ORDER BY CreatedDate ];
+        /** ---------- All Secondary Customer --------- **/
+        
+        // Build dynamic conditions
+        String baseQuery = 'SELECT Id, Name, Customer__c, Customer__r.Name, ' +
+            'Customer__r.Secondary_Customer_Type__c, Sub_Stockiest__c, Sub_Stockiest__r.Name, ' +
+            'Customer__r.Secondary_Customer_Business_Type__c, Primary_Customer__c, Exectuive__c, ' +
+            'Primary_Customer__r.Name, Customer__r.Primary_Phone_Number__c, Employee__c, ' +
+            'Customer__r.Customer_Code__c, Customer__r.Outlet_Id__c ' +
+            'FROM Product_Mapping__c ' +
+            'WHERE Customer__r.Customer_Type__c = \'Secondary Customer\' ' +
+            'AND Primary_Customer__c IN :primaryCustomerIds';
+        
+        List<String> conditions = new List<String>();
+        
+        if (execUserId != null) {
+            conditions.add('Exectuive__c = \'' + execUserId + '\'');
+        }
+        if (employeeId != null) {
+            conditions.add('Employee__c = \'' + employeeId + '\'');
+        }
+        
+        if (!conditions.isEmpty()) {
+            baseQuery += ' AND ' + String.join(conditions, ' AND ');
+        }
+        
+        baseQuery += ' ORDER BY CreatedDate LIMIT 50000';
+        
+        List<Product_Mapping__c> AllSproductMappings = Database.query(baseQuery);
         
         set<Id> assignedSubStockiest = new set<Id>();
         

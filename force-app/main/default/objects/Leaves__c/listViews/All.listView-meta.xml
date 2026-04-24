@@ -11,5 +11,10 @@
     <columns>User__c</columns>
     <columns>Approver__c</columns>
     <filterScope>Everything</filterScope>
+    <filters>
+        <field>User__c</field>
+        <operation>equals</operation>
+        <value>July TSE</value>
+    </filters>
     <label>All</label>
 </ListView>

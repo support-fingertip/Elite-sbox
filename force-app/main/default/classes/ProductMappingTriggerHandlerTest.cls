@@ -173,7 +173,7 @@ public class ProductMappingTriggerHandlerTest {
                                      Customer_Type__c = 'Secondary Customer',
                                      Customer_Status__c = 'Active',
                                      Secondary_Customer_Type__c = 'Sub Stockiest',
-                                     SAP_Customer_Code__c = 'SAP0012233',
+                                     SAP_Customer_Code__c = '12233',
                                      City__c = 'Delhi',
                                      State__c = 'Delhi',
                                      District__c = 'New Delhi',

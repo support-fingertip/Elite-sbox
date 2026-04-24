@@ -8,9 +8,6 @@
     <columns>Profile__c</columns>
     <columns>Employee_Code__c</columns>
     <columns>Band__c</columns>
-    <columns>RSM__c</columns>
-    <columns>ASM_TSM__c</columns>
-    <columns>Employee_Approver_3_HR__c</columns>
     <columns>User_Record_Id__c</columns>
     <columns>User__c</columns>
     <columns>Active__c</columns>

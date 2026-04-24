@@ -73,6 +73,10 @@
                 <behavior>Edit</behavior>
                 <field>ERP_Update__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Place_of_Supply__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
@@ -449,11 +453,24 @@
         <relatedList>Child_beat__c.Primary_Customer__c</relatedList>
     </relatedLists>
     <relatedLists>
+        <excludeButtons>MassChangeOwner</excludeButtons>
+        <excludeButtons>New</excludeButtons>
+        <fields>NAME</fields>
+        <fields>Child_beat__c</fields>
+        <fields>Beat_Primary_Customer__c</fields>
+        <fields>Beat_Primary_Customer_Code__c</fields>
+        <fields>Beat_OwnerId__c</fields>
+        <relatedList>Junction_Beat__c.Account__c</relatedList>
+    </relatedLists>
+    <relatedLists>
         <fields>NAME</fields>
         <relatedList>Child_beat__c.Sub_Stockist__c</relatedList>
     </relatedLists>
     <relatedLists>
+        <excludeButtons>MassChangeOwner</excludeButtons>
+        <excludeButtons>New</excludeButtons>
         <fields>NAME</fields>
+        <fields>Executive__c</fields>
         <relatedList>Employee_Customer_Assignment__c.Customer__c</relatedList>
     </relatedLists>
     <relatedLists>
@@ -530,6 +547,10 @@
     <relatedLists>
         <fields>NAME</fields>
         <relatedList>Secondary_Receipt__c.Distributor__c</relatedList>
+    </relatedLists>
+    <relatedLists>
+        <fields>NAME</fields>
+        <relatedList>Secondary_Credit_Note__c.Distributor__c</relatedList>
     </relatedLists>
     <relatedObjects>ParentId</relatedObjects>
     <showEmailCheckbox>false</showEmailCheckbox>

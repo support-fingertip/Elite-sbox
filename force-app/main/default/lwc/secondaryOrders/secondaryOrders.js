@@ -17,6 +17,7 @@ export default class DmsPortal extends LightningElement {
     gstNumber = '';
     irnNumber = '';
     customerName = '';
+    beatName = '';
     isSubPartLoad = false;
     invoiceDate = new Date().toISOString().split('T')[0];
 
@@ -46,6 +47,8 @@ export default class DmsPortal extends LightningElement {
                 this.invoiceItems = this.addRowIndex(invitems);
 
                 this.customerName = this.invoiceItems[0]?.CustomerName || '';
+                this.beatName = data.length > 0 ? (data[0].BeatName || '') : '';
+                this.gstNumber = data.length > 0 ? (data[0].gstNumber || '') : '';
                 this.isGenerateInvoice = true;
                 this.isSubPartLoad = false;
             })
@@ -159,7 +162,8 @@ export default class DmsPortal extends LightningElement {
                 Order__c :  this.selectedOrderId,
                 Total_Tax__c: totalTax,
                 Grand_Total__c: grandTotal,
-                Total_Quantity__c: totalQuantity
+                Total_Quantity__c: totalQuantity,
+                Beat_Name__c: this.beatName
             };
 
             if (!secondaryInvoicePayload.Store__c || !secondaryInvoicePayload.Invoice_Date__c) {

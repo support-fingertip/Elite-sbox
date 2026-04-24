@@ -29,7 +29,7 @@ public with sharing class VisitMapController {
         @AuraEnabled public Datetime visitTime;
         @AuraEnabled public String recordUrl;
     }
-
+    
     public class VisitResponse {
         @AuraEnabled public List<VisitDTO> visits;
         @AuraEnabled public Double startLat; 
@@ -44,10 +44,12 @@ public with sharing class VisitMapController {
         @AuraEnabled public Double newOut;
         @AuraEnabled public Double nonPJPPro;
         @AuraEnabled public Double totalGeo;
+        @AuraEnabled public Double visitFormCount;
+        @AuraEnabled public Double visitFormUniqueCount;
         @AuraEnabled public String baseUrl;
-         @AuraEnabled public String tokenapi;
+        @AuraEnabled public String tokenapi;
     }
-
+    
     // Comparator to sort visits by visitTime
     public class VisitTimeComparator implements Comparator<VisitDTO> {
         public Integer compare(VisitDTO a, VisitDTO b) {
@@ -55,24 +57,24 @@ public with sharing class VisitMapController {
             if (a.visitTime == null && b.visitTime == null) return 0;
             if (a.visitTime == null) return 1;
             if (b.visitTime == null) return -1;
-
+            
             // Ascending order (earlier first)
             if (a.visitTime < b.visitTime) return -1;
             if (a.visitTime > b.visitTime) return 1;
             return 0;
         }
     }
-//(cacheable=true)
+    //(cacheable=true)
     @AuraEnabled 
     public static VisitResponse getVisits(Id userId, Date selectedDate, Id recId) {
         VisitResponse resp = new VisitResponse();
         resp.visits = new List<VisitDTO>();
- 		resp.baseUrl = System.Url.getOrgDomainUrl().toExternalForm()+'/';
-		resp.tokenapi=label.GOOGLE_MAPS_API_KEY;
-   system.debug('resp.tokenapi>>'+resp.tokenapi);     
+        resp.baseUrl = System.Url.getOrgDomainUrl().toExternalForm()+'/';
+        resp.tokenapi=label.GOOGLE_MAPS_API_KEY;
+        system.debug('resp.tokenapi>>'+resp.tokenapi);     
         if (userId == null) userId = UserInfo.getUserId();
         if (selectedDate == null) selectedDate = Date.today().addDays(-10);
-
+        
         if (recId != null) {
             employee__c em = [SELECT Id, User__c, User_Formula__c FROM employee__c WHERE Id = :recId];
             resp.userName = em.User_Formula__c;
@@ -81,11 +83,11 @@ public with sharing class VisitMapController {
             User us = [SELECT Id, Name FROM User WHERE Id = :userId];
             resp.userName = us.Name;
         }
-system.debug('userId>>'+userId);
+        system.debug('userId>>'+userId);
         // Fetch Visits for that user/date
         List<Visit__c> rows = [
             SELECT Id, Account1__r.Name, ClockIn_Latitude__c, Clockin_Longitude__c,
-                   Visit_Output__c, Visit_Date__c, CreatedDate, Actual_Start_Time__c, Actual_End_Time__c
+            Visit_Output__c, Visit_Date__c, CreatedDate, Actual_Start_Time__c, Actual_End_Time__c
             FROM Visit__c
             WHERE OwnerId = :userId
             AND Visit_Date__c = :selectedDate
@@ -94,10 +96,10 @@ system.debug('userId>>'+userId);
             ORDER BY Actual_Start_Time__c
             LIMIT 2000
         ];
-system.debug(selectedDate);
+        system.debug(selectedDate);
         List<Order__c> ord = [
             SELECT Id, Name, Clock_In_Location__latitude__s, Clock_In_Location__longitude__s, 
-                   CreatedDate, Customer_Name__c,Order_Date__c
+            CreatedDate, Customer_Name__c,Order_Date__c
             FROM Order__c 
             WHERE Order_Date__c = :selectedDate 
             AND CreatedById = :userId 
@@ -106,30 +108,42 @@ system.debug(selectedDate);
         
         
         list<Account>acc=[select id,name,GeoLocation__latitude__s,GeoLocation__longitude__s,Customer_Created_Date__c,CreatedDate from Account
-                          WHERE Customer_Created_Date__c = :selectedDate 
-                          AND CreatedById = :userId 
+                          WHERE Customer_Created_Date__c = :selectedDate
+                          AND CreatedById = :userId
                           AND GeoLocation__longitude__s!= null ];
-            
-            
-system.debug(ord.size());
+        
+        // Fetch Visit Form records
+        List<Visit_Form__c> visitForms = [
+            SELECT Id, Name, Customer_Name__c,
+            Geo_Location__Latitude__s, Geo_Location__Longitude__s,
+            CreatedDate, Visit__c
+            FROM Visit_Form__c
+            WHERE CreatedById = :userId
+            AND DAY_ONLY(CreatedDate) = :selectedDate
+            AND Geo_Location__Latitude__s != null
+            AND Geo_Location__Longitude__s != null
+        ];
+        
+        
+        system.debug(ord.size());
         // Fetch Daily Log
         Daily_Log__c dl;
         try {
             dl = [
                 SELECT Id, Name,
-                       Clock_In_Location__Latitude__s, Clock_In_Location__Longitude__s, 
-                       Day_ended_time__c, Day_started_time__c,
-                       Clock_Out_Location__Latitude__s, Clock_Out_Location__Longitude__s,
-                       Total_Working_Hours__c, Distance_Travelled_Map__c, Distance_Travelled__c,
-                       Total_Productive_Calls__c, Total_Non_Productive_Calls__c, New_Calls__c,
-                       Non_PJP_Productive_Calls__c, Total_Calls__c, Total_Normal_Call__c
+                Clock_In_Location__Latitude__s, Clock_In_Location__Longitude__s, 
+                Day_ended_time__c, Day_started_time__c,Unique_Visit_form_Visits__c,
+                Clock_Out_Location__Latitude__s, Clock_Out_Location__Longitude__s,
+                Total_Working_Hours__c, Distance_Travelled_Map__c, Distance_Travelled__c,
+                Total_Productive_Calls__c, Total_Non_Productive_Calls__c, New_Calls__c,
+                Non_PJP_Productive_Calls__c, Total_Calls__c, Total_Normal_Call__c,Total_Visit_form_Calls__c
                 FROM Daily_Log__c
                 WHERE OwnerId = :userId
                 AND Day_Started_Date__c = :selectedDate
                 LIMIT 1
             ];
-
-          //  resp.distance = dl.Distance_Travelled__c;
+            
+            //  resp.distance = dl.Distance_Travelled__c;
             resp.distance = dl.Distance_Travelled__c;
             resp.totalCall = dl.Total_Calls__c;
             resp.totpjpProd = dl.Total_Productive_Calls__c;
@@ -137,10 +151,12 @@ system.debug(ord.size());
             resp.newOut = dl.New_Calls__c;
             resp.nonPJPPro = dl.Non_PJP_Productive_Calls__c;
             resp.totalGeo = dl.Total_Normal_Call__c;
+            resp.visitFormUniqueCount = dl.Unique_Visit_form_Visits__c;
+            resp.visitFormCount = dl.Total_Visit_form_Calls__c;
         } catch (Exception e) {
             System.debug('️ No Daily_Log__c found: ' + e.getMessage());
         }
-
+        
         Integer seq = 0;
         
         
@@ -159,7 +175,7 @@ system.debug(ord.size());
             
             resp.visits.add(startDTO);
         }
-
+        
         // Add Visit__c records
         for (Visit__c v : rows) {
             VisitDTO d = new VisitDTO();
@@ -171,13 +187,13 @@ system.debug(ord.size());
             d.visitDate = v.Visit_Date__c;
             d.startingPoint = false;
             d.markerText = 
-             //   d.name + 
+                //   d.name + 
                 '\n Start: ' + (v.Actual_Start_Time__c != null ? v.Actual_Start_Time__c.format('dd/MM/yyyy, h:mm a') : 'N/A') +
                 '<br/> End: ' + (v.Actual_End_Time__c != null ? v.Actual_End_Time__c.format('dd/MM/yyyy, h:mm a') : 'In Progress');
             d.visitTime = v.Actual_Start_Time__c;
             resp.visits.add(d);
         }
-
+        
         // Add Order__c records
         for (Order__c v : ord) {
             VisitDTO d = new VisitDTO();
@@ -187,14 +203,14 @@ system.debug(ord.size());
             d.lng = (Double)v.Clock_In_Location__longitude__s;
             d.outcome = 'Non PJP Productive';
             d.markerText = 
-              //  d.name + 
+                //  d.name + 
                 '\n Order Id: ' + v.Name + 
                 '<br/> Order Time: ' + v.CreatedDate.format('dd/MM/yyyy, h:mm a');
             d.visitTime = v.CreatedDate;
             resp.visits.add(d);
         }
         
-          // Add account records
+        // Add account records
         for (account v : acc) {
             VisitDTO d = new VisitDTO();
             d.id = v.Id;
@@ -203,13 +219,29 @@ system.debug(ord.size());
             d.lng = (Double)v.GeoLocation__longitude__s;
             d.outcome = 'New Outlet';
             d.markerText = 
-             //   d.name + 
-              //  '\n Account Name: ' + v.Name + 
+                //   d.name + 
+                //  '\n Account Name: ' + v.Name + 
                 ' Created Time: ' + v.CreatedDate.format('dd/MM/yyyy, h:mm a');
             d.visitTime = v.CreatedDate;
             resp.visits.add(d);
         }
-
+        
+        // Add Visit Form records
+      
+        for (Visit_Form__c vf : visitForms) {
+            VisitDTO d = new VisitDTO();
+            d.id = vf.Id;
+            d.name = (vf.Customer_Name__c != null ? vf.Customer_Name__c : 'Visit Form');
+            d.lat = (Double)vf.Geo_Location__Latitude__s;
+            d.lng = (Double)vf.Geo_Location__Longitude__s;
+            d.outcome = 'Visit Form';
+            d.markerText =
+                '\n Visit Form: ' + vf.Name +
+                '<br/> Time: ' + vf.CreatedDate.format('dd/MM/yyyy, h:mm a');
+            d.visitTime = vf.CreatedDate;
+            resp.visits.add(d);
+        }
+        
         // Add Ending Point
         if (dl != null && dl.Clock_Out_Location__Latitude__s != null && dl.Clock_Out_Location__Longitude__s != null) {
             VisitDTO endDTO = new VisitDTO();
@@ -224,10 +256,10 @@ system.debug(ord.size());
             endDTO.visitTime = dl.Day_ended_time__c;
             resp.visits.add(endDTO);
         }
-
+        
         // Sort visits by visitTime
         resp.visits.sort(new VisitTimeComparator());
-
+        
         // Set map center points
         if (!resp.visits.isEmpty()) {
             resp.startLat = resp.visits[0].lat;
@@ -236,7 +268,7 @@ system.debug(ord.size());
             resp.endLng = resp.visits[resp.visits.size() - 1].lng;
         }
         for(VisitDTO st:resp.visits){
-             System.debug('Final : '+st.markerText+' --'+st.visitTime);
+            System.debug('Final : '+st.markerText+' --'+st.visitTime);
         }
         return resp;
     }

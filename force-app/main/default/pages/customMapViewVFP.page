@@ -150,6 +150,7 @@
             else if (item.outcome === 'PJP Unsuccessful') icon.fillColor = "#800080";
             else if (item.outcome === 'Non PJP Productive') icon.fillColor = "#ffff00";
             else if (item.outcome === 'New Outlet') icon.fillColor = "#008080";
+            else if (item.outcome === 'Visit Form') icon.fillColor = "#FF6600";
 
             var linkHtml =
                 '<a href="' + data.bUrl + item.id + '" target="_blank" style="color:#1a73e8;font-weight:bold;text-decoration:underline;">'

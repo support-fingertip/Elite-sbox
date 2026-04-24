@@ -10,16 +10,27 @@ public without sharing class GTInvoiceController {
     public Decimal totalQtyinCases { get; set; }
     public Decimal totalQtyinkg { get; set; }
     public Decimal totalTaxableAmount { get; set; }
+    public Decimal rOff { get; set; }
     
     public Decimal totalCgstAmount { get; set; }
     public Decimal totalSgstAmount { get; set; }
     public Decimal totalIgstAmount{ get; set; }
     
-    public boolean isStateMatching{ get; set; }
+    public String bankBeneficiaryName { get; set; }
+    public String accountNo { get; set; }
+    public String accountType{ get; set; }
+    public String ifscCode{ get; set; }
+    public String branch{ get; set; }
     
+    public boolean isStateMatching{ get; set; }
+
+    public String pageSize { get; set; }
+
     public GTInvoiceController(ApexPages.StandardController controller) {
- 
+
         recid = ApexPages.currentPage().getParameters().get('id');
+        pageSize = ApexPages.currentPage().getParameters().get('pageSize');
+        if (pageSize != 'A5') { pageSize = 'A4'; }
         NumberTOWordConvertion nwcObj = new NumberTOWordConvertion();
         wrapper = new DistributorWrapper();
 
@@ -40,13 +51,21 @@ public without sharing class GTInvoiceController {
         
         Account distributor = [
             SELECT Name,
-                   State__c, District__c, Street__c, Building_Name__c,
-                   City_Town__c, Land_Mark__c, Door_No__c, Pincode__c,
-                   GST_Number__c, Primary_Phone_Number__c, Email_ID__c
+            State__c, District__c, Street__c, Building_Name__c,
+            City_Town__c, Land_Mark__c, Door_No__c, Pincode__c,
+            GST_Number__c, Primary_Phone_Number__c, Email_ID__c,
+            Account_No__c,IFSC_Code__c,Bank_Name__c,Branch_Name__c,Account_Holder_Name__c
             FROM Account
             WHERE Id = :secInv.Store__c
             LIMIT 1
         ];
+        bankBeneficiaryName = distributor.Account_Holder_Name__c;
+        accountNo = distributor.Account_No__c;
+        ifscCode = distributor.IFSC_Code__c;
+        branch = distributor.Branch_Name__c;
+        
+        
+        
          isStateMatching = true;
 
 
@@ -175,7 +194,13 @@ public without sharing class GTInvoiceController {
         }
         
         totalQuantity = totalQuantityval;
-        totalAmount = totalAmountval;
+        // Rounded down value (floor)
+        Long roundedAmount = totalAmountval.longValue(); 
+        
+        // R/off = rounded - original (will be negative)
+        Decimal rOffval = roundedAmount - totalAmountval;
+        rOff = rOffval;
+        totalAmount = roundedAmount;
         
         totalQtyinCases = totalQtyinCasesval;
         totalQtyinkg = totalQtyinkgval;
