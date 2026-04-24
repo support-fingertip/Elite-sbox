@@ -204,9 +204,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         
         Account acc = [select Id,Name,SAP_Customer_Code__c from Account where Id =:accountId ];
@@ -282,9 +280,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         system.debug('frmDate '+frmDate+' toDate '+toDate);
         system.debug('statusstatus '+status);
@@ -432,9 +428,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         
         List<PrimaryReturnWrapper> results = new List<PrimaryReturnWrapper>();
@@ -483,9 +477,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         List<Collection_Item__c> paymentReceiptItems = [
             SELECT Id, Name, Invoice_Number__c, Collection__r.Name, 
@@ -672,14 +664,12 @@ public without sharing class DMSPortalLwc {
         ];
         if (partnerUser.size() > 0) {
             List<Contact> contact = [
-                SELECT AccountId
-                FROM Contact
-                WHERE Id = :partnerUser[0].ContactId
+                SELECT AccountId 
+                FROM Contact 
+                WHERE Id = :partnerUser[0].ContactId 
                 LIMIT 1
             ];
-            if (contact.size() > 0) {
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         
         // Step 2: Get all stock records for that distributor
@@ -783,9 +773,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         DmsData dt = new DmsData();
         List<Secondary_Credit_Note__c> creditNotesList = new List<Secondary_Credit_Note__c>();
@@ -826,9 +814,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         Secondary_Credit_Note__c cn = new Secondary_Credit_Note__c();
         cn.Customer__c = (String) data.get('customerId');
@@ -851,9 +837,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         List<Secondary_Debit_Note__c> debitNotesList = new List<Secondary_Debit_Note__c>();
         String query = 'SELECT Id, Name, Note_Date__c, Customer__c, Customer__r.Name, Distributor__c, Distributor__r.Name, Status__c, Reason__c, Amount__c, Description__c, Secondary_Invoice__c, Secondary_Invoice__r.Name '+
@@ -892,9 +876,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
 
         Secondary_Debit_Note__c dn = new Secondary_Debit_Note__c();
@@ -919,9 +901,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         List<Secondary_Invoice__c> inv = new List<Secondary_Invoice__c>();
         if (status == 'All' || status =='' || status == null) {
@@ -1005,9 +985,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         // Fetch Secondary Returns with customer and amount, ordered by return date in descending order
         List<Return__c> secondaryReturns = [
@@ -1157,9 +1135,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         system.debug(items);
         if (invoiceId == null || items == null || items.isEmpty()) {
@@ -1334,9 +1310,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         
         Set<String> channelSet = new Set<String>();
@@ -1389,9 +1363,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         System.debug('>>> claimData: ' + JSON.serialize(claimData));
         if (claimData == null || claimData.isEmpty()) {
@@ -1418,9 +1390,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         
         
@@ -1469,9 +1439,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         
         
@@ -1716,9 +1684,7 @@ public without sharing class DMSPortalLwc {
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
         if(partnerUser.size() >0){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            if(contact.size() > 0){
-                accountId = contact[0].AccountId;
-            }
+            accountId = contact[0].AccountId;
         }
         
         if (invoices == null || invoices.isEmpty()) {
