@@ -1574,6 +1574,8 @@
                                 <thead>
                                     <tr>
                                         <th>S.No.</th>
+                                        <th>Action</th>
+                                        <th>Outstanding</th>
                                         <th>Customer Name</th>
                                         <th>Customer Code</th>
                                         <th>Customer Type</th>
@@ -1590,8 +1592,6 @@
                                         <th>Landmark</th>
                                         <th>Street</th>
                                         <th>Pincode</th>
-                                        <th>Outstanding</th>
-                                        <th class="sticky-col">Action</th>
                                     </tr>
                                 </thead>
 
@@ -1601,6 +1601,13 @@
                                             for:item="cust">
                                             <tr key={cust.secondaryCustomerId}>
                                                 <td>{cust.sNumber}</td>
+                                                <td >
+                                                    <button class="aging-report-btn"
+                                                        data-id={cust.secondaryCustomerId}
+                                                        data-name={cust.secondaryCustomerName}
+                                                        onclick={openReportTypeModal}>View Report</button>
+                                                </td>
+                                                <td class="text-right">{cust.outStanding}</td>
                                                 <td>{cust.secondaryCustomerName}</td>
                                                 <td>{cust.secondaryCustomerCode}</td>
                                                 <td>{cust.customerType}</td>
@@ -1617,13 +1624,8 @@
                                                 <td>{cust.landmark}</td>
                                                 <td>{cust.street}</td>
                                                 <td>{cust.pincode}</td>
-                                                <td class="text-right">{cust.outStanding}</td>
-                                                <td class="sticky-col">
-                                                    <button class="aging-report-btn"
-                                                        data-id={cust.secondaryCustomerId}
-                                                        data-name={cust.secondaryCustomerName}
-                                                        onclick={openReportTypeModal}>View Report</button>
-                                                </td>
+                                            
+                                                
                                             </tr>
                                         </template>
                                     </template>
@@ -1648,7 +1650,7 @@
                         <!-- Report type selection popup (Outstanding / Aging) -->
                         <template lwc:if={showReportTypeModal}>
                             <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
-                                <div class="slds-modal__container report-type-modal">
+                                <div class="slds-modal__container">
                                     <header class="slds-modal__header">
                                         <h2 class="slds-text-heading_medium">Select Report Type</h2>
                                     </header>
@@ -1667,7 +1669,10 @@
                                     </footer>
                                 </div>
                             </section>
-                            <div class="slds-backdrop slds-backdrop_open"></div>
+                        <div class="slds-backdrop slds-backdrop_open"></div>
+
+
+
                         </template>
 
                     </div>
@@ -1854,6 +1859,14 @@
             <!--Claim Reports Tab-->
             <template lwc:if={showClaimReports}>
                 <c-claim-reports></c-claim-reports>
+            </template>
+            <!--showProductMatser Tab-->
+            <template lwc:if={showProductMatser}>
+                <c-product-master-table></c-product-master-table>
+            </template>
+              <!--showProductMatser Tab-->
+            <template lwc:if={showSchemes}>
+                <c-running-schemes></c-running-schemes>
             </template>
 
         </div>

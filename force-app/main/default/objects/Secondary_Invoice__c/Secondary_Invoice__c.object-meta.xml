@@ -162,7 +162,7 @@
     <label>Secondary Invoice</label>
     <nameField>
         <displayFormat>{YYYY} / {MM} / {0000}</displayFormat>
-        <label>Secondary Invoice Name</label>
+        <label>Invoice No</label>
         <trackHistory>false</trackHistory>
         <type>AutoNumber</type>
     </nameField>

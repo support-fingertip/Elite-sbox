@@ -1,0 +1,107 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="container">
+            <c-loading-screen></c-loading-screen>
+        </div>
+    </template>
+
+    <template lwc:else>
+        <div class="container">
+            <!-- Hidden download anchor for LWC CSV export -->
+            <a class="hidden-download-link" style="display:none;"></a>
+
+            <!-- Replace the filters div with this -->
+            <div class="filters-header">
+                <h3 class="order-title-center">Product Master</h3>
+                <div class="filters-row">
+                    <div class="filters-left">
+                        <lightning-combobox
+                            label="Category"
+                            value={selectedCategory}
+                            options={categoryOptions}
+                            onchange={handleCategoryChange}>
+                        </lightning-combobox>
+
+                        <lightning-combobox
+                            label="Product Group"
+                            value={selectedProductGroup}
+                            options={productGroupOptions}
+                            onchange={handleProductGroupChange}>
+                        </lightning-combobox>
+
+                        <lightning-combobox
+                            label="Product Sub Group"
+                            value={selectedProductSubGroup}
+                            options={productSubGroupOptions}
+                            onchange={handleProductSubGroupChange}>
+                        </lightning-combobox>
+
+                        <lightning-input
+                            type="search"
+                            label="Search"
+                            placeholder="Product Name"
+                            value={searchKey}
+                            onchange={handleSearch}>
+                        </lightning-input>
+                    </div>
+
+                    <div class="filters-right">
+                        <button class="StockAdjustmentactionButton" onclick={handleDownload}>Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Product Name</th>
+                            <th>SKU</th>
+                            <th>Category</th>
+                            <th>Product Group</th>
+                            <th>Sub Group</th>
+                            <th>MRP</th>
+                            <th>UOM</th>
+                            <th>Alternate UOM</th>
+                            <th>UOM Conversion </th>
+                            <th>Conversion Summary</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <template if:true={hasProducts}>
+                            <template for:each={filteredProducts} for:item="prod">
+                                <tr key={prod.id}>
+                                    <td>{prod.index}</td>
+                                    <td>{prod.name}</td>
+                                    <td>{prod.sku}</td>
+                                    <td>{prod.category}</td>
+                                    <td>{prod.productGroup}</td>
+                                    <td>{prod.productSubGroup}</td>
+                                    <td>₹ {prod.mrp}</td>
+                                    <td> {prod.uom}</td>
+                                    <td>{prod.alternateUom}</td>
+                                    <td>{prod.uomConversion}</td>
+                                    <!-- Conversion Text -->
+                                    <td>{prod.conversionText}</td>
+                                </tr>
+                            </template>
+                        </template>
+
+                        <!-- No Records -->
+                        <template if:false={hasProducts}>
+                            <tr>
+                                <td colspan="11" class="no-data-cell">
+                                    No records found!
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </template>
+</template>

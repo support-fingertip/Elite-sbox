@@ -1,0 +1,140 @@
+<template>
+    <div class="rs-root">
+
+        <!-- Header -->
+        <div class="rs-header">
+            <div class="rs-header-left">
+                <span class="rs-icon">⚡</span>
+                <div>
+                    <h1 class="rs-title">Schemes</h1>
+                    <p class="rs-subtitle">{totalSchemes} Active Schemes &bull; {totalProducts} Products</p>
+                </div>
+            </div>
+
+            <div class="rs-header-right">
+                <!-- Filter Buttons -->
+                <div class="rs-filter-group">
+                    <button class={lastMonthClass} onclick={handleFilterChange} data-filter="previous">Last Month</button>
+                    <button class={currentMonthClass} onclick={handleFilterChange} data-filter="current">This Month</button>
+                    <!--<button class={customClass} onclick={handleFilterChange} data-filter="custom">Custom</button>-->
+                </div>
+
+                <!-- Download Button -->
+                <button class="rs-download-btn" onclick={handleDownload}>
+                    ⬇ Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom Date Range -->
+        <template if:true={isCustom}>
+            <div class="rs-custom-bar">
+                <div class="rs-custom-field">
+                    <label class="rs-custom-label">From Date</label>
+                    <lightning-input type="date" value={customFromDate} onchange={handleFromDate} variant="label-hidden"></lightning-input>
+                </div>
+                <div class="rs-custom-field">
+                    <label class="rs-custom-label">To Date</label>
+                    <lightning-input type="date" value={customToDate} onchange={handleToDate} variant="label-hidden"></lightning-input>
+                </div>
+                <button class="rs-apply-btn" onclick={applyCustomFilter}>Apply</button>
+            </div>
+        </template>
+
+        <!-- Date Range Info -->
+        <div class="rs-date-bar">
+            <span class="rs-date-label">📅 Showing schemes from</span>
+            <span class="rs-date-range">{dateRangeLabel}</span>
+        </div>
+
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div style="margin:10px">
+                <c-loading-screen></c-loading-screen>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template if:true={error}>
+            <div class="rs-error">
+                <span>⚠️</span>
+                <p>{error}</p>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template if:true={isEmpty}>
+            <div class="rs-empty">
+                <div class="rs-empty-icon">📋</div>
+                <p class="rs-empty-title">No schemes found</p>
+                <p class="rs-empty-sub">Try switching to a different month.</p>
+            </div>
+        </template>
+
+        <!-- Scheme Cards -->
+        <template if:true={hasSchemes}>
+            <div class="rs-scheme-list">
+                <template for:each={schemes} for:item="scheme">
+                    <div key={scheme.schemeId} class="rs-scheme-card">
+
+                        <!-- Scheme Header -->
+                        <div class="rs-scheme-header" onclick={toggleScheme} data-id={scheme.schemeId}>
+                            <div class="rs-scheme-header-left">
+                                <div class="rs-scheme-badge">{scheme.productCount} Products</div>
+                                <div>
+                                    <h2 class="rs-scheme-name">{scheme.schemeName}</h2>
+                                    <template if:true={scheme.description}>
+                                        <p class="rs-scheme-desc">{scheme.description}</p>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="rs-scheme-header-right">
+                                <div class="rs-scheme-dates">
+                                    <span class="rs-date-chip rs-start">▶ {scheme.startDateFormatted}</span>
+                                    <span class="rs-date-chip rs-end">◀ {scheme.endDateFormatted}</span>
+                                </div>
+                                <span class={scheme.chevronClass}>›</span>
+                            </div>
+                        </div>
+
+                        <!-- Scheme Body -->
+                        <template if:true={scheme.isExpanded}>
+                            <div class="rs-scheme-body">
+                                <template for:each={scheme.typeGroups} for:item="group">
+                                    <div key={group.schemeType} class="rs-type-group">
+                                        <div class={group.typeHeaderClass}>
+                                            <span class={group.typeIconClass}>{group.typeIcon}</span>
+                                            <span class="rs-type-label">{group.schemeType}</span>
+                                            <span class="rs-type-count">{group.count}</span>
+                                        </div>
+                                        <div class="rs-product-grid">
+                                            <template for:each={group.products} for:item="bp">
+                                                <div key={bp.buyProductId} class="rs-product-card">
+                                                    <div class="rs-product-top">
+                                                        <div class="rs-product-name">{bp.productName}</div>
+                                                        <template if:true={bp.secondaryCustomerCategory}>
+                                                            <div class="rs-category-chip">{bp.secondaryCustomerCategory}</div>
+                                                        </template>
+                                                    </div>
+                                                    <div class={bp.schemeTextClass}>
+                                                        <span class="rs-scheme-text-icon">{bp.schemeIcon}</span>
+                                                        <span>{bp.schemeText}</span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Hidden download anchor (LWC-safe) -->
+        <a class="hidden-download-link" style="display:none;"></a>
+
+    </div>
+</template>

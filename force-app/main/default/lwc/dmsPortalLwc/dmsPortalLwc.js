@@ -78,6 +78,8 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Users', label: 'Users' },
         { id: 'Stock Adjustment', label: 'Stock Adjustment' },
         { id: 'Product Gallery', label: 'Product Gallery' },
+        { id: 'Product Master', label: 'Product Master' },
+        { id: 'Schemes', label: 'Schemes' },
        /*{ id: 'Claim Reports', label: 'Claim Reports' }**/
     ];
     @track showSecondaryReceipt = false;
@@ -192,6 +194,8 @@ export default class NavigationComponent extends LightningElement {
     showStockAdjustment = false;
     showProductGallery = false;
     showClaimReports = false;
+    showProductMatser = false;
+    showSchemes = false;
 
 
     showStock = false;
@@ -549,6 +553,8 @@ export default class NavigationComponent extends LightningElement {
         this.showSecondaryCustomerAgingReport = false;
         this.showOutstandingReport = false;
         this.showClaimReports = false;
+        this.showProductMatser = false;
+        this.showSchemes = false;
     }
 
     selectedTabFunction() {
@@ -631,6 +637,12 @@ export default class NavigationComponent extends LightningElement {
             case 'Claim Reports':
                 this.showClaimReports = true;
                 break;
+            case 'Product Master':
+                this.showProductMatser = true;
+                break;    
+            case 'Schemes':
+                this.showSchemes = true;
+                break;  
             default:
                 break;
         }
