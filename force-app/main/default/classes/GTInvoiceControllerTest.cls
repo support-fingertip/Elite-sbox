@@ -67,6 +67,23 @@ private class GTInvoiceControllerTest {
         );
         insert ord;
 
+        Order_Item__c ordItem = new Order_Item__c(
+            Order__c = ord.Id,
+            Product__c = product.Id,
+            Quantity__c = 10,
+            Unit_Price__c = 100,
+            Tax_Percent__c = 18,
+            Tax_Amount__c = 180,
+            Total_Amount__c = 1180
+        );
+        insert ordItem;
+
+        Distributor_Stock__c stock = new Distributor_Stock__c(
+            Product__c = product.Id,
+            Distributor__c = distributor.Id
+        );
+        insert stock;
+
         Secondary_Invoice__c sameStateInv = new Secondary_Invoice__c(
             Store__c = distributor.Id,
             Customer__c = sameStateCustomer.Id,
@@ -106,7 +123,9 @@ private class GTInvoiceControllerTest {
             Unit_Price__c = 100,
             Tax_Percent__c = 18,
             Tax_Amount__c = 180,
-            Total_Amount__c = 1180.75
+            Total_Amount__c = 1180.75,
+            Distributor_Stock__c = stock.Id,
+            Order_Item__c = ordItem.Id
         ));
         items.add(new Secondary_Invoice_Item__c(
             Secondary_Invoice__c = diffStateInv.Id,
@@ -116,11 +135,16 @@ private class GTInvoiceControllerTest {
             Unit_Price__c = 200,
             Tax_Percent__c = 18,
             Tax_Amount__c = 180,
-            Total_Amount__c = 1180.25
+            Total_Amount__c = 1180.25,
+            Distributor_Stock__c = stock.Id,
+            Order_Item__c = ordItem.Id
         ));
         items.add(new Secondary_Invoice_Item__c(
             Secondary_Invoice__c = nullFieldsInv.Id,
-            Product_Name__c = 'Test Product 3'
+            Product__c = product.Id,
+            Product_Name__c = 'Test Product 3',
+            Distributor_Stock__c = stock.Id,
+            Order_Item__c = ordItem.Id
         ));
         insert items;
     }
