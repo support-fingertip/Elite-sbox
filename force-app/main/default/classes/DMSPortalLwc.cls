@@ -771,9 +771,11 @@ public without sharing class DMSPortalLwc {
 
         Id accountId;
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
-        if(partnerUser.size() >0){
+        if(partnerUser.size() >0 && partnerUser[0].ContactId != null){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            accountId = contact[0].AccountId;
+            if(!contact.isEmpty()){
+                accountId = contact[0].AccountId;
+            }
         }
         DmsData dt = new DmsData();
         List<Secondary_Credit_Note__c> creditNotesList = new List<Secondary_Credit_Note__c>();
@@ -812,9 +814,11 @@ public without sharing class DMSPortalLwc {
         Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(creditNoteJson);
         Id accountId;
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
-        if(partnerUser.size() >0){
+        if(partnerUser.size() >0 && partnerUser[0].ContactId != null){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            accountId = contact[0].AccountId;
+            if(!contact.isEmpty()){
+                accountId = contact[0].AccountId;
+            }
         }
         Secondary_Credit_Note__c cn = new Secondary_Credit_Note__c();
         cn.Customer__c = (String) data.get('customerId');
@@ -835,9 +839,11 @@ public without sharing class DMSPortalLwc {
         DmsData dt = new DmsData();
         Id accountId;
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
-        if(partnerUser.size() >0){
+        if(partnerUser.size() >0 && partnerUser[0].ContactId != null){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            accountId = contact[0].AccountId;
+            if(!contact.isEmpty()){
+                accountId = contact[0].AccountId;
+            }
         }
         List<Secondary_Debit_Note__c> debitNotesList = new List<Secondary_Debit_Note__c>();
         String query = 'SELECT Id, Name, Note_Date__c, Customer__c, Customer__r.Name, Distributor__c, Distributor__r.Name, Status__c, Reason__c, Amount__c, Description__c, Secondary_Invoice__c, Secondary_Invoice__r.Name '+
@@ -874,9 +880,11 @@ public without sharing class DMSPortalLwc {
         Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(debitNoteJson);
         Id accountId;
         List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId()];
-        if(partnerUser.size() >0){
+        if(partnerUser.size() >0 && partnerUser[0].ContactId != null){
             List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
-            accountId = contact[0].AccountId;
+            if(!contact.isEmpty()){
+                accountId = contact[0].AccountId;
+            }
         }
 
         Secondary_Debit_Note__c dn = new Secondary_Debit_Note__c();
