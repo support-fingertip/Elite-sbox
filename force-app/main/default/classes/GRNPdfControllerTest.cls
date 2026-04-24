@@ -34,6 +34,23 @@ private class GRNPdfControllerTest {
         );
         insert prod;
 
+        Invoice_Item__c invItem = new Invoice_Item__c(
+            Invoice__c = inv.Id,
+            Product__c = prod.Id,
+            SKU__c = prod.Id,
+            Qyt__c = 10,
+            Price_per_unit__c = 100,
+            GST_Amount__c = 18,
+            Bill_Amount__c = 1180
+        );
+        insert invItem;
+
+        Distributor_Stock__c stock = new Distributor_Stock__c(
+            Product__c = prod.Id,
+            Distributor__c = customer.Id
+        );
+        insert stock;
+
         Goods_Received_Note__c grn = new Goods_Received_Note__c(
             Invoice__c = inv.Id,
             GRN_Date__c = Date.today()
@@ -43,6 +60,8 @@ private class GRNPdfControllerTest {
         Goods_Received_Note_Item__c grnItem = new Goods_Received_Note_Item__c(
             Goods_Received_Note__c = grn.Id,
             Product__c = prod.Id,
+            Invoice_Item__c = invItem.Id,
+            Distributor_Stock__c = stock.Id,
             Invoiced_Quantity__c = 10,
             Received_Saleable_Quantity__c = 8,
             Received_Nonsaleable_Quantity__c = 2
