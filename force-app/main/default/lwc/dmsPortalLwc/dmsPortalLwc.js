@@ -50,7 +50,7 @@ import { loadScript } from 'lightning/platformResourceLoader';
 import SHEETJS from '@salesforce/resourceUrl/SheetJS';
 import { refreshApex } from '@salesforce/apex';
 const TAB_WIDTH = 145;     // realistic average width per tab
-const RESERVED_WIDTH = 300; // logo + profile + More button + spacing
+const RESERVED_WIDTH = 180; // logo + More button + spacing
 
 export default class NavigationComponent extends LightningElement {
     //Varible related to tab Function
@@ -62,7 +62,7 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Home', label: 'Home' },
         { id: 'Orders', label: 'Primary Orders' },
         { id: 'Invoices', label: 'Primary Invoices' },
-        { id: 'Returns', label: 'Primary Returns' },
+        { id: 'Returns', label: 'Sale Return' },
         { id: 'Payments', label: 'Receipts' },
         { id: 'GRN', label: 'GRNs' },
         { id: 'Claims', label: 'Claims' },
@@ -78,6 +78,8 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Users', label: 'Users' },
         { id: 'Stock Adjustment', label: 'Stock Adjustment' },
         { id: 'Product Gallery', label: 'Product Gallery' },
+        { id: 'Product Master', label: 'Product Master' },
+        { id: 'Schemes', label: 'Schemes' },
        /*{ id: 'Claim Reports', label: 'Claim Reports' }**/
     ];
     @track showSecondaryReceipt = false;
@@ -192,6 +194,8 @@ export default class NavigationComponent extends LightningElement {
     showStockAdjustment = false;
     showProductGallery = false;
     showClaimReports = false;
+    showProductMatser = false;
+    showSchemes = false;
 
 
     showStock = false;
@@ -350,6 +354,17 @@ export default class NavigationComponent extends LightningElement {
         isshowData: false
     };
 
+    SECONDARY_CUSTOMER_PAGE_SIZE = 100;
+    @track visibleSecondaryCustomers = [];
+    _secondaryVisibleCount = 100;
+
+    @track showReportTypeModal = false;
+    @track selectedReportType = 'outstanding';
+    reportTypeOptions = [
+        { label: 'Outstanding Report', value: 'outstanding' },
+        { label: 'Aging Report', value: 'aging' }
+    ];
+
     @track secondaryCustomerLedgerFilter = {
         fromDate: '',
         toDate: '',
@@ -384,6 +399,14 @@ export default class NavigationComponent extends LightningElement {
 
     invoiceIdToDownloadPdf = '';
     isShowNewAdjustStock = false;
+    customerNameWithCode = '';
+
+    @track showPageSizeModal = false;
+    @track selectedPdfPageSize = 'A4';
+    pageSizeOptions = [
+        { label: 'A4', value: 'A4' },
+        { label: 'A5', value: 'A5' }
+    ];
 
 
     /*Dynamic Tabs */
@@ -451,7 +474,7 @@ export default class NavigationComponent extends LightningElement {
     /*  Calculate based on screen width */
     calculateTabs() {
         // Always show 9 tabs in the header
-        this.visibleTabCount = 9;
+        this.visibleTabCount = 10;
     }
     toggleMoreMenu(event) {
         event.stopPropagation();
@@ -530,6 +553,8 @@ export default class NavigationComponent extends LightningElement {
         this.showSecondaryCustomerAgingReport = false;
         this.showOutstandingReport = false;
         this.showClaimReports = false;
+        this.showProductMatser = false;
+        this.showSchemes = false;
     }
 
     selectedTabFunction() {
@@ -612,6 +637,12 @@ export default class NavigationComponent extends LightningElement {
             case 'Claim Reports':
                 this.showClaimReports = true;
                 break;
+            case 'Product Master':
+                this.showProductMatser = true;
+                break;    
+            case 'Schemes':
+                this.showSchemes = true;
+                break;  
             default:
                 break;
         }
@@ -785,6 +816,8 @@ export default class NavigationComponent extends LightningElement {
                 this.secoundaryCustomerFilter.allSecondaryCustomers = result.customerData || [];
                 this.secoundaryCustomerFilter.isshowData =
                     result.customerData && result.customerData.length > 0;
+                this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
+                this._applySecondaryCustomerPagination();
             })
             .catch(error => {
                 console.error('Error fetching secondary customers:', error);
@@ -805,6 +838,8 @@ export default class NavigationComponent extends LightningElement {
             this.secoundaryCustomerFilter.allSecondaryCustomers = result.customerData || [];
             this.secoundaryCustomerFilter.isshowData =
                 result.customerData && result.customerData.length > 0;
+            this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
+            this._applySecondaryCustomerPagination();
         })
         .catch(error => {
             console.error('Error fetching secondary customers:', error);
@@ -812,6 +847,28 @@ export default class NavigationComponent extends LightningElement {
         .finally(() => {
             this.isSubPartLoad = false;
         });
+    }
+
+    get hasMoreSecondaryCustomers() {
+        return this.visibleSecondaryCustomers.length <
+            (this.secoundaryCustomerFilter.originalSecondaryCustomers || []).length;
+    }
+
+    get loadMoreSecondaryCustomersLabel() {
+        const total = (this.secoundaryCustomerFilter.originalSecondaryCustomers || []).length;
+        const remaining = total - this.visibleSecondaryCustomers.length;
+        const next = Math.min(this.SECONDARY_CUSTOMER_PAGE_SIZE, remaining);
+        return `Load More (${next} of ${remaining} remaining)`;
+    }
+
+    _applySecondaryCustomerPagination() {
+        const src = this.secoundaryCustomerFilter.originalSecondaryCustomers || [];
+        this.visibleSecondaryCustomers = src.slice(0, this._secondaryVisibleCount);
+    }
+
+    handleSecondaryCustomerLoadMore() {
+        this._secondaryVisibleCount += this.SECONDARY_CUSTOMER_PAGE_SIZE;
+        this._applySecondaryCustomerPagination();
     }
 
     handleSecondaryCustomerStatusChange(event) {
@@ -831,6 +888,8 @@ export default class NavigationComponent extends LightningElement {
             ];
             this.secoundaryCustomerFilter.isshowData =
                 this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
+            this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
+            this._applySecondaryCustomerPagination();
             return;
         }
 
@@ -845,13 +904,8 @@ export default class NavigationComponent extends LightningElement {
         // Show / hide data
         this.secoundaryCustomerFilter.isshowData =
             this.secoundaryCustomerFilter.originalSecondaryCustomers.length > 0;
-    }
-
-    handleViewAgingReport(event) {
-        this.selectedAgingCustomerId = event.currentTarget.dataset.id;
-        this.selectedAgingCustomerName = event.currentTarget.dataset.name;
-        this.isShowSecondaryCustomers = false;
-        this.showSecondaryCustomerAgingReport = true;
+        this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
+        this._applySecondaryCustomerPagination();
     }
 
     handleAgingReportBack() {
@@ -864,20 +918,29 @@ export default class NavigationComponent extends LightningElement {
         this.getCustomerData();
     }
 
-    toggleReportMenu(event) {
-        const custId = event.currentTarget.dataset.id;
-        this.secoundaryCustomerFilter.originalSecondaryCustomers =
-            this.secoundaryCustomerFilter.originalSecondaryCustomers.map(c => ({
-                ...c,
-                showReportMenu: c.secondaryCustomerId === custId ? !c.showReportMenu : false
-            }));
-    }
-
-    handleViewOutstandingReport(event) {
+    openReportTypeModal(event) {
         this.selectedAgingCustomerId = event.currentTarget.dataset.id;
         this.selectedAgingCustomerName = event.currentTarget.dataset.name;
+        this.selectedReportType = 'outstanding';
+        this.showReportTypeModal = true;
+    }
+
+    handleReportTypeChange(event) {
+        this.selectedReportType = event.detail.value;
+    }
+
+    closeReportTypeModal() {
+        this.showReportTypeModal = false;
+    }
+
+    confirmReportView() {
+        this.showReportTypeModal = false;
         this.isShowSecondaryCustomers = false;
-        this.showOutstandingReport = true;
+        if (this.selectedReportType === 'aging') {
+            this.showSecondaryCustomerAgingReport = true;
+        } else {
+            this.showOutstandingReport = true;
+        }
     }
 
     handleOutstandingReportBack() {
@@ -903,7 +966,9 @@ export default class NavigationComponent extends LightningElement {
             const headers = [
                 'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
                 'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
-                'District', 'Outstanding'
+                'Email ID', 'Aadhaar No', 'GST Number', 'Contact Person',
+                'PAN Number', 'District', 'Landmark', 'Street', 'Pincode',
+                'Outstanding'
             ];
 
             const rows = data.map(cust => [
@@ -915,7 +980,15 @@ export default class NavigationComponent extends LightningElement {
                 cust.status                || '',
                 cust.primaryPhoneNumber    || '',
                 cust.beatName              || '',
+                cust.email                 || '',
+                cust.aadhaarNo             || '',
+                cust.gstNumber             || '',
+                cust.contactPersonName     || '',
+                cust.panNumber             || '',
                 cust.district              || '',
+                cust.landmark              || '',
+                cust.street                || '',
+                cust.pincode               || '',
                 cust.outStanding           || ''
             ]);
 
@@ -963,7 +1036,9 @@ export default class NavigationComponent extends LightningElement {
                 const headers = [
                     'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
                     'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
-                    'District', 'Outstanding'
+                    'Email ID', 'Aadhaar No', 'GST Number', 'Contact Person',
+                    'PAN Number', 'District', 'Landmark', 'Street', 'Pincode',
+                    'Outstanding'
                 ];
 
                 const rows = data.map(cust => [
@@ -975,7 +1050,15 @@ export default class NavigationComponent extends LightningElement {
                     cust.status                || '',
                     cust.primaryPhoneNumber    || '',
                     cust.beatName              || '',
+                    cust.email                 || '',
+                    cust.aadhaarNo             || '',
+                    cust.gstNumber             || '',
+                    cust.contactPersonName     || '',
+                    cust.panNumber             || '',
                     cust.district              || '',
+                    cust.landmark              || '',
+                    cust.street                || '',
+                    cust.pincode               || '',
                     cust.outStanding           || ''
                 ]);
 
@@ -991,7 +1074,15 @@ export default class NavigationComponent extends LightningElement {
                     { wch: 12 },  // Status
                     { wch: 14 },  // Primary Phone
                     { wch: 18 },  // Beat Name
+                    { wch: 24 },  // Email ID
+                    { wch: 16 },  // Aadhaar No
+                    { wch: 18 },  // GST Number
+                    { wch: 20 },  // Contact Person
+                    { wch: 14 },  // PAN Number
                     { wch: 14 },  // District
+                    { wch: 20 },  // Landmark
+                    { wch: 24 },  // Street
+                    { wch: 10 },  // Pincode
                     { wch: 14 }   // Outstanding
                 ];
 
@@ -1260,6 +1351,7 @@ export default class NavigationComponent extends LightningElement {
 
                 //this.ordFilter.statusVal = result.statusOptions;
                 this.ordFilter.allordData = this.addRowIndex(uniqueOrders);
+                this.customerNameWithCode = result.customerNameWithCode;
                 this.ordFilter.originalOrdData = this.addRowIndex(uniqueOrders);
                 this.ordFilter.isOrderDataExisted = uniqueOrders.length !== 0;
                 this.isSubPartLoad = false;
@@ -2309,12 +2401,22 @@ export default class NavigationComponent extends LightningElement {
 
 
     downloadSecondaryInvoicePdf() {
-        console.log('this.invoiceIdToDownloadPdf=='+this.invoiceIdToDownloadPdf);
-        // Build URL
-        const urlOpen = `${orgUrl}/GTInvoice?id=${this.invoiceIdToDownloadPdf}`;
+        this.selectedPdfPageSize = 'A4';
+        this.showPageSizeModal = true;
+    }
 
+    handlePageSizeChange(event) {
+        this.selectedPdfPageSize = event.detail.value;
+    }
+
+    confirmDownloadSecondaryInvoicePdf() {
+        const urlOpen = `${orgUrl}/GTInvoice?id=${this.invoiceIdToDownloadPdf}&pageSize=${this.selectedPdfPageSize}`;
         window.open(urlOpen, "_blank");
+        this.showPageSizeModal = false;
+    }
 
+    closePageSizeModal() {
+        this.showPageSizeModal = false;
     }
 
 

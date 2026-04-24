@@ -78,6 +78,7 @@
                                 <th class="th-left">Beat Name</th>
                                 <th class="th-left">Document No.</th>
                                 <th class="th-left">Document Date</th>
+                                <th class="th-left">Aging</th>
                                 <th class="th-right">Amount</th>
                                 <th class="th-right">Collected Amt</th>
                                 <th class="th-right">Outstanding Amt</th>
@@ -97,13 +98,14 @@
                                     <td class="td-left">{row.beatName}</td>
                                     <td class="td-left">{row.documentNumber}</td>
                                     <td class="td-left">{row.formattedDate}</td>
+                                    <td class="td-left">{row.aging}</td>
                                     <td class="td-right">{row.formattedDocAmount}</td>
                                     <td class="td-right">{row.formattedCollected}</td>
                                     <td class="td-right">{row.formattedOutstanding}</td>
                                 </tr>
                             </template>
                             <tr class="total-row">
-                                <td colspan="11" class="td-left total-label">Total</td>
+                                <td colspan="12" class="td-left total-label">Total</td>
                                 <td class="td-right total-val">{formattedTotalDocument}</td>
                                 <td class="td-right total-val">{formattedTotalCollected}</td>
                                 <td class="td-right total-val">{formattedTotalOutstanding}</td>

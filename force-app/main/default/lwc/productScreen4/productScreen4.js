@@ -932,7 +932,8 @@ export default class ProductScreen4 extends LightningElement {
                 After_Scheme_Unit_Price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
                 Tax__c: item.taxPercent || 0,
                 Tax_Amount__c: parseFloat(item.taxAmt),
-                Total_Amount__c: parseFloat(item.netValue)
+                Total_Amount__c: parseFloat(item.netValue),
+                SKU_Weight__c : parseFloat(item.netWeight)
             })),
             deliveryTo: this.deliveryTo,
             expectedDate: this.expectedDeliveryDate,

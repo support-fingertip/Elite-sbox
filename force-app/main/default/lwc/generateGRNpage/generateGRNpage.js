@@ -1,6 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
 import createGRN from '@salesforce/apex/DMSPortalLwc.createGRN';
-import saveGRNImage from '@salesforce/apex/DMSPortalLwc.saveGRNImage';
 import getInvoicesByIds from '@salesforce/apex/DMSPortalLwc.getInvoicesByIds';
 import GOOGLE_ICONS from '@salesforce/resourceUrl/googleIcons';
 
@@ -195,17 +194,7 @@ export default class GenerateGRNpage extends LightningElement {
         this.isPageLoaded = true;
 
         createGRN({ invoiceId: invoiceId, items: payload, comments: this.grnComments || '' })
-            .then(grnId => {
-                // Save image if uploaded
-                if (this.imageBase64 && this.imageFileName) {
-                    return saveGRNImage({
-                        grnId: grnId,
-                        fileName: this.imageFileName,
-                        base64Data: this.imageBase64
-                    }).then(() => grnId);
-                }
-                return grnId;
-            })
+         
             .then(grnId => {
                 this.showToast('Success', 'GRN created successfully', 'success');
                 setTimeout(() => {

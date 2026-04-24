@@ -48,6 +48,7 @@ export default class DmsPortal extends LightningElement {
 
                 this.customerName = this.invoiceItems[0]?.CustomerName || '';
                 this.beatName = data.length > 0 ? (data[0].BeatName || '') : '';
+                this.gstNumber = data.length > 0 ? (data[0].gstNumber || '') : '';
                 this.isGenerateInvoice = true;
                 this.isSubPartLoad = false;
             })

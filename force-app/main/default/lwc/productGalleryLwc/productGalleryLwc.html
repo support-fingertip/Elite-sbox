@@ -1,6 +1,6 @@
 <template>
     <template lwc:if={isLoading}>
-        <div class="no-scroll">
+        <div class="no-scroll" style="margin:30px">
             <c-loading-screen></c-loading-screen>
         </div>
     </template>
@@ -13,6 +13,16 @@
                         class="custominputfieldSize" value={selectedCategory}
                         placeholder="Select Category" options={categoryOptions}
                         onchange={handleProductCategoryChange}>
+                    </lightning-combobox>
+                    <lightning-combobox name="productGroup" label="Product Group"
+                        class="custominputfieldSize" value={selectedProductGroup}
+                        placeholder="Select Product Group" options={productGroupOptions}
+                        onchange={handleProductGroupChange}>
+                    </lightning-combobox>
+                    <lightning-combobox name="productSubGroup" label="Product Sub Group"
+                        class="custominputfieldSize" value={selectedProductSubGroup}
+                        placeholder="Select Product Sub Group" options={productSubGroupOptions}
+                        onchange={handleProductSubGroupChange}>
                     </lightning-combobox>
                     <lightning-input type="search" label="Search"
                         class="custominputfieldSize" placeholder="Product Name"
@@ -37,15 +47,24 @@
                             <div class="product-info">
                             <h3 class="product-name" title={product.name}>{product.name}</h3>
                             <p class="product-category">{product.category}</p>
+                            <template lwc:if={product.productGroup}>
+                                <p class="product-group">Product Group: {product.productGroup}</p>
+                            </template>
+                            <template lwc:if={product.productSubGroup}>
+                                <p class="product-sub-group">Product Sub Group: {product.productSubGroup}</p>
+                            </template>
                             <template lwc:if={product.sku}>
                                 <p class="product-sku">SKU: {product.sku}</p>
                             </template>
                             <p class="product-channel">{product.channel}</p>
                             <div class="product-price-row">
-                                   <span class="product-price">&#8377; {product.price}</span>
-                               </div>
+                                   <span class="product-price">MRP: &#8377; {product.mrp}</span>
+                            </div>
                             <template lwc:if={product.uom}>
                                 <p class="product-uom">{product.uom}</p>
+                            </template>
+                            <template lwc:if={product.hasConversion}>
+                                <p class="product-conversion">({product.conversionText})</p>
                             </template>
                         </div>
                         </div>

@@ -53,6 +53,10 @@
                 <behavior>Readonly</behavior>
                 <field>Name__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>Aging_in_Days__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
