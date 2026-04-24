@@ -136,7 +136,7 @@ private class GTInvoiceControllerTest {
         );
         insert ordItem;
 
-        // Items for same-state invoice (populated values)
+        // Items for same-state invoice (MRP__c and Taxable_Amount__c are formula fields - derived)
         insert new Secondary_Invoice_Item__c(
             Secondary_Invoice__c = invSameState.Id,
             Product__c = prod.Id,
@@ -144,14 +144,12 @@ private class GTInvoiceControllerTest {
             Unit_Price__c = 100,
             Tax_Percent__c = 18,
             Tax_Amount__c = 180,
-            MRP__c = 120,
-            Taxable_Amount__c = 1000,
             Total_Amount__c = 1180,
             Distributor_Stock__c = stock.Id,
             Order_Item__c = ordItem.Id
         );
 
-        // Item for other-state invoice (IGST branch with populated values)
+        // Item for other-state invoice (IGST branch)
         insert new Secondary_Invoice_Item__c(
             Secondary_Invoice__c = invOtherState.Id,
             Product__c = prod.Id,
@@ -159,8 +157,6 @@ private class GTInvoiceControllerTest {
             Unit_Price__c = 100,
             Tax_Percent__c = 18,
             Tax_Amount__c = 90,
-            MRP__c = 120,
-            Taxable_Amount__c = 500,
             Total_Amount__c = 590,
             Distributor_Stock__c = stock.Id,
             Order_Item__c = ordItem.Id
