@@ -151,21 +151,12 @@ private class GRNPdfControllerTest {
     static void testControllerWithNonExistentCustomer() {
         Goods_Received_Note__c grn = [SELECT Id FROM Goods_Received_Note__c LIMIT 1];
 
-        Account placeholder = new Account(
-            Name = 'Temp',
-            Pincode__c = '123456',
-            Primary_Phone_Number__c = '9999999999',
-            State__c = 'Karnataka',
-            District__c = 'Kolar'
-        );
-        insert placeholder;
-        Id deletedCustomerId = placeholder.Id;
-        delete placeholder;
+        Id fakeCustomerId = '001000000000000AAA';
 
         PageReference pageRef = Page.GRNPdf;
         Test.setCurrentPage(pageRef);
         ApexPages.currentPage().getParameters().put('id', grn.Id);
-        ApexPages.currentPage().getParameters().put('customerId', deletedCustomerId);
+        ApexPages.currentPage().getParameters().put('customerId', fakeCustomerId);
 
         Test.startTest();
         GRNPdfController controller = new GRNPdfController(new ApexPages.StandardController(grn));
