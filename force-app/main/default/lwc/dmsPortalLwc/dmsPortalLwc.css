@@ -452,6 +452,7 @@ border-left: #fff 1px solid;
     border-radius: 10px;
     background-color: #fff;
     position: relative;
+    isolation: isolate;
 }
 
 .contacts-table-scroll .contacts-table {
