@@ -11,6 +11,7 @@ import CREDIT_NOTE_DATA from '@salesforce/apex/DMSPortalLwc.allCreditNoteData';
 import SEC_INV_DATA from '@salesforce/apex/DMSPortalLwc.allSecoundaryInvoiceData';
 import SRETURN_DATA from '@salesforce/apex/DMSPortalLwc.allSecoundaryReturnsData';
 import GET_GRN_DATA from '@salesforce/apex/DMSPortalLwc.getGRNData';
+import getPartnerAccountInfo from '@salesforce/apex/DMSPortalLwc.getPartnerAccountInfo';
 import DMSIcon from '@salesforce/resourceUrl/DMS_LOGO';
 import FORM_FACTOR from '@salesforce/client/formFactor';
 import { NavigationMixin } from 'lightning/navigation';
@@ -175,6 +176,19 @@ export default class NavigationComponent extends LightningElement {
     @track orderList = [];
     @track selectedOrders = [];
 
+
+    /**Home header**/
+    @track partnerAccountName = '';
+    @track partnerSapCode = '';
+    @track homeView = 'carousel';
+
+    openingBalanceData = [
+        { CustomerCode: '0000100045', CompanyCode: '1100', Year: '2025', Amount: -240.00, CreditDebit: 'CREDIT' }
+    ];
+    transactionData = [
+        { documentNumber: '0000312867', entryDate: '2025-05-07', companyCode: '1500', customerCode: '130891', postingDate: '2025-04-30', narration: 'HSBC0560002-FLIPKART INDIA PRIVATE LIMITED-M/S ELI', docType: 'BR', debit: 0, credit: 2000.13, indicator: 'BR', year: '2025', documentDate: '2025-04-28', plantCode: '1516' },
+        { documentNumber: '0000312868', entryDate: '2025-05-07', companyCode: '1500', customerCode: '130891', postingDate: '2025-04-30', narration: 'HSBC0560002-FLIPKART INDIA PRIVATE LIMITED-M/S ELI', docType: 'BR', debit: 0, credit: 16308.85, indicator: 'BR', year: '2025', documentDate: '2025-04-28', plantCode: '1516' }
+    ];
 
     /**Primary**/
     showHome = true;
@@ -3341,6 +3355,47 @@ export default class NavigationComponent extends LightningElement {
 
     get currentImage() {
         return this.images[this.currentIndex];
+    }
+
+    @wire(getPartnerAccountInfo)
+    wiredPartnerAccount({ data }) {
+        if (data) {
+            this.partnerAccountName = data.accountName || '';
+            this.partnerSapCode = data.sapCode || '';
+        }
+    }
+
+    get partnerHeaderLabel() {
+        if (!this.partnerAccountName) {
+            return '';
+        }
+        return this.partnerSapCode
+            ? this.partnerAccountName + ' (' + this.partnerSapCode + ')'
+            : this.partnerAccountName;
+    }
+
+    get showCarouselView() {
+        return this.homeView === 'carousel';
+    }
+
+    get showOpeningBalanceView() {
+        return this.homeView === 'opening';
+    }
+
+    get showTransactionsView() {
+        return this.homeView === 'transactions';
+    }
+
+    showOpeningBalance() {
+        this.homeView = 'opening';
+    }
+
+    showTransactions() {
+        this.homeView = 'transactions';
+    }
+
+    backToCarousel() {
+        this.homeView = 'carousel';
     }
 
     connectedCallback() {
