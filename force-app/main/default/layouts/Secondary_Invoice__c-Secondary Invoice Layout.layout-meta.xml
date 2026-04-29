@@ -95,6 +95,10 @@
                 <behavior>Readonly</behavior>
                 <field>Non_Taxable_Amount__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>IGST__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

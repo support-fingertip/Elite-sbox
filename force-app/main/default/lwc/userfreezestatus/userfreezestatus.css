@@ -1,0 +1,111 @@
+:host {
+    display: block;
+}
+
+.freeze-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    background: linear-gradient(135deg, #fff5f5 0%, #fff0eb 100%);
+    border: 1.5px solid #f87171;
+    border-left: 5px solid #dc2626;
+    border-radius: 10px;
+    padding: 1.1rem 1.4rem;
+    box-shadow: 0 2px 12px rgba(220, 38, 38, 0.08);
+    animation: slideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Left section ── */
+.freeze-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.freeze-icon-wrap {
+    flex-shrink: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    background: #fee2e2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.1rem;
+}
+
+.freeze-icon {
+    --lwc-colorTextIconDefault: #dc2626;
+}
+
+.freeze-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.freeze-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.25rem;
+}
+
+.freeze-badge {
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    line-height: 1.4;
+}
+
+.freeze-user-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.freeze-reason-tag {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #b91c1c;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.freeze-description {
+    font-size: 0.82rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Right action ── */
+.freeze-action {
+    flex-shrink: 0;
+}
+
+.unfreeze-btn {
+    --lwc-brandAccessible: #16a34a;
+    --lwc-brandAccessibleActive: #15803d;
+}

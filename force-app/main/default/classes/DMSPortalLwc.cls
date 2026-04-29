@@ -9,7 +9,7 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String itemType       { get; set; } // 'Invoice' or 'DebitNote'
     }
     
-    @AuraEnabled
+    @AuraEnabled 
     public static List<SecondaryReceiptItemWrapper> getSecondaryReceiptItemsByReceiptId(Id receiptId) {
         List<SecondaryReceiptItemWrapper> wrapperList = new List<SecondaryReceiptItemWrapper>();
         
@@ -391,34 +391,6 @@ public without sharing class DMSPortalLwc {
             itemDataList.add(data);
         }
         return itemDataList;
-    }
-    
-    //Primary Return Data
-    @AuraEnabled
-    public static DmsData allPrimaryReturnsData(Date frmDate, date toDate){
-        DmsData dt = new DmsData();
-        list<Primary_Return_Item__c> primaryRetunItems= [select Id,Name,Product__c,Product__r.Name,Primary_Return__r.Name,Primary_Return__c,
-                                                         Date__c,Quantity__c,Primary_Return__r.Date__c from  Primary_Return_Item__c WHERE
-                                                         Primary_Return__r.Date__c >= :frmDate AND  Primary_Return__r.Date__c <= :toDate ];
-        
-        
-        
-        List<PReturnData> PReturnDataList = new List<PReturnData>();
-        for(Primary_Return_Item__c i:primaryRetunItems){
-            date returnDate = i.Primary_Return__r.Date__c;
-            String formattedOrdDate = returnDate != null ? DateTime.newInstance(returnDate.year(), returnDate.month(), returnDate.day()).format('dd/MM/yyyy') : '';
-            PReturnData pRData = new PReturnData();
-            pRData.productName = i.Product__r.Name;
-            pRData.returnItemNo = i.Name;
-            pRData.productId = i.Product__c;
-            pRData.returnDate = formattedOrdDate;
-            pRData.primaryReturnNo =i.Primary_Return__r.Name;
-            pRData.primaryReturnId = i.Primary_Return__c ;
-            pRData.quantity =  i.Quantity__c ;
-            PReturnDataList.add(pRData);
-        }
-        dt.TotalPrimaryReturnDataData = PReturnDataList;
-        return dt;
     }
     
     //newly added
@@ -1223,85 +1195,7 @@ public without sharing class DMSPortalLwc {
         ];
     }
     
-    @AuraEnabled
-    public static Id savePrimaryReturn(List<Primary_Return_Item__c> items,Decimal TotalAmount,Decimal TotalQuantity) {
-        system.debug(items);
-        if (items == null || items.isEmpty()) {
-            throw new AuraHandledException('item list must be provided.');
-        }
-        
-        // Step 1: Create Primary Return parent record
-        Primary_Return__c primaryReturn = new Primary_Return__c(Date__c = System.today(),Total_Amount__c=TotalAmount,Total_Quantity__c=TotalQuantity);
-        insert primaryReturn;
-        
-        // Step 2: Get current user's Contact and Account
-        User currentUser = [SELECT Contact_Id__c FROM User WHERE Id = :UserInfo.getUserId()];
-        if (currentUser.Contact_Id__c == null) {
-            throw new AuraHandledException('User is not linked to any Contact.');
-        }
-        
-        Contact con = [SELECT AccountId FROM Contact WHERE Id = :currentUser.Contact_Id__c];
-        if (con.AccountId == null) {
-            throw new AuraHandledException('Contact is not linked to any Account.');
-        }
-        
-        Id accountId = con.AccountId;
-        
-        // Step 3: Create a set of keys for existing stocks (accountId_productId)
-        Set<String> keySet = new Set<String>();
-        for (Primary_Return_Item__c item : items) {
-            String key = accountId + '_' + item.Product__c;
-            keySet.add(key);
-        }
-        
-        // Step 4: Query existing stock records using formula field
-        Map<String, Distributor_Stock__c> existingStockMap = new Map<String, Distributor_Stock__c>();
-        for (Distributor_Stock__c stock : [
-            SELECT Id, Product__c, Distributor__c, DistributorWithProduct__c
-            FROM Distributor_Stock__c
-            WHERE DistributorWithProduct__c IN :keySet
-        ]) {
-            existingStockMap.put(stock.DistributorWithProduct__c, stock);
-        }
-        
-        // Step 5: Create new stock records where necessary
-        List<Distributor_Stock__c> newStocks = new List<Distributor_Stock__c>();
-        for (Primary_Return_Item__c item : items) {
-            item.Primary_Return__c = primaryReturn.Id;
-            
-            String key = accountId + '_' + item.Product__c;
-            if (existingStockMap.containsKey(key)) {
-                item.Distributor_Stock__c = existingStockMap.get(key).Id;
-            } else {
-                Distributor_Stock__c newStock = new Distributor_Stock__c(
-                    Product__c = item.Product__c,
-                    Distributor__c = accountId
-                );
-                newStocks.add(newStock);
-                existingStockMap.put(key, newStock); // Store for later use
-            }
-        }
-        
-        if (!newStocks.isEmpty()) {
-            insert newStocks;
-            for (Distributor_Stock__c stock : newStocks) {
-                String key = stock.Distributor__c + '_' + stock.Product__c;
-                existingStockMap.put(key, stock);
-            }
-            
-            for (Primary_Return_Item__c item : items) {
-                String key = accountId + '_' + item.Product__c;
-                item.Distributor_Stock__c = existingStockMap.get(key).Id;
-            }
-        }
-        
-        // Step 6: Insert Primary Return items
-        insert items;
-        
-        // Step 7: Return Primary Return ID
-        return primaryReturn.Id;
-    }
-    
+ 
     // Fetch all products for search
     @AuraEnabled(cacheable=true)
     public static secondaryReturnData getAllProducts() {
@@ -1797,7 +1691,8 @@ public without sharing class DMSPortalLwc {
     
     @AuraEnabled
     public static String savePrimaryOrder(Order__c order, List<Order_Item__c> items) {
-        System.debug('===== Incoming Order Data =====');
+        return '';
+       /* System.debug('===== Incoming Order Data =====');
         System.debug(JSON.serializePretty(order));
         
         System.debug('===== Incoming Order Items =====');
@@ -1860,7 +1755,7 @@ public without sharing class DMSPortalLwc {
         insert orderItemsToInsert;
         
         // Return the order ID for use in LWC
-        return order.Id;
+        return order.Id;*/
     }
     
     @AuraEnabled
@@ -2819,7 +2714,7 @@ public without sharing class DMSPortalLwc {
         List<Product__c> products = [
             SELECT Id, Name, Channel__c, Category__c, Product_Category_Name__c, Product_Category1__c,
             Product_Category1__r.Name, List_Price__c, MRP__c, Tax_Percent__c,
-            Tax_Class__c, CreatedDate, UOM__c, Selling_Category__c, Product_Image_Url__c,SKU_Code__c, Sku_Name__c,
+            Tax_Class__c, CreatedDate, UOM__c, Selling_Category__c, Product_Image_Url__c,SKU_Code__c,
             Product_Group__c, Product_Sub_Group__c, Alternate_UOM__c, Uom_Conversion__c,
             (SELECT Id, Unit_Price__c, MRP__c, UOM__c, Customer__c,
              Customer_Type__c, Region__c, Secondary_Customer_Category__c

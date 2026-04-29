@@ -9,9 +9,9 @@ public class ReturnTriggerHandler {
                 string key = dl.Customer__c +'-'+dl.OwnerId;
                 customerWithExecutiveIds.add(key);
                 customerCodes.add(dl.Customer__c);
-            }
+            } 
         }
-        
+         
         
         list<Product_Mapping__c> secondaryMappings = [select Id,Primary_Customer__c,Customer__c,Customer_Executive_Pair__c,Sub_Stockiest__c
                                                       from Product_Mapping__c where 
