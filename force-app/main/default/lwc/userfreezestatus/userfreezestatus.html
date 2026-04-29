@@ -1,0 +1,36 @@
+<template>
+    <template if:true={isFrozen}>
+        <div class="freeze-banner">
+            <!-- Left: Icon + Content -->
+            <div class="freeze-left">
+                <div class="freeze-icon-wrap">
+                    <lightning-icon
+                        icon-name={freezeReasonIcon}
+                        size="small"
+                        class="freeze-icon">
+                    </lightning-icon>
+                </div>
+                <div class="freeze-content">
+                    <div class="freeze-title">
+                        <span class="freeze-badge">Account Frozen</span>
+                        <span class="freeze-user-name">{userName}</span>
+                    </div>
+                    <div class="freeze-reason-tag">Multiple Failed Login Attempts Or VPN / Anonymizing Proxy Usage</div>
+                    <p class="freeze-description">'Multiple failed login attempts were detected on this account Or Salesforce detected login activity through an anonymizing proxy. Access was suspended as a security precaution.</p>
+                </div>
+            </div>
+
+            <!-- Right: Unfreeze Button -->
+            <div class="freeze-action">
+                <lightning-button
+                    label={unfreezeLabel}
+                    icon-name="utility:unlock"
+                    variant="brand"
+                    disabled={unfreezing}
+                    onclick={handleUnfreeze}
+                    class="unfreeze-btn">
+                </lightning-button>
+            </div>
+        </div>
+    </template>
+</template>

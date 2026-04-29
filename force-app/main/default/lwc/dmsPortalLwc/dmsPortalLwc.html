@@ -172,7 +172,7 @@
                 </div>
             </template>
 
-            <template lwc:if={isNewOrder}>
+            <!--<template lwc:if={isNewOrder}>
                 <c-primary-order oncancel={handleCancelPrimaryOrder} onordercreated={handlePrimaryOrderCreated}>
                 </c-primary-order>
             </template>
@@ -185,7 +185,7 @@
             <template lwc:if={isNewOrder3}>
                 <c-primary-order3 oncancel={handlePrimaryOrderCancel3} onordercreated={handlePrimaryOrderCreated3}>
                 </c-primary-order3>
-            </template>
+            </template>-->
 
             <!--Primary Invoice Tab -->
             <template lwc:if={showPrimaryInvoices}>
@@ -497,8 +497,8 @@
             </template>
 
             <template lwc:if={isNewReturn}>
-                <c-new-primary-return onreturncreated={handleReturnCreated} oncancel={handleReturncancel}>
-                </c-new-primary-return>
+                <!--<c-new-primary-return onreturncreated={handleReturnCreated} oncancel={handleReturncancel}>
+                </c-new-primary-return>-->
             </template>
 
             <!--Payment Receipt Tab-->
@@ -1270,8 +1270,8 @@
 
             <!-- DataUploader-->
             <template lwc:if={isNewDataUpload}>
-                <c-data-csv-loader oncancel={handleUploadCancel} ondatauploaded={handleUploadInvoices}>
-                </c-data-csv-loader>
+               <!-- <c-data-csv-loader oncancel={handleUploadCancel} ondatauploaded={handleUploadInvoices}>
+                </c-data-csv-loader>-->
             </template>
 
             <!--Secondary Return Tab-->
@@ -1856,10 +1856,7 @@
                 <c-secondary-customer-ledger></c-secondary-customer-ledger>
             </template>
 
-            <!--Claim Reports Tab-->
-            <template lwc:if={showClaimReports}>
-                <c-claim-reports></c-claim-reports>
-            </template>
+          
             <!--showProductMatser Tab-->
             <template lwc:if={showProductMatser}>
                 <c-product-master-table></c-product-master-table>

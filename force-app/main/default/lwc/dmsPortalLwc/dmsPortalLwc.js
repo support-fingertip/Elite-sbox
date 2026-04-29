@@ -3,7 +3,6 @@ import ORD_DATA from '@salesforce/apex/DMSPortalLwc.allOrderData';
 import SEC_ORD_DATA from '@salesforce/apex/DMSPortalLwc.getSecondaryOrders';
 import allInvoiceData from '@salesforce/apex/DMSPortalLwc.allInvoiceData';
 import getInvoiceItems from '@salesforce/apex/DMSPortalLwc.getInvoiceItems';
-import PRETURN_DATA from '@salesforce/apex/DMSPortalLwc.allPrimaryReturnsData';
 import PAY_Rec_DATA from '@salesforce/apex/DMSPortalLwc.allPaymentReceiptData';
 import GRN_DATA from '@salesforce/apex/DMSPortalLwc.allGRNData';
 import CLAIM_DATA from '@salesforce/apex/DMSPortalLwc.allClaimData';
@@ -17,12 +16,9 @@ import FORM_FACTOR from '@salesforce/client/formFactor';
 import { NavigationMixin } from 'lightning/navigation';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import createPaymentWithItems from '@salesforce/apex/DMSPortalLwc.createPaymentWithItems';
-import getSecondaryOrders from '@salesforce/apex/DMSPortalLwc.getSecondaryOrders';
-import DMS_Offer1 from '@salesforce/resourceUrl/DMS_Offer1';
-import DMS_Offer2 from '@salesforce/resourceUrl/DMS_Offer2';
-import DMS_Offer3 from '@salesforce/resourceUrl/DMS_Offer3';
-import DMS_Offer4 from '@salesforce/resourceUrl/DMS_Offer4';
-import DMS_Offer5 from '@salesforce/resourceUrl/DMS_Offer5';
+import DMS_Home_Page_Offers from '@salesforce/resourceUrl/DMS_Home_Page_Offers';
+import DMS_OFFER_COUNT from '@salesforce/label/c.DMS_Offer_Count';
+
 
 
 import getPrimaryReturns from '@salesforce/apex/DMSPortalLwc.getPrimaryReturns';
@@ -36,8 +32,6 @@ import getSecondaryReturnItems from '@salesforce/apex/DMSPortalLwc.getSecondaryR
 import getSecondaryInvoiceItems from '@salesforce/apex/DMSPortalLwc.getSecondaryInvoiceItems';
 import getOrderItems from '@salesforce/apex/DMSPortalLwc.getOrderItems';
 import getOrderlineItems from '@salesforce/apex/DMSPortalLwc.getOrderlineItems';
-import getInvoices from '@salesforce/apex/InvoiceController.getInvoices';
-import getPrimaryInvoices from '@salesforce/apex/InvoiceController.getPrimaryInvoices';
 import getUsers from '@salesforce/apex/DMSPortalLwc.getUsers';
 import getSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getSecondaryCustomers';
 import getRefreshSecondaryCustomers from '@salesforce/apex/DMSPortalLwc.getRefreshSecondaryCustomers';
@@ -3255,13 +3249,18 @@ export default class NavigationComponent extends LightningElement {
         this.getOrderData();
     }
 
+    images = Array.from(
+        { length: parseInt(DMS_OFFER_COUNT, 10) },
+        (_, i) => DMS_Home_Page_Offers + '/' + (i + 1) + '.png'
+    );
 
-    images = [
+
+    /*images = [
         DMS_Offer1,
         DMS_Offer2,
         DMS_Offer3,
 
-    ];
+    ];*/
 
     currentIndex = 0;
 
@@ -3355,10 +3354,6 @@ export default class NavigationComponent extends LightningElement {
 
     @track secinvoices = [];
 
-
-
-    // Wire method to get invoices based on filters
-    @wire(getInvoices, { fromDate: '$secInvFilter.fromDate', toDate: '$secInvFilter.toDate', })
 
 
 

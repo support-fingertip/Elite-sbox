@@ -74,8 +74,15 @@ private class DailyLogNotificationTest {
             logs.add(new Daily_Log__c(OwnerId = u.Id));
         }
         insert logs;
-
-        Test.startTest();
+        
+        Leaves__c lv = new Leaves__c();
+        lv.From_Date__c = system.today();
+        lv.To_Date__c = system.today();
+        lv.User__c = allUsers[0].Id;
+        lv.ApprovalStatus__c = 'Not Submitted';
+        insert lv;
+            
+            Test.startTest();
         //DailyLogNotification.getEmployeesWithoutAttendence();
         Database.executeBatch(new EmployeesWithoutAttendenceBatch(), 30);// Should exit early 
         Test.stopTest();
