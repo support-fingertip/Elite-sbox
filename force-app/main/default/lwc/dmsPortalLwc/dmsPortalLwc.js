@@ -467,8 +467,38 @@ export default class NavigationComponent extends LightningElement {
     }
     /*  Calculate based on screen width */
     calculateTabs() {
-        // Always show 9 tabs in the header
-        this.visibleTabCount = 10;
+        const navContainer = this.template.querySelector('.nav-items');
+        const navbar = this.template.querySelector('.navbar');
+        const navImg = this.template.querySelector('.nav-img');
+
+        const containerWidth = (navbar && navbar.offsetWidth)
+            || (navContainer && navContainer.offsetWidth)
+            || window.innerWidth;
+
+        const navImgWidth = (navImg && navImg.offsetWidth) || 100;
+        const moreBtnReserve = 90;
+        const padding = 30;
+        const availableWidth = Math.max(0, containerWidth - navImgWidth - moreBtnReserve - padding);
+
+        // Estimate per-tab width from label length so the calculation does not
+        // depend on which tabs are currently rendered (avoids oscillation).
+        const isSmallScreen = window.innerWidth <= 1200;
+        const charWidth = isSmallScreen ? 8 : 9;
+        const tabFixedWidth = 24 + 6; // horizontal padding + margins
+
+        let totalWidth = 0;
+        let count = 0;
+        for (const tab of this.allTabs) {
+            const tabWidth = (tab.label ? tab.label.length : 0) * charWidth + tabFixedWidth;
+            if (totalWidth + tabWidth > availableWidth) break;
+            totalWidth += tabWidth;
+            count++;
+        }
+
+        const newCount = Math.max(1, Math.min(count, this.allTabs.length));
+        if (newCount !== this.visibleTabCount) {
+            this.visibleTabCount = newCount;
+        }
     }
     toggleMoreMenu(event) {
         event.stopPropagation();
