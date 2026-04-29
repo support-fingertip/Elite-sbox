@@ -957,6 +957,39 @@ background-color: #1b3a57;
 
 .home-table-wrapper {
 padding: 16px 24px;
+overflow-x: auto;
+-webkit-overflow-scrolling: touch;
+}
+
+.home-table-wrapper .contacts-table {
+display: table;
+width: auto;
+min-width: 100%;
+table-layout: auto;
+}
+
+.home-table-wrapper .contacts-table thead,
+.home-table-wrapper .contacts-table tbody,
+.home-table-wrapper .contacts-table tbody tr {
+display: table-row-group;
+width: auto;
+table-layout: auto;
+max-height: none;
+overflow: visible;
+}
+
+.home-table-wrapper .contacts-table thead {
+display: table-header-group;
+}
+
+.home-table-wrapper .contacts-table tbody tr {
+display: table-row;
+}
+
+.home-table-wrapper .contacts-table th,
+.home-table-wrapper .contacts-table td {
+white-space: nowrap;
+min-width: 0;
 }
 
 .home-table-header {
@@ -985,10 +1018,4 @@ font-family: inherit;
 
 .home-back-btn:hover {
 background-color: #495057;
-}
-
-.home-table-wrapper .contacts-table {
-width: 100%;
-overflow-x: auto;
-display: block;
 }
