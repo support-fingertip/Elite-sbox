@@ -3554,4 +3554,116 @@ public without sharing class DMSPortalLwc {
         result.put('sapCode', accs[0].SAP_Customer_Code__c == null ? '' : String.valueOf(accs[0].SAP_Customer_Code__c));
         return result;
     }
+
+    public class primaryLedgerEntry {
+        @AuraEnabled public String postingDate;
+        @AuraEnabled public String docDate;
+        @AuraEnabled public String docNo;
+        @AuraEnabled public String remarks;
+        @AuraEnabled public String docType;
+        @AuraEnabled public Decimal debit;
+        @AuraEnabled public Decimal credit;
+        @AuraEnabled public Decimal balance;
+    }
+
+    public class CustomerLedgerResult {
+        @AuraEnabled public Boolean success;
+        @AuraEnabled public String errorMessage;
+        @AuraEnabled public String fromDate;
+        @AuraEnabled public String toDate;
+        @AuraEnabled public Decimal openingBalance;
+        @AuraEnabled public Decimal closingBalance;
+        @AuraEnabled public List<primaryLedgerEntry> data;
+    }
+
+    @AuraEnabled
+    public static CustomerLedgerResult getCustomerLedger(String fromDate, String toDate) {
+        CustomerLedgerResult out = new CustomerLedgerResult();
+        out.success = false;
+        out.data = new List<primaryLedgerEntry>();
+
+        try {
+            String sapCode = '';
+            List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+            if (!partnerUser.isEmpty() && partnerUser[0].ContactId != null) {
+                List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+                if (!contact.isEmpty() && contact[0].AccountId != null) {
+                    List<Account> accs = [
+                        SELECT SAP_Customer_Code__c
+                        FROM Account
+                        WHERE Id = :contact[0].AccountId
+                        LIMIT 1
+                    ];
+                    if (!accs.isEmpty() && accs[0].SAP_Customer_Code__c != null) {
+                        sapCode = String.valueOf(accs[0].SAP_Customer_Code__c);
+                    }
+                }
+            }
+            if (String.isBlank(sapCode)) {
+                out.errorMessage = 'No SAP Customer Code found for current user';
+                return out;
+            }
+
+            External_API_Configuration__mdt config = [
+                SELECT Endpoint_URL__c, API_Key__c, Method__c
+                FROM External_API_Configuration__mdt
+                WHERE DeveloperName = 'Customer_Record_API'
+                LIMIT 1
+            ];
+
+            String boundary = '----ApexBoundary' + String.valueOf(DateTime.now().getTime());
+            String body = '';
+            body += '--' + boundary + '\r\n';
+            body += 'Content-Disposition: form-data; name="sapCustomerCode"\r\n\r\n';
+            body += sapCode + '\r\n';
+            body += '--' + boundary + '\r\n';
+            body += 'Content-Disposition: form-data; name="fromDate"\r\n\r\n';
+            body += (fromDate == null ? '' : fromDate) + '\r\n';
+            body += '--' + boundary + '\r\n';
+            body += 'Content-Disposition: form-data; name="toDate"\r\n\r\n';
+            body += (toDate == null ? '' : toDate) + '\r\n';
+            body += '--' + boundary + '--\r\n';
+
+            HttpRequest req = new HttpRequest();
+            req.setEndpoint(config.Endpoint_URL__c);
+            req.setMethod(String.isBlank(config.Method__c) ? 'POST' : config.Method__c);
+            req.setHeader('X-API-KEY', config.API_Key__c);
+            req.setHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+            req.setTimeout(60000);
+            req.setBody(body);
+
+            HttpResponse res = new Http().send(req);
+            if (res.getStatusCode() != 200) {
+                out.errorMessage = 'API returned status ' + res.getStatusCode() + ': ' + res.getBody();
+                return out;
+            }
+
+            Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+            out.fromDate = (String) parsed.get('fromDate');
+            out.toDate = (String) parsed.get('toDate');
+            out.openingBalance = parsed.get('openingBalance') == null ? null : Decimal.valueOf(String.valueOf(parsed.get('openingBalance')));
+            out.closingBalance = parsed.get('closingBalance') == null ? null : Decimal.valueOf(String.valueOf(parsed.get('closingBalance')));
+
+            List<Object> rows = (List<Object>) parsed.get('data');
+            if (rows != null) {
+                for (Object o : rows) {
+                    Map<String, Object> r = (Map<String, Object>) o;
+                    primaryLedgerEntry e = new primaryLedgerEntry();
+                    e.postingDate = (String) r.get('postingDate');
+                    e.docDate = (String) r.get('docDate');
+                    e.docNo = (String) r.get('docNo');
+                    e.remarks = (String) r.get('remarks');
+                    e.docType = (String) r.get('docType');
+                    e.debit = r.get('debit') == null ? 0 : Decimal.valueOf(String.valueOf(r.get('debit')));
+                    e.credit = r.get('credit') == null ? 0 : Decimal.valueOf(String.valueOf(r.get('credit')));
+                    e.balance = r.get('balance') == null ? 0 : Decimal.valueOf(String.valueOf(r.get('balance')));
+                    out.data.add(e);
+                }
+            }
+            out.success = true;
+        } catch (Exception ex) {
+            out.errorMessage = ex.getMessage();
+        }
+        return out;
+    }
 }
