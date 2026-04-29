@@ -12,6 +12,7 @@ import SEC_INV_DATA from '@salesforce/apex/DMSPortalLwc.allSecoundaryInvoiceData
 import SRETURN_DATA from '@salesforce/apex/DMSPortalLwc.allSecoundaryReturnsData';
 import GET_GRN_DATA from '@salesforce/apex/DMSPortalLwc.getGRNData';
 import getPartnerAccountInfo from '@salesforce/apex/DMSPortalLwc.getPartnerAccountInfo';
+import getCustomerLedger from '@salesforce/apex/DMSPortalLwc.getCustomerLedger';
 import DMSIcon from '@salesforce/resourceUrl/DMS_LOGO';
 import FORM_FACTOR from '@salesforce/client/formFactor';
 import { NavigationMixin } from 'lightning/navigation';
@@ -181,14 +182,13 @@ export default class NavigationComponent extends LightningElement {
     @track partnerAccountName = '';
     @track partnerSapCode = '';
     @track homeView = 'carousel';
-
-    openingBalanceData = [
-        { CustomerCode: '0000100045', CompanyCode: '1100', Year: '2025', Amount: -240.00, CreditDebit: 'CREDIT' }
-    ];
-    transactionData = [
-        { documentNumber: '0000312867', entryDate: '2025-05-07', companyCode: '1500', customerCode: '130891', postingDate: '2025-04-30', narration: 'HSBC0560002-FLIPKART INDIA PRIVATE LIMITED-M/S ELI', docType: 'BR', debit: 0, credit: 2000.13, indicator: 'BR', year: '2025', documentDate: '2025-04-28', plantCode: '1516' },
-        { documentNumber: '0000312868', entryDate: '2025-05-07', companyCode: '1500', customerCode: '130891', postingDate: '2025-04-30', narration: 'HSBC0560002-FLIPKART INDIA PRIVATE LIMITED-M/S ELI', docType: 'BR', debit: 0, credit: 16308.85, indicator: 'BR', year: '2025', documentDate: '2025-04-28', plantCode: '1516' }
-    ];
+    @track ledgerFromDate = '';
+    @track ledgerToDate = '';
+    @track ledgerOpeningBalance = null;
+    @track ledgerClosingBalance = null;
+    @track ledgerEntries = [];
+    @track ledgerLoading = false;
+    @track ledgerError = '';
 
     /**Primary**/
     showHome = true;
@@ -3378,20 +3378,70 @@ export default class NavigationComponent extends LightningElement {
         return this.homeView === 'carousel';
     }
 
-    get showOpeningBalanceView() {
-        return this.homeView === 'opening';
+    get showLedgerView() {
+        return this.homeView === 'ledger';
     }
 
-    get showTransactionsView() {
-        return this.homeView === 'transactions';
+    get hasLedgerEntries() {
+        return this.ledgerEntries && this.ledgerEntries.length > 0;
     }
 
-    showOpeningBalance() {
-        this.homeView = 'opening';
+    handleLedgerFromDateChange(event) {
+        this.ledgerFromDate = event.target.value;
     }
 
-    showTransactions() {
-        this.homeView = 'transactions';
+    handleLedgerToDateChange(event) {
+        this.ledgerToDate = event.target.value;
+    }
+
+    openCustomerLedger() {
+        this.homeView = 'ledger';
+        this.ledgerError = '';
+        if (!this.ledgerFromDate || !this.ledgerToDate) {
+            const today = new Date();
+            const fourMonthsAgo = new Date();
+            fourMonthsAgo.setMonth(today.getMonth() - 4);
+            const fmt = (d) => d.toISOString().slice(0, 10);
+            if (!this.ledgerFromDate) this.ledgerFromDate = fmt(fourMonthsAgo);
+            if (!this.ledgerToDate) this.ledgerToDate = fmt(today);
+        }
+        this.fetchCustomerLedger();
+    }
+
+    refreshCustomerLedger() {
+        this.fetchCustomerLedger();
+    }
+
+    fetchCustomerLedger() {
+        if (!this.ledgerFromDate || !this.ledgerToDate) {
+            this.ledgerError = 'Please select both From Date and To Date.';
+            return;
+        }
+        this.ledgerLoading = true;
+        this.ledgerError = '';
+        getCustomerLedger({ fromDate: this.ledgerFromDate, toDate: this.ledgerToDate })
+            .then((result) => {
+                if (!result || !result.success) {
+                    this.ledgerError = (result && result.errorMessage) || 'Failed to load customer ledger.';
+                    this.ledgerEntries = [];
+                    this.ledgerOpeningBalance = null;
+                    this.ledgerClosingBalance = null;
+                    return;
+                }
+                this.ledgerOpeningBalance = result.openingBalance;
+                this.ledgerClosingBalance = result.closingBalance;
+                this.ledgerEntries = (result.data || []).map((row, i) => ({
+                    key: (row.docNo || '') + '-' + i,
+                    ...row
+                }));
+            })
+            .catch((error) => {
+                this.ledgerError = (error && error.body && error.body.message) || 'Unexpected error loading ledger.';
+                this.ledgerEntries = [];
+            })
+            .finally(() => {
+                this.ledgerLoading = false;
+            });
     }
 
     backToCarousel() {
