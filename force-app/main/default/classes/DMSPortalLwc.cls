@@ -3526,4 +3526,32 @@ public without sharing class DMSPortalLwc {
         result.sort();
         return result;
     }
+
+    @AuraEnabled(cacheable=true)
+    public static Map<String, String> getPartnerAccountInfo() {
+        Map<String, String> result = new Map<String, String>{
+            'accountName' => '',
+            'sapCode' => ''
+        };
+        List<User> partnerUser = [SELECT ContactId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (partnerUser.isEmpty() || partnerUser[0].ContactId == null) {
+            return result;
+        }
+        List<Contact> contact = [SELECT AccountId FROM Contact WHERE Id = :partnerUser[0].ContactId LIMIT 1];
+        if (contact.isEmpty() || contact[0].AccountId == null) {
+            return result;
+        }
+        List<Account> accs = [
+            SELECT Name, SAP_Customer_Code__c
+            FROM Account
+            WHERE Id = :contact[0].AccountId
+            LIMIT 1
+        ];
+        if (accs.isEmpty()) {
+            return result;
+        }
+        result.put('accountName', accs[0].Name);
+        result.put('sapCode', accs[0].SAP_Customer_Code__c == null ? '' : String.valueOf(accs[0].SAP_Customer_Code__c));
+        return result;
+    }
 }

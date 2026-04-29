@@ -39,11 +39,103 @@
             </div>
             <!--Home Page-->
             <template lwc:if={showHome}>
-                <div class="carousel-wrapper">
-                    <div class="carousel">
-                        <img src={currentImage} alt="carousel-img" class="carousel-img" />
+                <div class="home-header">
+                    <div class="home-header-left">
+                        <span class="partner-account-label">{partnerHeaderLabel}</span>
                     </div>
+                    <template lwc:if={showCarouselView}>
+                        <div class="home-header-actions">
+                            <button class="home-action-btn" onclick={showOpeningBalance}>View Opening Balance</button>
+                            <button class="home-action-btn" onclick={showTransactions}>View Transactional Data</button>
+                        </div>
+                    </template>
                 </div>
+
+                <template lwc:if={showCarouselView}>
+                    <div class="carousel-wrapper">
+                        <div class="carousel">
+                            <img src={currentImage} alt="carousel-img" class="carousel-img" />
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:if={showOpeningBalanceView}>
+                    <div class="home-table-wrapper">
+                        <div class="home-table-header">
+                            <h2>Opening Balance</h2>
+                            <button class="home-back-btn" onclick={backToCarousel}>Back</button>
+                        </div>
+                        <table class="contacts-table">
+                            <thead>
+                                <tr>
+                                    <th>Customer Code</th>
+                                    <th>Company Code</th>
+                                    <th>Year</th>
+                                    <th>Amount</th>
+                                    <th>Credit/Debit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={openingBalanceData} for:item="row">
+                                    <tr key={row.CustomerCode}>
+                                        <td>{row.CustomerCode}</td>
+                                        <td>{row.CompanyCode}</td>
+                                        <td>{row.Year}</td>
+                                        <td>{row.Amount}</td>
+                                        <td>{row.CreditDebit}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+
+                <template lwc:if={showTransactionsView}>
+                    <div class="home-table-wrapper">
+                        <div class="home-table-header">
+                            <h2>Transactional Data</h2>
+                            <button class="home-back-btn" onclick={backToCarousel}>Back</button>
+                        </div>
+                        <table class="contacts-table">
+                            <thead>
+                                <tr>
+                                    <th>Document No</th>
+                                    <th>Entry Date</th>
+                                    <th>Company Code</th>
+                                    <th>Customer Code</th>
+                                    <th>Posting Date</th>
+                                    <th>Narration</th>
+                                    <th>Doc Type</th>
+                                    <th>Debit</th>
+                                    <th>Credit</th>
+                                    <th>Indicator</th>
+                                    <th>Year</th>
+                                    <th>Document Date</th>
+                                    <th>Plant Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={transactionData} for:item="row">
+                                    <tr key={row.documentNumber}>
+                                        <td>{row.documentNumber}</td>
+                                        <td>{row.entryDate}</td>
+                                        <td>{row.companyCode}</td>
+                                        <td>{row.customerCode}</td>
+                                        <td>{row.postingDate}</td>
+                                        <td>{row.narration}</td>
+                                        <td>{row.docType}</td>
+                                        <td>{row.debit}</td>
+                                        <td>{row.credit}</td>
+                                        <td>{row.indicator}</td>
+                                        <td>{row.year}</td>
+                                        <td>{row.documentDate}</td>
+                                        <td>{row.plantCode}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
             </template>
 
             <!--Primary Orders Tab -->
