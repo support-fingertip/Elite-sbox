@@ -3397,14 +3397,19 @@ export default class NavigationComponent extends LightningElement {
     openCustomerLedger() {
         this.homeView = 'ledger';
         this.ledgerError = '';
-        if (!this.ledgerFromDate || !this.ledgerToDate) {
-            const today = new Date();
-            const fmt = (d) => d.toISOString().slice(0, 10);
-            if (!this.ledgerFromDate) this.ledgerFromDate = fmt(today);
-            if (!this.ledgerToDate)   this.ledgerToDate   = fmt(today);
-        }
-        //this.fetchCustomerLedger();
-    } 
+        this.ledgerFromDate = '';
+        this.ledgerToDate = '';
+        this.ledgerEntries = [];
+        this.ledgerOpeningBalance = null;
+        this.ledgerClosingBalance = null;
+    }
+
+    get showLedgerPrompt() {
+        return !this.ledgerLoading
+            && !this.ledgerError
+            && !this.hasLedgerEntries
+            && (!this.ledgerFromDate || !this.ledgerToDate);
+    }
  
     refreshCustomerLedger() {
         this.fetchCustomerLedger();

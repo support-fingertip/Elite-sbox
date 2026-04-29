@@ -65,23 +65,35 @@
                             <button class="home-back-btn" onclick={backToCarousel}>Back</button>
                         </div>
 
-                        <div class="ledger-controls">
-                            <label>
-                                From Date
-                                <input type="date" value={ledgerFromDate} onchange={handleLedgerFromDateChange} />
-                            </label>
-                            <label>
-                                To Date
-                                <input type="date" value={ledgerToDate} onchange={handleLedgerToDateChange} />
-                            </label>
-                            <button class="home-action-btn" onclick={refreshCustomerLedger} disabled={ledgerLoading}>
-                                <template lwc:if={ledgerLoading}>Loading...</template>
-                                <template lwc:else>Refresh</template>
-                            </button>
+                        <div class="ledger-card">
+                            <div class="ledger-card-title">Filter Ledger</div>
+                            <div class="ledger-card-subtitle">Choose a date range to view your customer ledger</div>
+                            <div class="ledger-controls">
+                                <label>
+                                    From Date
+                                    <input type="date" value={ledgerFromDate} onchange={handleLedgerFromDateChange} />
+                                </label>
+                                <label>
+                                    To Date
+                                    <input type="date" value={ledgerToDate} onchange={handleLedgerToDateChange} />
+                                </label>
+                                <button class="home-action-btn" onclick={refreshCustomerLedger} disabled={ledgerLoading}>
+                                    <template lwc:if={ledgerLoading}>Loading...</template>
+                                    <template lwc:else>Get Data</template>
+                                </button>
+                            </div>
                         </div>
 
                         <template lwc:if={ledgerError}>
                             <div class="ledger-error">{ledgerError}</div>
+                        </template>
+
+                        <template lwc:if={showLedgerPrompt}>
+                            <div class="ledger-empty-card">
+                                <div class="ledger-empty-icon">&#128197;</div>
+                                <div class="ledger-empty-title">Please select Start Date and End Date</div>
+                                <div class="ledger-empty-text">Pick a From Date and To Date above, then click Get Data to view your customer ledger.</div>
+                            </div>
                         </template>
 
                         <template lwc:if={hasLedgerEntries}>

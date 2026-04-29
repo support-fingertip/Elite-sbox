@@ -1025,12 +1025,60 @@ font-family: inherit;
 background-color: #495057;
 }
 
+.ledger-card {
+background: #ffffff;
+border: 1px solid #e3e8ef;
+border-radius: 12px;
+padding: 18px 20px;
+margin-bottom: 16px;
+box-shadow: 0 2px 8px rgba(27, 58, 87, 0.08);
+}
+
+.ledger-card-title {
+font-size: 16px;
+font-weight: 700;
+color: #1b3a57;
+margin-bottom: 4px;
+}
+
+.ledger-card-subtitle {
+font-size: 13px;
+color: #6c7a89;
+margin-bottom: 14px;
+}
+
 .ledger-controls {
 display: flex;
 align-items: flex-end;
 gap: 16px;
 flex-wrap: wrap;
-margin-bottom: 16px;
+}
+
+.ledger-empty-card {
+background: #ffffff;
+border: 1px dashed #c5cdd6;
+border-radius: 12px;
+padding: 28px 20px;
+margin-top: 8px;
+text-align: center;
+box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.ledger-empty-icon {
+font-size: 36px;
+margin-bottom: 8px;
+}
+
+.ledger-empty-title {
+font-size: 16px;
+font-weight: 600;
+color: #1b3a57;
+margin-bottom: 6px;
+}
+
+.ledger-empty-text {
+font-size: 13px;
+color: #6c7a89;
 }
 
 .ledger-controls label {
