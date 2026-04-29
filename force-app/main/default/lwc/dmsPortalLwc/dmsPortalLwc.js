@@ -456,46 +456,70 @@ export default class NavigationComponent extends LightningElement {
     disconnectedCallback() {
         // Merge both disconnectedCallbacks
         window.removeEventListener('resize', this.resizeHandler);
+        if (this._navResizeObserver) {
+            this._navResizeObserver.disconnect();
+            this._navResizeObserver = null;
+        }
         if (this.interval) {
             clearInterval(this.interval);
         }
     }
     renderedCallback() {
-        if (!this.visibleTabCount) {
-            this.calculateTabs();
+        this.calculateTabs();
+        if (!this._navResizeObserver) {
+            const navbar = this.template.querySelector('.navbar');
+            if (navbar && typeof ResizeObserver !== 'undefined') {
+                this._navResizeObserver = new ResizeObserver(() => this.calculateTabs());
+                this._navResizeObserver.observe(navbar);
+            }
         }
     }
-    /*  Calculate based on screen width */
+    /*  Calculate based on actual rendered tab widths */
     calculateTabs() {
-        const navContainer = this.template.querySelector('.nav-items');
         const navbar = this.template.querySelector('.navbar');
         const navImg = this.template.querySelector('.nav-img');
+        const measureItems = this.template.querySelectorAll('.nav-items-measure > li');
 
-        const containerWidth = (navbar && navbar.offsetWidth)
-            || (navContainer && navContainer.offsetWidth)
-            || window.innerWidth;
-
-        const navImgWidth = (navImg && navImg.offsetWidth) || 100;
-        const moreBtnReserve = 90;
-        const padding = 30;
-        const availableWidth = Math.max(0, containerWidth - navImgWidth - moreBtnReserve - padding);
-
-        // Estimate per-tab width from label length so the calculation does not
-        // depend on which tabs are currently rendered (avoids oscillation).
-        const isSmallScreen = window.innerWidth <= 1200;
-        const charWidth = isSmallScreen ? 8 : 9;
-        const tabFixedWidth = 24 + 6; // horizontal padding + margins
-
-        let totalWidth = 0;
-        let count = 0;
-        for (const tab of this.allTabs) {
-            const tabWidth = (tab.label ? tab.label.length : 0) * charWidth + tabFixedWidth;
-            if (totalWidth + tabWidth > availableWidth) break;
-            totalWidth += tabWidth;
-            count++;
+        if (!navbar || !measureItems || measureItems.length === 0) {
+            return;
         }
 
-        const newCount = Math.max(1, Math.min(count, this.allTabs.length));
+        const navbarStyle = window.getComputedStyle(navbar);
+        const navbarPadding =
+            (parseFloat(navbarStyle.paddingLeft) || 0) +
+            (parseFloat(navbarStyle.paddingRight) || 0);
+        const containerWidth = navbar.clientWidth - navbarPadding;
+        const navImgWidth = navImg ? navImg.offsetWidth : 0;
+        // last measure item is the "More" button
+        const moreBtnWidth = measureItems[measureItems.length - 1].getBoundingClientRect().width;
+        const safetyGap = 16;
+
+        const availableForTabs = Math.max(
+            0,
+            containerWidth - navImgWidth - moreBtnWidth - safetyGap
+        );
+
+        // First, see if every tab fits without needing the More button.
+        let allTabsWidth = 0;
+        for (let i = 0; i < this.allTabs.length; i++) {
+            allTabsWidth += measureItems[i].getBoundingClientRect().width;
+        }
+
+        let newCount;
+        if (allTabsWidth <= containerWidth - navImgWidth - safetyGap) {
+            newCount = this.allTabs.length;
+        } else {
+            let totalWidth = 0;
+            let count = 0;
+            for (let i = 0; i < this.allTabs.length; i++) {
+                const w = measureItems[i].getBoundingClientRect().width;
+                if (totalWidth + w > availableForTabs) break;
+                totalWidth += w;
+                count++;
+            }
+            newCount = Math.max(1, Math.min(count, this.allTabs.length));
+        }
+
         if (newCount !== this.visibleTabCount) {
             this.visibleTabCount = newCount;
         }
