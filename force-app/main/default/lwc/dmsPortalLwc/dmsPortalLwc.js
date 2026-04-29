@@ -478,43 +478,64 @@ export default class NavigationComponent extends LightningElement {
     calculateTabs() {
         const navbar = this.template.querySelector('.navbar');
         const navImg = this.template.querySelector('.nav-img');
-        const measureItems = this.template.querySelectorAll('.nav-items-measure > li');
+        const measureContainer = this.template.querySelector('.nav-items-measure');
+        const measureItems = measureContainer
+            ? measureContainer.querySelectorAll(':scope > li')
+            : null;
 
-        if (!navbar || !measureItems || measureItems.length === 0) {
+        if (!navbar || !measureContainer || !measureItems || measureItems.length === 0) {
             return;
         }
+
+        const outerWidth = (el) => {
+            const rect = el.getBoundingClientRect();
+            const style = window.getComputedStyle(el);
+            const ml = parseFloat(style.marginLeft) || 0;
+            const mr = parseFloat(style.marginRight) || 0;
+            return rect.width + ml + mr;
+        };
 
         const navbarStyle = window.getComputedStyle(navbar);
         const navbarPadding =
             (parseFloat(navbarStyle.paddingLeft) || 0) +
             (parseFloat(navbarStyle.paddingRight) || 0);
-        const containerWidth = navbar.clientWidth - navbarPadding;
-        const navImgWidth = navImg ? navImg.offsetWidth : 0;
-        // last measure item is the "More" button
-        const moreBtnWidth = measureItems[measureItems.length - 1].getBoundingClientRect().width;
-        const safetyGap = 16;
+        const containerWidth = Math.min(
+            navbar.clientWidth - navbarPadding,
+            window.innerWidth || Number.MAX_SAFE_INTEGER
+        );
+
+        const navImgWidth = navImg ? outerWidth(navImg) : 0;
+        // Last measure item is the sample "More" button.
+        const moreBtnWidth = outerWidth(measureItems[measureItems.length - 1]);
+        const safetyGap = 32;
 
         const availableForTabs = Math.max(
             0,
             containerWidth - navImgWidth - moreBtnWidth - safetyGap
         );
 
-        // First, see if every tab fits without needing the More button.
-        let allTabsWidth = 0;
+        // Use the measurement container's own layout (which already includes
+        // flex gaps and per-item margins) by reading each item's right edge
+        // relative to the container's left edge.
+        const containerLeft = measureContainer.getBoundingClientRect().left;
+        const widthsCumulative = [];
+        let totalAllTabs = 0;
         for (let i = 0; i < this.allTabs.length; i++) {
-            allTabsWidth += measureItems[i].getBoundingClientRect().width;
+            const rect = measureItems[i].getBoundingClientRect();
+            const style = window.getComputedStyle(measureItems[i]);
+            const mr = parseFloat(style.marginRight) || 0;
+            const cumulative = rect.right + mr - containerLeft;
+            widthsCumulative.push(cumulative);
+            totalAllTabs = cumulative;
         }
 
         let newCount;
-        if (allTabsWidth <= containerWidth - navImgWidth - safetyGap) {
+        if (totalAllTabs <= containerWidth - navImgWidth - safetyGap) {
             newCount = this.allTabs.length;
         } else {
-            let totalWidth = 0;
             let count = 0;
             for (let i = 0; i < this.allTabs.length; i++) {
-                const w = measureItems[i].getBoundingClientRect().width;
-                if (totalWidth + w > availableForTabs) break;
-                totalWidth += w;
+                if (widthsCumulative[i] > availableForTabs) break;
                 count++;
             }
             newCount = Math.max(1, Math.min(count, this.allTabs.length));
