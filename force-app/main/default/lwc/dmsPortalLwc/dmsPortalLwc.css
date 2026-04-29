@@ -99,6 +99,14 @@ margin-right: 3px;
 white-space: nowrap;
 }
 
+.nav-items-measure li.more-button-measure {
+padding: 10px 16px;
+font-size: 16px;
+margin-left: 3px;
+margin-right: 3px;
+white-space: nowrap;
+}
+
 .nav-items li {
 padding: 5px 12px;
 border-radius: 10px;
