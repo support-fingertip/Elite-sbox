@@ -65,28 +65,30 @@
                             <h2>Opening Balance</h2>
                             <button class="home-back-btn" onclick={backToCarousel}>Back</button>
                         </div>
-                        <table class="contacts-table">
-                            <thead>
-                                <tr>
-                                    <th>Customer Code</th>
-                                    <th>Company Code</th>
-                                    <th>Year</th>
-                                    <th>Amount</th>
-                                    <th>Credit/Debit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template for:each={openingBalanceData} for:item="row">
-                                    <tr key={row.CustomerCode}>
-                                        <td>{row.CustomerCode}</td>
-                                        <td>{row.CompanyCode}</td>
-                                        <td>{row.Year}</td>
-                                        <td>{row.Amount}</td>
-                                        <td>{row.CreditDebit}</td>
+                        <div class="home-table-scroll">
+                            <table class="contacts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer Code</th>
+                                        <th>Company Code</th>
+                                        <th>Year</th>
+                                        <th>Amount</th>
+                                        <th>Credit/Debit</th>
                                     </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <template for:each={openingBalanceData} for:item="row">
+                                        <tr key={row.CustomerCode}>
+                                            <td>{row.CustomerCode}</td>
+                                            <td>{row.CompanyCode}</td>
+                                            <td>{row.Year}</td>
+                                            <td>{row.Amount}</td>
+                                            <td>{row.CreditDebit}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </template>
 
@@ -96,44 +98,46 @@
                             <h2>Transactional Data</h2>
                             <button class="home-back-btn" onclick={backToCarousel}>Back</button>
                         </div>
-                        <table class="contacts-table">
-                            <thead>
-                                <tr>
-                                    <th>Document No</th>
-                                    <th>Entry Date</th>
-                                    <th>Company Code</th>
-                                    <th>Customer Code</th>
-                                    <th>Posting Date</th>
-                                    <th>Narration</th>
-                                    <th>Doc Type</th>
-                                    <th>Debit</th>
-                                    <th>Credit</th>
-                                    <th>Indicator</th>
-                                    <th>Year</th>
-                                    <th>Document Date</th>
-                                    <th>Plant Code</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template for:each={transactionData} for:item="row">
-                                    <tr key={row.documentNumber}>
-                                        <td>{row.documentNumber}</td>
-                                        <td>{row.entryDate}</td>
-                                        <td>{row.companyCode}</td>
-                                        <td>{row.customerCode}</td>
-                                        <td>{row.postingDate}</td>
-                                        <td>{row.narration}</td>
-                                        <td>{row.docType}</td>
-                                        <td>{row.debit}</td>
-                                        <td>{row.credit}</td>
-                                        <td>{row.indicator}</td>
-                                        <td>{row.year}</td>
-                                        <td>{row.documentDate}</td>
-                                        <td>{row.plantCode}</td>
+                        <div class="home-table-scroll">
+                            <table class="contacts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Document No</th>
+                                        <th>Entry Date</th>
+                                        <th>Company Code</th>
+                                        <th>Customer Code</th>
+                                        <th>Posting Date</th>
+                                        <th>Narration</th>
+                                        <th>Doc Type</th>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                        <th>Indicator</th>
+                                        <th>Year</th>
+                                        <th>Document Date</th>
+                                        <th>Plant Code</th>
                                     </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <template for:each={transactionData} for:item="row">
+                                        <tr key={row.documentNumber}>
+                                            <td>{row.documentNumber}</td>
+                                            <td>{row.entryDate}</td>
+                                            <td>{row.companyCode}</td>
+                                            <td>{row.customerCode}</td>
+                                            <td>{row.postingDate}</td>
+                                            <td>{row.narration}</td>
+                                            <td>{row.docType}</td>
+                                            <td>{row.debit}</td>
+                                            <td>{row.credit}</td>
+                                            <td>{row.indicator}</td>
+                                            <td>{row.year}</td>
+                                            <td>{row.documentDate}</td>
+                                            <td>{row.plantCode}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </template>
             </template>
