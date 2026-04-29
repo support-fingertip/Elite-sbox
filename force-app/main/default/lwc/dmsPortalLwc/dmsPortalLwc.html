@@ -5,6 +5,12 @@
                 <div class="navbar first-div">
                     <!--<img src={dmsIcon} alt="navbar-img" class="nav-img" />-->
                     <div style="visibility: hidden;" class="nav-img"></div>
+                    <ul class="nav-items-measure" aria-hidden="true">
+                        <template for:each={allTabs} for:item="tab">
+                            <li key={tab.id} class="nav-item">{tab.label}</li>
+                        </template>
+                        <li class="more-button-measure">More ▼</li>
+                    </ul>
                     <div class="nav-items">
                         <template for:each={primaryTabs} for:item="tab">
                             <li key={tab.id} data-id={tab.id} class={tab.cssClass} onclick={selectTab}>

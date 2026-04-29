@@ -456,19 +456,94 @@ export default class NavigationComponent extends LightningElement {
     disconnectedCallback() {
         // Merge both disconnectedCallbacks
         window.removeEventListener('resize', this.resizeHandler);
+        if (this._navResizeObserver) {
+            this._navResizeObserver.disconnect();
+            this._navResizeObserver = null;
+        }
         if (this.interval) {
             clearInterval(this.interval);
         }
     }
     renderedCallback() {
-        if (!this.visibleTabCount) {
-            this.calculateTabs();
+        this.calculateTabs();
+        if (!this._navResizeObserver) {
+            const navbar = this.template.querySelector('.navbar');
+            if (navbar && typeof ResizeObserver !== 'undefined') {
+                this._navResizeObserver = new ResizeObserver(() => this.calculateTabs());
+                this._navResizeObserver.observe(navbar);
+            }
         }
     }
-    /*  Calculate based on screen width */
+    /*  Calculate based on actual rendered tab widths */
     calculateTabs() {
-        // Always show 9 tabs in the header
-        this.visibleTabCount = 10;
+        const navbar = this.template.querySelector('.navbar');
+        const navImg = this.template.querySelector('.nav-img');
+        const measureContainer = this.template.querySelector('.nav-items-measure');
+        const measureItems = measureContainer
+            ? measureContainer.querySelectorAll(':scope > li')
+            : null;
+
+        if (!navbar || !measureContainer || !measureItems || measureItems.length === 0) {
+            return;
+        }
+
+        const outerWidth = (el) => {
+            const rect = el.getBoundingClientRect();
+            const style = window.getComputedStyle(el);
+            const ml = parseFloat(style.marginLeft) || 0;
+            const mr = parseFloat(style.marginRight) || 0;
+            return rect.width + ml + mr;
+        };
+
+        const navbarStyle = window.getComputedStyle(navbar);
+        const navbarPadding =
+            (parseFloat(navbarStyle.paddingLeft) || 0) +
+            (parseFloat(navbarStyle.paddingRight) || 0);
+        const containerWidth = Math.min(
+            navbar.clientWidth - navbarPadding,
+            window.innerWidth || Number.MAX_SAFE_INTEGER
+        );
+
+        const navImgWidth = navImg ? outerWidth(navImg) : 0;
+        // Last measure item is the sample "More" button.
+        const moreBtnWidth = outerWidth(measureItems[measureItems.length - 1]);
+        const safetyGap = 32;
+
+        const availableForTabs = Math.max(
+            0,
+            containerWidth - navImgWidth - moreBtnWidth - safetyGap
+        );
+
+        // Use the measurement container's own layout (which already includes
+        // flex gaps and per-item margins) by reading each item's right edge
+        // relative to the container's left edge.
+        const containerLeft = measureContainer.getBoundingClientRect().left;
+        const widthsCumulative = [];
+        let totalAllTabs = 0;
+        for (let i = 0; i < this.allTabs.length; i++) {
+            const rect = measureItems[i].getBoundingClientRect();
+            const style = window.getComputedStyle(measureItems[i]);
+            const mr = parseFloat(style.marginRight) || 0;
+            const cumulative = rect.right + mr - containerLeft;
+            widthsCumulative.push(cumulative);
+            totalAllTabs = cumulative;
+        }
+
+        let newCount;
+        if (totalAllTabs <= containerWidth - navImgWidth - safetyGap) {
+            newCount = this.allTabs.length;
+        } else {
+            let count = 0;
+            for (let i = 0; i < this.allTabs.length; i++) {
+                if (widthsCumulative[i] > availableForTabs) break;
+                count++;
+            }
+            newCount = Math.max(1, Math.min(count, this.allTabs.length));
+        }
+
+        if (newCount !== this.visibleTabCount) {
+            this.visibleTabCount = newCount;
+        }
     }
     toggleMoreMenu(event) {
         event.stopPropagation();
