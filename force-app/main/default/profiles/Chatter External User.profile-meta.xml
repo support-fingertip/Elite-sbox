@@ -9511,6 +9511,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Invoice__c.Exempt_Supplies__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Invoice__c.GST_Number__c</field>
         <readable>false</readable>
     </fieldPermissions>

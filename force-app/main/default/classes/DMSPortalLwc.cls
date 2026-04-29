@@ -3555,7 +3555,7 @@ public without sharing class DMSPortalLwc {
         return result;
     }
 
-    public class LedgerEntry {
+    public class primaryLedgerEntry {
         @AuraEnabled public String postingDate;
         @AuraEnabled public String docDate;
         @AuraEnabled public String docNo;
@@ -3573,14 +3573,14 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String toDate;
         @AuraEnabled public Decimal openingBalance;
         @AuraEnabled public Decimal closingBalance;
-        @AuraEnabled public List<LedgerEntry> data;
+        @AuraEnabled public List<primaryLedgerEntry> data;
     }
 
     @AuraEnabled
     public static CustomerLedgerResult getCustomerLedger(String fromDate, String toDate) {
         CustomerLedgerResult out = new CustomerLedgerResult();
         out.success = false;
-        out.data = new List<LedgerEntry>();
+        out.data = new List<primaryLedgerEntry>();
 
         try {
             String sapCode = '';
@@ -3648,7 +3648,7 @@ public without sharing class DMSPortalLwc {
             if (rows != null) {
                 for (Object o : rows) {
                     Map<String, Object> r = (Map<String, Object>) o;
-                    LedgerEntry e = new LedgerEntry();
+                    primaryLedgerEntry e = new primaryLedgerEntry();
                     e.postingDate = (String) r.get('postingDate');
                     e.docDate = (String) r.get('docDate');
                     e.docNo = (String) r.get('docNo');

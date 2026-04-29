@@ -389,6 +389,7 @@ export default class NewCustomerLwc extends NavigationMixin(LightningElement) {
         else if (fieldName === 'Payment_Term__c') {
             let creditDescriptionMap = this.paymentTermCreditDescriptionMap[fieldValue] || {};
             let firstKey = Object.keys(creditDescriptionMap)[0]; // Get the first key
+            console.log('firstKey'+firstKey);
             this.accountData.Credit_Description__c = firstKey || '';
             
         }

@@ -3399,15 +3399,13 @@ export default class NavigationComponent extends LightningElement {
         this.ledgerError = '';
         if (!this.ledgerFromDate || !this.ledgerToDate) {
             const today = new Date();
-            const fourMonthsAgo = new Date();
-            fourMonthsAgo.setMonth(today.getMonth() - 4);
             const fmt = (d) => d.toISOString().slice(0, 10);
-            if (!this.ledgerFromDate) this.ledgerFromDate = fmt(fourMonthsAgo);
-            if (!this.ledgerToDate) this.ledgerToDate = fmt(today);
+            if (!this.ledgerFromDate) this.ledgerFromDate = fmt(today);
+            if (!this.ledgerToDate)   this.ledgerToDate   = fmt(today);
         }
-        this.fetchCustomerLedger();
-    }
-
+        //this.fetchCustomerLedger();
+    } 
+ 
     refreshCustomerLedger() {
         this.fetchCustomerLedger();
     }

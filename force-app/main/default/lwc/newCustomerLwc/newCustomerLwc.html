@@ -452,30 +452,53 @@
                                             variant="label-stacked">
                                             </lightning-input-field>
                                         </div>
-                                        <div class={accountCustomClass}>
-                                            <lightning-input-field
+                                    </template>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
                                             field-name="Payment_Type__c" 
-                                             data-id="accountFields"
+                                                data-id="accountFields"
                                             required={mandatepaymentInfo}
                                             value={accountData.Payment_Type__c}
                                             disabled={disablePaymentInfo}
                                             onchange={handleInputChangeChange} 
                                             variant="label-stacked">
-                                            </lightning-input-field>
-                                        </div>
-                                        <div class={accountCustomClass}>
-                                            <lightning-input-field
+                                        </lightning-input-field>
+                                    </div>
+                                    <div class={accountCustomClass}>
+                                        <lightning-input-field
                                             field-name="Credit_Limit__c" 
                                             required={creditFieldMandate}
-                                             data-id="accountFields"
+                                            data-id="accountFields"
                                             value={accountData.Credit_Limit__c}
                                             disabled={disablePaymentInfo}
                                             onchange={handleInputChangeChange} 
                                             variant="label-stacked">
+                                        </lightning-input-field>
+                                    </div>
+                                    <template if:true={showSecoundaryfields}>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input-field
+                                                field-name="Payment_Term__c" 
+                                                data-id="accountFields"
+                                                required={creditFieldMandate}
+                                                value={accountData.Payment_Term__c}
+                                                disabled={disablePaymentInfo}
+                                                onchange={handleInputChangeChange} 
+                                                variant="label-stacked" >
                                             </lightning-input-field>
                                         </div>
-                                    </template>
-                                    <template if:true={showSecoundaryfields}>
+                                        <div class={accountCustomClass}>
+                                            <lightning-input
+                                                label="Credit Description"
+                                                value={accountData.Credit_Description__c}
+                                                type="text"
+                                                disabled
+                                                variant="label-stacked">
+                                            </lightning-input>
+                                        </div>
+
+
+                                        
                                         <!--High Margin-->
                                         <template if:true={showHighMargin}>
                                             <template if:true={showSecoundaryfields}>
