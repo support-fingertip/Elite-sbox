@@ -43,10 +43,12 @@
                     <div class="home-header-left">
                         <span class="partner-account-label">{partnerHeaderLabel}</span>
                     </div>
-                    <div class="home-header-actions">
-                        <button class="home-action-btn" onclick={showOpeningBalance}>View Opening Balance</button>
-                        <button class="home-action-btn" onclick={showTransactions}>View Transactional Data</button>
-                    </div>
+                    <template lwc:if={showCarouselView}>
+                        <div class="home-header-actions">
+                            <button class="home-action-btn" onclick={showOpeningBalance}>View Opening Balance</button>
+                            <button class="home-action-btn" onclick={showTransactions}>View Transactional Data</button>
+                        </div>
+                    </template>
                 </div>
 
                 <template lwc:if={showCarouselView}>
