@@ -34,12 +34,23 @@ global class getDataIntegrationController {
             if(objectName=='Invoice'){
                 Map<String, Object> cObjMap = (Map<String,  Object>) JSON.deserializeUntyped(databox);
                 system.debug(cObjMap);
-                Map<String, Object> cObjMap2 = (Map<String,  Object>) cObjMap.get('Data');
-                system.debug(cObjMap2);
                 List<Database.upsertResult> results = new  List<Database.upsertResult>();
-                
-                
-                List<InvoiceData> rawData = (List<InvoiceData>)JSON.deserialize(JSON.serialize(cObjMap2.get('Invoice')), List<InvoiceData>.class);
+
+                // Accept three payload shapes:
+                //   1) { "Data": { "Invoice": [ {...} ] } }
+                //   2) { "Invoice": [ {...} ] }
+                //   3) { "invoiceNumber": "...", ... }   (single flat invoice from SAP)
+                Object invoicePayload;
+                if (cObjMap.containsKey('Data') && cObjMap.get('Data') != null) {
+                    Map<String, Object> cObjMap2 = (Map<String,  Object>) cObjMap.get('Data');
+                    invoicePayload = cObjMap2.get('Invoice');
+                } else if (cObjMap.containsKey('Invoice') && cObjMap.get('Invoice') != null) {
+                    invoicePayload = cObjMap.get('Invoice');
+                } else {
+                    invoicePayload = new List<Object>{ cObjMap };
+                }
+
+                List<InvoiceData> rawData = (List<InvoiceData>)JSON.deserialize(JSON.serialize(invoicePayload), List<InvoiceData>.class);
                 List<Invoice__c> invList= new  List<Invoice__c>();
                 List<Invoice_item__c> invLineList= new  List<Invoice_item__c>();
                 List<Product__c> products = [Select Id,Name,UOM__c,Alternate_UOM__c,Uom_Conversion__c,SKU_Code__c from Product__c where SKU_Code__c != null];
@@ -60,7 +71,7 @@ global class getDataIntegrationController {
                             ));
                             continue;
                         }
-                        so.Invoice_Date__c = date.valueof(obj.invoiceDate);
+                        so.Invoice_Date__c = parseInvoiceDate(obj.invoiceDate);
                         so.Invoice_No__c = obj.invoiceNumber;
                         so.SAP_Order_ID__c = obj.SAPOrderId;
                         //Link Order
@@ -170,7 +181,7 @@ global class getDataIntegrationController {
 
                                 invItem.Company_Code__c = obj.companyCode;
                                 invItem.Plant__c  = obj.delivaryPlant;
-                                invItem.Bill_Date__c =  date.valueof(obj.invoiceDate);
+                                invItem.Bill_Date__c =  parseInvoiceDate(obj.invoiceDate);
                                 invLineList.add(invItem);
                             }
                         }
@@ -316,6 +327,13 @@ global class getDataIntegrationController {
     
 
     
+    // Accepts 'yyyy-MM-dd' or ISO 'yyyy-MM-ddTHH:mm:ss' from SAP
+    private static Date parseInvoiceDate(String value) {
+        if (value == null || value == '') return null;
+        String d = value.length() >= 10 ? value.substring(0, 10) : value;
+        return Date.valueOf(d);
+    }
+
     private static Apex_Log__c buildLog(
         String requestType,
         String message,
