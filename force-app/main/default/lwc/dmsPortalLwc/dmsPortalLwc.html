@@ -1629,6 +1629,10 @@
                                 <lightning-input type="search" label="Search Customer" placeholder="Name / Code / Phone"
                                     value={searchKey} onchange={handleCustomerSearch}>
                                 </lightning-input>
+                                <lightning-input type="toggle" label="Over Credit Customers"
+                                    message-toggle-active="On" message-toggle-inactive="Off"
+                                    checked={showOverCreditOnly} onchange={handleOverCreditToggle}>
+                                </lightning-input>
                                 <template lwc:if={hasMoreSecondaryCustomers}>
                                     <div class="btn-wrapper download-dropdown">
                                         <button class="exportBtn" onclick={handleSecondaryCustomerLoadMore}>
@@ -1695,6 +1699,10 @@
                                         <th>GST Number</th>
                                         <th>Contact Person</th>
                                         <th>PAN Number</th>
+                                        <th>Payment Type</th>
+                                        <th>Credit Limit</th>
+                                        <th>Payment Term</th>
+                                        <th>Credit Description</th>
                                         <th>District</th>
                                         <th>Landmark</th>
                                         <th>Street</th>
@@ -1727,6 +1735,10 @@
                                                 <td>{cust.gstNumber}</td>
                                                 <td>{cust.contactPersonName}</td>
                                                 <td>{cust.panNumber}</td>
+                                                <td>{cust.paymentType}</td>
+                                                <td class="text-right">{cust.creditLimit}</td>
+                                                <td>{cust.paymentTerm}</td>
+                                                <td>{cust.creditDescription}</td>
                                                 <td>{cust.district}</td>
                                                 <td>{cust.landmark}</td>
                                                 <td>{cust.street}</td>
@@ -1739,7 +1751,7 @@
 
                                     <template lwc:else>
                                         <tr>
-                                            <td colspan="19">
+                                            <td colspan="23">
                                                 <div style="height: 200px; display: flex; align-items: center; justify-content: center;">
                                                         <div class="slds-truncate">
                                                             <span style="color:red; font-size:large;">
