@@ -365,6 +365,7 @@ export default class NavigationComponent extends LightningElement {
     SECONDARY_CUSTOMER_PAGE_SIZE = 100;
     @track visibleSecondaryCustomers = [];
     _secondaryVisibleCount = 100;
+    @track showOverCreditOnly = false;
 
     @track showReportTypeModal = false;
     @track selectedReportType = 'outstanding';
@@ -934,23 +935,42 @@ export default class NavigationComponent extends LightningElement {
 
     get hasMoreSecondaryCustomers() {
         return this.visibleSecondaryCustomers.length <
-            (this.secoundaryCustomerFilter.originalSecondaryCustomers || []).length;
+            this._getFilteredSecondaryCustomers().length;
     }
 
     get loadMoreSecondaryCustomersLabel() {
-        const total = (this.secoundaryCustomerFilter.originalSecondaryCustomers || []).length;
+        const total = this._getFilteredSecondaryCustomers().length;
         const remaining = total - this.visibleSecondaryCustomers.length;
         const next = Math.min(this.SECONDARY_CUSTOMER_PAGE_SIZE, remaining);
         return `Load More (${next} of ${remaining} remaining)`;
     }
 
-    _applySecondaryCustomerPagination() {
+    _getFilteredSecondaryCustomers() {
         const src = this.secoundaryCustomerFilter.originalSecondaryCustomers || [];
+        if (!this.showOverCreditOnly) {
+            return src;
+        }
+        return src.filter(c => {
+            const limit = Number(c.creditLimit) || 0;
+            const outstanding = Number(c.outStanding) || 0;
+            return (outstanding - limit) > 0;
+        });
+    }
+
+    _applySecondaryCustomerPagination() {
+        const src = this._getFilteredSecondaryCustomers();
         this.visibleSecondaryCustomers = src.slice(0, this._secondaryVisibleCount);
+        this.secoundaryCustomerFilter.isshowData = this.visibleSecondaryCustomers.length > 0;
     }
 
     handleSecondaryCustomerLoadMore() {
         this._secondaryVisibleCount += this.SECONDARY_CUSTOMER_PAGE_SIZE;
+        this._applySecondaryCustomerPagination();
+    }
+
+    handleOverCreditToggle(event) {
+        this.showOverCreditOnly = event.target.checked;
+        this._secondaryVisibleCount = this.SECONDARY_CUSTOMER_PAGE_SIZE;
         this._applySecondaryCustomerPagination();
     }
 
@@ -1038,7 +1058,7 @@ export default class NavigationComponent extends LightningElement {
 
     handleCustomerExportCsv() {
         this.showCustomerDownloadMenu = false;
-        const data = this.secoundaryCustomerFilter.originalSecondaryCustomers;
+        const data = this._getFilteredSecondaryCustomers();
 
         if (!data || data.length === 0) {
             this.showToast('Export Error', 'No customer data to export', 'error');
@@ -1050,7 +1070,8 @@ export default class NavigationComponent extends LightningElement {
                 'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
                 'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
                 'Email ID', 'Aadhaar No', 'GST Number', 'Contact Person',
-                'PAN Number', 'District', 'Landmark', 'Street', 'Pincode',
+                'PAN Number', 'Payment Type', 'Credit Limit', 'Payment Term',
+                'Credit Description', 'District', 'Landmark', 'Street', 'Pincode',
                 'Outstanding'
             ];
 
@@ -1068,6 +1089,10 @@ export default class NavigationComponent extends LightningElement {
                 cust.gstNumber             || '',
                 cust.contactPersonName     || '',
                 cust.panNumber             || '',
+                cust.paymentType           || '',
+                cust.creditLimit           || '',
+                cust.paymentTerm           || '',
+                cust.creditDescription     || '',
                 cust.district              || '',
                 cust.landmark              || '',
                 cust.street                || '',
@@ -1087,7 +1112,8 @@ export default class NavigationComponent extends LightningElement {
             const url  = URL.createObjectURL(blob);
             const a    = document.createElement('a');
             a.href     = url;
-            a.download = `SecondaryCustomers_${new Date().toISOString().slice(0,10)}.csv`;
+            const filePrefix = this.showOverCreditOnly ? 'OverCreditCustomers' : 'SecondaryCustomers';
+            a.download = `${filePrefix}_${new Date().toISOString().slice(0,10)}.csv`;
             a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
@@ -1104,7 +1130,7 @@ export default class NavigationComponent extends LightningElement {
     }
     handleCustomerExportXlsx() {
         this.showCustomerDownloadMenu = false;
-        const data = this.secoundaryCustomerFilter.originalSecondaryCustomers;
+        const data = this._getFilteredSecondaryCustomers();
 
         if (!data || data.length === 0) {
             this.showToast('Export Error', 'No customer data to export', 'error');
@@ -1120,7 +1146,8 @@ export default class NavigationComponent extends LightningElement {
                     'S.No.', 'Customer Name', 'Customer Code', 'Customer Type',
                     'Customer Category', 'Status', 'Primary Phone', 'Beat Name',
                     'Email ID', 'Aadhaar No', 'GST Number', 'Contact Person',
-                    'PAN Number', 'District', 'Landmark', 'Street', 'Pincode',
+                    'PAN Number', 'Payment Type', 'Credit Limit', 'Payment Term',
+                    'Credit Description', 'District', 'Landmark', 'Street', 'Pincode',
                     'Outstanding'
                 ];
 
@@ -1138,6 +1165,10 @@ export default class NavigationComponent extends LightningElement {
                     cust.gstNumber             || '',
                     cust.contactPersonName     || '',
                     cust.panNumber             || '',
+                    cust.paymentType           || '',
+                    cust.creditLimit           || '',
+                    cust.paymentTerm           || '',
+                    cust.creditDescription     || '',
                     cust.district              || '',
                     cust.landmark              || '',
                     cust.street                || '',
@@ -1162,6 +1193,10 @@ export default class NavigationComponent extends LightningElement {
                     { wch: 18 },  // GST Number
                     { wch: 20 },  // Contact Person
                     { wch: 14 },  // PAN Number
+                    { wch: 14 },  // Payment Type
+                    { wch: 14 },  // Credit Limit
+                    { wch: 14 },  // Payment Term
+                    { wch: 24 },  // Credit Description
                     { wch: 14 },  // District
                     { wch: 20 },  // Landmark
                     { wch: 24 },  // Street
@@ -1169,9 +1204,11 @@ export default class NavigationComponent extends LightningElement {
                     { wch: 14 }   // Outstanding
                 ];
 
+                const sheetName = this.showOverCreditOnly ? 'Over Credit Customers' : 'Secondary Customers';
+                const filePrefix = this.showOverCreditOnly ? 'OverCreditCustomers' : 'SecondaryCustomers';
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Secondary Customers');
-                XLSX.writeFile(wb, `SecondaryCustomers_${new Date().toISOString().slice(0,10)}.xlsx`);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                XLSX.writeFile(wb, `${filePrefix}_${new Date().toISOString().slice(0,10)}.xlsx`);
 
             } catch (error) {
                 console.error('XLSX Export Error:', error);
