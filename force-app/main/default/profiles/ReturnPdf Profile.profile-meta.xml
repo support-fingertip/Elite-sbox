@@ -9601,6 +9601,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Invoice__c.Taxable_Turnover__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Invoice__c.Total_Quantity__c</field>
         <readable>true</readable>
     </fieldPermissions>
