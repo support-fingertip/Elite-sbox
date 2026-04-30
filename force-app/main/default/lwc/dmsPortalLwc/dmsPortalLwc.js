@@ -953,7 +953,7 @@ export default class NavigationComponent extends LightningElement {
         return src.filter(c => {
             const limit = Number(c.creditLimit) || 0;
             const outstanding = Number(c.outStanding) || 0;
-            return (limit - outstanding) > 0;
+            return (outstanding - limit) > 0;
         });
     }
 
