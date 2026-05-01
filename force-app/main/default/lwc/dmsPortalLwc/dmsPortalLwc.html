@@ -65,23 +65,35 @@
                             <button class="home-back-btn" onclick={backToCarousel}>Back</button>
                         </div>
 
-                        <div class="ledger-controls">
-                            <label>
-                                From Date
-                                <input type="date" value={ledgerFromDate} onchange={handleLedgerFromDateChange} />
-                            </label>
-                            <label>
-                                To Date
-                                <input type="date" value={ledgerToDate} onchange={handleLedgerToDateChange} />
-                            </label>
-                            <button class="home-action-btn" onclick={refreshCustomerLedger} disabled={ledgerLoading}>
-                                <template lwc:if={ledgerLoading}>Loading...</template>
-                                <template lwc:else>Refresh</template>
-                            </button>
+                        <div class="ledger-card">
+                            <div class="ledger-card-title">Filter Ledger</div>
+                            <div class="ledger-card-subtitle">Choose a date range to view your customer ledger</div>
+                            <div class="ledger-controls">
+                                <label>
+                                    From Date
+                                    <input type="date" value={ledgerFromDate} onchange={handleLedgerFromDateChange} />
+                                </label>
+                                <label>
+                                    To Date
+                                    <input type="date" value={ledgerToDate} onchange={handleLedgerToDateChange} />
+                                </label>
+                                <button class="home-action-btn" onclick={refreshCustomerLedger} disabled={ledgerLoading}>
+                                    <template lwc:if={ledgerLoading}>Loading...</template>
+                                    <template lwc:else>Get Data</template>
+                                </button>
+                            </div>
                         </div>
 
                         <template lwc:if={ledgerError}>
                             <div class="ledger-error">{ledgerError}</div>
+                        </template>
+
+                        <template lwc:if={showLedgerPrompt}>
+                            <div class="ledger-empty-card">
+                                <div class="ledger-empty-icon">&#128197;</div>
+                                <div class="ledger-empty-title">Please select Start Date and End Date</div>
+                                <div class="ledger-empty-text">Pick a From Date and To Date above, then click Get Data to view your customer ledger.</div>
+                            </div>
                         </template>
 
                         <template lwc:if={hasLedgerEntries}>
@@ -1617,6 +1629,10 @@
                                 <lightning-input type="search" label="Search Customer" placeholder="Name / Code / Phone"
                                     value={searchKey} onchange={handleCustomerSearch}>
                                 </lightning-input>
+                                <lightning-input type="toggle" label="Over Credit Customers" style="margin-top:20px"
+                                    message-toggle-active="On" message-toggle-inactive="Off"
+                                    checked={showOverCreditOnly} onchange={handleOverCreditToggle}>
+                                </lightning-input>
                                 <template lwc:if={hasMoreSecondaryCustomers}>
                                     <div class="btn-wrapper download-dropdown">
                                         <button class="exportBtn" onclick={handleSecondaryCustomerLoadMore}>
@@ -1683,6 +1699,10 @@
                                         <th>GST Number</th>
                                         <th>Contact Person</th>
                                         <th>PAN Number</th>
+                                        <th>Payment Type</th>
+                                        <th>Credit Limit</th>
+                                        <th>Payment Term</th>
+                                        <th>Credit Description</th>
                                         <th>District</th>
                                         <th>Landmark</th>
                                         <th>Street</th>
@@ -1715,6 +1735,10 @@
                                                 <td>{cust.gstNumber}</td>
                                                 <td>{cust.contactPersonName}</td>
                                                 <td>{cust.panNumber}</td>
+                                                <td>{cust.paymentType}</td>
+                                                <td class="text-right">{cust.creditLimit}</td>
+                                                <td>{cust.paymentTerm}</td>
+                                                <td>{cust.creditDescription}</td>
                                                 <td>{cust.district}</td>
                                                 <td>{cust.landmark}</td>
                                                 <td>{cust.street}</td>
@@ -1727,7 +1751,7 @@
 
                                     <template lwc:else>
                                         <tr>
-                                            <td colspan="19">
+                                            <td colspan="23">
                                                 <div style="height: 200px; display: flex; align-items: center; justify-content: center;">
                                                         <div class="slds-truncate">
                                                             <span style="color:red; font-size:large;">
@@ -1900,10 +1924,10 @@
                                     <th style="width:5%">S.No.</th>
                                     <th style="width:15%">Stock Adjustment No</th>
                                     <th style="width:15%">SKU Name</th>
-                                    <th style="width:15%">Adjustment Type</th>
-                                    <th style="width:15%">Quantity</th>
+                                    <th style="width:25%">Adjustment Type</th>
+                                    <th style="width:10%">Quantity</th>
                                     <th style="width:10%">Date</th>
-                                    <th style="width:25%">Reason</th>
+                                    <th style="width:20%">Reason</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1913,10 +1937,10 @@
                                             <td style="width:5%">{row.rowIndex}</td>
                                             <td style="width:15%">{row.stockId} </td>
                                             <td style="width:15%">{row.productName}</td>
-                                            <td style="width:15%">{row.AdjustmentType}</td>
-                                            <td style="width:15%">{row.quantity}</td>
+                                            <td style="width:25%">{row.AdjustmentType}</td>
+                                            <td style="width:10%">{row.quantity}</td>
                                             <td style="width:10%">{row.stockDate}</td>
-                                            <td style="width:25%">{row.reason}</td>
+                                            <td style="width:20%">{row.reason}</td>
                                         </tr>
                                     </template>
                                 </template>

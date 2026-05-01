@@ -1157,6 +1157,14 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>UpdateSKUWeightBatch</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>UpdateSKUWeightBatchTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>UpdateSalesChannelAndDepotQueueable</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -9598,6 +9606,11 @@
         <editable>false</editable>
         <field>Secondary_Invoice__c.Store__c</field>
         <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice__c.Taxable_Turnover__c</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>

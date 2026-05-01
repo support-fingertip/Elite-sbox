@@ -1941,6 +1941,10 @@ public without sharing class DMSPortalLwc {
             'Customer__r.GST_Number__c, ' +
             'Customer__r.Contact_Person_Name__c, ' +
             'Customer__r.PAN_Number__c, ' +
+            'Customer__r.Payment_Type__c, ' +
+            'Customer__r.Credit_Limit__c, ' +
+            'Customer__r.Payment_Term__c, ' +
+            'Customer__r.Credit_Description__c, ' +
             'Customer__r.Land_Mark__c, ' +
             'Customer__r.Street__c, ' +
             'Customer__r.Pincode__c ' +
@@ -1999,6 +2003,10 @@ public without sharing class DMSPortalLwc {
             d.gstNumber         = pm.Customer__r.GST_Number__c;
             d.contactPersonName = pm.Customer__r.Contact_Person_Name__c;
             d.panNumber         = pm.Customer__r.PAN_Number__c;
+            d.paymentType       = pm.Customer__r.Payment_Type__c;
+            d.creditLimit       = pm.Customer__r.Credit_Limit__c != null ? pm.Customer__r.Credit_Limit__c : 0;
+            d.paymentTerm       = pm.Customer__r.Payment_Term__c;
+            d.creditDescription = pm.Customer__r.Credit_Description__c;
             d.landmark          = pm.Customer__r.Land_Mark__c;
             d.street            = pm.Customer__r.Street__c;
             d.pincode           = pm.Customer__r.Pincode__c;
@@ -2081,6 +2089,10 @@ public without sharing class DMSPortalLwc {
             'Customer__r.GST_Number__c, ' +
             'Customer__r.Contact_Person_Name__c, ' +
             'Customer__r.PAN_Number__c, ' +
+            'Customer__r.Payment_Type__c, ' +
+            'Customer__r.Credit_Limit__c, ' +
+            'Customer__r.Payment_Term__c, ' +
+            'Customer__r.Credit_Description__c, ' +
             'Customer__r.Land_Mark__c, ' +
             'Customer__r.Street__c, ' +
             'Customer__r.Pincode__c ' +
@@ -2139,6 +2151,10 @@ public without sharing class DMSPortalLwc {
             d.gstNumber         = pm.Customer__r.GST_Number__c;
             d.contactPersonName = pm.Customer__r.Contact_Person_Name__c;
             d.panNumber         = pm.Customer__r.PAN_Number__c;
+            d.paymentType       = pm.Customer__r.Payment_Type__c;
+            d.creditLimit       = pm.Customer__r.Credit_Limit__c != null ? pm.Customer__r.Credit_Limit__c : 0;
+            d.paymentTerm       = pm.Customer__r.Payment_Term__c;
+            d.creditDescription = pm.Customer__r.Credit_Description__c;
             d.landmark          = pm.Customer__r.Land_Mark__c;
             d.street            = pm.Customer__r.Street__c;
             d.pincode           = pm.Customer__r.Pincode__c;
@@ -2372,6 +2388,10 @@ public without sharing class DMSPortalLwc {
         @AuraEnabled public String gstNumber;
         @AuraEnabled public String contactPersonName;
         @AuraEnabled public String panNumber;
+        @AuraEnabled public String paymentType;
+        @AuraEnabled public Decimal creditLimit;
+        @AuraEnabled public String paymentTerm;
+        @AuraEnabled public String creditDescription;
         @AuraEnabled public String landmark;
         @AuraEnabled public String street;
         @AuraEnabled public String pincode;
