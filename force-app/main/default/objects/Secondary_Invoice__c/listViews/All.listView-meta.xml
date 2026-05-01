@@ -10,6 +10,7 @@
     <columns>Grand_Total__c</columns>
     <columns>Total_Tax__c</columns>
     <columns>Delivery_remarks__c</columns>
+    <columns>Beat_Name__c</columns>
     <columns>Paid_Invoice_Amount__c</columns>
     <columns>Pending_Amount__c</columns>
     <columns>Invoice_Status__c</columns>

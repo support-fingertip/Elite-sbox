@@ -832,6 +832,7 @@ private class DMSPortalLwcTest {
     static void testGetSecondaryCustomers() {
         Test.startTest();
         DMSPortalLwc.ReturnAccData result = DMSPortalLwc.getSecondaryCustomers('All');
+            DMSPortalLwc.ReturnAccData result1 = DMSPortalLwc.getSecondaryCustomers('All');
         Test.stopTest();
         System.assertNotEquals(null, result);
     }
