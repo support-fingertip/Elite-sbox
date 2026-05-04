@@ -61,52 +61,52 @@
         <columns>
             <checkedByDefault>true</checkedByDefault>
             <field>Product__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>false</checkedByDefault>
             <field>Product_Name__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>false</checkedByDefault>
             <field>SKU_Code__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>true</checkedByDefault>
             <field>Quantity__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>true</checkedByDefault>
             <field>Quantity_in_Kgs__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>false</checkedByDefault>
             <field>Qty_in_Cases__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>true</checkedByDefault>
             <field>Total_Amount__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>false</checkedByDefault>
             <field>Taxable_Amount__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>false</checkedByDefault>
             <field>Tax_Amount__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <columns>
             <checkedByDefault>false</checkedByDefault>
             <field>Unit_Price__c</field>
-            <table>Secondary_Invoice_Item__c</table>
+            <table>Secondary_Invoice_Items__r</table>
         </columns>
         <masterLabel>Secondary Invoice Item</masterLabel>
     </sections>

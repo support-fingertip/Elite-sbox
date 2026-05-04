@@ -5,22 +5,22 @@
         <calculatedFormula>RowCount</calculatedFormula>
         <datatype>number</datatype>
         <developerName>FORMULA1</developerName>
-        <downGroupingContext>Secondary_Invoice_Item__c.Product__c</downGroupingContext>
+        <downGroupingContext>Secondary_Invoice_Items__r.Product__c</downGroupingContext>
         <isActive>false</isActive>
         <isCrossBlock>false</isCrossBlock>
         <masterLabel>Invoice Lines</masterLabel>
         <scale>0</scale>
     </aggregates>
     <columns>
-        <field>Secondary_Invoice_Item__c.Quantity__c</field>
+        <field>Secondary_Invoice_Items__r.Quantity__c</field>
         <aggregateTypes>Sum</aggregateTypes>
     </columns>
     <columns>
-        <field>Secondary_Invoice_Item__c.Quantity_in_Kgs__c</field>
+        <field>Secondary_Invoice_Items__r.Quantity_in_Kgs__c</field>
         <aggregateTypes>Sum</aggregateTypes>
     </columns>
     <columns>
-        <field>Secondary_Invoice_Item__c.Total_Amount__c</field>
+        <field>Secondary_Invoice_Items__r.Total_Amount__c</field>
         <aggregateTypes>Sum</aggregateTypes>
     </columns>
     <description>SKU-wise monthly demand trend based on secondary invoices.</description>
@@ -39,7 +39,7 @@
     </groupingsAcross>
     <groupingsDown>
         <dateGranularity>Day</dateGranularity>
-        <field>Secondary_Invoice_Item__c.Product__c</field>
+        <field>Secondary_Invoice_Items__r.Product__c</field>
         <sortOrder>Asc</sortOrder>
     </groupingsDown>
     <name>Secondary Sales SKU Demand Trend</name>
@@ -54,6 +54,6 @@
     <showSubTotals>true</showSubTotals>
     <timeFrameFilter>
         <dateColumn>Secondary_Invoice__c.Invoice_Date__c</dateColumn>
-        <interval>INTERVAL_LAST_N_MONTHSAGO:12</interval>
+        <interval>INTERVAL_CURFY</interval>
     </timeFrameFilter>
 </Report>
