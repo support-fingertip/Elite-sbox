@@ -59,7 +59,7 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Orders', label: 'Primary Orders' },
         { id: 'Invoices', label: 'Primary Invoices' },
         { id: 'Returns', label: 'Sale Return' },
-        { id: 'Payments', label: 'Receipts' },
+       /* { id: 'Payments', label: 'Receipts' },*/
         { id: 'GRN', label: 'GRNs' },
         { id: 'Claims', label: 'Claims' },
         { id: 'Stock', label: 'Stock' },
@@ -73,7 +73,7 @@ export default class NavigationComponent extends LightningElement {
         { id: 'Secondary Customer Ledger', label: 'Secondary Customer Ledger' },
         { id: 'Users', label: 'Users' },
         { id: 'Stock Adjustment', label: 'Stock Adjustment' },
-        { id: 'Product Gallery', label: 'Product Gallery' },
+        /*{ id: 'Product Gallery', label: 'Product Gallery' },*/
         { id: 'Product Master', label: 'Product Master' },
         { id: 'Schemes', label: 'Schemes' },
        /*{ id: 'Claim Reports', label: 'Claim Reports' }**/
@@ -3259,6 +3259,15 @@ export default class NavigationComponent extends LightningElement {
         this.getSecoundaryOrderData();
     }
     handleSecondaryorderCreated() {
+
+        this.resetAllFlags();
+        this.selectedTab = 'Secondary Invoices';
+
+        const selectedIndex = this.allTabs.findIndex(tab => tab.id === 'Secondary Invoices');
+        if (selectedIndex >= this.visibleTabCount) {
+            const invTab = this.allTabs.splice(selectedIndex, 1)[0];
+            this.allTabs.splice(this.visibleTabCount - 1, 0, invTab);
+        }
         this.isGenerateInvoice = false;
         this.showSecoundaryInvoices = true;
         this.getSecoundaryInvoiceData();

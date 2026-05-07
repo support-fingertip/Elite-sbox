@@ -41,10 +41,10 @@ export default class GenerateGRNpage extends LightningElement {
                         name: item.Name,
                         productId: item.SKU__c,
                         productName: item.SKU__r?.Name,
-                        quantity: item.Quantity__c,
-                        receivedSaleableQty: item.Quantity__c,
+                        quantity: item.Qyt_in_Each__c,
+                        receivedSaleableQty: item.Qyt_in_Each__c,
                         receivedNonSaleableQty: 0,
-                        receivedQty: item.Quantity__c
+                        receivedQty: item.Qyt_in_Each__c
                     })) || []
                 }));
                 this.isPageLoaded = false;
