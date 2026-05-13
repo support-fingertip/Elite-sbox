@@ -12,14 +12,50 @@ B2B) and **Secondary Orders** (Retailer / Distribution).
 
 ---
 
-## 1. High-Level Overview
+## 1. Exact Price Fetching Logic on SKU
+
+When the Order screen loads, every product (SKU) goes through this check —
+the system picks the **first source that has a price** and stops there.
+
+### PRIMARY CUSTOMER
+─────────────────
+1. **System first checks the Last Invoice price** for that SKU sold to this
+   Account (most recent invoice, where the price wasn't a FOC/free one).
+   → If found, this becomes the Unit Price.
+2. **If Invoice not found, the system checks the Price Book** that matches
+   this Customer (`Price_Book__c` where `Customer__c = Account` and
+   `Customer_Type__c = 'Primary Customer'`).
+   → If found, the Price Book `Unit_Price__c` becomes the Unit Price.
+3. **If Price Book not found, the system uses the List Price on the SKU**
+   (`Product__c.List_Price__c`).
+   → This is the final fallback.
+
+### SECONDARY CUSTOMER
+────────────────────
+1. **Price Book (Account-specific)** — matches the exact Account
+   (`Price_Book__c.Customer__c = Account.Id`).
+2. **Price Book (Secondary Category)** — matches the Account's category
+   (`Price_Book__c.Secondary_Customer_Category__c = Account.Secondary_Customer_Category__c`).
+3. **Price Book (Sales Channel)** — matches one of the channels mapped to
+   this Account (`Price_Book__c.Sales_Channel__c IN channelSet`).
+4. **After a Price Book is picked**, if a `Price_Change__c` record exists for
+   the Account's category, the discount % is applied:
+   - If `Type__c = 'MRP'`  → `UnitPrice = MRP × (1 − Off% / 100)`
+   - If `Type__c = 'Unit Price'` → `UnitPrice = PriceBookUnitPrice × (1 − Off% / 100)`
+5. **Best Scheme is auto-applied** on the screen when the user enters
+   quantity (Free product / Per-UOM discount / Sale-value discount —
+   whichever gives the highest savings).
+
+---
+
+## 2. End-to-End Flow Diagram
 
 ```
                 ┌─────────────────────────────────────────────┐
                 │  productScreen4 (LWC) — Order Screen        │
                 └─────────────────────────────────────────────┘
                                   │
-                                  ▼ wire / imperative call
+                                  ▼ Apex call
                 ┌─────────────────────────────────────────────┐
                 │  beatPlannerlwc.getSchemeWiseOrderData      │
                 │  (visitId, AccountId, orderRecordId)        │
@@ -29,9 +65,9 @@ B2B) and **Secondary Orders** (Retailer / Distribution).
        ▼                                                      ▼
   PRIMARY CUSTOMER                                  SECONDARY CUSTOMER
   ─────────────────                                  ────────────────────
-  1. Last Invoice price (≤ 30 days)                 1. Price Book (Account-specific)
-  2. Price Book (Customer=Account, Primary)         2. Price Book (Secondary Category)
-  3. Product List Price                             3. Price Book (Sales Channel)
+  1. Last Invoice price                             1. Price Book (Account-specific)
+  2. Price Book (matching Customer)                 2. Price Book (Secondary Category)
+  3. List Price on SKU                              3. Price Book (Sales Channel)
                                                     4. Apply Price_Change discount
                                                     5. Auto-select best Scheme
                                   │
@@ -51,14 +87,15 @@ B2B) and **Secondary Orders** (Retailer / Distribution).
                 └─────────────────────────────────────────────┘
 ```
 
-The same Apex entry point (`getSchemeWiseOrderData`) serves both flows; branching
-happens **inside** the method based on the Account's `Customer_Type__c`.
+The same Apex entry point (`getSchemeWiseOrderData`) serves both flows;
+branching happens **inside** the method based on the Account's
+`Customer_Type__c`.
 
 ---
 
-## 2. Apex Layer — `beatPlannerlwc.cls`
+## 3. Apex Layer — `beatPlannerlwc.cls`
 
-### 2.1 Entry point: `getSchemeWiseOrderData` (line 1481)
+### 3.1 Entry point: `getSchemeWiseOrderData` (line 1481)
 
 **Signature**
 ```apex
@@ -79,59 +116,70 @@ public static Map<String,Object> getSchemeWiseOrderData(
 | `minumumOrderValue` | Minimum order threshold from running user |
 | `existingOrderProductQuantities` | Quantity map for edit mode |
 
-### 2.2 Price-source queries
+### 3.2 SOQL queries — what is fetched
 
 **Primary Customer branch** (`beatPlannerlwc.cls:1597–1604`):
+For every active SKU, we pull the matching Price Book row **and** the latest
+non-FOC invoice line for this Account:
 ```apex
-// Product with customer-specific Price Book + last-30-day Invoice price
-SELECT Id, Name, List_Price__c, MRP__c, Tax__c, ...
-       (SELECT Unit_Price__c, MRP__c, Delivery_Plant__c
+SELECT Id, Name, List_Price__c, MRP__c, Tax_Percent__c, Delivery_Plant__c, ...
+       (SELECT Unit_Price__c, MRP__c, Tax__c
           FROM Price_Books__r
          WHERE Customer_Type__c = 'Primary Customer'
-           AND Customer__c = :AccountId),
-       (SELECT Price_per_unit__c
+           AND Customer__c = :acc.Id
+         ORDER BY LastModifiedDate DESC LIMIT 1),
+       (SELECT Price_per_unit__c, Bill_Date__c
           FROM Invoice_items__r
-         WHERE CreatedDate = LAST_N_DAYS:30
-         ORDER BY CreatedDate DESC LIMIT 1)
-  FROM Product2 WHERE ...
+         WHERE Invoice__r.Store__c = :acc.Id
+           AND FOC_Price__c = false
+         ORDER BY Bill_Date__c DESC LIMIT 1)
+  FROM Product__c
+ WHERE Is_Active__c = true
 ```
 
 **Secondary Customer branch** (`beatPlannerlwc.cls:1607–1614`):
+For every active SKU, we pull all Price Book rows whose Sales Channel is
+mapped to this Account:
 ```apex
-SELECT Id, Name, List_Price__c, MRP__c, Tax__c,
-       (SELECT Unit_Price__c, MRP__c, Sales_Channel__c,
-               Secondary_Customer_Category__c, Customer__c
+SELECT Id, Name, List_Price__c, MRP__c, Tax_Percent__c, ...
+       (SELECT Unit_Price__c, MRP__c, Tax__c,
+               Customer__c, Secondary_Customer_Category__c, Sales_Channel__c
           FROM Price_Books__r
          WHERE Customer_Type__c = 'Secondary Customer'
-           AND (Customer__c = :AccountId
-                OR Secondary_Customer_Category__c = :acc.Category__c
-                OR Sales_Channel__c = :acc.Sales_Channel__c))
-  FROM Product2 WHERE ...
+           AND Sales_Channel__c IN :channelSet)
+  FROM Product__c
+ WHERE Is_Active__c = true
 ```
 
-### 2.3 Price-resolution hierarchy (`beatPlannerlwc.cls:1620–1705`)
+### 3.3 How the final Unit Price is decided (`beatPlannerlwc.cls:1620–1705`)
 
 **Primary Customer — first match wins:**
-1. `p.Invoice_items__r[0].Price_per_unit__c` (last invoice within 30 days) — *line 1652*
-2. `p.Price_Books__r[0].Unit_Price__c` (Primary price book row) — *line 1657*
-3. `p.List_Price__c` (Product master fallback) — *line 1681*
-4. `MRP` = `p.Price_Books__r[0].MRP__c` if present else `p.MRP__c`
-5. `deliveryPlant` = `p.Price_Books__r[0].Delivery_Plant__c` (Primary only)
+1. If an **Invoice item** exists → `UnitPricePriceBook = Invoice_items__r[0].Price_per_unit__c` *(line 1652–1655)*
+2. Else if a **Price Book** row was found → `UnitPricePriceBook = Price_Books__r[0].Unit_Price__c` *(line 1657–1676)*
+3. Else → `UnitPricePriceBook = Product__c.List_Price__c` *(line 1681–1700)*
+4. `MRP` comes from the Price Book row if present, else from the SKU.
+5. `deliveryPlant` is filled only for Primary (used to group the summary).
 
-**Secondary Customer — first match wins:**
-1. Price Book where `Customer__c = AccountId` — *line 1630–1632*
-2. Price Book where `Secondary_Customer_Category__c = acc.Category__c` — *line 1633–1635*
-3. Price Book where `Sales_Channel__c = acc.Sales_Channel__c` — *line 1636–1638*
+**Secondary Customer — best Price Book is picked in this order** *(line 1629–1639)*:
+1. Price Book where `Customer__c = Account.Id`
+2. Price Book where `Secondary_Customer_Category__c = Account.Secondary_Customer_Category__c`
+3. Price Book where `Sales_Channel__c` is in the Account's channel set
 
-Then a **Price_Change__c override** is applied (lines 1553–1562, 1660–1676):
+After picking the Price Book, **Price_Change__c discount** is applied if it
+exists for the Account's category *(line 1660–1676)*:
 ```apex
-// Price_Change__c has: Customer_Category__c, Off__c (%), Type__c
-if (pc.Type__c == 'MRP')          basePrice = MRP;
-else /* Unit Price */              basePrice = unitPrice;
-finalPrice = basePrice * (1 - pc.Off__c / 100);
+if (priceChange.Type__c == 'MRP')
+    UnitPricePriceBook = bestPB.MRP__c        * (1 − Off__c / 100);
+else if (priceChange.Type__c == 'Unit Price')
+    UnitPricePriceBook = bestPB.Unit_Price__c * (1 − Off__c / 100);
+else
+    UnitPricePriceBook = bestPB.Unit_Price__c;
 ```
 
-### 2.4 DTO returned to LWC (`beatPlannerlwc.cls:4213–4248` — `productData`)
+> **Note:** `Price_Change__c` is keyed by `Secondary_Customer_Category__c`, so
+> this discount only ever applies to Secondary customers in practice.
+
+### 3.4 DTO returned to LWC (`beatPlannerlwc.cls:4213–4248` — `productData`)
 
 | Field | Meaning |
 |-------|---------|
@@ -143,7 +191,7 @@ finalPrice = basePrice * (1 - pc.Off__c / 100);
 | `taxPercent` | GST/Tax % from `Product2.Tax__c` |
 | `deliveryPlant` | Only populated for Primary |
 
-### 2.5 Persistence: `upsertOrder` (`beatPlannerlwc.cls:2238`)
+### 3.5 Persistence: `upsertOrder` (`beatPlannerlwc.cls:2238`)
 
 The method writes a **full audit trail** of price transformations onto
 `Order_Item__c`:
@@ -165,9 +213,9 @@ For Primary orders, `Before_Scheme_*` = `After_Scheme_*` (no schemes apply) and
 
 ---
 
-## 3. LWC Controller — `productScreen4.js`
+## 4. LWC Controller — `productScreen4.js`
 
-### 3.1 Initial data load — `getData()` (line 257)
+### 4.1 Initial data load — `getData()` (line 257)
 
 ```js
 getSchemeWiseOrderData({ visitId, AccountId, orderRecordId })
@@ -193,7 +241,7 @@ product.applicableSchemes = this.schemeOffer
 
 This drives the scheme ribbon icon in HTML for secondary customers.
 
-### 3.2 Quantity handlers — the Primary vs Secondary fork
+### 4.2 Quantity handlers — the Primary vs Secondary fork
 
 **Primary — dual input (Cases + Each):**
 - `handleCrateQtyChange` (`productScreen4.js:1454`)
@@ -215,7 +263,7 @@ this.autoSelectBestScheme(productId);
 this.recalculateTotals();
 ```
 
-### 3.3 Scheme auto-selection — `autoSelectBestScheme` (line 1578)
+### 4.3 Scheme auto-selection — `autoSelectBestScheme` (line 1578)
 
 ```js
 autoSelectBestScheme(productId) {
@@ -235,7 +283,7 @@ autoSelectBestScheme(productId) {
 }
 ```
 
-### 3.4 Scheme math — `calculateSchemeBenefit` (line 1683)
+### 4.4 Scheme math — `calculateSchemeBenefit` (line 1683)
 
 Three scheme types are supported:
 
@@ -264,7 +312,7 @@ if (baseTotal >= saleValueThreshold)
    finalUnitPrice  = discountedTotal / qty
 ```
 
-### 3.5 Totals — `recalculateTotals` (line 1784)
+### 4.5 Totals — `recalculateTotals` (line 1784)
 
 ```js
 for (const item of [...schemePro, ...productData]) {
@@ -279,7 +327,7 @@ for (const item of [...schemePro, ...productData]) {
 }
 ```
 
-### 3.6 Summary builder — `setProducts` (line 2032)
+### 4.6 Summary builder — `setProducts` (line 2032)
 
 **Primary path (1934–2019)** — groups by `deliveryPlant`:
 ```js
@@ -304,9 +352,9 @@ totalDiscount  += item.discountedPrice || 0;
 
 ---
 
-## 4. HTML Template — `productScreen4.html`
+## 5. HTML Template — `productScreen4.html`
 
-### 4.1 Price display on product cards
+### 5.1 Price display on product cards
 
 | Line | Element | Bindings |
 |------|---------|----------|
@@ -314,7 +362,7 @@ totalDiscount  += item.discountedPrice || 0;
 | 145–148 | Scheme ribbon | Shown when `item.hasApplicableSchemes` (secondary) |
 | 163 | Applied scheme banner | `Final Price: ₹{item.discountedUnitPrice}  \|\|  Actual: ₹{item.UnitPricePriceBook}` |
 
-### 4.2 Quantity inputs — Primary vs Secondary
+### 5.2 Quantity inputs — Primary vs Secondary
 
 **Primary** (lines 174–183):
 ```html
@@ -343,7 +391,7 @@ totalDiscount  += item.discountedPrice || 0;
 </template>
 ```
 
-### 4.3 Order summary table
+### 5.3 Order summary table
 
 | Line | Column | Source |
 |------|--------|--------|
@@ -355,7 +403,7 @@ totalDiscount  += item.discountedPrice || 0;
 
 ---
 
-## 5. End-to-End Flow — Primary Order
+## 6. End-to-End Flow — Primary Order
 
 ```
 1. User opens Order screen for a Primary Account
@@ -382,7 +430,7 @@ totalDiscount  += item.discountedPrice || 0;
 
 ---
 
-## 6. End-to-End Flow — Secondary Order
+## 7. End-to-End Flow — Secondary Order
 
 ```
 1. User opens Order screen for a Secondary Account
@@ -420,7 +468,7 @@ totalDiscount  += item.discountedPrice || 0;
 
 ---
 
-## 7. Side-by-Side Comparison
+## 8. Side-by-Side Comparison
 
 | Aspect | Primary Order | Secondary Order |
 |--------|---------------|-----------------|
@@ -436,7 +484,7 @@ totalDiscount  += item.discountedPrice || 0;
 
 ---
 
-## 8. Quick Reference — Key Line Numbers
+## 9. Quick Reference — Key Line Numbers
 
 **Apex `beatPlannerlwc.cls`**
 - `getSchemeWiseOrderData` entry → 1481
@@ -472,7 +520,7 @@ totalDiscount  += item.discountedPrice || 0;
 
 ---
 
-## 9. Common Failure / Debug Points
+## 10. Common Failure / Debug Points
 
 1. **Unit price is 0 / blank** → no Price_Book row matched and `Product2.List_Price__c`
    is empty. Check the Account's `Customer_Type__c`, `Category__c`, `Sales_Channel__c`.
