@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Forecast_UOM__c</fullName>
-    <description>Unit of measure for the entered forecast quantity (KG or TON).</description>
     <externalId>false</externalId>
     <label>Forecast UOM</label>
     <required>false</required>
@@ -14,7 +13,7 @@
             <sorted>false</sorted>
             <value>
                 <fullName>KG</fullName>
-                <default>true</default>
+                <default>false</default>
                 <label>KG</label>
             </value>
             <value>

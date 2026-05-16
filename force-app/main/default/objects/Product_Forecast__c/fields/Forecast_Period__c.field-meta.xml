@@ -3,7 +3,7 @@
     <fullName>Forecast_Period__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
     <externalId>false</externalId>
-    <label>Forecast Period</label>
+    <label>Not in Use</label>
     <referenceTo>Forecast_Period__c</referenceTo>
     <relationshipLabel>Product Forecasts</relationshipLabel>
     <relationshipName>Product_Forecasts</relationshipName>
