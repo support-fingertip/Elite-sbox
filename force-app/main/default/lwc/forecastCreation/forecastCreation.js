@@ -115,7 +115,7 @@ export default class ForecastCreation extends LightningElement {
             Forecast_Month__c: this.month,
             Forecast_Year__c: this.year,
             Forecast_UOM__c: this.uom,
-            Forecast__c: Number(this.quantity)
+            Forecast_Quantity__c: Number(this.quantity)
         };
 
         this.isLoading = true;

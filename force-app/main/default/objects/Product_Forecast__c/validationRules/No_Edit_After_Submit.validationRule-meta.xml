@@ -7,7 +7,7 @@
   Is_Monthly_Forecast__c,
   NOT(ISPICKVAL(PRIORVALUE(Approval_Status__c), &quot;Draft&quot;)),
   OR(
-    ISCHANGED(Forecast__c),
+    ISCHANGED(Forecast_Quantity__c),
     ISCHANGED(Forecast_UOM__c),
     ISCHANGED(Distributor__c),
     ISCHANGED(Product__c),

@@ -13,7 +13,7 @@ private class ForecastApprovalEmailQueueableTest {
             Forecast_Month__c = 'May',
             Forecast_Year__c = '2026',
             Forecast_UOM__c = 'KG',
-            Forecast__c = 1500,
+            Forecast_Quantity__c = 1500,
             Approval_Status__c = 'Approved'
         );
         insert f;
@@ -41,7 +41,7 @@ private class ForecastApprovalEmailQueueableTest {
             Forecast_Month__c = 'June',
             Forecast_Year__c = '2026',
             Forecast_UOM__c = 'TON',
-            Forecast__c = 2,
+            Forecast_Quantity__c = 2,
             Approval_Status__c = 'Approved'
         );
         // Is_Monthly_Forecast__c stays false to bypass BRD validation rules in seed.

@@ -25,7 +25,7 @@ private class ForecastSubmissionControllerTest {
             Forecast_Month__c = 'May',
             Forecast_Year__c = '2026',
             Forecast_UOM__c = 'KG',
-            Forecast__c = 1500
+            Forecast_Quantity__c = 1500
         );
     }
 
@@ -64,7 +64,7 @@ private class ForecastSubmissionControllerTest {
             Forecast_Month__c = 'May',
             Forecast_Year__c = '2026',
             Forecast_UOM__c = 'KG',
-            Forecast__c = 1500
+            Forecast_Quantity__c = 1500
         );
 
         Test.startTest();

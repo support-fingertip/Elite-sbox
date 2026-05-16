@@ -34,7 +34,7 @@ public without sharing class ForecastApprovalEmailQueueable implements Queueable
                    Distributor__c, Distributor__r.Name,
                    Product__c, Product__r.Name, Product__r.SKU_Code__c,
                    Product_Sub_Group__c,
-                   Forecast__c, Forecast_UOM__c, Forecast_KG__c,
+                   Forecast_Quantity__c, Forecast_UOM__c, Forecast_KG__c,
                    Forecast_Month__c, Forecast_Year__c,
                    Start_Date__c, End_Date__c,
                    Owner.Name, Owner.Email,
@@ -86,7 +86,7 @@ public without sharing class ForecastApprovalEmailQueueable implements Queueable
             + row('Product Sub Group', f.Product_Sub_Group__c)
             + row('Product / SKU', f.Product__r != null ? f.Product__r.Name : null)
             + row('SKU Code', f.Product__r != null ? f.Product__r.SKU_Code__c : null)
-            + row('Forecast Quantity', f.Forecast__c)
+            + row('Forecast Quantity', f.Forecast_Quantity__c)
             + row('UOM', f.Forecast_UOM__c)
             + row('Forecast (KG)', f.Forecast_KG__c)
             + row('Forecast Month', f.Forecast_Month__c)

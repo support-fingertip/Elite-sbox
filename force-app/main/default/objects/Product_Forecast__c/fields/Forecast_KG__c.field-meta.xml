@@ -3,7 +3,7 @@
     <fullName>Forecast_KG__c</fullName>
     <description>Forecast quantity normalised to KG. Used by the actuals scheduler to compare against Invoice_item__c.Net_Weight_in_KG__c.</description>
     <externalId>false</externalId>
-    <formula>IF(ISPICKVAL(Forecast_UOM__c, &quot;TON&quot;), Forecast__c * 1000, Forecast__c)</formula>
+    <formula>IF(ISPICKVAL(Forecast_UOM__c, &quot;TON&quot;), Forecast_Quantity__c * 1000, Forecast_Quantity__c)</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <label>Forecast (KG)</label>
     <precision>18</precision>
