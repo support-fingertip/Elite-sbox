@@ -13339,6 +13339,10 @@
         <visibility>DefaultOn</visibility>
     </tabVisibilities>
     <tabVisibilities>
+        <tab>Credit_Note_Data_Upload</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
         <tab>Customer_Group__c</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>
@@ -13361,6 +13365,10 @@
     <tabVisibilities>
         <tab>Dealer_Stock__c</tab>
         <visibility>DefaultOn</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Debit_Note_Data_Upload</tab>
+        <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>
         <tab>Debit_Note__c</tab>

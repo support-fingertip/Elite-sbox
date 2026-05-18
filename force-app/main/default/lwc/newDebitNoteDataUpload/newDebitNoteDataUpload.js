@@ -1,6 +1,6 @@
 import { LightningElement, track, api } from 'lwc';
 import uploadDebitNotes from '@salesforce/apex/SecondaryNoteUploadController.uploadDebitNotes';
-
+import SAMPLE_CSV from '@salesforce/resourceUrl/SecondaryDebitNoteTemplate';
 const HEADERS = ['Customer_Code', 'Note_Date', 'Amount', 'Reason', 'Description'];
 const PREVIEW_LIMIT = 50;
 
@@ -164,15 +164,13 @@ export default class NewDebitNoteDataUpload extends LightningElement {
     }
 
     handleSampleDownload() {
-        const sample =
-            HEADERS.join(',') + '\n' +
-            'CUST001,2026-05-05,1000,Price Difference,Sample description\n' +
-            'CUST002,2026-05-05,500,Discounts or Rebates,\n';
-        const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + sample);
         const link = document.createElement('a');
-        link.setAttribute('href', encodedUri);
-        link.setAttribute('download', 'secondary_debit_note_sample.csv');
-        link.click();
+        link.href = SAMPLE_CSV;
+        link.download = 'secondary_Debit_note_sample.csv';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        document.body.removeChild(link);
     }
 
     handleBackToSelect() {

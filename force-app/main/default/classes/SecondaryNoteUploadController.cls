@@ -1,4 +1,4 @@
-public with sharing class SecondaryNoteUploadController {
+public without sharing class SecondaryNoteUploadController {
 
     public class RowError {
         @AuraEnabled public Integer rowNumber { get; set; }
