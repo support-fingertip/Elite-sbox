@@ -205,6 +205,21 @@ export default class ProductScreen4 extends LightningElement {
 
 
 
+    applyCategoryStyles(groupList) {
+        if (!groupList) return groupList;
+        const baseHeader = 'task-head slds-align_absolute-center';
+        return groupList.map(group => {
+            const groupName = (group && group.name) ? group.name.toLowerCase() : '';
+            let cardClass = 'product-card others-card';
+            if (groupName.includes('focused')) {
+                cardClass = 'product-card focused-card';
+            } else if (groupName.includes('must')) {
+                cardClass = 'product-card must-card';
+            }
+            return { ...group, headerClass: baseHeader, cardClass };
+        });
+    }
+
     syncQuantityToSchemePro(productId, newQty) {
         if (!productId || !this.schemePro) return;
         let changed = false;
@@ -267,8 +282,8 @@ export default class ProductScreen4 extends LightningElement {
                 this.productData = result.allOtherProducts.length !== 0 ? result.allOtherProducts : null;
                 this.originalSelectedProduct = result.allOtherProducts.length !== 0 ? result.allOtherProducts : null;
 
-                this.schemePro = result.strategyProductMapList.length !== 0 ? result.strategyProductMapList : null;
-                this.originalSchemePro = result.strategyProductMapList.length !== 0 ? result.strategyProductMapList : null;
+                this.schemePro = result.strategyProductMapList.length !== 0 ? this.applyCategoryStyles(result.strategyProductMapList) : null;
+                this.originalSchemePro = result.strategyProductMapList.length !== 0 ? this.applyCategoryStyles(result.strategyProductMapList) : null;
                 this.minumumOrderValue = result.minumumOrderValue || 0;
                 this.allProDtas = result.allProDtas;
                 this.deliveryTo = result.deliveryTo || '';
@@ -1179,7 +1194,7 @@ export default class ProductScreen4 extends LightningElement {
         const searchTerm = rawInput ? rawInput.toLowerCase().trim() : '';
 
         if (!searchTerm) {
-            this.schemePro = this.originalSchemePro ? [...this.originalSchemePro] : [];
+            this.schemePro = this.originalSchemePro ? this.applyCategoryStyles([...this.originalSchemePro]) : [];
             return;
         }
 
@@ -1208,7 +1223,7 @@ export default class ProductScreen4 extends LightningElement {
             })
             .filter(group => group !== null);
 
-        this.schemePro = filteredSchemePro;
+        this.schemePro = this.applyCategoryStyles(filteredSchemePro);
     }
 
     fuzzyMatch(text, searchWords) {

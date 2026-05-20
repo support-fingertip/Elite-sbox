@@ -468,6 +468,19 @@
     background-color: #f2f2f2; /* light grey */
 }
 
+/* Sales Strategy card accents */
+.focused-card {
+    border-left: 6px solid #2e844a !important;
+    background-color: #f1faf3 !important;
+}
+.must-card {
+    border-left: 6px solid #c23934 !important;
+    background-color: #fdf2f2 !important;
+}
+.others-card {
+    border-left: 6px solid #706e6b !important;
+}
+
 
 @media only screen and (min-width: 769px) {
     .lightning-button {

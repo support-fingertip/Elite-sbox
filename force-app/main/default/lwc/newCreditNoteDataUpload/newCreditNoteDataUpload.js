@@ -1,6 +1,6 @@
 import { LightningElement, track, api } from 'lwc';
 import uploadCreditNotes from '@salesforce/apex/SecondaryNoteUploadController.uploadCreditNotes';
-
+import SAMPLE_CSV from '@salesforce/resourceUrl/SecondaryNoteTemplate';
 const HEADERS = ['Customer_Code', 'Credit_Date', 'Amount', 'Reason', 'Description'];
 const PREVIEW_LIMIT = 50;
 
@@ -41,6 +41,10 @@ export default class NewCreditNoteDataUpload extends LightningElement {
 
     get hasErrors() {
         return this.result && this.result.errors && this.result.errors.length > 0;
+    }
+
+    get hasSuccesses() {
+        return this.result && this.result.successes && this.result.successes.length > 0;
     }
 
     handleFileChange(event) {
@@ -145,7 +149,7 @@ export default class NewCreditNoteDataUpload extends LightningElement {
                 } else {
                     this.showToast('warning', `${res.successCount} succeeded, ${res.failedCount} failed.`);
                 }
-                this.dispatchEvent(new CustomEvent('uploadcomplete', { detail: res }));
+                //this.dispatchEvent(new CustomEvent('uploadcomplete', { detail: res }));
             })
             .catch(error => {
                 this.isUploading = false;
@@ -156,7 +160,8 @@ export default class NewCreditNoteDataUpload extends LightningElement {
                     totalRecords: this.parsedRows.length,
                     successCount: 0,
                     failedCount: this.parsedRows.length,
-                    errors: [{ rowNumber: '-', customerCode: '', message: msg }]
+                    errors: [{ rowNumber: '-', customerCode: '', noteDate: '', amount: '', reason: '', description: '', message: msg }],
+                    successes: []
                 };
                 this.view = 'result';
                 this.showToast('error', msg);
@@ -164,17 +169,50 @@ export default class NewCreditNoteDataUpload extends LightningElement {
     }
 
     handleSampleDownload() {
-        const sample =
-            HEADERS.join(',') + '\n' +
-            'CUST001,2026-05-05,1000,Price Difference,Sample description\n' +
-            'CUST002,2026-05-05,500,Discounts or Rebates,\n';
-        const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + sample);
         const link = document.createElement('a');
-        link.setAttribute('href', encodedUri);
-        link.setAttribute('download', 'secondary_credit_note_sample.csv');
-        link.click();
+        link.href = SAMPLE_CSV;
+        link.download = 'secondary_credit_note_sample.csv';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        document.body.removeChild(link);
     }
 
+    handleDownloadResult() {
+        if (!this.result) {
+            this.showToast('error', 'No result available to download.');
+            return;
+        }
+
+        const header = ['Row No', 'Status', 'Customer Code', 'Customer Name', 'Record Id', 
+                        'Credit Note No', 'Credit Date', 'Amount', 'Reason', 'Description', 'Message'];
+
+        const escape = (v) => {
+            const str = v == null ? '' : String(v);
+            return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+        };
+
+        const rows = [];
+        (this.result.successes || []).forEach(s => {
+            rows.push([s.rowNumber, 'Success', s.customerCode || '', s.customerName || '',
+                    s.recordId || '', s.recordName || '', s.noteDate || '',
+                    s.amount != null ? s.amount : '', '', '', '']);
+        });
+        (this.result.errors || []).forEach(e => {
+            rows.push([e.rowNumber, 'Failed', e.customerCode || '', '', '', '',
+                    e.noteDate || '', e.amount || '', e.reason || '', e.description || '',
+                    e.message || '']);
+        });
+
+        let csvContent = header.join(',') + '\n';
+        rows.forEach(row => {
+            csvContent += row.map(escape).join(',') + '\n';
+        });
+
+        // ✅ This works in Experience Cloud Locker Service
+        const encodedUri = 'data:text/csv;charset=utf-8,' + encodeURI(csvContent);
+        window.open(encodedUri);
+    }
     handleBackToSelect() {
         this.parsedRows = [];
         this.result = null;

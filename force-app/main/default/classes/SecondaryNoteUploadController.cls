@@ -1,14 +1,42 @@
-public with sharing class SecondaryNoteUploadController {
+public without sharing class SecondaryNoteUploadController {
 
     public class RowError {
         @AuraEnabled public Integer rowNumber { get; set; }
         @AuraEnabled public String customerCode { get; set; }
+        @AuraEnabled public String noteDate { get; set; }
+        @AuraEnabled public String amount { get; set; }
+        @AuraEnabled public String reason { get; set; }
+        @AuraEnabled public String description { get; set; }
         @AuraEnabled public String message { get; set; }
 
-        public RowError(Integer rowNumber, String customerCode, String message) {
+        public RowError(Integer rowNumber, String customerCode, String noteDate, String amount, String reason, String description, String message) {
             this.rowNumber = rowNumber;
             this.customerCode = customerCode;
+            this.noteDate = noteDate;
+            this.amount = amount;
+            this.reason = reason;
+            this.description = description;
             this.message = message;
+        }
+    }
+
+    public class RowSuccess {
+        @AuraEnabled public Integer rowNumber { get; set; }
+        @AuraEnabled public String customerCode { get; set; }
+        @AuraEnabled public String customerName { get; set; }
+        @AuraEnabled public String recordId { get; set; }
+        @AuraEnabled public String recordName { get; set; }
+        @AuraEnabled public String noteDate { get; set; }
+        @AuraEnabled public Decimal amount { get; set; }
+
+        public RowSuccess(Integer rowNumber, String customerCode, String customerName, String recordId, String recordName, String noteDate, Decimal amount) {
+            this.rowNumber = rowNumber;
+            this.customerCode = customerCode;
+            this.customerName = customerName;
+            this.recordId = recordId;
+            this.recordName = recordName;
+            this.noteDate = noteDate;
+            this.amount = amount;
         }
     }
 
@@ -17,12 +45,14 @@ public with sharing class SecondaryNoteUploadController {
         @AuraEnabled public Integer successCount { get; set; }
         @AuraEnabled public Integer failedCount { get; set; }
         @AuraEnabled public List<RowError> errors { get; set; }
+        @AuraEnabled public List<RowSuccess> successes { get; set; }
 
         public UploadResult() {
             this.totalRecords = 0;
             this.successCount = 0;
             this.failedCount = 0;
             this.errors = new List<RowError>();
+            this.successes = new List<RowSuccess>();
         }
     }
 
@@ -142,6 +172,10 @@ public with sharing class SecondaryNoteUploadController {
         List<Secondary_Credit_Note__c> toInsert = new List<Secondary_Credit_Note__c>();
         List<Integer> rowIndexFor = new List<Integer>();
         List<String> codeFor = new List<String>();
+        List<String> dateFor = new List<String>();
+        List<String> amountFor = new List<String>();
+        List<String> reasonFor = new List<String>();
+        List<String> descFor = new List<String>();
 
         for (Integer i = 0; i < rows.size(); i++) {
             Map<String, Object> row = rows[i];
@@ -176,7 +210,7 @@ public with sharing class SecondaryNoteUploadController {
             }
 
             if (!errs.isEmpty()) {
-                result.errors.add(new RowError(rowNum, code, String.join(errs, '; ')));
+                result.errors.add(new RowError(rowNum, code, dateStr, amountStr, reason, description, String.join(errs, '; ')));
                 result.failedCount++;
                 continue;
             }
@@ -191,20 +225,46 @@ public with sharing class SecondaryNoteUploadController {
             toInsert.add(cn);
             rowIndexFor.add(rowNum);
             codeFor.add(code);
+            dateFor.add(dateStr);
+            amountFor.add(amountStr);
+            reasonFor.add(reason);
+            descFor.add(description);
         }
 
         if (!toInsert.isEmpty()) {
             Database.SaveResult[] sr = Database.insert(toInsert, false);
+            Set<Id> successIds = new Set<Id>();
+            for (Integer i = 0; i < sr.size(); i++) {
+                if (sr[i].isSuccess()) {
+                    successIds.add(sr[i].getId());
+                }
+            }
+            Map<Id, Secondary_Credit_Note__c> insertedById = new Map<Id, Secondary_Credit_Note__c>();
+            if (!successIds.isEmpty()) {
+                for (Secondary_Credit_Note__c rec : [
+                    SELECT Id, Name, Customer__c, Customer__r.Name, Credit_Date__c, Amount__c
+                    FROM Secondary_Credit_Note__c
+                    WHERE Id IN :successIds
+                ]) {
+                    insertedById.put(rec.Id, rec);
+                }
+            }
             for (Integer i = 0; i < sr.size(); i++) {
                 if (sr[i].isSuccess()) {
                     result.successCount++;
+                    Secondary_Credit_Note__c rec = insertedById.get(sr[i].getId());
+                    String custName = rec != null && rec.Customer__r != null ? rec.Customer__r.Name : '';
+                    String recName = rec != null ? rec.Name : '';
+                    String dateStr = rec != null && rec.Credit_Date__c != null ? String.valueOf(rec.Credit_Date__c) : '';
+                    Decimal amt = rec != null ? rec.Amount__c : null;
+                    result.successes.add(new RowSuccess(rowIndexFor[i], codeFor[i], custName, sr[i].getId(), recName, dateStr, amt));
                 } else {
                     result.failedCount++;
                     String msg = '';
                     for (Database.Error err : sr[i].getErrors()) {
                         msg += err.getMessage() + ' ';
                     }
-                    result.errors.add(new RowError(rowIndexFor[i], codeFor[i], msg.trim()));
+                    result.errors.add(new RowError(rowIndexFor[i], codeFor[i], dateFor[i], amountFor[i], reasonFor[i], descFor[i], msg.trim()));
                 }
             }
         }
@@ -238,6 +298,10 @@ public with sharing class SecondaryNoteUploadController {
         List<Secondary_Debit_Note__c> toInsert = new List<Secondary_Debit_Note__c>();
         List<Integer> rowIndexFor = new List<Integer>();
         List<String> codeFor = new List<String>();
+        List<String> dateFor = new List<String>();
+        List<String> amountFor = new List<String>();
+        List<String> reasonFor = new List<String>();
+        List<String> descFor = new List<String>();
 
         for (Integer i = 0; i < rows.size(); i++) {
             Map<String, Object> row = rows[i];
@@ -272,7 +336,7 @@ public with sharing class SecondaryNoteUploadController {
             }
 
             if (!errs.isEmpty()) {
-                result.errors.add(new RowError(rowNum, code, String.join(errs, '; ')));
+                result.errors.add(new RowError(rowNum, code, dateStr, amountStr, reason, description, String.join(errs, '; ')));
                 result.failedCount++;
                 continue;
             }
@@ -287,20 +351,46 @@ public with sharing class SecondaryNoteUploadController {
             toInsert.add(dn);
             rowIndexFor.add(rowNum);
             codeFor.add(code);
+            dateFor.add(dateStr);
+            amountFor.add(amountStr);
+            reasonFor.add(reason);
+            descFor.add(description);
         }
 
         if (!toInsert.isEmpty()) {
             Database.SaveResult[] sr = Database.insert(toInsert, false);
+            Set<Id> successIds = new Set<Id>();
+            for (Integer i = 0; i < sr.size(); i++) {
+                if (sr[i].isSuccess()) {
+                    successIds.add(sr[i].getId());
+                }
+            }
+            Map<Id, Secondary_Debit_Note__c> insertedById = new Map<Id, Secondary_Debit_Note__c>();
+            if (!successIds.isEmpty()) {
+                for (Secondary_Debit_Note__c rec : [
+                    SELECT Id, Name, Customer__c, Customer__r.Name, Note_Date__c, Amount__c
+                    FROM Secondary_Debit_Note__c
+                    WHERE Id IN :successIds
+                ]) {
+                    insertedById.put(rec.Id, rec);
+                }
+            }
             for (Integer i = 0; i < sr.size(); i++) {
                 if (sr[i].isSuccess()) {
                     result.successCount++;
+                    Secondary_Debit_Note__c rec = insertedById.get(sr[i].getId());
+                    String custName = rec != null && rec.Customer__r != null ? rec.Customer__r.Name : '';
+                    String recName = rec != null ? rec.Name : '';
+                    String dateStr = rec != null && rec.Note_Date__c != null ? String.valueOf(rec.Note_Date__c) : '';
+                    Decimal amt = rec != null ? rec.Amount__c : null;
+                    result.successes.add(new RowSuccess(rowIndexFor[i], codeFor[i], custName, sr[i].getId(), recName, dateStr, amt));
                 } else {
                     result.failedCount++;
                     String msg = '';
                     for (Database.Error err : sr[i].getErrors()) {
                         msg += err.getMessage() + ' ';
                     }
-                    result.errors.add(new RowError(rowIndexFor[i], codeFor[i], msg.trim()));
+                    result.errors.add(new RowError(rowIndexFor[i], codeFor[i], dateFor[i], amountFor[i], reasonFor[i], descFor[i], msg.trim()));
                 }
             }
         }
