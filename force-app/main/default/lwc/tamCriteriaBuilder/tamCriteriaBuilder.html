@@ -478,7 +478,9 @@
                             <p class="tcb-help-text">
                                 Focus-Pack operators read SKUs and the qualifying quantity from the Focus
                                 Pack chosen on each Secondary Target. The pack is selected per target in the
-                                Secondary Target Manager, not here.
+                                Secondary Target Manager, not here. Add your secondary-order condition
+                                (e.g. Customer_Order_Type__c = 'Secondary Order') in the Filters step —
+                                pick Order Item as the Object in Step 1 so the fields are available.
                             </p>
                             <template if:true={showFocusValueField}>
                                 <div class="two-col">

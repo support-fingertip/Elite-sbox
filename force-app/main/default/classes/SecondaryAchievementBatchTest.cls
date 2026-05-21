@@ -221,8 +221,10 @@ public class SecondaryAchievementBatchTest {
         cTlsdRatio.Use_Attendance_Divisor__c = true;
 
         Target_Criteria__c cFpRev = baseCriteria('FP Revenue', 'FOCUS_PACK_REVENUE');
+        cFpRev.Filters__c = SECONDARY_FILTER; // secondary scoping comes from Filters now
         Target_Criteria__c cFpEco = baseCriteria('FP ECO', 'FOCUS_PACK_ECO');
         cFpEco.Field__c = 'Each_Qyt__c'; // configurable ECO quantity field
+        cFpEco.Filters__c = SECONDARY_FILTER;
         insert new List<Target_Criteria__c>{ cRev, cUbo, cTc, cPc, cTlsd, cTlsdRatio, cFpRev, cFpEco };
 
         Map<String, Id> fp = new Map<String, Id>();
