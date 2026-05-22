@@ -417,4 +417,83 @@ public class InvoiceItemTriggerHandlerTest {
         Invoice__c result = [SELECT OwnerId FROM Invoice__c WHERE Invoice_No__c = 'INV-ADMIN-OWN'];
         System.assertEquals(admin.Id, result.OwnerId, 'Invoice header should be owned by a System Administrator');
     }
+
+    // Invoice Item is linked to the matching Order Item (same product name + Order).
+    @isTest
+    static void testInvoiceItemLinksToOrderItem() {
+        Account acc = [SELECT Id, SAP_Customer_Code__c FROM Account WHERE SAP_Customer_Code__c = '1122' LIMIT 1];
+        Invoice__c inv = [SELECT Id, Invoice_No__c FROM Invoice__c WHERE Invoice_No__c = 'INV-EXISTING' LIMIT 1];
+
+        Product__c prod = new Product__c(Name = 'Link Product', SKU_Code__c = 'LINK-SKU-1');
+        insert prod;
+
+        Order__c order = new Order__c(
+            Order_Type__c = 'Primary Order',
+            Account__c = acc.Id,
+            Order_Fulfillment_Status__c = 'Not Fulfilled',
+            Order_Date__c = Date.today()
+        );
+        insert order;
+
+        Order_Item__c oi = new Order_Item__c(
+            Order__c = order.Id,
+            Product__c = prod.Id,
+            Quantity__c = 10,
+            Delivered_Quantity__c = 0,
+            Unit_Price__c = 100,
+            Total_Amount__c = 1000,
+            Tax_Amount__c = 100,
+            Status__c = 'Not Fulfilled'
+        );
+        insert oi;
+
+        Test.startTest();
+        Invoice_Item__c item = new Invoice_Item__c(
+            Bill_Number__c = inv.Invoice_No__c,
+            Invoice__c = inv.Id,
+            Bill_to_Party__c = acc.SAP_Customer_Code__c,
+            Order__c = order.Id,
+            SKU__c = prod.Id,
+            Qyt_in_Each__c = 10
+        );
+        insert item;
+        Test.stopTest();
+
+        Invoice_Item__c result = [SELECT Order_Item__c FROM Invoice_Item__c WHERE Id = :item.Id];
+        System.assertEquals(oi.Id, result.Order_Item__c, 'Invoice Item should link to the matching Order Item');
+    }
+
+    // No matching Order Item -> the Order Item lookup stays blank.
+    @isTest
+    static void testInvoiceItemNoOrderItemMatch() {
+        Account acc = [SELECT Id, SAP_Customer_Code__c FROM Account WHERE SAP_Customer_Code__c = '1122' LIMIT 1];
+        Invoice__c inv = [SELECT Id, Invoice_No__c FROM Invoice__c WHERE Invoice_No__c = 'INV-EXISTING' LIMIT 1];
+
+        Product__c prod = new Product__c(Name = 'Unmatched Product', SKU_Code__c = 'NOMATCH-SKU');
+        insert prod;
+
+        // Order has no Order Items, so nothing can match.
+        Order__c order = new Order__c(
+            Order_Type__c = 'Primary Order',
+            Account__c = acc.Id,
+            Order_Fulfillment_Status__c = 'Not Fulfilled',
+            Order_Date__c = Date.today()
+        );
+        insert order;
+
+        Test.startTest();
+        Invoice_Item__c item = new Invoice_Item__c(
+            Bill_Number__c = inv.Invoice_No__c,
+            Invoice__c = inv.Id,
+            Bill_to_Party__c = acc.SAP_Customer_Code__c,
+            Order__c = order.Id,
+            SKU__c = prod.Id,
+            Qyt_in_Each__c = 10
+        );
+        insert item;
+        Test.stopTest();
+
+        Invoice_Item__c result = [SELECT Order_Item__c FROM Invoice_Item__c WHERE Id = :item.Id];
+        System.assertEquals(null, result.Order_Item__c, 'Order Item lookup should stay blank when nothing matches');
+    }
 }

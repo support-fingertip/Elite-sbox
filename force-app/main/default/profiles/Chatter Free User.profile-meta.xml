@@ -5863,6 +5863,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Invoice_item__c.Order_Item__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Invoice_item__c.Pending_Amount__c</field>
         <readable>false</readable>
     </fieldPermissions>
