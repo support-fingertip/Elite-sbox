@@ -14,24 +14,20 @@ The full data model is shown below. **Section 1** (Scheme Product Group Creation
 
 ```mermaid
 erDiagram
-    Scheme__c ||--o{ Scheme_Slab__c : "has slabs"
-    Scheme__c ||--o{ Scheme_Applicability__c : "has cascade"
     Scheme__c }o--|| Scheme_Product_Group__c : "targets"
+    Scheme__c ||--o{ Scheme_Slab__c : "has slabs"
     Scheme_Product_Group__c ||--o{ Scheme_Product_Group_Item__c : "contains"
     Scheme_Product_Group_Item__c }o--|| Product__c : "SKU"
+    Area__c ||--o{ Territory__c : "contains"
     Order__c ||--o{ Order_Item__c : "lines"
     Order_Item__c ||--o{ Order_Item_Scheme__c : "applied"
     Order_Item_Scheme__c }o--|| Scheme__c : "of"
     Order_Item_Scheme__c }o--o| Scheme_Slab__c : "slab"
-    Order__c ||--o{ Order_Scheme__c : "header schemes"
-    Order_Scheme__c }o--|| Scheme__c : "of"
-    Scheme__c ||--o{ Scheme_Audit__c : "lifecycle"
-    Area__c ||--o{ Scheme_Applicability__c : "filters"
-    Account ||--o{ Scheme_Applicability__c : "filters"
-    Selling_Category__c ||--o{ Scheme_Applicability__c : "filters"
     Product__c ||--o{ Order_Item__c : ""
     Sales_Channel_To_SKU__c }o--|| Product__c : "gates"
 ```
+
+Cascade levels (Region / Area / Territory / Outlet Category) are stored as fields directly on `Scheme__c` (see Section 3) — no separate junction object.
 
 ---
 
@@ -147,55 +143,44 @@ Groups are referenced from `Scheme__c.Scheme_Product_Group__c` (covered in Secti
 
 ---
 
-## Section 2 — Scheme Definition
+## Section 2 — Scheme Definition (Master + Slabs)
 
-This section defines how a scheme is structured once its Product Group (Section 1) is in place. **Two design alternatives are presented** for the architect to choose between; both share the same `Scheme_Slab__c` child and the same slab semantics. They differ only in whether a single `Scheme__c` may carry **one** scheme-type's slabs (Option A) or **many** scheme-types' slabs at once via an intermediate `Scheme_Item__c` (Option B).
+> **Scope of this document:** the single-type-per-scheme model — one `Scheme__c` carries one `Primary_Scheme_Type__c` (one Basic OR one QPS OR one Order-Value, etc.). A separate document covering the multi-type variant (via an intermediate `Scheme_Item__c`) will be produced later.
 
-### 2.1 Design Options at a Glance
+A scheme is the master record. One `Scheme__c` has one `Primary_Scheme_Type__c` and one `Scheme_Product_Group__c`. To run Basic + QPS + Plum + Order-Value on the same group, create four parallel `Scheme__c` records — the calc engine applies them concurrently to each order line (see Section 4).
 
-| Aspect | **Option A — Single-Type per Scheme** | **Option B — Multi-Type per Scheme (via `Scheme_Item__c`)** |
-|---|---|---|
-| `Primary_Scheme_Type__c` lives on | `Scheme__c` | `Scheme_Item__c` (one row per type per scheme) |
-| Object count for the scheme tree | 2 (Scheme + Slab) | 3 (Scheme + Item + Slab) |
-| One scheme → one type only? | Yes — one Basic OR one QPS OR one Order-Value etc. | No — a single scheme can bundle e.g. Basic + QPS + Order-Value at once |
-| To combine types in real life | Create 2..N parallel schemes targeting the same group | Add 2..N items under one scheme |
-| Reporting / claim-credit posting unit | `Scheme__c` | `Scheme_Item__c` (rolls up to parent `Scheme__c`) |
-| Lifecycle (`Is_Locked__c`, validity, cascade) lives on | `Scheme__c` | `Scheme__c` — items inherit |
-| UI Wizard shape | one type → one slab editor | "Add an item" loop, each item gets its own type + slab editor |
-
-§2.2 specifies Option A · §2.3 specifies Option B · §2.4 specifies the **shared** `Scheme_Slab__c` · §2.5 covers UI for both · §2.6 records the recommendation.
-
-### 2.2 Option A — Single-Type Scheme
-
-#### Object — `Scheme__c`
+### 2.1 Object — `Scheme__c` (NEW)
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `Name` | Text(255) | Yes | display name |
+| `Name` | Text(255) | Yes | display name, e.g. "KA Cake QPS Q1 2026" |
 | `Description__c` | Long Text | No | |
 | `Sales_Channel__c` | Picklist | Yes | must match `Scheme_Product_Group__c.Sales_Channel__c` |
 | `Scheme_Start_Date__c` | Date | Yes | |
 | `Scheme_End_Date__c` | Date | Yes | only field admins can edit once `Is_Locked__c = true` (extend-only) |
-| `IsActive__c` | Checkbox | No | toggled via `SchemeLifecycleService.activate / deactivate` only |
-| `Primary_Scheme_Type__c` | Picklist (`Basic` / `QPS` / `FOC_Giveaway` / `Order_Value` / `Category_Value`) | Yes | the operational type — drives slab editor + engine |
+| `IsActive__c` | Checkbox | No | toggled via the lifecycle flow |
+| `Deactivation_Reason__c` | Text Area | No | required when `IsActive__c` flips true → false; captured by Field-Level History |
+| `Primary_Scheme_Type__c` | Picklist (`Basic` / `QPS` / `FOC_Giveaway` / `Order_Value` / `Category_Value`) | Yes | drives the slab editor + calc engine |
 | `Scheme_Product_Group__c` | Lookup → `Scheme_Product_Group__c` | Yes | the SKU bundle. For FOC, `Group_Purpose__c` must be `FOC_Qualifier`; for all other types, `Price_Division` |
-| `Is_Locked__c` | Checkbox | system | flipped true on activation; blocks edits except `Scheme_End_Date__c` (extend) and `IsActive__c` |
+| `Is_Locked__c` | Checkbox | system | flipped true on activation; blocks edits except `Scheme_End_Date__c` (extend), `IsActive__c`, and `Deactivation_Reason__c` |
 | `Slab_Count__c` | Roll-up COUNT from `Scheme_Slab__c` | system | shown on list views |
-| `Applicability_Summary__c` | Long Text(2000) | system | populated by trigger on `Scheme_Applicability__c` (Section 3) |
-| `Credit_Percentage__c` | Number | No | used by claim-credit posting (Section 7) |
-| `Scheme_Eligibility_Percentage__c` | Number | No | used by claim-credit posting (Section 7) |
+| `Credit_Percentage__c` | Number | No | used by claim-credit posting |
+| `Scheme_Eligibility_Percentage__c` | Number | No | used by claim-credit posting |
+| **Cascade fields (8)** — full detail in Section 3 | — | — | 4 `Apply_to_All_*__c` checkboxes + 4 multi-select Long Text fields covering Region / Area / Territory / Outlet Category. **No separate `Scheme_Applicability__c` object** — cascade lives directly on `Scheme__c` |
+| `Applicability_Summary__c` | Long Text(2000) | system | populated by after-save trigger when any cascade field changes; e.g. "Regions: KA, TN \| Areas: 5 \| Territories: All \| Outlet: GT" |
 
 **Validation:**
 - `Primary_Scheme_Type__c = FOC_Giveaway` → linked group's `Group_Purpose__c` must be `FOC_Qualifier`.
 - All other `Primary_Scheme_Type__c` values → linked group's `Group_Purpose__c` must be `Price_Division`.
 - `Scheme_End_Date__c >= Scheme_Start_Date__c`.
-- When `Is_Locked__c = true`: only `Scheme_End_Date__c` (with new ≥ old) and `IsActive__c` may change.
-- Activation rejected unless ≥ 1 child `Scheme_Slab__c` exists and the cascade (Section 3) is complete.
+- When `Is_Locked__c = true`: only `Scheme_End_Date__c` (new ≥ old), `IsActive__c`, and `Deactivation_Reason__c` may change.
+- Activation rejected unless ≥ 1 child `Scheme_Slab__c` exists and the cascade (Section 3) is configured at every level (Apply-All or specific list).
 
 **Sharing:** Public Read-Only; writes gated by `Scheme_Admin` permission set.
+**Audit:** Salesforce **Field-Level History** is enabled on `Scheme_End_Date__c`, `IsActive__c`, `Deactivation_Reason__c`, `Is_Locked__c`, `Primary_Scheme_Type__c`, and the cascade fields. No separate audit object — FLH provides the trail.
 **Volume:** ~3,000 schemes/year. Indexes on `Sales_Channel__c + IsActive__c` and `Scheme_End_Date__c`.
 
-#### ER fragment (Option A)
+#### ER fragment
 
 ```mermaid
 erDiagram
@@ -203,90 +188,27 @@ erDiagram
     Scheme__c ||--o{ Scheme_Slab__c : "has slabs"
 ```
 
-#### Trade-offs
+### 2.2 Object — `Scheme_Slab__c` (NEW)
 
-- **Simpler model** — 2 objects, no intermediate. One row per scheme on list views.
-- **Multi-type scenarios force parallel schemes.** When the same SKU group needs Basic + QPS + Order-Value at the same time (BRD §5.2 allows this), the admin creates 3 separate `Scheme__c` records targeting the same group. The calc engine applies them concurrently per FR-022 — but Operations see 3 records in the Active Schemes list.
-- **Claim accrual is per-scheme** — clean for Finance.
-
-### 2.3 Option B — Multi-Type Scheme (via `Scheme_Item__c`)
-
-#### Object — `Scheme__c`
-
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `Name` | Text(255) | Yes | display name |
-| `Description__c` | Long Text | No | |
-| `Sales_Channel__c` | Picklist | Yes | applies to all items |
-| `Scheme_Start_Date__c` | Date | Yes | applies to all items |
-| `Scheme_End_Date__c` | Date | Yes | only field admins can edit once `Is_Locked__c = true` |
-| `IsActive__c` | Checkbox | No | via `SchemeLifecycleService` only |
-| `Default_Scheme_Product_Group__c` | Lookup → `Scheme_Product_Group__c` (`Price_Division` only) | Yes | inherited by all non-FOC items |
-| `Is_Locked__c` | Checkbox | system | activation flag |
-| `Item_Count__c` | Roll-up COUNT from `Scheme_Item__c` | system | list views |
-| `Applicability_Summary__c` | Long Text(2000) | system | populated by trigger on `Scheme_Applicability__c` (Section 3) |
-| `Credit_Percentage__c` | Number | No | used by claim-credit posting (Section 7) |
-| `Scheme_Eligibility_Percentage__c` | Number | No | used by claim-credit posting (Section 7) |
-
-Note: **no `Primary_Scheme_Type__c` here** — type lives on the item.
-
-#### Object — `Scheme_Item__c` (NEW)
-
-The intermediate object that represents one "type-level offer" inside a scheme. One row per Primary Scheme Type per scheme.
+The child object that holds every offer rule. A `Slab_Type__c` discriminates which subset of fields is used.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `Scheme__c` | Master-Detail → `Scheme__c` | Yes | cascade delete with parent |
-| `Item_Sequence__c` | Number(2,0) | Yes | display order within the scheme |
-| `Primary_Scheme_Type__c` | Picklist (`Basic` / `QPS` / `FOC_Giveaway` / `Order_Value` / `Category_Value`) | Yes | the type for this item's slabs |
-| `Scheme_Product_Group__c` | Lookup → `Scheme_Product_Group__c` | Conditional | required for FOC items (must be `FOC_Qualifier`). For non-FOC items, defaults from parent's `Default_Scheme_Product_Group__c` |
-| `Slab_Count__c` | Roll-up COUNT from `Scheme_Slab__c` | system | list views |
-| `Item_Label__c` | Formula(text) | system | "Basic 11+1", "QPS (3 slabs)", "Order-Value (4 slabs)" |
-| `Is_Active__c` | Checkbox | No | inherits from parent on activation |
-
-**Validation:**
-- Unique (`Scheme__c`, `Primary_Scheme_Type__c`) — at most one item per type per scheme.
-- FOC items must populate `Scheme_Product_Group__c` (because the qualifying group differs from the scheme's default Price_Division group).
-- Non-FOC items must NOT override the group (use parent's default).
-
-#### ER fragment (Option B)
-
-```mermaid
-erDiagram
-    Scheme__c }o--|| Scheme_Product_Group__c : "default group"
-    Scheme__c ||--o{ Scheme_Item__c : "has items"
-    Scheme_Item__c }o--o| Scheme_Product_Group__c : "FOC items override group"
-    Scheme_Item__c ||--o{ Scheme_Slab__c : "has slabs"
-```
-
-#### Trade-offs
-
-- **Native multi-type bundling.** A single scheme record can carry Basic + QPS + Order-Value at once, matching BRD §5.2 phrasing ("…the business can run, concurrently, a Basic scheme, one or more QPS slabs, a category/value-based scheme and an order-value scheme").
-- **Lifecycle stays at `Scheme__c` level** — activation / extend / deactivate / clone operate on the whole bundle. Useful when the bundle shares validity dates.
-- **One extra object** — slabs become grand-children of `Scheme__c`, adding a small layer in reporting, claim posting, and the engine read path.
-- **Claim accrual** posts at `Scheme_Item__c` level then rolls to `Scheme__c` for summary — Finance sees both.
-
-### 2.4 Common Child — `Scheme_Slab__c` (NEW)
-
-`Scheme_Slab__c` is the single child object that holds every offer rule, **in both options**. In Option A the parent is `Scheme__c` directly; in Option B the parent is `Scheme_Item__c`. The field set and semantics are identical.
-
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| Parent lookup | Master-Detail | Yes | `Scheme__c` (Option A) or `Scheme_Item__c` (Option B) |
 | `Slab_Sequence__c` | Number(2,0) | Yes | stable display order; 1, 2, 3, … |
 | `Slab_Type__c` | Picklist (`Basic` / `QPS` / `FOC_Giveaway` / `Order_Value` / `Category_Value`) | Yes | must match parent's `Primary_Scheme_Type__c` |
-| `Qualifying_Qty_Min__c` | Number(8,0) | Conditional | min trigger qty in EA. Basic: the X (e.g. 11). QPS: the slab threshold (entered in cases via UI; engine converts cases × `Product__c.Units_Per_Case__c` → EA at evaluation). FOC: minimum-to-qualify |
-| `Qualifying_Qty_Max__c` | Number(8,0) | Conditional | inclusive upper for quantity-band Basic. Null = unbounded. Not used by QPS / FOC / value-based types |
+| `Qualifying_Qty_Min__c` | Number(8,0) | Conditional | min trigger qty in EA. Basic: the X (e.g. 11). QPS: the slab threshold (entered as cases in the UI; engine converts cases × `Product__c.Units_Per_Case__c` → EA at evaluation). FOC: minimum-to-qualify |
+| `Qualifying_Qty_Max__c` | Number(8,0) | Conditional | inclusive upper for quantity-band Basic. Null = unbounded |
 | `Qualifying_Value_Min__c` | Currency(12,2) | Conditional | slab lower bound on GSV (Order-Value) or category GSV (Category-Value) |
 | `Qualifying_Value_Max__c` | Currency(12,2) | Conditional | inclusive upper; null = unbounded (top slab) |
 | `Free_Qty__c` | Number(6,0) | Conditional | Y for Basic. For FOC, fixed free qty when `FOC_Ratio_Per_Qualifying_Unit__c = 1` |
-| `Benefit_Per_Case__c` | Currency(8,2) | Conditional | per-case ₹ payout (QPS). Data-entry stays per-case to match how schemes are negotiated; the engine converts to per-EA at evaluation using `Product__c.Units_Per_Case__c` (defaulting to 1 if absent) — see §2.6 |
+| `Benefit_Per_Case__c` | Currency(8,2) | Conditional | per-case ₹ payout (QPS). Data-entry stays per-case; engine converts to per-EA at evaluation using `Product__c.Units_Per_Case__c` (default 1) — see §2.4 |
 | `Benefit_Percent__c` | Percent(5,2) | Conditional | discount % for Order-Value / Category-Value |
 | `FOC_Product__c` | Lookup → `Product__c` | Conditional | single fixed free SKU (simple FOC case) |
-| `FOC_Product_Group__c` | Lookup → `Scheme_Product_Group__c` (`Group_Purpose__c = FOC_Free` only) | Conditional | pool of choosable free SKUs — covers "vermicelli OR oats" |
-| `FOC_Ratio_Per_Qualifying_Unit__c` | Number(6,3) | Conditional | per-qualifying-unit multiplier — e.g. `0.200` = 200 g free per 1 kg bought. Default `1.000` for fixed-pack giveaways |
+| `FOC_Product_Group__c` | Lookup → `Scheme_Product_Group__c` (`Group_Purpose__c = FOC_Free` only) | Conditional | pool of choosable free SKUs — "vermicelli OR oats" |
+| `FOC_Ratio_Per_Qualifying_Unit__c` | Number(6,3) | Conditional | per-qualifying-unit multiplier — e.g. `0.200` = 200 g free per 1 kg bought. Default `1.000` |
 | `Category__c` | Lookup → `Sales_Product_Category__c` | Conditional | required when `Slab_Type__c = Category_Value` |
-| `Slab_Label__c` | Formula(text) | system | human label, e.g. "Basic · 11+1 (cycle)", "Basic · 11–20 → 1 free", "QPS-2 · 5 cases · ₹120/cs", "Order-Value · 50k–1L · 7%" |
+| `Slab_Label__c` | Formula(text) | system | human label, e.g. "Basic · 11+1 (cycle)", "Basic · 11–20 → 1 free", "QPS-2 · 5 cases · ₹120/cs" |
 | `Is_Active__c` | Checkbox | No | defaults true |
 
 **Field usage by `Slab_Type__c`:**
@@ -294,117 +216,95 @@ erDiagram
 | Slab_Type | Qty_Min | Qty_Max | Value_Min / Max | Free_Qty | Benefit_Per_Case | Benefit_Percent | FOC fields | Category | # slabs |
 |---|---|---|---|---|---|---|---|---|---|
 | `Basic` (cycle mode) | **Yes (X)** | — (null) | — | **Yes (Y)** | — | — | — | — | exactly 1 |
-| `Basic` (band mode) | **Yes** | **Yes** (last band may be null) | — | **Yes** (flat Y per band) | — | — | — | — | 1..N (non-overlapping bands) |
-| `QPS` | **Yes** (threshold, in cases) | — | — | — | **Yes** (per case → EA at eval) | — | — | — | 1..N (mutually exclusive thresholds) |
+| `Basic` (band mode) | **Yes** | **Yes** (top may be null) | — | **Yes** (flat Y per band) | — | — | — | — | 1..N (non-overlapping bands) |
+| `QPS` | **Yes** (threshold, cases) | — | — | — | **Yes** (per case → EA at eval) | — | — | — | 1..N (mutually exclusive thresholds) |
 | `FOC_Giveaway` | **Yes** (min trigger) | — | — | optional (if ratio = 1) | — | — | **Yes** (Product OR Group + Ratio) | — | exactly 1 |
 | `Order_Value` | — | — | **Yes** | — | — | **Yes** | — | — | 1..N (non-overlapping ranges) |
 | `Category_Value` | — | — | **Yes** | — | — | **Yes** | — | **Yes** | 1..N per category |
 
-#### Basic slab — two modes
+#### Basic slab — two modes (engine auto-detects from data)
 
-The engine determines mode from the slab data — no separate flag:
-
-- **Cycle mode** — exactly 1 Basic slab with `Qualifying_Qty_Max__c` null. Engine treats it as classic X+Y repeating: for ordered qty Q with `Qualifying_Qty_Min__c = X` and `Free_Qty__c = Y`, free count = `FLOOR(Q / X) × Y`. Any remainder gets no Basic benefit. This is BRD FR-010 (e.g. 11+1, 22+2, 6+1, 36+36).
-- **Band mode** — 1..N Basic slabs with `Qualifying_Qty_Min__c` and `Qualifying_Qty_Max__c` defining non-overlapping bands. For ordered qty Q the engine finds the single band where Min ≤ Q ≤ Max (or Min ≤ Q if Max null) and gives that band's `Free_Qty__c` as a one-shot. Example:
-  - 11–20 → 1 free
-  - 21–50 → 2 free
-  - 51+ → 5 free  *(top band Max null = unbounded)*
-
-In both modes the engine writes **one** `Order_Item_Scheme__c` row per Basic slab consumed (Section 4), preserving per-line traceability.
+- **Cycle mode** — exactly 1 Basic slab with `Qualifying_Qty_Max__c` null. Classic X+Y repeating (FR-010). For qty Q: free count = `FLOOR(Q / X) × Y`. Any remainder gets no Basic benefit.
+- **Band mode** — 1..N Basic slabs with `Qualifying_Qty_Min__c` and `Qualifying_Qty_Max__c` defining non-overlapping bands. For qty Q the engine picks the single band where Min ≤ Q ≤ Max (or Min ≤ Q if Max null) and gives that band's `Free_Qty__c` as a one-shot. Example: `11–20 → 1 free`, `21–50 → 2 free`, `51+ → 5 free` (top Max null).
 
 #### Validation
 
-- `Slab_Type__c` must match parent's `Primary_Scheme_Type__c`.
+- `Slab_Type__c` must match parent `Scheme__c.Primary_Scheme_Type__c`.
 - `Slab_Sequence__c` unique per parent.
-- Basic in cycle mode → exactly 1 slab with `Qualifying_Qty_Max__c` null on activation.
-- Basic in band mode → all slabs have `Qualifying_Qty_Min__c` and `Qualifying_Qty_Max__c` populated (only the top slab may have Max null); bands must not overlap.
-- QPS → thresholds unique within parent (no two slabs share `Qualifying_Qty_Min__c`).
-- Order-Value / Category-Value → value ranges must not overlap within a parent.
+- Basic in cycle mode → exactly 1 slab with Max null on activation.
+- Basic in band mode → all slabs have Min and Max populated (only the top slab may have Max null); bands must not overlap.
+- QPS → thresholds unique within parent.
+- Order-Value / Category-Value → value ranges must not overlap.
 - FOC slab → exactly one of `FOC_Product__c` or `FOC_Product_Group__c` populated; when group is set, its `Group_Purpose__c` must be `FOC_Free`.
 - Category_Value slab → `Category__c` mandatory.
 - Once parent `Is_Locked__c = true`, no insert / update / delete of `Scheme_Slab__c` rows.
 
 **Sharing:** Controlled by parent.
-**Volume:** ~15,000 slab rows per year (avg ~5 per scheme or item).
+**Volume:** ~15,000 slab rows per year (avg ~5 per scheme).
 
-### 2.5 UI Example — Scheme Definition Wizard
+### 2.3 UI Example — Scheme Definition Wizard
 
-A multi-step LWC wizard (`schemeDefinitionWizard`) launched from the **Schemes** tab. The wizard shape changes slightly between options; the per-type slab editor is identical.
+A multi-step LWC wizard (`schemeDefinitionWizard`) launched from the **Schemes** tab. Steps:
 
-#### Step 1 — Master fields (Option A)
+| Step | Owner section | Content |
+|---|---|---|
+| 1 — Master fields | §2.3 (this section) | Name, Primary Scheme Type, Sales Channel, dates, description |
+| 2 — Link Product Group | Section 1 + §2.3 | reuses Section 1's group picker, filtered by `Group_Purpose__c` matching scheme type |
+| 3 — Slabs | §2.3 (this section) | type-driven slab editor (five column variants) |
+| 4 — Applicability Cascade | Section 3 | the 4-level cascade picker |
+| 5 — Review + Activate | Section 6 (Lifecycle, pending) | conflict check + Activate button |
+
+#### Step 1 — Master fields
 
 | Field | Widget | Required | Notes |
 |---|---|---|---|
 | Scheme Name | Text input (max 255) | Yes | `Scheme__c.Name` |
-| Primary Scheme Type | Radio: `Basic` / `QPS` / `FOC Giveaway` / `Order Value` / `Category Value` | Yes | drives Step 3 slab editor + Step 2 group-purpose filter |
-| Sales Channel | Picklist | Yes | must match group's channel |
+| Primary Scheme Type | Radio: `Basic` / `QPS` / `FOC Giveaway` / `Order Value` / `Category Value` | Yes | drives Step 3 slab editor + Step 2 group filter |
+| Sales Channel | Picklist | Yes | must match Product Group's channel |
 | Start Date / End Date | Date pickers | Yes | End ≥ Start |
 | Description | Textarea | No | |
 
-#### Step 1 — Master fields (Option B)
+#### Step 3 — Slabs editor
 
-| Field | Widget | Required | Notes |
-|---|---|---|---|
-| Scheme Name | Text input (max 255) | Yes | `Scheme__c.Name` |
-| Sales Channel | Picklist | Yes | applies to all items |
-| Default Product Group | Lookup → `Scheme_Product_Group__c` (`Price_Division` only) | Yes | inherited by all non-FOC items |
-| Start Date / End Date | Date pickers | Yes | applies to all items |
-| Description | Textarea | No | |
+Five column-variant tables depending on `Primary_Scheme_Type__c`:
 
-#### Step 2 — Items (Option B only)
-
-A repeating panel: **+ Add Item**. Each item card asks for:
-
-| Field | Widget | Required | Notes |
-|---|---|---|---|
-| Primary Scheme Type | Radio (5 values) | Yes | one item per type per scheme |
-| Qualifying Group (FOC only) | Lookup → `Scheme_Product_Group__c` (`FOC_Qualifier` only) | Yes for FOC | non-FOC items inherit parent default |
-
-After saving an item, the admin proceeds to that item's slab editor (Step 3) before adding the next item.
-
-#### Step 3 — Slabs editor (both options)
-
-Renders one of five column sets based on `Primary_Scheme_Type__c` (Option A: from the scheme; Option B: from the active item):
-
-**Basic — cycle mode** (1 row, Max blank → repeats)
+**Basic — cycle mode** (1 row)
 
 | Column | Widget | Required | Maps to |
 |---|---|---|---|
 | Buy Qty (X) | Number input | Yes | `Qualifying_Qty_Min__c` |
-| Max Qty | Number input (blank = cycle mode) | No | `Qualifying_Qty_Max__c` |
+| Max Qty | Number input (blank = cycle) | No | `Qualifying_Qty_Max__c` |
 | Free Qty (Y) | Number input | Yes | `Free_Qty__c` |
-| Mode hint | Auto-text | system | "Repeats every X+Y (cycle)" when Max blank; "Flat band" when Max populated |
 
-> Example (cycle): one row — Buy=11, Max=blank, Free=1 → "Repeats every 11+1".
+> Example: Buy=11, Max=blank, Free=1 → "Repeats every 11+1".
 
-**Basic — band mode** (multiple rows, each with Min + Max + Free)
+**Basic — band mode** (multi-row)
 
-> Example: three rows — `11–20 → 1 free`, `21–50 → 2 free`, `51+ → 5 free` (top row Max blank).
+> Example: `11–20 → 1 free`, `21–50 → 2 free`, `51+ → 5 free`.
 
-**QPS** — 1..N rows, mutually exclusive thresholds
+**QPS**
 
 | Column | Widget | Required | Maps to |
 |---|---|---|---|
 | Slab # | Auto | system | `Slab_Sequence__c` |
-| Qualifying Cases | Number input | Yes | `Qualifying_Qty_Min__c` (in cases; engine converts cases × `Units_Per_Case__c` → EA at eval) |
-| Benefit ₹/Case | Currency input | Yes | `Benefit_Per_Case__c` (per case; engine converts to per-EA when redistributing the discount) |
-| Delete | Icon | — | removes draft row |
+| Qualifying Cases | Number input | Yes | `Qualifying_Qty_Min__c` (cases; engine → EA at eval) |
+| Benefit ₹/Case | Currency input | Yes | `Benefit_Per_Case__c` (per case; engine → per-EA at eval) |
 
-> Example (TN Rusk): two rows — `3 cases → ₹40/case`, `5 cases → ₹80/case`.
+> Example: `3 cases → ₹40/case`, `5 cases → ₹80/case`.
 
-**FOC Giveaway** — exactly one row
+**FOC Giveaway** (1 row)
 
 | Column | Widget | Required | Maps to |
 |---|---|---|---|
 | Min Qualifying Qty | Number input | Yes | `Qualifying_Qty_Min__c` |
-| Free Product Source | Radio: `Single SKU` / `Choose from Group` | Yes | drives which lookup to populate |
+| Free Product Source | Radio: `Single SKU` / `Choose from Group` | Yes | drives which lookup |
 | FOC Product (Single SKU) | Lookup → `Product__c` | Yes (Single SKU) | `FOC_Product__c` |
-| FOC Product Group | Lookup → `Scheme_Product_Group__c` (`FOC_Free` only) | Yes (Pool) | `FOC_Product_Group__c` |
-| Free Qty / Ratio | Number input | Yes | `Free_Qty__c` (when ratio = 1) or `FOC_Ratio_Per_Qualifying_Unit__c` (e.g. 0.200 = 200 g per 1 kg) |
+| FOC Product Group | Lookup → `Scheme_Product_Group__c` (`FOC_Free`) | Yes (Pool) | `FOC_Product_Group__c` |
+| Free Qty / Ratio | Number input | Yes | `Free_Qty__c` or `FOC_Ratio_Per_Qualifying_Unit__c` |
 
-> Example (Atta): Min Qualifying Qty = 1000 g, Source = Single SKU = Vermicelli 200 g, Ratio = 0.200.
+> Example (Atta): Min = 1000 g, Source = Single SKU = Vermicelli 200 g, Ratio = 0.200.
 
-**Order Value** — 1..N rows, mutually exclusive ₹ ranges
+**Order Value**
 
 | Column | Widget | Required | Maps to |
 |---|---|---|---|
@@ -412,9 +312,9 @@ Renders one of five column sets based on `Primary_Scheme_Type__c` (Option A: fro
 | Slab To (₹) | Currency input (blank = unbounded) | No | `Qualifying_Value_Max__c` |
 | Discount % | Percent input | Yes | `Benefit_Percent__c` |
 
-> Example: `5,000–20,000 → 5%`, `20,001–35,000 → 7%`, `35,001–50,000 → 9%`, `50,001+ → 11%`.
+> Example: `5,000–20,000 → 5%`, …, `50,001+ → 11%`.
 
-**Category Value (Plum)** — 1..N rows per category
+**Category Value (Plum)**
 
 | Column | Widget | Required | Maps to |
 |---|---|---|---|
@@ -423,132 +323,248 @@ Renders one of five column sets based on `Primary_Scheme_Type__c` (Option A: fro
 | Slab To (₹) | Currency input (blank = unbounded) | No | `Qualifying_Value_Max__c` |
 | Discount % | Percent input | Yes | `Benefit_Percent__c` |
 
-> Example: Category = Cake — `50,000–100,000 → 1%`, `100,001–150,000 → 1.5%`, `200,001+ → 2.5%`.
+> Example: Cake — `50k–100k → 1%`, …, `200k+ → 2.5%`.
 
-#### User actions (Option A)
+#### User actions (in order)
 
-1. Admin clicks **+ New Scheme** on the **Schemes** tab.
-2. Step 1: Name, type, channel, dates, description → Next.
+1. Admin clicks **+ New Scheme**.
+2. Step 1: Name, type, channel, dates → Next.
 3. Step 2: pick / create Product Group → Next.
 4. Step 3: type-driven slab editor — add row(s) → Next.
-5. Step 4 (Section 3): Applicability cascade.
-6. Step 5 (Section 5): Review + Activate.
+5. Step 4: Applicability cascade (Section 3) → Next.
+6. Step 5: Review + Activate (Section 6, pending).
 
-#### User actions (Option B)
+### 2.4 Explanation
 
-1. Admin clicks **+ New Scheme** on the **Schemes** tab.
-2. Step 1: Name, channel, **default** Product Group, dates → Next.
-3. Step 2: **+ Add Item** N times. For each item: pick `Primary Scheme Type`; for FOC pick a `FOC_Qualifier` group override; fill that item's slab editor. Repeat for the next item.
-4. Step 3 (Section 3): Applicability cascade — applies to the whole scheme.
-5. Step 4 (Section 5): Review + Activate.
+**FOC stays on `Scheme_Slab__c`.** A single child object with a `Slab_Type__c` discriminator keeps the calc engine, validation rules, UI, and read paths uniform across all five scheme types. The cost is a handful of conditional fields that only some types populate.
 
-### 2.6 Architect Decision + Explanation
+**`Benefit_Per_Case__c` → per-EA conversion (FR-013).** Business enters QPS payout as "₹X per case" because that's how schemes are negotiated; secondary billing is always in EA. The engine converts at evaluation time: `benefit_per_EA = Benefit_Per_Case__c / Product__c.Units_Per_Case__c` (defaulting `Units_Per_Case__c` to 1). The slab record stays in the business-friendly per-case form for reporting and audit.
 
-**Recommendation: Option A** for the first delivery — fewer moving parts, simpler claim posting, simpler page layouts. The BRD's "multiple types on the same group concurrently" requirement is satisfied by creating parallel `Scheme__c` records that all target the same `Scheme_Product_Group__c`; the calc engine applies them concurrently either way (FR-022). **Option B** is the better long-term choice if Operations expect to bundle multiple scheme types into a single record routinely — pivot to it then.
+**Basic in two modes.** FR-010 shows X+Y as the canonical Basic shape, and real operations also need flat quantity-band Basic ("buy 11–20 → 1 free, 21–50 → 2 free, 51+ → 5 free"). Both fit on `Scheme_Slab__c`: cycle mode is one slab with Max null; band mode is multiple slabs with Min + Max. The engine picks the mode from the data — no separate flag.
 
-**FOC stays on `Scheme_Slab__c`.** A single child object with a `Slab_Type__c` discriminator keeps the calc engine, validation rules, UI, and migration uniform. The cost is a handful of conditional fields (`FOC_Product__c`, `FOC_Product_Group__c`, `FOC_Ratio_Per_Qualifying_Unit__c`, `Category__c`) that only some types populate. A separate `Scheme_FOC_Item__c` object was considered and rejected: it doubles the engine read paths with no real schema saving.
+**Audit via Field-Level History (FLH), not a separate object.** Activate / Deactivate / Extend End Date / Clone are all captured naturally — Activate toggles `IsActive__c` and `Is_Locked__c`; Deactivate sets `IsActive__c = false` and requires `Deactivation_Reason__c`; Extend updates `Scheme_End_Date__c`; Clone creates a new `Scheme__c` (the relationship is implicit from the cloned record). FLH on the five Scheme__c fields above plus the cascade fields covers the trail.
 
-**`Benefit_Per_Case__c` → per-EA conversion (FR-013).** Business enters QPS payout as "₹X per case" because that's how schemes are negotiated. Secondary billing is always in EA. The engine converts at evaluation time: `benefit_per_EA = Benefit_Per_Case__c / Product__c.Units_Per_Case__c` (defaulting `Units_Per_Case__c` to 1 if absent). The slab record stays in the business-friendly per-case form for reporting and audit; the conversion happens inside `SchemeEvaluationService` (Section 6).
+---
 
-**Basic in two modes.** BRD FR-010 shows X+Y as the canonical Basic shape. Real operations also need flat quantity-band Basic schemes ("buy 11–20 → 1 free, 21–50 → 2 free"). Both fit on `Scheme_Slab__c`: cycle mode is one slab with Max null; band mode is multiple slabs with explicit Min + Max. The engine picks the mode from the data — no separate picklist needed. The slab's `Slab_Label__c` formula prints the resolved mode so the admin sees exactly what they configured.
+## Section 3 — Applicability Cascade
 
-**Lifecycle (preview of Section 5).** Activation flips `Is_Locked__c = true` on `Scheme__c`. Validation rules then prevent any change to slabs, group link, type, cascade, start date. Only `Scheme_End_Date__c` may be extended forward, and `IsActive__c` may be toggled via the lifecycle service (which writes a `Scheme_Audit__c` row). Schemes are never deleted — only deactivated — and a "Clone to New" action creates a fresh draft with all child rows copied.
+A scheme targets a cross-product of four selectable cascade levels (after Sales Channel, which is already on `Scheme__c.Sales_Channel__c` from Section 2):
+
+```
+Sales Channel (on Scheme__c · Section 2)
+  └─ Region          (multi-select, picklist values from Area__c.Region__c)
+       └─ Area       (multi-select, filtered by selected Regions)
+            └─ Territory   (multi-select, filtered by selected Areas)
+                 └─ Outlet Category (multi-select, filtered by Sales Channel)
+```
+
+Each level supports an **"Apply to all"** flag. When the flag is true the level matches every value under it. All cascade selections are stored as **fields directly on `Scheme__c`** — no separate `Scheme_Applicability__c` junction object.
+
+**Distributor is intentionally not a cascade level.** The org has ~20,000 customer (Distributor) Account records. Storing per-scheme distributor lists multiplies storage and breaks the "scheme applies broadly" mental model. The four-level cascade narrows to the right population; if a scheme genuinely needs to be limited to one named distributor, model it as a narrower Outlet Category.
+
+### 3.1 Object — `Scheme__c` cascade fields (NEW, on the master)
+
+Added to the `Scheme__c` field table from §2.1. Eight fields total — one Checkbox + one Long Text per cascade level.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `Apply_to_All_Regions__c` | Checkbox | No | when true, scheme matches every Region; `Regions__c` is ignored |
+| `Regions__c` | Long Text(2000) | Conditional | semicolon-separated Region picklist values (e.g. `Karnataka;Tamil Nadu`); required when `Apply_to_All_Regions__c` is false |
+| `Apply_to_All_Areas__c` | Checkbox | No | when true, all Areas under selected Regions match |
+| `Areas__c` | Long Text(8000) | Conditional | semicolon-separated `Area__c` Ids; required when `Apply_to_All_Areas__c` is false |
+| `Apply_to_All_Territories__c` | Checkbox | No | when true, all Territories under selected Areas match |
+| `Territories__c` | Long Text(8000) | Conditional | semicolon-separated `Territory__c` Ids; required when `Apply_to_All_Territories__c` is false |
+| `Apply_to_All_Outlet_Categories__c` | Checkbox | No | when true, all outlet categories valid for the Channel match |
+| `Outlet_Categories__c` | Long Text(2000) | Conditional | semicolon-separated `Selling_Category__c` Ids; required when `Apply_to_All_Outlet_Categories__c` is false |
+
+**Validation:**
+- For each of the four levels, if `Apply_to_All_X__c = false` then the corresponding list field must be non-empty.
+- Cross-level integrity check at save: selected Areas must belong to the selected Regions; selected Territories must belong to the selected Areas. (`Apply_to_All` at a parent level satisfies the integrity for children below it.)
+- Activation rejected unless every level has either `Apply_to_All_X__c = true` OR a non-empty list.
+
+**Why Long Text rather than multi-select picklist:** Areas / Territories / Outlet Categories are records, not picklist values. Salesforce multi-select picklists cap at 1000 values and don't track FK integrity to records anyway. A Long Text storing semicolon-separated Ids, paired with the LWC selector in §3.3, is the simplest pattern that scales (the selector re-validates Ids on save; the engine silently drops orphaned Ids at evaluation time, so a deleted Area causes the scheme to stop applying rather than crash).
+
+### 3.2 Object — `Territory__c` (NEW)
+
+A new custom object subordinate to `Area__c`. Each Territory belongs to one Area; admins maintain Territory records as master data.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `Name` | Auto-number `TRY-{0000}` | system | display id |
+| `Territory_Name__c` | Text(120) | Yes | human label, e.g. "Bangalore Urban North" |
+| `Area__c` | Master-Detail → `Area__c` | Yes | parent area |
+| `Is_Active__c` | Checkbox | No | defaults true |
+
+**Master-Detail rationale:** territories belong to an area; cascade delete is acceptable; sharing follows parent.
+**Volume:** ~3–10 territories per Area; org-wide estimate < 1,000 records.
+
+### 3.3 UI Example — Cascade Picker (Wizard Step 4)
+
+Step 4 of the Scheme Definition Wizard renders four cascade rows. Each row drives the next: picking Regions filters the Area selector; picking Areas filters the Territory selector. Outlet Category is filtered only by the scheme's Sales Channel.
+
+**Cascade row fields (one row per level)**
+
+| Level | Apply-All widget | Specific-values widget | Backed by |
+|---|---|---|---|
+| Region | Checkbox | Multi-select picklist (values from `Area__c.Region__c` picklist) | `Apply_to_All_Regions__c` + `Regions__c` |
+| Area | Checkbox | Multi-select chip selector (LWC; options filtered to Areas whose Region ∈ selected Regions) | `Apply_to_All_Areas__c` + `Areas__c` |
+| Territory | Checkbox | Multi-select chip selector (LWC; options filtered to Territories whose Area ∈ selected Areas) | `Apply_to_All_Territories__c` + `Territories__c` |
+| Outlet Category | Checkbox | Multi-select chip selector (LWC; options filtered to `Selling_Category__c` rows for the scheme's Channel) | `Apply_to_All_Outlet_Categories__c` + `Outlet_Categories__c` |
+
+**User actions (in order)**
+
+1. Sales Channel is already picked in Step 1 (Section 2) and shown read-only at the top of Step 4.
+2. Admin picks **Regions** — either ticks "Apply to All" or selects one or more values.
+3. **Area** selector enables once Regions are set, with options filtered. Admin ticks "Apply to All" or selects.
+4. **Territory** selector enables once Areas are set, with options filtered. Admin ticks "Apply to All" or selects.
+5. **Outlet Category** selector is independent of the geographic levels but constrained to the Channel's valid categories. Admin ticks "Apply to All" or selects.
+6. **Applicability summary preview** updates live below the picker (e.g. "Channel: GT · Regions: KA, TN · Areas: 5 · Territories: All · Outlet: GT, Club").
+7. On Save the validation rule ensures each level has either `Apply_to_All_X__c = true` or ≥ 1 specific value.
+
+### 3.4 Explanation
+
+**Cascade lives on `Scheme__c`, not in a junction.** Eight fields on the master vs. ~12 child records per scheme. The trade-off:
+- ✅ Flat data model — no second-level query at evaluation time.
+- ✅ Single-record validation; cascade integrity is one Apex trigger on `Scheme__c`.
+- ✅ Field-Level History on the cascade fields gives the audit trail for free.
+- ❌ No referential integrity on Area / Territory / Outlet Category Ids (mitigated by LWC re-validation on save and benign orphan-Id behaviour at evaluation time).
+
+**Cascade resolution at order-capture time.** For each order line, the calc engine reads the order's Channel, the Distributor's Area and Territory (from `Account` standard fields), and the customer's Outlet Category. It then matches each scheme's cascade fields:
+- Region: matches if `Apply_to_All_Regions__c` is true, **or** Distributor's Area's Region ∈ `Regions__c`.
+- Area: matches if `Apply_to_All_Areas__c` is true, **or** Distributor's Area Id ∈ `Areas__c`.
+- Territory: matches if `Apply_to_All_Territories__c` is true, **or** Distributor's Territory Id ∈ `Territories__c`.
+- Outlet Category: matches if `Apply_to_All_Outlet_Categories__c` is true, **or** customer's Outlet Category Id ∈ `Outlet_Categories__c`.
+
+A scheme is eligible only when **all four levels match** (AND of cascade levels). The (Channel, Region, Area, Territory, Outlet Category) tuple is cached for repeated orders (Scalability, pending).
+
+---
+
+## Section 4 — Multi-Scheme Calculation Logic on a Line
+
+When several schemes target the same order line (Basic + QPS + Plum Category + Order-Value), they apply **sequentially in a fixed order**. Each step modifies the line's effective unit price (or adds an order-level allocation), and each step writes its own `Order_Item_Scheme__c` row on the line so the trail is recoverable later.
+
+### 4.1 Application order
+
+| # | Stage | Computed on | Result lands as |
+|---|---|---|---|
+| 1 | **Basic** (X+Y or band) | Gross MRP per EA | New per-EA unit price on the line |
+| 2 | **QPS** | **Basic-adjusted** unit price (FR-014) | Subtract per-EA benefit from the Basic-adjusted unit price |
+| 3 | **FOC Giveaway** | Qualifying line quantity | A new synthetic `Order_Item__c` row at ₹0.01 (the qualifying line itself is untouched) |
+| 4 | **Category-Value (Plum)** | **Gross GSV** for that category (FR-042) | % discount allocated per line proportionally to each qualifying line's gross GSV share |
+| 5 | **Order-Value** | **Gross GSV** for the whole order (FR-042) | % discount allocated per line proportionally to each line's gross GSV share |
+
+**Rules:**
+- Steps 1 and 2 are **line-local** — each writes one `Order_Item_Scheme__c` row on the line.
+- Step 3 (FOC) adds a new `Order_Item__c` at ₹0.01 with its own `Order_Item_Scheme__c` link.
+- Steps 4 and 5 are **header-driven but persisted per line** — the engine allocates the % discount across qualifying lines proportionally to their gross GSV share. Each line gets one `Order_Item_Scheme__c` row per applicable header scheme. **No separate `Order_Scheme__c` object is needed** — the header-level totals are recovered by aggregating `Order_Item_Scheme__c` rows on the order (UI summary roll-up by `Scheme__c`).
+- **QPS is computed on the Basic-adjusted unit price** (FR-014). Plum and Order-Value are computed on **gross GSV** (FR-042), independent of any line-level discount.
+
+### 4.2 Worked example — line ₹10 → ₹8 → ₹7 → ₹6.90 → ₹6.70
+
+**Setup**
+
+- Line: SKU `EL-00121` (Marble Cake, Cake category), MRP = ₹10, ordered Qty = 36 EA, `Units_Per_Case` = 12.
+- Scheme stack (all eligible after cascade resolution):
+  - **Scheme A — Basic 4+1.** One Basic slab: `Qualifying_Qty_Min = 4`, `Free_Qty = 1`, `Qualifying_Qty_Max = null` (cycle mode).
+  - **Scheme B — QPS.** Two slabs: `3 cases → ₹12/case`, `5 cases → ₹30/case`. Line is 36 EA = exactly 3 cases → matches the 3-case slab.
+  - **Scheme C — Plum Cake 1%.** Slab: `0–unbounded → 1%`. For this example, assume the order's Cake-category gross GSV = ₹3,600 (this single line is the whole Cake total).
+  - **Scheme D — Order-Value 2%.** Slab: `₹3,000+ → 2%`. Order grand gross GSV = ₹3,600.
+
+**Walk-through**
+
+| Step | Operation | Numbers | Effective unit price |
+|---|---|---|---|
+| 0 | Gross at MRP | `10.00` | **₹10.00** |
+| 1 | Basic 4+1 (cycle): `MRP × X / (X+Y)` = `10 × 4 / 5` | `= 8.00` | **₹8.00** |
+| 2 | QPS 3-case slab: `Benefit_Per_Case / Units_Per_Case` = `12 / 12` per EA, subtracted from Basic-adjusted | `8.00 − 1.00` | **₹7.00** |
+| 3 | (no FOC giveaway in this example) | — | ₹7.00 |
+| 4 | Plum Cake 1%: total Plum discount = `0.01 × 3,600 = ₹36`. This line's share = `(₹360 / ₹3,600) × ₹36 = ₹3.60`. Per-EA = `3.60 / 36 = ₹0.10` | `7.00 − 0.10` | **₹6.90** |
+| 5 | Order-Value 2%: total Order-Value discount = `0.02 × 3,600 = ₹72`. This line's share = `(₹360 / ₹3,600) × ₹72 = ₹7.20`. Per-EA = `7.20 / 36 = ₹0.20` | `6.90 − 0.20` | **₹6.70** |
+
+**Final per-EA price = ₹6.70.** Line value = `6.70 × 36 = ₹241.20`. Total line benefit = `(10 − 6.70) × 36 = ₹118.80`, broken down as Basic ₹72.00 + QPS ₹36.00 + Plum ₹3.60 + Order-Value ₹7.20 = ₹118.80 ✓.
+
+### 4.3 Persistence — `Order_Item_Scheme__c` rows written
+
+Four `Order_Item_Scheme__c` rows are written for this line — one per applied scheme:
+
+| # | Scheme | Slab | Per-Unit Benefit | Line Benefit |
+|---|---|---|---|---|
+| 1 | A · Basic 4+1 | the Basic slab | ₹2.00 | ₹72.00 |
+| 2 | B · QPS | the 3-case slab | ₹1.00 | ₹36.00 |
+| 3 | C · Plum Cake | the 0–∞ Cake slab | ₹0.10 | ₹3.60 |
+| 4 | D · Order-Value | the ₹3,000+ slab | ₹0.20 | ₹7.20 |
+
+The Order header's total scheme benefit is then a roll-up SUM of `Order_Item_Scheme__c.Benefit_Amount__c` across all lines, and the per-scheme header totals (e.g. "Order-Value discount on this order = ₹72") are recovered by aggregating those rows by `Scheme__c`.
+
+### 4.4 Edge cases
+
+- **No QPS qualification.** Line qty < smallest QPS slab threshold → no QPS row is written; Plum and Order-Value still apply on gross.
+- **QPS slab decomposition (multi-lot, FR-015).** A line of 8 cases against slabs `3 / 5 / 10` → engine writes **two** QPS rows: one for the 5-case lot, one for the 3-case lot. The 0-case remainder gets no QPS.
+- **Order-Value applies to every line.** Each line in the order receives its proportional share of the Order-Value discount, regardless of whether it's in a Basic / QPS / Plum scheme.
+- **Plum applies only to lines in the configured category.** Lines outside that category get no Plum row.
+- **FOC giveaway never reduces the qualifying line's price.** The free product is a separate synthetic `Order_Item__c` at ₹0.01 with its own `Order_Item_Scheme__c` link; the qualifying line keeps its full Basic+QPS+Plum+Order-Value treatment.
+- **Concurrent QPS schemes targeting the same SKU.** Disallowed by activation-time validation (one active QPS per SKU per Channel × Area × Outlet Category combination). Two competing QPS schemes never reach the engine simultaneously.
 
 ---
 
 ## Sections to be restructured in next iterations
 
-> The content from here onward is from the prior draft and will be re-flowed into the new Section-N format (Object → UI Example → Explanation) one per session. **Up next:** **Section 3 — Applicability Cascade** will pull from §3.5 `Scheme_Applicability__c` and §6.c Cascade Picker.
+> The content from here onward is from the prior draft. Sections 1–4 above are now in the new section-by-section format. **Up next:** **Section 5 — Order Capture & Application** will pull from §3.6 `Order_Item_Scheme__c` and §6.e / §6.f UI panels; it will detail trigger handlers, persistence and the Order header summary roll-ups.
 >
 > **Planned order:**
-> - Section 3 — Applicability Cascade — from §3.5, §6.c ← next
-> - Section 4 — Order Capture & Application — from §3.6, §3.7, §6.e, §6.f
-> - Section 5 — Lifecycle / Audit — from §3.8, §5, §6.d, §6.g
-> - Section 6 — Calc Engine — from §4
-> - Section 7 — Reporting — from §7
-> - Section 8 — Scalability / Security / Migration — from §8, §9, §10
+> - Section 5 — Order Capture & Application — from §3.6, §6.e, §6.f ← next
+> - Section 6 — Lifecycle (Activate / Extend / Deactivate / Clone) — from §5, §6.d, §6.g
+> - Section 7 — Calc Engine internals — from §4
+> - Section 8 — Reporting & Claim Posting — from §7
+> - Section 9 — Scalability / Security — from §8, §9
+>
+> The Migration Plan (§10) is dropped — this is a new implementation, no backfill is required.
 
 ### Legacy §3.4 `Scheme_Slab__c` (NEW)
 
-*Moved to **Section 2.2 — Object — `Scheme_Slab__c`** above. The new format gives the full field table with per-slab-type usage matrix, validation rules, and a UI Example covering the type-driven Step 3 slab editor.*
+*Moved to **Section 2.2** above.*
 
-### 3.5 `Scheme_Applicability__c` (NEW)
+### Legacy §3.5 `Scheme_Applicability__c` — **superseded**
 
-Cascade rows with "Apply to all" semantics — one row per cascade level per scheme, with a flag for "applies to everything at this level" or a specific value at that level.
-
-| Field | Type | Notes |
-|---|---|---|
-| NEW: `Scheme__c` | Master-Detail | cascade delete |
-| NEW: `Level__c` | Picklist | Channel / Region / Area / Distributor / OutletCategory |
-| NEW: `Apply_All__c` | Checkbox | value fields null when true |
-| NEW: `Value_Channel__c` | Picklist | |
-| NEW: `Value_Region__c` | Picklist | |
-| NEW: `Value_Area__c` | Lookup → Area__c | = Territory in this org |
-| NEW: `Value_Distributor__c` | Lookup → Account | |
-| NEW: `Value_Outlet_Category__c` | Lookup → Selling_Category__c | |
-| NEW: `Selector_Key__c` | Formula(text) | Platform Cache key fragment |
-
-- **Pattern:** 5 rows if all-levels-all; otherwise 5+N rows (one per specific value at non-"all" levels).
-- **Validation:** exactly one value field non-null unless `Apply_All__c`; activation rejected if any level has zero rows.
-- **Volume:** ~36k/yr.
+*The separate cascade junction object is **not used**. Cascade selections live directly on `Scheme__c` (8 fields covering Region / Area / Territory / Outlet Category, each with an Apply-All checkbox). See **Section 3.1** above. Distributor is intentionally not a cascade level (20,000 customers — not feasible to store per-scheme).*
 
 ### 3.6 `Order_Item_Scheme__c` (NEW)
 
-Junction for concurrent schemes per line (FR-022, FR-060).
+Junction for concurrent schemes per line (FR-022, FR-060). The single junction that records **every** applied scheme — line-local (Basic, QPS, FOC) and header-allocated (Plum, Order-Value).
 
 | Field | Type | Notes |
 |---|---|---|
 | NEW: `Order_Item__c` | Master-Detail | cascade with line |
 | NEW: `Scheme__c` | Lookup | source scheme |
-| NEW: `Scheme_Slab__c` | Lookup | null for Basic |
-| NEW: `Sequence__c` | Number(2,0) | 1=Basic, 2=QPS, 3=Plum |
-| NEW: `Scheme_Snapshot_Type__c` | Text(40) | hardcopy, immune to picklist edits |
-| NEW: `Benefit_Amount__c` | Currency(10,2) | total ₹ benefit |
+| NEW: `Scheme_Slab__c` | Lookup | which slab fired |
+| NEW: `Sequence__c` | Number(2,0) | 1=Basic, 2=QPS, 3=Plum, 4=Order-Value, 5=FOC link |
+| NEW: `Scheme_Snapshot_Type__c` | Text(40) | hardcopy of slab type at order time |
+| NEW: `Benefit_Amount__c` | Currency(10,2) | total ₹ benefit on this line from this scheme |
 | NEW: `Per_Unit_Discount__c` | Currency(8,4) | redistributed per-unit reduction |
 | NEW: `Free_Qty__c` | Number(6,0) | Y (Basic) or FOC qty |
 | NEW: `Qualifying_Qty__c` | Number(8,0) | portion of line qty consumed |
 | NEW: `Notes__c` | Long Text(2000) | calc trail |
 
 - **Validation:** unique (`Order_Item__c`, `Scheme__c`, `Scheme_Slab__c`).
-- **Volume:** 3–5× `Order_Item__c` → 18-month archival to `Order_Item_Scheme_Archive__b`.
+- **Header-scheme allocation:** Plum and Order-Value are persisted per line with `Per_Unit_Discount__c` and `Benefit_Amount__c` computed by the engine's proportional-allocation logic (see Section 4.1 step 4-5).
+- **Volume:** 3–5× `Order_Item__c` → 18-month archival to `Order_Item_Scheme_Archive__b` (Scalability section, pending).
 
-### 3.7 `Order_Scheme__c` (NEW)
+### Legacy §3.7 `Order_Scheme__c` — **superseded**
 
-Header-level junction for Order-Value (FR-018 / FR-019) and Plum per-category (FR-021).
+*The separate order-header junction object is **not used**. Header-level schemes (Order-Value, Plum) are persisted as `Order_Item_Scheme__c` rows on each qualifying line, with `Benefit_Amount__c` allocated proportionally to the line's gross GSV share. The order-header summary panel is a roll-up SUM of `Order_Item_Scheme__c` rows grouped by `Scheme__c`. See **Section 4** above.*
 
-| Field | Type | Notes |
-|---|---|---|
-| NEW: `Order__c` | Master-Detail | cascade |
-| NEW: `Scheme__c` | Lookup | |
-| NEW: `Scheme_Slab__c` | Lookup | which slab fired |
-| NEW: `Slab_Applied__c` | Text(60) | "₹50k–₹1L slab" |
-| NEW: `Qualifying_GSV__c` | Currency(12,2) | |
-| NEW: `Category__c` | Lookup → Sales_Product_Category__c | null for Order_Value |
-| NEW: `Discount_Amount__c` | Currency(10,2) | |
-| NEW: `Discount_Percent__c` | Percent(5,2) | |
-| NEW: `Sequence__c` | Number(2,0) | |
+### Legacy §3.8 `Scheme_Audit__c` — **superseded**
 
-### 3.8 `Scheme_Audit__c` (NEW)
-
-| Field | Type | Notes |
-|---|---|---|
-| NEW: `Old_Scheme__c` | Lookup | |
-| NEW: `New_Scheme__c` | Lookup | for clones |
-| NEW: `Action__c` | Picklist | Activate / Extend / Deactivate / Clone |
-| NEW: `Old_End_Date__c` / `New_End_Date__c` | Date | for Extend |
-| NEW: `Acted_By__c` | Lookup → User | |
-| NEW: `Acted_On__c` | DateTime | |
-| NEW: `Reason__c` | Text Area | mandatory for Deactivate |
+*No separate audit object. Salesforce **Field-Level History** on `Scheme__c.IsActive__c`, `Deactivation_Reason__c`, `Scheme_End_Date__c`, `Is_Locked__c`, `Primary_Scheme_Type__c` and the cascade fields gives the activate / extend / deactivate / clone trail. Clone-to-New is implicit from the new `Scheme__c` record itself. See **Section 2.4** above.*
 
 ### 3.9 New fields on existing Order objects (cross-reference)
 
-*Scheme__c definition lives in **Section 2.1 / 2.3** above. The Order side additions below will move into **Section 4 — Order Capture & Application** in the next iteration; kept here for quick reference.*
+*The Order-side additions below will be fully described in **Section 5 — Order Capture & Application** in the next iteration; kept here for quick reference.*
 
 | Object | New field | Notes |
 |---|---|---|
 | `Order_Item__c` | `Total_Scheme_Benefit__c` (Roll-up SUM from `Order_Item_Scheme__c`) | drives the per-line discount display |
-| `Order__c` | `Header_Discount_Total__c` (Roll-up SUM from `Order_Scheme__c`) | order-value + Plum totals |
-| `Order__c` | `Line_Scheme_Benefit_Total__c` (Roll-up SUM via `Order_Item__c`) | summary panel |
+| `Order__c` | `Line_Scheme_Benefit_Total__c` (Roll-up SUM via `Order_Item__c`) | full order benefit (includes Plum + Order-Value allocations) — Section 4 |
 | `Order__c` | `Scheme_Eval_Status__c` (Picklist: Pending / Computed / Stale / Computing / Error) | drives async re-evaluation |
 | `Order__c` | `Scheme_Eval_Timestamp__c` (DateTime) | last successful eval |
 
