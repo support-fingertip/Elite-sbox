@@ -78,23 +78,29 @@ erDiagram
 
 ### 3.2 `Scheme_Product_Group__c` (NEW)
 
-Named SKU bundle. All SKUs share MRP and Net_Weight (FR-006). Created via the Scheme Group Builder UI; reusable across schemes.
+Named SKU bundle. Created via the Scheme Group Builder UI; reusable across schemes. The `Group_Purpose__c` picklist controls which validation rules apply:
+
+- **`Price_Division`** — used by Basic / QPS / Order-Value / Plum schemes. MRP and Net_Weight are **required** and **all members must match** (FR-006).
+- **`FOC_Qualifier`** — used by FOC Giveaway schemes for the "what you must buy" pool (e.g. all Atta SKUs across 1kg / 5kg / 10kg packs). MRP and Net_Weight are **not required** and members may differ.
+- **`FOC_Free`** — used by FOC Giveaway schemes for the "what you get free" pool (e.g. vermicelli OR oats). MRP and Net_Weight not required.
 
 | Field | Type | Notes |
 |---|---|---|
 | NEW: `Name` | Auto-number `SPG-{0000}` | |
-| NEW: `Group_Label__c` | Text(120) | e.g. "Cake-25g-MRP10" |
+| NEW: `Group_Label__c` | Text(120) | e.g. "Cake-25g-MRP10" or "Atta-AnyPack" |
 | NEW: `Sales_Channel__c` | Picklist (mirrors `Product__c.Channel__c`) | single-channel grouping (FR-005) |
-| NEW: `MRP__c` | Currency(10,2) | denormalised; trigger validates all members match |
-| NEW: `Net_Weight__c` | Number(10,2) | denormalised; required for category=Cake |
+| NEW: `Group_Purpose__c` | Picklist | `Price_Division` / `FOC_Qualifier` / `FOC_Free` |
+| NEW: `MRP__c` | Currency(10,2) | **required only when `Group_Purpose__c = Price_Division`**; trigger validates all members match |
+| NEW: `Net_Weight__c` | Number(10,2) | **required only when `Group_Purpose__c = Price_Division`** (cakes); validated for member uniformity |
 | NEW: `Description__c` | Text Area | |
 | NEW: `Is_Active__c` | Checkbox | |
 | NEW: `Member_Count__c` | Roll-up COUNT | |
-| NEW: `Is_FOC_Group__c` | Checkbox | skips uniformity validation |
 
 - **Sharing:** Public RW to `Scheme_Admin`, Public RO others.
-- **Validation:** `All_Members_Same_MRP__c` + `All_Members_Same_NetWeight__c` (Apex trigger).
-- **Volume:** ~500–1,500 groups. Index on `Sales_Channel__c + Is_Active__c`.
+- **Validation:**
+  - `Group_Purpose__c = Price_Division` → MRP + Net_Weight mandatory + `All_Members_Same_MRP__c` + `All_Members_Same_NetWeight__c` (Apex trigger).
+  - `Group_Purpose__c = FOC_Qualifier` / `FOC_Free` → MRP / Net_Weight may be null; uniformity check skipped.
+- **Volume:** ~500–1,500 groups. Index on `Sales_Channel__c + Group_Purpose__c + Is_Active__c`.
 
 ### 3.3 `Scheme_Group_Member__c` (NEW)
 
@@ -124,13 +130,15 @@ Replaces flat `Buy_Product__c` for new schemes. Supports multi-slab QPS, multi-s
 | NEW: `Qualifying_Value_To__c` | Currency(12,2) | inclusive upper; null = unbounded |
 | NEW: `Benefit_Per_Case__c` | Currency(8,2) | QPS ₹/case |
 | NEW: `Benefit_Percent__c` | Percent(5,2) | Order_Value / Category_Value |
-| NEW: `Free_Qty__c` | Number(6,0) | Basic Y or FOC qty |
-| NEW: `FOC_Product__c` | Lookup → Product__c | required when FOC |
+| NEW: `Free_Qty__c` | Number(6,0) | Basic Y or fixed FOC qty (when ratio = 1) |
+| NEW: `FOC_Product__c` | Lookup → Product__c | single fixed free SKU — simple FOC case |
+| NEW: `FOC_Product_Group__c` | Lookup → Scheme_Product_Group__c | pool of choosable free SKUs (group must be `FOC_Free` purpose) — e.g. "vermicelli OR oats" |
+| NEW: `FOC_Ratio_Per_Qualifying_Unit__c` | Number(6,3) | per-unit multiplier — e.g. `0.2` = "200 g free per 1 kg bought"; default `1.000` for fixed-pack giveaways |
 | NEW: `Category__c` | Lookup → Sales_Product_Category__c | required when Category_Value |
 | NEW: `Slab_Label__c` | Formula(text) | "QPS-2 · 5 cases · ₹120/cs" |
 | NEW: `Is_Active__c` | Checkbox | |
 
-- **Validation:** unique `Slab_Sequence__c` per scheme; FOC requires FOC_Product; Category_Value requires Category.
+- **Validation:** unique `Slab_Sequence__c` per scheme; FOC requires either `FOC_Product__c` OR `FOC_Product_Group__c` (exactly one); when `FOC_Product_Group__c` is set, the group's `Group_Purpose__c` must be `FOC_Free`; Category_Value requires Category.
 - **Volume:** ~15k/yr. Index on `Scheme__c + Slab_Type__c`.
 
 ### 3.5 `Scheme_Applicability__c` (NEW)
@@ -251,7 +259,7 @@ public class SchemeApplicationResult {
 | 2 | **Prune by SKU gating** | — | — |
 | 3 | **Apply Basic (X+Y):** `price_after = MRP × X ÷ (X+Y)` | Scheme_Slab__c (Basic) | staged line app |
 | 4 | **QPS decomposition (FR-015):** greedy DESC over slabs, e.g. 8 → 5+3; remainder no QPS | Scheme_Slab__c (QPS) | staged line app |
-| 5 | **FOC giveaway** — append synthetic line at ₹0.01 (FR-017) | Scheme_Slab__c (FOC) | new line + junction |
+| 5 | **FOC giveaway** — for each line whose SKU is in the qualifying group, compute `free_qty = ROUND(line_qty × FOC_Ratio_Per_Qualifying_Unit__c, 0)` (or `Free_Qty__c` flat if ratio = 1) for the chosen `FOC_Product__c` / first active member of `FOC_Product_Group__c`; append synthetic `Order_Item__c` line at ₹0.01 (FR-017) | Scheme_Slab__c (FOC), Scheme_Product_Group__c (FOC_Free pool) | new line + junction |
 | 6 | **Order-Value header slab on total GSV** | Scheme_Slab__c (Order_Value) | staged header app |
 | 7 | **Category Plum:** group GSV by category, slab per category | Scheme_Slab__c (Category_Value) | staged header app |
 | 8 | **Persist:** delete-and-reinsert in one txn; stamp `Scheme_Eval_Status__c=Computed` | — | DML |
@@ -290,11 +298,13 @@ Mutual exclusion (FR-022 / FR-034) enforced at scheme activation, not in evaluat
 | End-date extend only | Scheme__c | new end < old end | VR |
 | Slabs frozen once live | Scheme_Slab__c | parent locked + change | VR + trigger |
 | Applicability frozen once live | Scheme_Applicability__c | same | VR + trigger |
-| Group MRP/grammage uniformity | Scheme_Group_Member__c | siblings must match MRP + Net_Weight (unless `Is_FOC_Group__c`) | trigger |
-| SKU in one group per channel | Scheme_Group_Member__c | unique (Product, parent.Channel) among active | trigger |
+| Group MRP/grammage uniformity | Scheme_Group_Member__c | applies **only when** parent `Group_Purpose__c = Price_Division`; siblings must match MRP + Net_Weight | trigger |
+| MRP / Net_Weight required | Scheme_Product_Group__c | mandatory **only when** `Group_Purpose__c = Price_Division`; null allowed for `FOC_Qualifier` and `FOC_Free` | VR |
+| SKU in one group per channel per purpose | Scheme_Group_Member__c | unique (Product, parent.Channel, parent.Group_Purpose__c) among active | trigger |
+| FOC scheme group purpose | Scheme__c | when `Primary_Scheme_Type__c = FOC_Giveaway`, the linked `Scheme_Product_Group__c.Group_Purpose__c` must be `FOC_Qualifier` | VR |
+| FOC slab free-product source | Scheme_Slab__c | exactly one of `FOC_Product__c` or `FOC_Product_Group__c` populated; if the group is set, its purpose must be `FOC_Free` | VR |
 | Competing-scheme uniqueness in area | Scheme__c on activate | overlap query per type per area per group | `SchemeLifecycleService.activate()` |
 | Validity sanity | Scheme__c | `End >= Start` | VR |
-| FOC slab needs FOC product | Scheme_Slab__c | | VR |
 | Category_Value needs Category | Scheme_Slab__c | | VR |
 | Applicability completeness | Scheme__c on activate | all 5 levels must have rows | `SchemeLifecycleService.activate()` |
 | Eval concurrency | Order__c | soft lock via `Scheme_Eval_Status__c=Computing` | trigger |
@@ -307,17 +317,25 @@ Mutual exclusion (FR-022 / FR-034) enforced at scheme activation, not in evaluat
 
 ### 6.a Scheme Group Builder
 
-**Purpose:** Admin builds a `Scheme_Product_Group__c` by filtering the SKU catalog and selecting.
+**Purpose:** Admin builds a `Scheme_Product_Group__c` by first selecting a **Group Purpose** and then filtering the SKU catalog.
 **User:** Scheme Admin.
-**Filters:** Channel, Category, Group, Sub-group, Variant, Grammage, MRP.
-**Inline validation:** "Mixed MRP — group not allowed" chip if selected SKUs disagree.
+**Group Purpose drives the form:**
+- `Price_Division` → MRP and Net_Weight inputs appear and are mandatory; uniformity chip is enforced (red if SKUs disagree).
+- `FOC_Qualifier` → MRP / Net_Weight inputs hidden; uniformity chip hidden; mixed-MRP/weight SKUs allowed in the same group (e.g. Atta 1kg + Atta 5kg + Atta 10kg).
+- `FOC_Free` → same as FOC_Qualifier; this is the "what you get free" pool.
 
+**Common filters:** Channel, Category, Group, Sub-group, Variant, Grammage, MRP (advisory for FOC modes).
+
+**Price_Division mode**
 ```
 +---------------------------------------------------------------------------+
 | Scheme Group Builder                                          [ Help (?) ]|
 +---------------------------------------------------------------------------+
+| Group Purpose ( o ) Price Division   ( ) FOC Qualifier   ( ) FOC Free     |
++---------------------------------------------------------------------------+
 | Channel [GT v]  Category [Cake v]  Group [Marble v]  Sub-group [-- v]     |
-| Variant [-- v]  Grammage [25g v]  MRP [10 v]   [ Apply ]   [ Clear ]      |
+| Variant [-- v]  Grammage* [25g v]  MRP* [10 v]   [ Apply ]   [ Clear ]    |
+|                                              * required for Price Division|
 +---------------------------------------------------------------------------+
 | Selected: 12 SKUs    Price match: OK   Grammage match: OK   [ chip ]      |
 +---------------------------------------------------------------------------+
@@ -326,6 +344,29 @@ Mutual exclusion (FR-022 / FR-034) enforced at scheme activation, not in evaluat
 | [x] | EL-00121 | Marble Cake 25g Choc | Cak | Marble | Std | 25 | 10.00 |
 | [x] | EL-00122 | Marble Cake 25g Van  | Cak | Marble | Std | 25 | 10.00 |
 | [ ] | EL-00130 | Marble Cake 30g Choc | Cak | Marble | Std | 30 | 12.00 |
++---------------------------------------------------------------------------+
+| [ Select All Filtered ]   [ Clear Selection ]   [ Save as Group... ]      |
++---------------------------------------------------------------------------+
+```
+
+**FOC_Qualifier mode** (MRP / grammage fields hidden, uniformity chip hidden)
+```
++---------------------------------------------------------------------------+
+| Scheme Group Builder                                          [ Help (?) ]|
++---------------------------------------------------------------------------+
+| Group Purpose ( ) Price Division   ( o ) FOC Qualifier   ( ) FOC Free     |
++---------------------------------------------------------------------------+
+| Channel [GT v]  Category [Atta v]  Group [Chakki v]  Sub-group [-- v]     |
+| Variant [-- v]                            [ Apply ]   [ Clear ]           |
+|       (MRP & Grammage not required — mixed SKUs allowed for FOC)          |
++---------------------------------------------------------------------------+
+| Selected: 3 SKUs    [ Mixed MRP / Weight OK for FOC ]                     |
++---------------------------------------------------------------------------+
+| [x] | SKU Code | Sku Name              | Cat  | Grp    | g    | MRP    |
+|-----|----------|-----------------------|------|--------|------|--------|
+| [x] | EL-02201 | Chakki Atta 1 kg      | Atta | Chakki | 1000 |  55.00 |
+| [x] | EL-02205 | Chakki Atta 5 kg      | Atta | Chakki | 5000 | 250.00 |
+| [x] | EL-02210 | Chakki Atta 10 kg     | Atta | Chakki |10000 | 480.00 |
 +---------------------------------------------------------------------------+
 | [ Select All Filtered ]   [ Clear Selection ]   [ Save as Group... ]      |
 +---------------------------------------------------------------------------+
@@ -351,15 +392,36 @@ Mutual exclusion (FR-022 / FR-034) enforced at scheme activation, not in evaluat
 ```
 
 **Step 2 — Link Scheme Product Group**
+
+For Basic / QPS / Order-Value / Plum types — pick a single Price_Division group.
+
 ```
 +---------------------------------------------------------------------------+
-| Create Scheme · Step 2 of 5 — Product Group                               |
+| Create Scheme · Step 2 of 5 — Product Group               Type: QPS       |
 +---------------------------------------------------------------------------+
 | Scheme Product Group [ SPG-0042 · Marble-25g-MRP10  v ]   [ + New Group ] |
+|   Purpose: Price_Division · MRP 10.00 · 25 g                              |
 | Member SKUs (12): EL-00121, EL-00122, ... (preview)                       |
+|                                          [ Back ] [ Save Draft ] [ Next ] |
++---------------------------------------------------------------------------+
+```
+
+For FOC Giveaway — pick a **Qualifying group** AND a free product source (single SKU or `FOC_Free` group), plus the per-unit ratio.
+
+```
++---------------------------------------------------------------------------+
+| Create Scheme · Step 2 of 5 — Product Group         Type: FOC Giveaway    |
++---------------------------------------------------------------------------+
+| Qualifying Group   [ SPG-0117 · Atta-AnyPack  v ]      [ + New Group ]    |
+|   Purpose: FOC_Qualifier · 3 SKUs (1kg / 5kg / 10kg, mixed MRP)           |
 |                                                                           |
-| [Only for FOC Giveaway] FOC Free Product [ ___________________ v ]        |
+| Free Product Source                                                       |
+|   ( o ) Single SKU      [ EL-08801 · Vermicelli 200 g  v ]                |
+|   ( ) Choose from Group [ SPG-0118 · Free-Snack-Pool   v ]                |
+|                          Purpose: FOC_Free · 2 SKUs (vermicelli / oats)   |
 |                                                                           |
+| FOC Ratio per qualifying unit  [ 0.200 ]                                  |
+|   Example: 0.200 = 200 g free per 1 kg of qualifying Atta bought          |
 |                                          [ Back ] [ Save Draft ] [ Next ] |
 +---------------------------------------------------------------------------+
 ```
