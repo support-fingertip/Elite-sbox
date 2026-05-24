@@ -49,17 +49,19 @@ We are **not greenfield**. Every BRD capability lands on an existing object firs
 
 ---
 
-## 3. New / Modified Objects
+## Reference — Full ER Diagram
 
-### 3.1 ER Diagram
+The full data model is shown below. **Section 1** (Scheme Product Group Creation) covers `Scheme_Product_Group__c` and `Scheme_Product_Group_Item__c` (top of the diagram); the remaining objects are covered in Sections 2–8 (still to be restructured — see the placeholder further down).
+
+### ER Diagram
 
 ```mermaid
 erDiagram
     Scheme__c ||--o{ Scheme_Slab__c : "has slabs"
     Scheme__c ||--o{ Scheme_Applicability__c : "has cascade"
     Scheme__c }o--|| Scheme_Product_Group__c : "targets"
-    Scheme_Product_Group__c ||--o{ Scheme_Group_Member__c : "contains"
-    Scheme_Group_Member__c }o--|| Product__c : "SKU"
+    Scheme_Product_Group__c ||--o{ Scheme_Product_Group_Item__c : "contains"
+    Scheme_Product_Group_Item__c }o--|| Product__c : "SKU"
     Order__c ||--o{ Order_Item__c : "lines"
     Order_Item__c ||--o{ Order_Item_Scheme__c : "applied"
     Order_Item_Scheme__c }o--|| Scheme__c : "of"
@@ -76,47 +78,134 @@ erDiagram
     Sales_Channel_To_SKU__c }o--|| Product__c : "gates"
 ```
 
-### 3.2 `Scheme_Product_Group__c` (NEW)
+---
 
-Named SKU bundle. Created via the Scheme Group Builder UI; reusable across schemes. The `Group_Purpose__c` picklist controls which validation rules apply:
+## Section 1 — Scheme Product Group Creation
 
-- **`Price_Division`** — used by Basic / QPS / Order-Value / Plum schemes. MRP and Net_Weight are **required** and **all members must match** (FR-006).
-- **`FOC_Qualifier`** — used by FOC Giveaway schemes for the "what you must buy" pool (e.g. all Atta SKUs across 1kg / 5kg / 10kg packs). MRP and Net_Weight are **not required** and members may differ.
-- **`FOC_Free`** — used by FOC Giveaway schemes for the "what you get free" pool (e.g. vermicelli OR oats). MRP and Net_Weight not required.
+> **New section format (from this iteration onward):** each section presents the new SObject(s) first, then a UI example as structured tables + a numbered interaction list, then a short explanation. The remaining content (legacy §3.4 onward + §4..§12) is still in the prior format and is being re-flowed one per session.
 
-| Field | Type | Notes |
+A **Scheme Product Group** is a named bundle of SKUs that one or more schemes can target. It exists so an admin can define a scheme once against many SKUs instead of one scheme per SKU. Groups are created at **Sales Channel** level (FR-005), and the `Group_Purpose__c` picklist controls which validation rules apply.
+
+### 1.1 Object — `Scheme_Product_Group__c` (NEW)
+
+The parent record for the bundle.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `Name` | Auto-number `SPG-{0000}` | system | display id |
+| `Group_Label__c` | Text(120) | Yes | human label, e.g. "Cake-25g-MRP10" or "Atta-AnyPack" |
+| `Sales_Channel__c` | Picklist (mirrors `Product__c.Channel__c`) | Yes | single-channel grouping (FR-005) |
+| `Group_Purpose__c` | Picklist | Yes | `Price_Division` / `FOC_Qualifier` / `FOC_Free` |
+| `MRP__c` | Currency(10,2) | Conditional | required **only when** `Group_Purpose__c = Price_Division` |
+| `Net_Weight__c` | Number(10,2) | Conditional | required **only when** `Group_Purpose__c = Price_Division` (cakes); validates member uniformity |
+| `Description__c` | Text Area | No | |
+| `Is_Active__c` | Checkbox | No | defaults true |
+| `Member_Count__c` | Roll-up COUNT | system | from `Scheme_Product_Group_Item__c` |
+
+**Validation:**
+- `Group_Purpose__c = Price_Division` → MRP + Net_Weight mandatory; trigger enforces `All_Members_Same_MRP__c` + `All_Members_Same_NetWeight__c` across child items.
+- `Group_Purpose__c = FOC_Qualifier` / `FOC_Free` → MRP / Net_Weight may be null; uniformity check skipped (mixed-MRP / mixed-grammage SKUs allowed).
+
+**Sharing:** Public Read/Write to `Scheme_Admin` permission set; Public Read-Only to all others.
+**Volume:** ~500–1,500 groups org-wide. Custom index on `Sales_Channel__c + Group_Purpose__c + Is_Active__c`.
+
+### 1.2 Object — `Scheme_Product_Group_Item__c` (NEW)
+
+Junction between `Scheme_Product_Group__c` and `Product__c` — one row per SKU in the group.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `Scheme_Product_Group__c` | Master-Detail → `Scheme_Product_Group__c` | Yes | cascade delete with parent |
+| `Product__c` | Lookup → `Product__c` | Yes | the SKU |
+| `Unique_Key__c` | Text(80), External ID, Unique | system | formula `Scheme_Product_Group__c + '-' + Product__r.SKU_Code__c` |
+| `Is_Active__c` | Checkbox | No | defaults true |
+
+**Master-Detail rationale:** an item record is meaningless without its parent group, and the parent needs a `Member_Count__c` roll-up. Sharing inherits from the parent.
+**Validation:** unique (`Scheme_Product_Group__c`, `Product__c`); a Product appears at most once per group.
+**Volume:** ~80 items/group × 1,500 groups ≈ 120k rows org-wide.
+
+### 1.3 UI Example — Scheme Group Builder
+
+A single LWC page (`schemeProductGroupBuilder`) the admin lands on from the new **Scheme Product Groups** tab. The page has three areas — a **Header form**, a **Filter pane**, and an **SKU result grid** — followed by the save action. The header `Group Purpose` selection drives the visibility of MRP and Net Weight inputs and the live validation chip.
+
+**Header form fields**
+
+| Field | Widget | Required | Notes |
+|---|---|---|---|
+| Group Purpose | Radio: `Price_Division` / `FOC_Qualifier` / `FOC_Free` | Yes | drives MRP + Net Weight visibility and the validation chip |
+| Group Label | Text input (max 120) | Yes | maps to `Group_Label__c` |
+| Sales Channel | Picklist (single-select) | Yes | required first — gates the SKU catalogue |
+| MRP | Currency input | Yes when `Price_Division` | hidden in FOC modes |
+| Net Weight (g) | Number input | Yes when `Price_Division` (Cake category) | hidden in FOC modes |
+| Description | Textarea (multi-line) | No | optional admin note |
+
+**Filter pane** (narrows the SKU catalogue before selection)
+
+| Filter | Widget | Notes |
 |---|---|---|
-| NEW: `Name` | Auto-number `SPG-{0000}` | |
-| NEW: `Group_Label__c` | Text(120) | e.g. "Cake-25g-MRP10" or "Atta-AnyPack" |
-| NEW: `Sales_Channel__c` | Picklist (mirrors `Product__c.Channel__c`) | single-channel grouping (FR-005) |
-| NEW: `Group_Purpose__c` | Picklist | `Price_Division` / `FOC_Qualifier` / `FOC_Free` |
-| NEW: `MRP__c` | Currency(10,2) | **required only when `Group_Purpose__c = Price_Division`**; trigger validates all members match |
-| NEW: `Net_Weight__c` | Number(10,2) | **required only when `Group_Purpose__c = Price_Division`** (cakes); validated for member uniformity |
-| NEW: `Description__c` | Text Area | |
-| NEW: `Is_Active__c` | Checkbox | |
-| NEW: `Member_Count__c` | Roll-up COUNT | |
+| Category | Picklist | from `Product__c.Product_Category1__c` |
+| Product Group | Picklist (dependent on Category) | from `Product__c.Group_Name__c` |
+| Sub-group | Picklist | from `Product__c` sub-group field if present |
+| Variant | Picklist | from `Product__c.Class__c` / `Flavors__c` |
+| Grammage (g) | Picklist | from `Product__c.Net_Weight__c`; **advisory only in FOC modes** |
+| MRP | Picklist | from `Product__c.MRP__c`; **advisory only in FOC modes** |
 
-- **Sharing:** Public RW to `Scheme_Admin`, Public RO others.
-- **Validation:**
-  - `Group_Purpose__c = Price_Division` → MRP + Net_Weight mandatory + `All_Members_Same_MRP__c` + `All_Members_Same_NetWeight__c` (Apex trigger).
-  - `Group_Purpose__c = FOC_Qualifier` / `FOC_Free` → MRP / Net_Weight may be null; uniformity check skipped.
-- **Volume:** ~500–1,500 groups. Index on `Sales_Channel__c + Group_Purpose__c + Is_Active__c`.
+**SKU result grid columns**
 
-### 3.3 `Scheme_Group_Member__c` (NEW)
-
-Junction `Scheme_Product_Group__c` ↔ `Product__c`.
-
-| Field | Type | Notes |
+| Column | Widget | Notes |
 |---|---|---|
-| NEW: `Scheme_Product_Group__c` | Master-Detail | cascade delete |
-| NEW: `Product__c` | Lookup | required |
-| NEW: `Unique_Key__c` | Text(80), External ID, Unique | `SPG-Id-SKU_Code__c` |
-| NEW: `Is_Active__c` | Checkbox | |
+| Select | Checkbox | bulk-select via the "Select all filtered" action |
+| SKU Code | Text (read-only) | `Product__c.SKU_Code__c` |
+| Sku Name | Text (read-only) | `Product__c.Name` |
+| Category | Text (read-only) | |
+| Group | Text (read-only) | |
+| Sub-group | Text (read-only) | |
+| Grammage (g) | Number (read-only) | |
+| MRP | Currency (read-only) | |
 
-- **Master-detail rationale:** meaningless standalone; need roll-ups.
-- **Volume:** ~120k rows total.
+**User actions (in order)**
 
-### 3.4 `Scheme_Slab__c` (NEW)
+1. Admin opens the **Scheme Product Groups** tab and clicks **+ New Group**.
+2. Admin picks a **Group Purpose**. The form re-renders: `Price_Division` shows MRP + Net Weight as required inputs; `FOC_Qualifier` / `FOC_Free` hide those fields.
+3. Admin picks a **Sales Channel**. The SKU result grid loads SKUs gated by `Sales_Channel_To_SKU__c` for that channel.
+4. Admin applies one or more **Filters** to narrow the grid (Category, Group, Sub-group, Variant, Grammage, MRP).
+5. Admin ticks the SKUs to include — row-by-row, or via **Select all filtered**.
+6. **Live validation chip** updates as the selection changes:
+   - `Price_Division` mode — chip is **GREEN** when all selected SKUs share the same MRP and Net_Weight; **RED** otherwise with message *"Mixed MRP — group not allowed"*.
+   - `FOC_Qualifier` / `FOC_Free` mode — chip is **INFO-GREEN** with message *"Mixed MRP / Weight allowed for FOC"*.
+7. Admin clicks **Save as Group**. A modal prompts for the **Group Label**, then the page persists one parent `Scheme_Product_Group__c` plus one `Scheme_Product_Group_Item__c` per selected SKU in a single transaction.
+8. On success the page redirects to a read-only view of the new group, showing member count and the actions **Edit (admin only)**, **Clone to new group**, **Deactivate**.
+
+### 1.4 Explanation
+
+The Scheme Product Group is the foundation that lets a single scheme cover many SKUs. The BRD (FR-001..FR-006) requires that a scheme be defined against a *group* of SKUs, not a single SKU, and that the admin be able to filter the catalogue by Category / Group / Sub-group / Variant / Grammage / MRP and "Select all".
+
+Two further requirements drive the `Group_Purpose__c` picklist:
+
+1. **Price-division uniformity (FR-006).** For Basic (X+Y), QPS, Order-Value and Plum schemes, the per-unit price reduction is redistributed across the qualifying quantity using a single MRP. Mixing SKUs of different MRP or grammage would break the redistribution. We enforce this with `Group_Purpose__c = Price_Division` — all members must share MRP + Net_Weight.
+
+2. **FOC qualifying pools may be mixed (BRD Session 2).** The FOC example is *"buy 5 kg of Chakki Atta → get 200 g vermicelli per kg"*. The qualifying SKUs may span Atta 1 kg + 5 kg + 10 kg packs at different MRPs and grammages. We enforce this with `Group_Purpose__c = FOC_Qualifier`, which relaxes the uniformity rule. The *free* products are kept in a separate `FOC_Free` purpose group when there is a choice of giveaways (vermicelli OR oats); for a single-SKU giveaway a direct lookup is used (covered in Section 2 — Scheme Definition).
+
+The group is **always** scoped to one **Sales Channel** (FR-005), so the same SKU may belong to different groups in different channels. A trigger on `Scheme_Product_Group_Item__c` enforces that the same SKU cannot appear in more than one *active* group of the **same** `Group_Purpose__c` within the **same** Sales Channel — preventing ambiguity when a scheme resolves "which group does this order line belong to".
+
+Groups are referenced from `Scheme__c.Scheme_Product_Group__c` (covered in Section 2). Groups are never deleted — only deactivated — so historical orders that referenced a superseded group remain traceable.
+
+---
+
+## Sections to be restructured in next iterations
+
+> The content from here onward is from the prior draft and will be re-flowed into the new Section-N format (Object → UI Example → Explanation) one per session. **Up next:** **Section 2 — Scheme Definition** (master + slabs) will pull from §3.4 `Scheme_Slab__c`, §3.9 `Scheme__c` modifications, §6.b Wizard Steps 1–3.
+>
+> **Planned order:**
+> - Section 2 — Scheme Definition (master + slabs) ← next
+> - Section 3 — Applicability Cascade — from §3.5, §6.c
+> - Section 4 — Order Capture & Application — from §3.6, §3.7, §6.e, §6.f
+> - Section 5 — Lifecycle / Audit — from §3.8, §5, §6.d, §6.g
+> - Section 6 — Calc Engine — from §4
+> - Section 7 — Reporting — from §7
+> - Section 8 — Scalability / Security / Migration — from §8, §9, §10
+
+### Legacy §3.4 `Scheme_Slab__c` (NEW)
 
 Replaces flat `Buy_Product__c` for new schemes. Supports multi-slab QPS, multi-slab Order-Value, Category-Plum, and simple Basic / FOC.
 
@@ -255,7 +344,7 @@ public class SchemeApplicationResult {
 
 | # | Step | Reads | Writes |
 |---|---|---|---|
-| 1 | **Cascade match** — candidate `Scheme__c` per line via cache | Scheme_Applicability__c, Scheme_Product_Group__c, Scheme_Group_Member__c, Sales_Channel_To_SKU__c | — |
+| 1 | **Cascade match** — candidate `Scheme__c` per line via cache | Scheme_Applicability__c, Scheme_Product_Group__c, Scheme_Product_Group_Item__c, Sales_Channel_To_SKU__c | — |
 | 2 | **Prune by SKU gating** | — | — |
 | 3 | **Apply Basic (X+Y):** `price_after = MRP × X ÷ (X+Y)` | Scheme_Slab__c (Basic) | staged line app |
 | 4 | **QPS decomposition (FR-015):** greedy DESC over slabs, e.g. 8 → 5+3; remainder no QPS | Scheme_Slab__c (QPS) | staged line app |
@@ -298,9 +387,9 @@ Mutual exclusion (FR-022 / FR-034) enforced at scheme activation, not in evaluat
 | End-date extend only | Scheme__c | new end < old end | VR |
 | Slabs frozen once live | Scheme_Slab__c | parent locked + change | VR + trigger |
 | Applicability frozen once live | Scheme_Applicability__c | same | VR + trigger |
-| Group MRP/grammage uniformity | Scheme_Group_Member__c | applies **only when** parent `Group_Purpose__c = Price_Division`; siblings must match MRP + Net_Weight | trigger |
+| Group MRP/grammage uniformity | Scheme_Product_Group_Item__c | applies **only when** parent `Group_Purpose__c = Price_Division`; siblings must match MRP + Net_Weight | trigger |
 | MRP / Net_Weight required | Scheme_Product_Group__c | mandatory **only when** `Group_Purpose__c = Price_Division`; null allowed for `FOC_Qualifier` and `FOC_Free` | VR |
-| SKU in one group per channel per purpose | Scheme_Group_Member__c | unique (Product, parent.Channel, parent.Group_Purpose__c) among active | trigger |
+| SKU in one group per channel per purpose | Scheme_Product_Group_Item__c | unique (Product, parent.Channel, parent.Group_Purpose__c) among active | trigger |
 | FOC scheme group purpose | Scheme__c | when `Primary_Scheme_Type__c = FOC_Giveaway`, the linked `Scheme_Product_Group__c.Group_Purpose__c` must be `FOC_Qualifier` | VR |
 | FOC slab free-product source | Scheme_Slab__c | exactly one of `FOC_Product__c` or `FOC_Product_Group__c` populated; if the group is set, its purpose must be `FOC_Free` | VR |
 | Competing-scheme uniqueness in area | Scheme__c on activate | overlap query per type per area per group | `SchemeLifecycleService.activate()` |
@@ -317,60 +406,7 @@ Mutual exclusion (FR-022 / FR-034) enforced at scheme activation, not in evaluat
 
 ### 6.a Scheme Group Builder
 
-**Purpose:** Admin builds a `Scheme_Product_Group__c` by first selecting a **Group Purpose** and then filtering the SKU catalog.
-**User:** Scheme Admin.
-**Group Purpose drives the form:**
-- `Price_Division` → MRP and Net_Weight inputs appear and are mandatory; uniformity chip is enforced (red if SKUs disagree).
-- `FOC_Qualifier` → MRP / Net_Weight inputs hidden; uniformity chip hidden; mixed-MRP/weight SKUs allowed in the same group (e.g. Atta 1kg + Atta 5kg + Atta 10kg).
-- `FOC_Free` → same as FOC_Qualifier; this is the "what you get free" pool.
-
-**Common filters:** Channel, Category, Group, Sub-group, Variant, Grammage, MRP (advisory for FOC modes).
-
-**Price_Division mode**
-```
-+---------------------------------------------------------------------------+
-| Scheme Group Builder                                          [ Help (?) ]|
-+---------------------------------------------------------------------------+
-| Group Purpose ( o ) Price Division   ( ) FOC Qualifier   ( ) FOC Free     |
-+---------------------------------------------------------------------------+
-| Channel [GT v]  Category [Cake v]  Group [Marble v]  Sub-group [-- v]     |
-| Variant [-- v]  Grammage* [25g v]  MRP* [10 v]   [ Apply ]   [ Clear ]    |
-|                                              * required for Price Division|
-+---------------------------------------------------------------------------+
-| Selected: 12 SKUs    Price match: OK   Grammage match: OK   [ chip ]      |
-+---------------------------------------------------------------------------+
-| [x] | SKU Code | Sku Name             | Cat | Grp    | Sub | g  | MRP   |
-|-----|----------|----------------------|-----|--------|-----|----|-------|
-| [x] | EL-00121 | Marble Cake 25g Choc | Cak | Marble | Std | 25 | 10.00 |
-| [x] | EL-00122 | Marble Cake 25g Van  | Cak | Marble | Std | 25 | 10.00 |
-| [ ] | EL-00130 | Marble Cake 30g Choc | Cak | Marble | Std | 30 | 12.00 |
-+---------------------------------------------------------------------------+
-| [ Select All Filtered ]   [ Clear Selection ]   [ Save as Group... ]      |
-+---------------------------------------------------------------------------+
-```
-
-**FOC_Qualifier mode** (MRP / grammage fields hidden, uniformity chip hidden)
-```
-+---------------------------------------------------------------------------+
-| Scheme Group Builder                                          [ Help (?) ]|
-+---------------------------------------------------------------------------+
-| Group Purpose ( ) Price Division   ( o ) FOC Qualifier   ( ) FOC Free     |
-+---------------------------------------------------------------------------+
-| Channel [GT v]  Category [Atta v]  Group [Chakki v]  Sub-group [-- v]     |
-| Variant [-- v]                            [ Apply ]   [ Clear ]           |
-|       (MRP & Grammage not required — mixed SKUs allowed for FOC)          |
-+---------------------------------------------------------------------------+
-| Selected: 3 SKUs    [ Mixed MRP / Weight OK for FOC ]                     |
-+---------------------------------------------------------------------------+
-| [x] | SKU Code | Sku Name              | Cat  | Grp    | g    | MRP    |
-|-----|----------|-----------------------|------|--------|------|--------|
-| [x] | EL-02201 | Chakki Atta 1 kg      | Atta | Chakki | 1000 |  55.00 |
-| [x] | EL-02205 | Chakki Atta 5 kg      | Atta | Chakki | 5000 | 250.00 |
-| [x] | EL-02210 | Chakki Atta 10 kg     | Atta | Chakki |10000 | 480.00 |
-+---------------------------------------------------------------------------+
-| [ Select All Filtered ]   [ Clear Selection ]   [ Save as Group... ]      |
-+---------------------------------------------------------------------------+
-```
+*Moved to **Section 1.3 — UI Example — Scheme Group Builder** at the top of this document. The new format uses structured field tables + a numbered interaction list instead of ASCII boxes.*
 
 ### 6.b Scheme Definition Wizard
 
@@ -585,9 +621,9 @@ Click `(i)` to expand inline panel listing each `Order_Item_Scheme__c` row.
 
 ## 8. Scalability
 
-- **Volume:** ~3k `Scheme__c`/yr, ~15k `Scheme_Slab__c`/yr, ~36k `Scheme_Applicability__c`/yr, ~1.5k `Scheme_Product_Group__c`, ~120k `Scheme_Group_Member__c`. `Order_Item_Scheme__c` at 50k orders/day × 20 lines × 4 schemes = 4M rows/day → MUST archive.
+- **Volume:** ~3k `Scheme__c`/yr, ~15k `Scheme_Slab__c`/yr, ~36k `Scheme_Applicability__c`/yr, ~1.5k `Scheme_Product_Group__c`, ~120k `Scheme_Product_Group_Item__c`. `Order_Item_Scheme__c` at 50k orders/day × 20 lines × 4 schemes = 4M rows/day → MUST archive.
 - **Archival:** `Order_Item_Scheme__c` and `Order_Scheme__c` older than 18 months relocated nightly to BigObjects `Order_Item_Scheme_Archive__b` and `Order_Scheme_Archive__b`.
-- **Indexes:** `Scheme__c.Sales_Channel__c + IsActive__c`, `Scheme_Applicability__c.Value_Area__c`, `.Value_Distributor__c`, `Scheme_Group_Member__c.Product__c`, `Order_Item_Scheme__c.Scheme__c`.
+- **Indexes:** `Scheme__c.Sales_Channel__c + IsActive__c`, `Scheme_Applicability__c.Value_Area__c`, `.Value_Distributor__c`, `Scheme_Product_Group_Item__c.Product__c`, `Order_Item_Scheme__c.Scheme__c`.
 - **Caching:** Platform Cache org partition `SchemeCascadeCache` (5 MB, TTL 30 min), invalidated on Scheme save/activate.
 - **Async:** Orders > 100 lines routed to `SchemeEvaluationQueueable`. Back-dated re-evaluation via `SchemeEvaluationBatch` (200-record scope).
 - **Selective SOQL:** every cascade query filters `Sales_Channel__c`, `IsActive__c`, `Scheme_End_Date__c >= TODAY`.
