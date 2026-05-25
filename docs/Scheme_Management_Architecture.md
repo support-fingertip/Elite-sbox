@@ -33,7 +33,7 @@ Cascade levels (Region / Area / Territory / Outlet Category) are stored as field
 
 ## Section 1 — Scheme Product Group Creation
 
-> **New section format (from this iteration onward):** each section presents the new SObject(s) first, then a UI example as structured tables + a numbered interaction list, then a short explanation. The remaining content (legacy §3.4 onward + §4..§12) is still in the prior format and is being re-flowed one per session.
+> **Section format:** each section presents the new SObject(s) first, then a UI example as structured tables + a numbered interaction list, then a short explanation.
 
 A **Scheme Product Group** is a named bundle of SKUs that one or more schemes can target. It exists so an admin can define a scheme once against many SKUs instead of one scheme per SKU. Groups are created at **Sales Channel** level (FR-005), and the `Group_Purpose__c` picklist controls which validation rules apply.
 
@@ -139,7 +139,7 @@ Two further requirements drive the `Group_Purpose__c` picklist:
 
 The group is **always** scoped to one **Sales Channel** (FR-005), so the same SKU may belong to different groups in different channels. A trigger on `Scheme_Product_Group_Item__c` enforces that the same SKU cannot appear in more than one *active* group of the **same** `Group_Purpose__c` within the **same** Sales Channel — preventing ambiguity when a scheme resolves "which group does this order line belong to".
 
-Groups are referenced from `Scheme__c.Scheme_Product_Group__c` (covered in Section 2). Groups are never deleted — only deactivated — so historical orders that referenced a superseded group remain traceable.
+Groups are referenced from `Scheme__c.Scheme_Product_Group__c` (covered in Section 2). Groups are never deleted — only deactivated — so historical orders that referenced an older group remain traceable.
 
 ---
 
@@ -439,441 +439,151 @@ A scheme is eligible only when **all four levels match** (AND of cascade levels)
 
 ---
 
-## Section 4 — Multi-Scheme Calculation Logic on a Line
 
-When several schemes target the same order line (Basic + QPS + Plum Category + Order-Value), they apply **sequentially in a fixed order**. Each step modifies the line's effective unit price (or adds an order-level allocation), and each step writes its own `Order_Item_Scheme__c` row on the line so the trail is recoverable later.
+## Section 4 — Multi-Scheme Calculation Logic
 
-### 4.1 Application order
+This section describes how the four scheme types stack on an order, plus the two objects / field-sets that record the applied results.
 
-| # | Stage | Computed on | Result lands as |
+### 4.1 Where applied schemes are persisted
+
+- **Per-line schemes** (Basic, QPS, Plum, FOC link) — recorded as `Order_Item_Scheme__c` rows on the corresponding `Order_Item__c`. They reduce the per-EA unit price on that line.
+- **Order-Value** — recorded as fields directly on `Order__c`. It is a **flat ₹ discount on the order grand total** and does **not** modify per-line unit prices. Only one Order-Value scheme can match a given order at a time (activation-time validation enforces this).
+
+#### Object — `Order_Item_Scheme__c` (NEW)
+
+One row per applied per-line scheme.
+
+| Field | Type | Notes |
+|---|---|---|
+| `Order_Item__c` | Master-Detail → `Order_Item__c` | cascade with line |
+| `Scheme__c` | Lookup → `Scheme__c` | the source scheme |
+| `Scheme_Slab__c` | Lookup → `Scheme_Slab__c` | which slab fired |
+| `Sequence__c` | Number(2,0) | 1 = Basic, 2 = QPS, 3 = Plum, 4 = FOC link |
+| `Scheme_Snapshot_Type__c` | Text(40) | hardcopy of `Slab_Type__c` at order time |
+| `Benefit_Amount__c` | Currency(10,2) | total ₹ benefit on this line from this scheme |
+| `Per_Unit_Discount__c` | Currency(8,4) | per-EA price reduction this scheme contributes |
+| `Free_Qty__c` | Number(6,0) | Y (Basic) or FOC giveaway qty |
+| `Qualifying_Qty__c` | Number(8,0) | portion of line qty consumed by this slab |
+| `Notes__c` | Long Text(2000) | calc trail |
+
+- **Sharing:** Controlled by parent.
+- **Validation:** unique (`Order_Item__c`, `Scheme__c`, `Scheme_Slab__c`).
+- **Volume:** ~3–5× `Order_Item__c`.
+
+#### New fields on `Order__c` for Order-Value
+
+A single set of fields on the order header — not a junction. Only one Order-Value scheme applies per order.
+
+| Field | Type | Notes |
+|---|---|---|
+| `Order_Value_Scheme__c` | Lookup → `Scheme__c` | the Order-Value scheme that fired; null if none |
+| `Order_Value_Slab__c` | Lookup → `Scheme_Slab__c` | which slab fired |
+| `Order_Value_GSV__c` | Currency(12,2) | the gross GSV used for qualification (audit) |
+| `Order_Value_Discount_Percent__c` | Percent(5,2) | the % that fired |
+| `Order_Value_Discount_Amount__c` | Currency(10,2) | flat ₹ deducted from the order grand total |
+
+#### Roll-up fields used by the order summary
+
+| Object | Field | Type | Notes |
 |---|---|---|---|
-| 1 | **Basic** (X+Y or band) | Gross MRP per EA | New per-EA unit price on the line |
-| 2 | **QPS** | **Basic-adjusted** unit price (FR-014) | Subtract per-EA benefit from the Basic-adjusted unit price |
-| 3 | **FOC Giveaway** | Qualifying line quantity | A new synthetic `Order_Item__c` row at ₹0.01 (the qualifying line itself is untouched) |
-| 4 | **Category-Value (Plum)** | **Gross GSV** for that category (FR-042) | % discount allocated per line proportionally to each qualifying line's gross GSV share |
-| 5 | **Order-Value** | **Gross GSV** for the whole order (FR-042) | % discount allocated per line proportionally to each line's gross GSV share |
+| `Order_Item__c` | `Total_Scheme_Benefit__c` | Roll-up SUM from `Order_Item_Scheme__c.Benefit_Amount__c` | per-line total benefit (Basic + QPS + Plum + FOC) |
+| `Order__c` | `Line_Scheme_Benefit_Total__c` | Roll-up SUM from `Order_Item__c.Total_Scheme_Benefit__c` | sum across all lines |
+| `Order__c` | `Grand_Total_After_Schemes__c` | Formula (currency) | `Line GSV total − Line_Scheme_Benefit_Total__c − Order_Value_Discount_Amount__c` |
+| `Order__c` | `Scheme_Eval_Status__c` | Picklist (Pending / Computing / Computed / Stale / Error) | drives async re-evaluation |
+| `Order__c` | `Scheme_Eval_Timestamp__c` | DateTime | last successful eval |
 
-**Rules:**
-- Steps 1 and 2 are **line-local** — each writes one `Order_Item_Scheme__c` row on the line.
-- Step 3 (FOC) adds a new `Order_Item__c` at ₹0.01 with its own `Order_Item_Scheme__c` link.
-- Steps 4 and 5 are **header-driven but persisted per line** — the engine allocates the % discount across qualifying lines proportionally to their gross GSV share. Each line gets one `Order_Item_Scheme__c` row per applicable header scheme. **No separate `Order_Scheme__c` object is needed** — the header-level totals are recovered by aggregating `Order_Item_Scheme__c` rows on the order (UI summary roll-up by `Scheme__c`).
-- **QPS is computed on the Basic-adjusted unit price** (FR-014). Plum and Order-Value are computed on **gross GSV** (FR-042), independent of any line-level discount.
+### 4.2 Application order
 
-### 4.2 Worked example — line ₹10 → ₹8 → ₹7 → ₹6.90 → ₹6.70
+| # | Stage | Computed on | Effect |
+|---|---|---|---|
+| 1 | **Basic** (X+Y or band) | Gross MRP per EA | per-line unit price reduction (writes `Order_Item_Scheme__c` row) |
+| 2 | **QPS** | Basic-adjusted unit price (FR-014) | per-line unit price reduction on top of Basic |
+| 3 | **FOC Giveaway** | Qualifying line quantity | new synthetic `Order_Item__c` line at ₹0.01 with its own `Order_Item_Scheme__c` link; the qualifying line is unchanged |
+| 4 | **Plum (Category Value)** | Category gross GSV (sum of MRP × Qty for that category) | discount % applied as a **per-EA unit price reduction** on each line in the category (allocated proportionally to each line's gross GSV share within the category) |
+| 5 | **Order-Value** | Order gross GSV (sum of MRP × Qty across all lines) | **flat ₹ discount on the order grand total only** — per-line unit prices are NOT modified |
 
-**Setup**
+**Key rules:**
 
-- Line: SKU `EL-00121` (Marble Cake, Cake category), MRP = ₹10, ordered Qty = 36 EA, `Units_Per_Case` = 12.
+- **QPS computes on the Basic-adjusted unit price** (FR-014), not on gross MRP.
+- **Plum computes on category gross GSV** (FR-042) but is **applied per-line** — it reduces the unit price on every line in that category, so the per-EA rate the customer pays reflects the Plum discount.
+- **Order-Value computes on order gross GSV** (FR-042) and is **applied at the order header only** — it appears as a separate header-level line in the order summary panel; per-line unit prices stay at their post-Plum values.
+
+### 4.3 Worked example
+
+**Setup:**
+
+- Line of interest: SKU `EL-00121` (Marble Cake, Cake category), MRP = ₹10, ordered Qty = 36 EA, `Units_Per_Case` = 12.
+- Order also has other lines totalling ₹3,240 gross (mix of Cake and Biscuit); the line of interest is ₹360 gross. Order grand gross = ₹3,600. Cake-category gross = ₹360 (this line is the only Cake line).
 - Scheme stack (all eligible after cascade resolution):
   - **Scheme A — Basic 4+1.** One Basic slab: `Qualifying_Qty_Min = 4`, `Free_Qty = 1`, `Qualifying_Qty_Max = null` (cycle mode).
-  - **Scheme B — QPS.** Two slabs: `3 cases → ₹12/case`, `5 cases → ₹30/case`. Line is 36 EA = exactly 3 cases → matches the 3-case slab.
-  - **Scheme C — Plum Cake 1%.** Slab: `0–unbounded → 1%`. For this example, assume the order's Cake-category gross GSV = ₹3,600 (this single line is the whole Cake total).
-  - **Scheme D — Order-Value 2%.** Slab: `₹3,000+ → 2%`. Order grand gross GSV = ₹3,600.
+  - **Scheme B — QPS.** Slabs: `3 cases → ₹12/case`, `5 cases → ₹30/case`. Line is exactly 3 cases → matches the 3-case slab. Per-EA benefit = `12 / 12 = ₹1`.
+  - **Scheme C — Plum Cake 1%.** Slab: `0–unbounded → 1%`. Applied per-line for Cake-category lines.
+  - **Scheme D — Order-Value 2%.** Slab: `₹3,000+ → 2%`. Applied flat at order header.
 
-**Walk-through**
+**Per-line walk-through for the line of interest:**
 
 | Step | Operation | Numbers | Effective unit price |
 |---|---|---|---|
 | 0 | Gross at MRP | `10.00` | **₹10.00** |
 | 1 | Basic 4+1 (cycle): `MRP × X / (X+Y)` = `10 × 4 / 5` | `= 8.00` | **₹8.00** |
-| 2 | QPS 3-case slab: `Benefit_Per_Case / Units_Per_Case` = `12 / 12` per EA, subtracted from Basic-adjusted | `8.00 − 1.00` | **₹7.00** |
+| 2 | QPS 3-case slab: subtract `Benefit_Per_Case / Units_Per_Case = 12 / 12 = 1.00` per EA from the Basic-adjusted price | `8.00 − 1.00` | **₹7.00** |
 | 3 | (no FOC giveaway in this example) | — | ₹7.00 |
-| 4 | Plum Cake 1%: total Plum discount = `0.01 × 3,600 = ₹36`. This line's share = `(₹360 / ₹3,600) × ₹36 = ₹3.60`. Per-EA = `3.60 / 36 = ₹0.10` | `7.00 − 0.10` | **₹6.90** |
-| 5 | Order-Value 2%: total Order-Value discount = `0.02 × 3,600 = ₹72`. This line's share = `(₹360 / ₹3,600) × ₹72 = ₹7.20`. Per-EA = `7.20 / 36 = ₹0.20` | `6.90 − 0.20` | **₹6.70** |
+| 4 | Plum Cake 1%: total Plum discount on the Cake category = `0.01 × 360 = ₹3.60`. This line's share = `(360 / 360) × 3.60 = ₹3.60`. Per-EA = `3.60 / 36 = ₹0.10` | `7.00 − 0.10` | **₹6.90** ← final per-line unit price |
+| 5 | Order-Value 2%: flat header discount = `0.02 × 3,600 = ₹72.00`. Posted to `Order__c.Order_Value_Discount_Amount__c`. **Per-line unit price unchanged.** | — | ₹6.90 (unchanged) |
 
-**Final per-EA price = ₹6.70.** Line value = `6.70 × 36 = ₹241.20`. Total line benefit = `(10 − 6.70) × 36 = ₹118.80`, broken down as Basic ₹72.00 + QPS ₹36.00 + Plum ₹3.60 + Order-Value ₹7.20 = ₹118.80 ✓.
+**Final per-EA unit price for this line = ₹6.90.** Line value = `6.90 × 36 = ₹248.40`.
 
-### 4.3 Persistence — `Order_Item_Scheme__c` rows written
+**Order total computation:**
 
-Four `Order_Item_Scheme__c` rows are written for this line — one per applied scheme:
+```
+Sum of line values after Basic + QPS + Plum   = ₹248.40 + (other lines' post-line-scheme totals)
+                                              − ₹72.00   (Order-Value flat header discount)
+                                              = Order grand total
+```
 
-| # | Scheme | Slab | Per-Unit Benefit | Line Benefit |
-|---|---|---|---|---|
-| 1 | A · Basic 4+1 | the Basic slab | ₹2.00 | ₹72.00 |
-| 2 | B · QPS | the 3-case slab | ₹1.00 | ₹36.00 |
-| 3 | C · Plum Cake | the 0–∞ Cake slab | ₹0.10 | ₹3.60 |
-| 4 | D · Order-Value | the ₹3,000+ slab | ₹0.20 | ₹7.20 |
+### 4.4 Persistence — what gets written
 
-The Order header's total scheme benefit is then a roll-up SUM of `Order_Item_Scheme__c.Benefit_Amount__c` across all lines, and the per-scheme header totals (e.g. "Order-Value discount on this order = ₹72") are recovered by aggregating those rows by `Scheme__c`.
+**Per-line, on `Order_Item__c` (for the line of interest):**
 
-### 4.4 Edge cases
+| # | Order_Item_Scheme__c | Scheme | Slab | Per-Unit Discount | Line Benefit |
+|---|---|---|---|---|---|
+| 1 | Basic | the Basic 4+1 slab | ₹2.00 | ₹72.00 |
+| 2 | QPS | the 3-case slab | ₹1.00 | ₹36.00 |
+| 3 | Plum Cake | the 0–∞ Cake slab | ₹0.10 | ₹3.60 |
 
-- **No QPS qualification.** Line qty < smallest QPS slab threshold → no QPS row is written; Plum and Order-Value still apply on gross.
-- **QPS slab decomposition (multi-lot, FR-015).** A line of 8 cases against slabs `3 / 5 / 10` → engine writes **two** QPS rows: one for the 5-case lot, one for the 3-case lot. The 0-case remainder gets no QPS.
-- **Order-Value applies to every line.** Each line in the order receives its proportional share of the Order-Value discount, regardless of whether it's in a Basic / QPS / Plum scheme.
-- **Plum applies only to lines in the configured category.** Lines outside that category get no Plum row.
-- **FOC giveaway never reduces the qualifying line's price.** The free product is a separate synthetic `Order_Item__c` at ₹0.01 with its own `Order_Item_Scheme__c` link; the qualifying line keeps its full Basic+QPS+Plum+Order-Value treatment.
+`Order_Item__c.Total_Scheme_Benefit__c` (roll-up SUM) = **₹111.60** for this line.
+
+**Order-Value on `Order__c`** (single set of fields, not a junction row):
+
+| Field | Value |
+|---|---|
+| `Order_Value_Scheme__c` | Scheme D |
+| `Order_Value_Slab__c` | the `₹3,000+ → 2%` slab |
+| `Order_Value_GSV__c` | ₹3,600.00 |
+| `Order_Value_Discount_Percent__c` | 2.00 % |
+| `Order_Value_Discount_Amount__c` | ₹72.00 |
+
+`Order__c.Grand_Total_After_Schemes__c` = `Line GSV total − Line_Scheme_Benefit_Total__c − Order_Value_Discount_Amount__c`.
+
+### 4.5 Edge cases
+
+- **No QPS qualification.** Line qty < smallest QPS threshold → no QPS row is written; Plum and Order-Value still apply on gross.
+- **QPS slab decomposition (FR-015).** A line of 8 cases against slabs `3 / 5 / 10` → engine writes **two** QPS rows: one for the 5-case lot, one for the 3-case lot. The 0-case remainder gets no QPS.
+- **Plum applies only to lines in the configured category.** Lines outside the category get no Plum row.
+- **Only one Order-Value scheme per order.** Activation-time validation prevents two competing Order-Value schemes from being active in the same Channel × Region × Area × Territory × Outlet Category combination. If somehow two are eligible, the engine picks the one with the larger `Order_Value_Discount_Amount__c` and flags `Scheme_Eval_Status__c = Error`.
+- **FOC giveaway never reduces the qualifying line's unit price.** The free product is a separate synthetic `Order_Item__c` at ₹0.01 with its own `Order_Item_Scheme__c` link; the qualifying line keeps its full Basic + QPS + Plum treatment.
 - **Concurrent QPS schemes targeting the same SKU.** Disallowed by activation-time validation (one active QPS per SKU per Channel × Area × Outlet Category combination). Two competing QPS schemes never reach the engine simultaneously.
 
 ---
 
-## Sections to be restructured in next iterations
+## Next iterations
 
-> The content from here onward is from the prior draft. Sections 1–4 above are now in the new section-by-section format. **Up next:** **Section 5 — Order Capture & Application** will pull from §3.6 `Order_Item_Scheme__c` and §6.e / §6.f UI panels; it will detail trigger handlers, persistence and the Order header summary roll-ups.
->
-> **Planned order:**
-> - Section 5 — Order Capture & Application — from §3.6, §6.e, §6.f ← next
-> - Section 6 — Lifecycle (Activate / Extend / Deactivate / Clone) — from §5, §6.d, §6.g
-> - Section 7 — Calc Engine internals — from §4
-> - Section 8 — Reporting & Claim Posting — from §7
-> - Section 9 — Scalability / Security — from §8, §9
->
-> The Migration Plan (§10) is dropped — this is a new implementation, no backfill is required.
+This document covers the **single-type-per-scheme** model (one `Primary_Scheme_Type__c` per `Scheme__c`). A sibling document for the multi-type variant (via an intermediate `Scheme_Item__c`) will be produced later.
 
-### Legacy §3.4 `Scheme_Slab__c` (NEW)
+Future sections to be added to this document, in the same Object → UI Example → Explanation format:
 
-*Moved to **Section 2.2** above.*
-
-### Legacy §3.5 `Scheme_Applicability__c` — **superseded**
-
-*The separate cascade junction object is **not used**. Cascade selections live directly on `Scheme__c` (8 fields covering Region / Area / Territory / Outlet Category, each with an Apply-All checkbox). See **Section 3.1** above. Distributor is intentionally not a cascade level (20,000 customers — not feasible to store per-scheme).*
-
-### 3.6 `Order_Item_Scheme__c` (NEW)
-
-Junction for concurrent schemes per line (FR-022, FR-060). The single junction that records **every** applied scheme — line-local (Basic, QPS, FOC) and header-allocated (Plum, Order-Value).
-
-| Field | Type | Notes |
-|---|---|---|
-| NEW: `Order_Item__c` | Master-Detail | cascade with line |
-| NEW: `Scheme__c` | Lookup | source scheme |
-| NEW: `Scheme_Slab__c` | Lookup | which slab fired |
-| NEW: `Sequence__c` | Number(2,0) | 1=Basic, 2=QPS, 3=Plum, 4=Order-Value, 5=FOC link |
-| NEW: `Scheme_Snapshot_Type__c` | Text(40) | hardcopy of slab type at order time |
-| NEW: `Benefit_Amount__c` | Currency(10,2) | total ₹ benefit on this line from this scheme |
-| NEW: `Per_Unit_Discount__c` | Currency(8,4) | redistributed per-unit reduction |
-| NEW: `Free_Qty__c` | Number(6,0) | Y (Basic) or FOC qty |
-| NEW: `Qualifying_Qty__c` | Number(8,0) | portion of line qty consumed |
-| NEW: `Notes__c` | Long Text(2000) | calc trail |
-
-- **Validation:** unique (`Order_Item__c`, `Scheme__c`, `Scheme_Slab__c`).
-- **Header-scheme allocation:** Plum and Order-Value are persisted per line with `Per_Unit_Discount__c` and `Benefit_Amount__c` computed by the engine's proportional-allocation logic (see Section 4.1 step 4-5).
-- **Volume:** 3–5× `Order_Item__c` → 18-month archival to `Order_Item_Scheme_Archive__b` (Scalability section, pending).
-
-### Legacy §3.7 `Order_Scheme__c` — **superseded**
-
-*The separate order-header junction object is **not used**. Header-level schemes (Order-Value, Plum) are persisted as `Order_Item_Scheme__c` rows on each qualifying line, with `Benefit_Amount__c` allocated proportionally to the line's gross GSV share. The order-header summary panel is a roll-up SUM of `Order_Item_Scheme__c` rows grouped by `Scheme__c`. See **Section 4** above.*
-
-### Legacy §3.8 `Scheme_Audit__c` — **superseded**
-
-*No separate audit object. Salesforce **Field-Level History** on `Scheme__c.IsActive__c`, `Deactivation_Reason__c`, `Scheme_End_Date__c`, `Is_Locked__c`, `Primary_Scheme_Type__c` and the cascade fields gives the activate / extend / deactivate / clone trail. Clone-to-New is implicit from the new `Scheme__c` record itself. See **Section 2.4** above.*
-
-### 3.9 New fields on existing Order objects (cross-reference)
-
-*The Order-side additions below will be fully described in **Section 5 — Order Capture & Application** in the next iteration; kept here for quick reference.*
-
-| Object | New field | Notes |
-|---|---|---|
-| `Order_Item__c` | `Total_Scheme_Benefit__c` (Roll-up SUM from `Order_Item_Scheme__c`) | drives the per-line discount display |
-| `Order__c` | `Line_Scheme_Benefit_Total__c` (Roll-up SUM via `Order_Item__c`) | full order benefit (includes Plum + Order-Value allocations) — Section 4 |
-| `Order__c` | `Scheme_Eval_Status__c` (Picklist: Pending / Computed / Stale / Computing / Error) | drives async re-evaluation |
-| `Order__c` | `Scheme_Eval_Timestamp__c` (DateTime) | last successful eval |
-
----
-
-## 4. Scheme Calculation Engine
-
-### 4.1 `SchemeEvaluationService` (NEW — signatures only)
-
-```apex
-public with sharing class SchemeEvaluationService {
-    public static SchemeApplicationResult evaluateOrder(Order__c hdr, List<Order_Item__c> lines);
-    public static SchemeApplicationResult previewOrder(Order__c hdr, List<Order_Item__c> lines); // no DML
-    public static List<Scheme__c> resolveApplicableSchemes(
-        Id distributorId, Id areaId, String channel, Id outletCategoryId, Set<Id> productIds);
-    @future(callout=false) public static void evaluateOrderAsync(Id orderId);
-}
-
-public class SchemeApplicationResult {
-    public List<Order_Item_Scheme__c> lineApplications;
-    public List<Order_Scheme__c>      headerApplications;
-    public Map<Id, Decimal>           perLineRedistributedPrice;
-    public List<String>               warnings;
-}
-```
-
-### 4.2 Pipeline (deterministic order)
-
-| # | Step | Reads | Writes |
-|---|---|---|---|
-| 1 | **Cascade match** — candidate `Scheme__c` per line via cache | Scheme_Applicability__c, Scheme_Product_Group__c, Scheme_Product_Group_Item__c, Sales_Channel_To_SKU__c | — |
-| 2 | **Prune by SKU gating** | — | — |
-| 3 | **Apply Basic (X+Y):** `price_after = MRP × X ÷ (X+Y)` | Scheme_Slab__c (Basic) | staged line app |
-| 4 | **QPS decomposition (FR-015):** greedy DESC over slabs, e.g. 8 → 5+3; remainder no QPS | Scheme_Slab__c (QPS) | staged line app |
-| 5 | **FOC giveaway** — for each line whose SKU is in the qualifying group, compute `free_qty = ROUND(line_qty × FOC_Ratio_Per_Qualifying_Unit__c, 0)` (or `Free_Qty__c` flat if ratio = 1) for the chosen `FOC_Product__c` / first active member of `FOC_Product_Group__c`; append synthetic `Order_Item__c` line at ₹0.01 (FR-017) | Scheme_Slab__c (FOC), Scheme_Product_Group__c (FOC_Free pool) | new line + junction |
-| 6 | **Order-Value header slab on total GSV** | Scheme_Slab__c (Order_Value) | staged header app |
-| 7 | **Category Plum:** group GSV by category, slab per category | Scheme_Slab__c (Category_Value) | staged header app |
-| 8 | **Persist:** delete-and-reinsert in one txn; stamp `Scheme_Eval_Status__c=Computed` | — | DML |
-
-Mutual exclusion (FR-022 / FR-034) enforced at scheme activation, not in evaluation.
-
-### 4.3 Triggers & Async
-
-- Extend `OrderItemTriggerHandler` → mark `Scheme_Eval_Status__c=Stale`, enqueue `SchemeEvaluationQueueable`.
-- New LWC `orderCaptureScheme` calls `previewOrder` synchronously during edit (no DML).
-- `SchemeEvaluationBatch` for back-dated re-evaluation after end-date extend.
-
-### 4.4 Governor-Limit / Bulk Safety
-
-- Bulkified SOQL; one query per object per evaluation.
-- Platform Cache org partition `SchemeCascadeCache` (5 MB, TTL 30 min), invalidated on Scheme save/activate.
-- Orders > 100 lines routed to Queueable.
-- `Sales_Channel_To_SKU__c` pre-fetched once per order.
-
-### 4.5 Existing Apex / LWC Interaction
-
-- `SchemeLwc.cls` — extend with read-only adapters exposing `Scheme_Slab__c` alongside `Buy_Product__c`.
-- `RunningSchemeController.cls` — extend `getRunningSchemes()` to UNION via cascade match.
-- `schemeDataPage` LWC — add child `appliedSchemeIndicator` LWC.
-- Aura `CreateEditScheme` — wrap inside new wizard, keep available as legacy quick-edit.
-
----
-
-## 5. Lifecycle & Validation Rules
-
-| Rule | Object | Condition (high level) | Enforcement |
-|---|---|---|---|
-| Admin-only DML | Scheme family | `!$Permission.Scheme_Admin` | VR + trigger guard |
-| No delete | Scheme__c | always | `Before Delete` trigger throws |
-| Immutability once live | Scheme__c | `ISCHANGED(field) && Is_Locked__c && field NOT IN {Scheme_End_Date__c, IsActive__c}` | VR |
-| End-date extend only | Scheme__c | new end < old end | VR |
-| Slabs frozen once live | Scheme_Slab__c | parent locked + change | VR + trigger |
-| Applicability frozen once live | Scheme_Applicability__c | same | VR + trigger |
-| Group MRP/grammage uniformity | Scheme_Product_Group_Item__c | applies **only when** parent `Group_Purpose__c = Price_Division`; siblings must match MRP + Net_Weight | trigger |
-| MRP / Net_Weight required | Scheme_Product_Group__c | mandatory **only when** `Group_Purpose__c = Price_Division`; null allowed for `FOC_Qualifier` and `FOC_Free` | VR |
-| SKU in one group per channel per purpose | Scheme_Product_Group_Item__c | unique (Product, parent.Channel, parent.Group_Purpose__c) among active | trigger |
-| FOC scheme group purpose | Scheme__c | when `Primary_Scheme_Type__c = FOC_Giveaway`, the linked `Scheme_Product_Group__c.Group_Purpose__c` must be `FOC_Qualifier` | VR |
-| FOC slab free-product source | Scheme_Slab__c | exactly one of `FOC_Product__c` or `FOC_Product_Group__c` populated; if the group is set, its purpose must be `FOC_Free` | VR |
-| Competing-scheme uniqueness in area | Scheme__c on activate | overlap query per type per area per group | `SchemeLifecycleService.activate()` |
-| Validity sanity | Scheme__c | `End >= Start` | VR |
-| Category_Value needs Category | Scheme_Slab__c | | VR |
-| Applicability completeness | Scheme__c on activate | all 5 levels must have rows | `SchemeLifecycleService.activate()` |
-| Eval concurrency | Order__c | soft lock via `Scheme_Eval_Status__c=Computing` | trigger |
-
-`SchemeLifecycleService` exposes: `activate(Id)`, `extendEndDate(Id, Date)`, `deactivate(Id, String reason)`, `cloneScheme(Id) returns Id`. Each writes a `Scheme_Audit__c` row.
-
----
-
-## 6. UI Screen Designs
-
-### 6.a Scheme Group Builder
-
-*Moved to **Section 1.3 — UI Example — Scheme Group Builder** at the top of this document. The new format uses structured field tables + a numbered interaction list instead of ASCII boxes.*
-
-### 6.b Scheme Definition Wizard
-
-*Steps 1–3 (Basics, Product Group link, Slabs editor) moved to **Section 2.3 — UI Example — Scheme Definition Wizard** in the new structured-table format. Step 4 (Cascading Applicability Picker) will move into **Section 3** in the next iteration. Step 5 (Review & Activate) will move into **Section 5 — Lifecycle / Audit**.*
-
-### 6.c Cascading Applicability Picker (embedded LWC)
-
-Reusable component (`cascadingApplicabilityPicker`) embedded in Step 4 and in clone-and-edit contexts.
-
-```
-+----------------------- Applicability ------------------------+
-| > Channel           [x] All                                  |
-| > Region            [ ] All  [Karnataka x] [Tamil Nadu x] +  |
-| > Area (Territory)  [ ] All  [Bangalore x] [Mysore x] +      |
-| > Distributor       [x] All                                  |
-| > Outlet Category   [ ] All  [GT x] +                        |
-+--------------------------------------------------------------+
-```
-
-### 6.d Active Schemes Console
-
-```
-+---------------------------------------------------------------------------+
-| Active Schemes                                          [ + New Scheme ]  |
-+---------------------------------------------------------------------------+
-| Filters: Status [Active v] Channel [v] Type [v] Area [v] [ Apply ]        |
-+---------------------------------------------------------------------------+
-|[ ]| Name              | Type     | Channel | Valid Through | Status      |
-|---|-------------------|----------|---------|---------------|-------------|
-|[ ]| KA Cake QPS Q1    | QPS      | GT      | 2026-06-30    | Active  ... |
-|[ ]| TN Plum Cat       | CatValue | GT      | 2026-12-31    | Active  ... |
-|[ ]| West Order >50k   | OrderVal | Club    | 2026-09-30    | Active  ... |
-+---------------------------------------------------------------------------+
-| [ Bulk Deactivate ]   [ Clone Selected ]   [ Export CSV ]                 |
-+---------------------------------------------------------------------------+
-```
-
-### 6.e Order Capture — Applied Scheme Indicator (per line)
-
-Click `(i)` to expand inline panel listing each `Order_Item_Scheme__c` row.
-
-```
-+-----------------------------------------------------------------------------+
-| # | SKU      | Qty | Net Rate | Disc/Unit | Line Total | Schemes           |
-|---|----------|-----|----------|-----------|------------|-------------------|
-| 1 | EL-00121 |  8  | 8.00     | 0.94      | 56.50      |  [ (i) 3 schemes ]|
-+-----------------------------------------------------------------------------+
-                              v expand v
-+-----------------------------------------------------------------------------+
-|   Applied Schemes for line 1 (EL-00121 / 8 EA)                              |
-|   1. Basic 1+1 (Marble Cake)         Per-unit Rs 4.00     Free Qty 4        |
-|   2. QPS-2 (5 cases)                  Per-unit Rs 0.94     Benefit Rs 4.70  |
-|   3. Plum Cat (Cake)                   Header allocation   Rs 0.32          |
-|   [ View Calc Trail ]                                                       |
-+-----------------------------------------------------------------------------+
-```
-
-### 6.f Order Capture — Header Scheme Summary (GST-summary style)
-
-```
-+----------------------------- Order Summary -------------------------------+
-| Gross Sales Value            : 1,24,500.00                                |
-| Line Scheme Benefit Total    :    4,820.00  (-)                           |
-| Header Scheme Discounts                                                   |
-|   Order-Value (50k-1L slab)  :    2,490.00  (-)                           |
-|   Plum · Cake category       :      850.00  (-)                           |
-|   Plum · Biscuit category    :      210.00  (-)                           |
-| Net before GST               : 1,16,130.00                                |
-| GST 18%                       :   20,903.40                               |
-| Grand Total                   : 1,37,033.40                               |
-+---------------------------------------------------------------------------+
-| Scheme Eval Status: Computed at 2026-05-24 11:42  [ Re-evaluate ]         |
-+---------------------------------------------------------------------------+
-```
-
-### 6.g Scheme Lifecycle Modal
-
-```
-+-------------------- Scheme Lifecycle: KA Cake QPS Q1 ---------------------+
-| Current Status:  Active   (locked since 2026-06-01)                       |
-|                                                                           |
-|  (o) Extend End Date     New End Date [ 2026-07-31 ]   (>= old)           |
-|  ( ) Deactivate          Reason [______________________________]          |
-|  ( ) Clone to New        New Name [ KA Cake QPS Q1 (copy) ]               |
-|                                                                           |
-|  Disabled (per policy): Edit Slabs · Edit Applicability · Delete          |
-|                                                                           |
-|                                       [ Cancel ]            [ Apply ]     |
-+---------------------------------------------------------------------------+
-```
-
----
-
-## 7. Reporting & Claims
-
-- `Scheme_Credit__c` continues as the canonical claim ledger; new `SchemeCreditPostingBatch` (scheduled nightly) walks the day's `Order_Item_Scheme__c` + `Order_Scheme__c` rows and upserts per (Customer × Scheme). Existing `Credit_Percentage__c` and `Scheme_Eligibility_Percentage__c` on `Scheme__c` honoured unchanged.
-- New report types:
-  1. Schemes vs Achievement by Area — `Scheme_Applicability__c`(Level=Area) × `Order_Item_Scheme__c`.
-  2. Scheme Benefit Roll-up by SKU Group — `Scheme_Product_Group__c` × `Order_Item_Scheme__c.Benefit_Amount__c`.
-  3. Order-Value Discount Audit — `Order_Scheme__c` WHERE Slab_Type=Order_Value.
-  4. Plum Category Slab Achievement — `Order_Scheme__c` WHERE Slab_Type=Category_Value, grouped by Category.
-  5. Scheme Lifecycle Audit — `Scheme_Audit__c`.
-- Existing reports keyed off `Order_Item__c.Scheme__c` keep working; flagged "legacy".
-
----
-
-## 8. Scalability
-
-- **Volume:** ~3k `Scheme__c`/yr, ~15k `Scheme_Slab__c`/yr, ~36k `Scheme_Applicability__c`/yr, ~1.5k `Scheme_Product_Group__c`, ~120k `Scheme_Product_Group_Item__c`. `Order_Item_Scheme__c` at 50k orders/day × 20 lines × 4 schemes = 4M rows/day → MUST archive.
-- **Archival:** `Order_Item_Scheme__c` and `Order_Scheme__c` older than 18 months relocated nightly to BigObjects `Order_Item_Scheme_Archive__b` and `Order_Scheme_Archive__b`.
-- **Indexes:** `Scheme__c.Sales_Channel__c + IsActive__c`, `Scheme_Applicability__c.Value_Area__c`, `.Value_Distributor__c`, `Scheme_Product_Group_Item__c.Product__c`, `Order_Item_Scheme__c.Scheme__c`.
-- **Caching:** Platform Cache org partition `SchemeCascadeCache` (5 MB, TTL 30 min), invalidated on Scheme save/activate.
-- **Async:** Orders > 100 lines routed to `SchemeEvaluationQueueable`. Back-dated re-evaluation via `SchemeEvaluationBatch` (200-record scope).
-- **Selective SOQL:** every cascade query filters `Sales_Channel__c`, `IsActive__c`, `Scheme_End_Date__c >= TODAY`.
-
----
-
-## 9. Security & Permissions
-
-- New permission set `Scheme_Admin` — CRUD + activate on Scheme family. No delete (also trigger-blocked).
-- Sales rep profiles — RO on scheme family; LWC respects FLS via `Schema.SObjectType.X.getDescribe().isAccessible()`.
-- Field Audit Trail on `Scheme__c` (Primary_Scheme_Type__c, Scheme_End_Date__c, IsActive__c, Is_Locked__c) and `Scheme_Slab__c` (benefit fields).
-- Sharing: Scheme family Public RO (writes gated by perm set + VR); junctions controlled by parent; `Scheme_Audit__c` Public RO.
-- All new classes `with sharing`. `SchemeEvaluationService` uses `WITH USER_MODE` for reads, `AS SYSTEM` only for audit-write.
-
----
-
-## 10. Migration Plan
-
-**Phase 0 — Foundations (Week 1–2).** Deploy NEW objects + perm set + Platform Cache partition. No UI, no active triggers. Sandbox smoke tests.
-
-**Phase 1 — Backfill (Week 3–4).**
-1. Derive `Primary_Scheme_Type__c` from existing `Scheme_Type__c`.
-2. For each `Buy_Product__c` → one `Scheme_Slab__c`.
-3. For each `Mapping__c` → infer `Level__c` from populated FK, emit `Scheme_Applicability__c`; default `Apply_All__c=true` on missing levels.
-4. For each historical `Order_Item__c` with `Scheme__c` → snapshot `Order_Item_Scheme__c` (Scheme_Snapshot_Type__c=Legacy).
-
-One-shot `SchemeBackfillBatch` with idempotency markers (External ID on each new row).
-
-**Phase 2 — UI cutover (Week 5–6).** Activate new triggers (eval, lifecycle, validation). Extend `schemeDataPage` to show new wizard. Aura `CreateEditScheme` → read-only.
-
-**Phase 3 — Deprecate (Week 7+).** Mark `Product_Scheme__c` deprecated; hide tab. Plan removal once no dependencies (Apex dependency API scan).
-
-Rollback per phase: feature-flag via `Scheme_Refactor_Settings__c` hierarchical Custom Setting (`Is_Engine_Enabled`, `Is_Lifecycle_Enabled`, `Is_UI_Enabled`).
-
----
-
-## 11. Open Questions for Architect
-
-1. Master-detail vs Lookup on `Order_Item_Scheme__c → Order_Item__c`. Master-detail gives roll-up summaries but locks sharing to parent — acceptable?
-2. BigObject archival cadence — 18mo chosen; does Finance need 7-yr retention for claim reconciliation?
-3. Real-time vs near-real-time evaluation — sync `previewOrder` adds 300–600 ms per edit. Acceptable or debounce + async?
-4. Migrate `Order__c` to standard Salesforce `Order` / `OrderItem` to ride standard pricing?
-5. Should Order-Value & Plum discounts also roll up to `Invoice__c` at conversion?
-6. Mutual exclusion scope: per `Primary_Scheme_Type__c` only, or slab-type granularity?
-7. Concurrent Plum + Order-Value — apply both on raw GSV, or apply Order-Value first then Plum on post-discount GSV?
-8. FOC line as synthetic `Order_Item__c` — need a "synthetic line" boolean to bypass quantity/credit triggers?
-9. Permission set licensing — does `Scheme_Admin` role exist or need a new permission set group?
-10. Backfill quality bar — 99% or 100% reconciled rows before Phase 2 cutover?
-
----
-
-## 12. Verification Plan
-
-### 12.1 Sample-data demos (per xlsx)
-
-| Workbook | Scheme types exercised | Expected artefacts |
-|---|---|---|
-| `KA QPS Slab ... .xlsx` | QPS + Order-Value + Plum | 3 `Scheme_Slab__c` + 1 `Order_Scheme__c` Order-Value + N `Order_Scheme__c` Plum |
-| `KA_Schemes FY26-27.xlsx` | Basic + QPS + FOC | per-line `Order_Item_Scheme__c` seq 1/2 + synthetic FOC line |
-| `TN Schemes.xlsx` | Basic + Category_Value | per-line Basic + header Plum |
-| `West Q1 Schemss.xlsx` | Order-Value only | single `Order_Scheme__c` |
-
-### 12.2 Unit tests (new)
-
-- `SchemeEvaluationService_BasicTest` — X+Y price division across multiple group SKUs.
-- `SchemeEvaluationService_QPSTest` — 8-case → 5+3 decomposition; verify per-unit redistribution.
-- `SchemeEvaluationService_FOCTest` — synthetic line at ₹0.01 + linkage.
-- `SchemeEvaluationService_OrderValueTest` — slab boundary (₹49,999 vs ₹50,000).
-- `SchemeEvaluationService_PlumTest` — per-category bucketing.
-- `SchemeEvaluationService_CascadeTest` — cascade precedence; "all" wins when no specifics.
-- `SchemeLifecycleServiceTest` — activate/extend/deactivate/clone + audit trail.
-- `SchemeValidationTest` — immutability, extend-only, MRP/grammage uniformity, competing uniqueness.
-- `SchemeBackfillBatchTest` — idempotency on rerun.
-
-Target ≥ 90% coverage on new classes (per existing `SchemeLwcTest` baseline).
-
-### 12.3 E2E scenario
-
-Single secondary order with 8 EA of a Basic+QPS-eligible SKU, 12 EA of an FOC-trigger SKU, GSV crossing ₹50k Order-Value slab, Cake category crossing the Plum ₹20k slab. Expected:
-- Line 1: 2 × `Order_Item_Scheme__c` (Basic + QPS-2 from 5+3).
-- Line 2: 1 × `Order_Item_Scheme__c` (FOC qualifier) + new synthetic Line 3 at ₹0.01.
-- Header: 1 Order_Value + 1 Plum-Cake `Order_Scheme__c`.
-- Roll-ups match BRD worked examples within ±₹0.01.
-- 1 `Scheme_Audit__c` row from activation.
-- Re-run after end-date extend: idempotent, no duplicate junctions.
-
-### 12.4 Performance gate
-
-- 200-line order eval p95 ≤ 1.5 s (sync) or queued.
-- 10k-order back-dated re-evaluation ≤ 30 min via Batch.
-- No SOQL > 50 / DML > 150 per `evaluateOrder` invocation; verified via `Limits.getQueries()` in tests.
-
----
-
-## Appendix A — Critical files for implementation (Phase 2 onwards)
-
-- `force-app/main/default/objects/Scheme__c/`
-- `force-app/main/default/objects/Buy_Product__c/`
-- `force-app/main/default/objects/Mapping__c/`
-- `force-app/main/default/objects/Order_Item__c/`
-- `force-app/main/default/classes/SchemeLwc.cls`
-- `force-app/main/default/classes/RunningSchemeController.cls`
-- `force-app/main/default/classes/OrderItemTriggerHandler.cls`
-- `force-app/main/default/lwc/schemeDataPage/`
-
----
-
-*End of document — awaiting Solution Architect review.*
+- **Section 5 — Order Capture & Application** — the order capture LWC, the per-line "applied schemes" expander, the header scheme summary panel, the `Scheme_Eval_Status__c` lifecycle.
+- **Section 6 — Lifecycle** — activate / extend / deactivate / clone flows, Field-Level History audit trail.
+- **Section 7 — Calc Engine Internals** — the `SchemeEvaluationService` Apex class signatures, the cascade-cache key strategy, batch re-evaluation.
+- **Section 8 — Reporting & Claim Posting** — claim-credit ledger updates, BI-friendly summary views.
+- **Section 9 — Scalability & Security** — volume sizing, archival, permission set, sharing.
