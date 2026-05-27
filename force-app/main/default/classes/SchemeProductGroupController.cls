@@ -170,6 +170,15 @@ public with sharing class SchemeProductGroupController {
         return result;
     }
 
+    private static String normalizePurpose(String value) {
+        if (value == null) return '';
+        return value.toLowerCase().replaceAll('[\\s_\\-]', '');
+    }
+
+    private static Boolean isPriceDivision(String value) {
+        return normalizePurpose(value) == 'pricedivision';
+    }
+
     @AuraEnabled
     public static List<ConflictRow> getConflictingProductIds(
         String salesChannel,
@@ -189,8 +198,10 @@ public with sharing class SchemeProductGroupController {
             WHERE Product__c IN :productIds
               AND Scheme_Product_Group__r.Sales_Channel__c = :salesChannel
               AND Scheme_Product_Group__r.Is_Active__c = true
-              AND (excludeGroupId = null OR Scheme_Product_Group__c != :excludeGroupId)
         ]) {
+            if (excludeGroupId != null && item.Scheme_Product_Group__c == excludeGroupId) {
+                continue;
+            }
             conflicts.add(new ConflictRow(
                 item.Product__c,
                 item.Scheme_Product_Group__c,
@@ -223,7 +234,7 @@ public with sharing class SchemeProductGroupController {
             throw new AuraHandledException('Duplicate SKUs are not allowed in the same group.');
         }
 
-        Boolean isPriceDivision = header.groupPurpose == 'Price_Division';
+        Boolean isPriceDivision = isPriceDivision(header.groupPurpose);
         if (isPriceDivision) {
             if (header.mrp == null) {
                 throw new AuraHandledException('MRP is required for Price Division groups.');

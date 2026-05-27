@@ -7,8 +7,9 @@ import loadGroup from '@salesforce/apex/SchemeProductGroupController.loadGroup';
 import getConflictingProductIds from '@salesforce/apex/SchemeProductGroupController.getConflictingProductIds';
 import saveGroup from '@salesforce/apex/SchemeProductGroupController.saveGroup';
 
-const PRICE_DIVISION = 'Price_Division';
-const FOC_QUALIFIER  = 'FOC_Qualifier';
+const normalizePurpose = v => (v || '').toString().toLowerCase().replace(/[\s_-]/g, '');
+const isPriceDivisionValue = v => normalizePurpose(v) === 'pricedivision';
+const isFocQualifierValue = v => normalizePurpose(v) === 'focqualifier';
 
 export default class SchemeProductGroupBuilder extends NavigationMixin(LightningElement) {
     @api recordId;
@@ -114,11 +115,11 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
     }
 
     get isPriceDivision() {
-        return this.header.groupPurpose === PRICE_DIVISION;
+        return isPriceDivisionValue(this.header.groupPurpose);
     }
 
     get isFocQualifier() {
-        return this.header.groupPurpose === FOC_QUALIFIER;
+        return isFocQualifierValue(this.header.groupPurpose);
     }
 
     get hasChannel() {
@@ -273,7 +274,7 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
                 this.refreshSkus();
             }
         }
-        if (field === 'groupPurpose' && value !== PRICE_DIVISION) {
+        if (field === 'groupPurpose' && !isPriceDivisionValue(value)) {
             this.header = { ...this.header, mrp: null, netWeight: null };
         }
     }
