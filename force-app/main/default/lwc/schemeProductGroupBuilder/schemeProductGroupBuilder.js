@@ -35,6 +35,7 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
     @track skuRows = [];
     @track selectedSkuIds = new Set();
     @track conflictMap = {};
+    @track viewMode = 'all';
 
     salesChannelOptions = [];
     groupPurposeOptions = [];
@@ -157,7 +158,9 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
     get rowsForDisplay() {
         const f = this.filters;
         const term = (f.searchTerm || '').trim().toLowerCase();
+        const selectedOnly = this.viewMode === 'selected';
         const filtered = this.skuRows.filter(r => {
+            if (selectedOnly && !this.selectedSkuIds.has(r.id)) return false;
             if (f.category && r.category !== f.category) return false;
             if (f.productGroup && r.productGroup !== f.productGroup) return false;
             if (f.productSubGroup && r.productSubGroup !== f.productSubGroup) return false;
@@ -282,6 +285,21 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
         this._searchDebounce = window.setTimeout(() => {
             this.filters = { ...this.filters, searchTerm: value };
         }, 250);
+    }
+
+    get allViewClass() {
+        return this.viewMode === 'all' ? 'view-btn view-btn--active' : 'view-btn';
+    }
+
+    get selectedViewClass() {
+        return this.viewMode === 'selected' ? 'view-btn view-btn--active' : 'view-btn';
+    }
+
+    handleViewToggle(event) {
+        const next = event.target.dataset.view;
+        if (next && next !== this.viewMode) {
+            this.viewMode = next;
+        }
     }
 
     handleClearFilters() {
