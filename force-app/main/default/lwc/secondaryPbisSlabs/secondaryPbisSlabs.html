@@ -109,47 +109,55 @@
                     </button>
                     <h2 class="slds-modal__title slds-hyphenate">Bulk Add Incentive Slabs</h2>
                     <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
-                        Pick criterion / channel / compare once, then add as many tier bands as you need.
+                        Add one row per slab. Use Clone to duplicate a row and edit only what differs.
                     </p>
                 </header>
                 <div class="slds-modal__content slds-p-around_medium">
-                    <div class="slds-grid slds-gutters slds-wrap">
-                        <div class="slds-col slds-size_1-of-2">
-                            <lightning-combobox label="Target Criteria" value={bulkHeader.Target_Criteria__c}
-                                options={formCriteriaOptions} onchange={handleBulkCriteriaChange}
-                                required class="slds-m-bottom_x-small"></lightning-combobox>
-                            <lightning-combobox label="Sales Channel (blank = all)"
-                                data-field="Sales_Channel__c" value={bulkHeader.Sales_Channel__c}
-                                options={channelOptions} onchange={handleBulkHeaderField}
-                                class="slds-m-bottom_x-small"></lightning-combobox>
-                        </div>
-                        <div class="slds-col slds-size_1-of-2">
-                            <lightning-combobox label="Compare On" data-field="Compare_On__c"
-                                value={bulkHeader.Compare_On__c} options={compareOptions}
-                                onchange={handleBulkHeaderField} required
-                                class="slds-m-bottom_x-small"></lightning-combobox>
-                            <template if:true={isBulkFocusPack}>
-                                <lightning-combobox label="Focus Pack (blank = all packs)"
-                                    data-field="Focused_Pack__c" value={bulkHeader.Focused_Pack__c}
-                                    options={packOptions} onchange={handleBulkHeaderField}></lightning-combobox>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div class="slds-m-top_medium">
-                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                    <div class="slds-scrollable_x">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer" style="min-width:1100px;">
                             <thead>
                                 <tr class="slds-text-title_caps">
-                                    <th>From (inclusive)</th>
-                                    <th>To (blank = unbounded)</th>
-                                    <th>Incentive Amount</th>
+                                    <th style="width:18%;">Target Criteria *</th>
+                                    <th style="width:12%;">Channel</th>
+                                    <th style="width:14%;">Focus Pack</th>
+                                    <th style="width:11%;">Compare On *</th>
+                                    <th style="width:9%;">From *</th>
+                                    <th style="width:9%;">To</th>
+                                    <th style="width:11%;">Amount *</th>
                                     <th style="width:5rem;">Active</th>
-                                    <th style="width:5rem;"></th>
+                                    <th style="width:7rem;"></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <template for:each={bulkRows} for:item="row" for:index="i">
+                                <template for:each={bulkRows} for:item="row">
                                     <tr key={row.id}>
+                                        <td>
+                                            <lightning-combobox variant="label-hidden"
+                                                data-id={row.id} value={row.Target_Criteria__c}
+                                                options={formCriteriaOptions}
+                                                onchange={handleBulkRowCriteriaChange}></lightning-combobox>
+                                        </td>
+                                        <td>
+                                            <lightning-combobox variant="label-hidden"
+                                                data-id={row.id} data-field="Sales_Channel__c"
+                                                value={row.Sales_Channel__c}
+                                                options={rowChannelOptions}
+                                                onchange={handleBulkRowField}></lightning-combobox>
+                                        </td>
+                                        <td>
+                                            <lightning-combobox variant="label-hidden"
+                                                data-id={row.id} data-field="Focused_Pack__c"
+                                                value={row.Focused_Pack__c}
+                                                options={rowPackOptions}
+                                                disabled={row.packDisabled}
+                                                onchange={handleBulkRowField}></lightning-combobox>
+                                        </td>
+                                        <td>
+                                            <lightning-combobox variant="label-hidden"
+                                                data-id={row.id} data-field="Compare_On__c"
+                                                value={row.Compare_On__c} options={compareOptions}
+                                                onchange={handleBulkRowField}></lightning-combobox>
+                                        </td>
                                         <td>
                                             <lightning-input type="number" variant="label-hidden" step="0.01"
                                                 data-id={row.id} data-field="Achievement_From__c"
@@ -175,8 +183,15 @@
                                                 onchange={handleBulkRowField}></lightning-input>
                                         </td>
                                         <td class="slds-text-align_center">
+                                            <lightning-button-icon icon-name="utility:copy"
+                                                alternative-text="Clone row" variant="bare"
+                                                title="Clone row"
+                                                data-id={row.id}
+                                                onclick={handleBulkCloneRow}
+                                                class="slds-m-right_x-small"></lightning-button-icon>
                                             <lightning-button-icon icon-name="utility:delete"
                                                 alternative-text="Remove row" variant="bare"
+                                                title="Remove row"
                                                 data-id={row.id}
                                                 onclick={handleBulkRemoveRow}></lightning-button-icon>
                                         </td>
@@ -184,10 +199,10 @@
                                 </template>
                             </tbody>
                         </table>
-                        <div class="slds-m-top_x-small">
-                            <lightning-button label="Add Row" icon-name="utility:add"
-                                onclick={handleBulkAddRow}></lightning-button>
-                        </div>
+                    </div>
+                    <div class="slds-m-top_x-small">
+                        <lightning-button label="Add Row" icon-name="utility:add"
+                            onclick={handleBulkAddRow}></lightning-button>
                     </div>
 
                     <div class="slds-m-top_medium slds-text-align_right">

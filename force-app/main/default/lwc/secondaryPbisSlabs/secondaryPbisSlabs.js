@@ -66,10 +66,6 @@ export default class SecondaryPbisSlabs extends LightningElement {
 
     // bulk-add modal state
     @track showBulk = false;
-    @track bulkHeader = {
-        Target_Criteria__c: '', Sales_Channel__c: '',
-        Focused_Pack__c: '', Compare_On__c: 'Percent'
-    };
     @track bulkRows = [];
     bulkRowSeq = 0;
 
@@ -86,9 +82,14 @@ export default class SecondaryPbisSlabs extends LightningElement {
     get selectedOperator() { return this.operatorById[this.form.Target_Criteria__c] || ''; }
     get isFocusPackCriteria() { return this.selectedOperator.indexOf('FOCUS_PACK') === 0; }
 
-    get bulkOperator() { return this.operatorById[this.bulkHeader.Target_Criteria__c] || ''; }
-    get isBulkFocusPack() { return this.bulkOperator.indexOf('FOCUS_PACK') === 0; }
     get hasBulkRows() { return this.bulkRows && this.bulkRows.length > 0; }
+    // "blank = all" option prepended for the per-row pickers
+    get rowChannelOptions() {
+        return [{ label: '— All Channels —', value: '' }, ...this.channelOptions];
+    }
+    get rowPackOptions() {
+        return [{ label: '— All Packs —', value: '' }, ...this.packOptions];
+    }
 
     loadCriteria() {
         getCriteriaOptions()
@@ -150,40 +151,24 @@ export default class SecondaryPbisSlabs extends LightningElement {
 
     // ===== Bulk Add =====
     handleBulkOpen() {
-        this.bulkHeader = {
-            Target_Criteria__c: '', Sales_Channel__c: '',
-            Focused_Pack__c: '', Compare_On__c: 'Percent'
-        };
         this.bulkRows = [this.makeBulkRow()];
         this.showBulk = true;
     }
 
     handleBulkClose() { this.showBulk = false; }
 
-    makeBulkRow() {
+    makeBulkRow(seed) {
         this.bulkRowSeq += 1;
-        return {
+        const base = {
             id: this.bulkRowSeq,
-            Achievement_From__c: null,
-            Achievement_To__c: null,
-            Incentive_Amount__c: null,
-            Active__c: true
+            Target_Criteria__c: '', Sales_Channel__c: '', Focused_Pack__c: '',
+            Compare_On__c: 'Percent',
+            Achievement_From__c: null, Achievement_To__c: null,
+            Incentive_Amount__c: null, Active__c: true,
+            packDisabled: true
         };
-    }
-
-    handleBulkHeaderField(e) {
-        const field = e.target.dataset.field;
-        const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-        this.bulkHeader = { ...this.bulkHeader, [field]: val };
-    }
-
-    handleBulkCriteriaChange(e) {
-        const val = e.detail.value;
-        const next = { ...this.bulkHeader, Target_Criteria__c: val };
-        if ((this.operatorById[val] || '').indexOf('FOCUS_PACK') !== 0) {
-            next.Focused_Pack__c = '';
-        }
-        this.bulkHeader = next;
+        if (!seed) return base;
+        return { ...base, ...seed, id: this.bulkRowSeq };
     }
 
     handleBulkRowField(e) {
@@ -193,8 +178,44 @@ export default class SecondaryPbisSlabs extends LightningElement {
         this.bulkRows = this.bulkRows.map(r => r.id === rowId ? { ...r, [field]: val } : r);
     }
 
+    handleBulkRowCriteriaChange(e) {
+        const rowId = Number(e.target.dataset.id);
+        const val = e.detail.value;
+        const isFP = (this.operatorById[val] || '').indexOf('FOCUS_PACK') === 0;
+        this.bulkRows = this.bulkRows.map(r => {
+            if (r.id !== rowId) return r;
+            return {
+                ...r,
+                Target_Criteria__c: val,
+                Focused_Pack__c: isFP ? r.Focused_Pack__c : '',
+                packDisabled: !isFP
+            };
+        });
+    }
+
     handleBulkAddRow() {
         this.bulkRows = [...this.bulkRows, this.makeBulkRow()];
+    }
+
+    handleBulkCloneRow(e) {
+        const rowId = Number(e.currentTarget.dataset.id);
+        const idx = this.bulkRows.findIndex(r => r.id === rowId);
+        if (idx < 0) return;
+        const src = this.bulkRows[idx];
+        const copy = this.makeBulkRow({
+            Target_Criteria__c: src.Target_Criteria__c,
+            Sales_Channel__c: src.Sales_Channel__c,
+            Focused_Pack__c: src.Focused_Pack__c,
+            Compare_On__c: src.Compare_On__c,
+            Achievement_From__c: src.Achievement_From__c,
+            Achievement_To__c: src.Achievement_To__c,
+            Incentive_Amount__c: src.Incentive_Amount__c,
+            Active__c: src.Active__c,
+            packDisabled: src.packDisabled
+        });
+        const next = [...this.bulkRows];
+        next.splice(idx + 1, 0, copy);
+        this.bulkRows = next;
     }
 
     handleBulkRemoveRow(e) {
@@ -203,26 +224,27 @@ export default class SecondaryPbisSlabs extends LightningElement {
     }
 
     handleBulkSave() {
-        const h = this.bulkHeader;
-        if (!h.Target_Criteria__c) { this.toast('Validation', 'Pick a Target Criteria.', 'error'); return; }
-        if (!h.Compare_On__c) { this.toast('Validation', 'Pick Compare On.', 'error'); return; }
         if (!this.bulkRows.length) { this.toast('Validation', 'Add at least one row.', 'error'); return; }
 
         const recs = [];
         for (let i = 0; i < this.bulkRows.length; i++) {
             const r = this.bulkRows[i];
+            const rowLabel = `Row ${i + 1}`;
+            if (!r.Target_Criteria__c) { this.toast('Validation', `${rowLabel}: pick a Target Criteria.`, 'error'); return; }
+            if (!r.Compare_On__c) { this.toast('Validation', `${rowLabel}: pick Compare On.`, 'error'); return; }
             if (r.Achievement_From__c === null || r.Achievement_From__c === '') {
-                this.toast('Validation', `Row ${i + 1}: set Achievement From.`, 'error'); return;
+                this.toast('Validation', `${rowLabel}: set Achievement From.`, 'error'); return;
             }
             if (r.Incentive_Amount__c === null || r.Incentive_Amount__c === '') {
-                this.toast('Validation', `Row ${i + 1}: set Incentive Amount.`, 'error'); return;
+                this.toast('Validation', `${rowLabel}: set Incentive Amount.`, 'error'); return;
             }
+            const isFP = (this.operatorById[r.Target_Criteria__c] || '').indexOf('FOCUS_PACK') === 0;
             recs.push({
                 sobjectType: 'Incentive_Slab__c',
-                Target_Criteria__c: h.Target_Criteria__c,
-                Sales_Channel__c: h.Sales_Channel__c || null,
-                Focused_Pack__c: this.isBulkFocusPack ? (h.Focused_Pack__c || null) : null,
-                Compare_On__c: h.Compare_On__c,
+                Target_Criteria__c: r.Target_Criteria__c,
+                Sales_Channel__c: r.Sales_Channel__c || null,
+                Focused_Pack__c: isFP ? (r.Focused_Pack__c || null) : null,
+                Compare_On__c: r.Compare_On__c,
                 Achievement_From__c: r.Achievement_From__c,
                 Achievement_To__c: (r.Achievement_To__c === '' ? null : r.Achievement_To__c),
                 Incentive_Amount__c: r.Incentive_Amount__c,
