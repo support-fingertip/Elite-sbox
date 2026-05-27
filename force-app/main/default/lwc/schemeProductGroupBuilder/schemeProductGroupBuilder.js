@@ -18,8 +18,6 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
         groupLabel: '',
         salesChannel: '',
         groupPurpose: '',
-        mrp: null,
-        netWeight: null,
         description: '',
         isActive: true
     };
@@ -85,8 +83,6 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
                 groupLabel:   data.header.groupLabel   || '',
                 salesChannel: data.header.salesChannel || '',
                 groupPurpose: data.header.groupPurpose || '',
-                mrp:          data.header.mrp,
-                netWeight:    data.header.netWeight,
                 description:  data.header.description  || '',
                 isActive:     data.header.isActive !== false
             };
@@ -229,13 +225,12 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
             if (weights.size > 1) {
                 return { color: 'red', message: 'Mixed Net Weight — group not allowed.' };
             }
-            if (this.header.mrp != null && mrps.size === 1 && [...mrps][0] !== Number(this.header.mrp)) {
-                return { color: 'red', message: 'Selected SKUs MRP does not match the header MRP.' };
-            }
-            if (this.header.netWeight != null && weights.size === 1 && [...weights][0] !== Number(this.header.netWeight)) {
-                return { color: 'red', message: 'Selected SKUs Net Weight does not match the header Net Weight.' };
-            }
-            return { color: 'green', message: 'All members aligned — MRP and Net Weight uniform.' };
+            const mrp = [...mrps][0];
+            const wt  = [...weights][0];
+            return {
+                color: 'green',
+                message: `All members aligned — MRP ${mrp}, Net Weight ${wt}.`
+            };
         }
         return { color: 'info', message: 'Mixed MRP / Weight allowed for FOC.' };
     }
@@ -254,16 +249,12 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
         if (!this.header.salesChannel) return true;
         if (!this.header.groupPurpose) return true;
         if (this.selectedSkuIds.size === 0) return true;
-        if (this.isPriceDivision && (this.header.mrp == null || this.header.netWeight == null)) return true;
         return this.validationState.color === 'red';
     }
 
     handleHeaderChange(event) {
         const field = event.target.dataset.field;
-        let value = event.detail.value;
-        if ((field === 'mrp' || field === 'netWeight') && value !== '' && value != null) {
-            value = Number(value);
-        }
+        const value = event.detail.value;
         this.header = { ...this.header, [field]: value };
 
         if (field === 'salesChannel') {
@@ -273,9 +264,6 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
             if (value) {
                 this.refreshSkus();
             }
-        }
-        if (field === 'groupPurpose' && !isPriceDivisionValue(value)) {
-            this.header = { ...this.header, mrp: null, netWeight: null };
         }
     }
 
@@ -396,8 +384,6 @@ export default class SchemeProductGroupBuilder extends NavigationMixin(Lightning
                     groupLabel:   this.header.groupLabel,
                     salesChannel: this.header.salesChannel,
                     groupPurpose: this.header.groupPurpose,
-                    mrp:          this.isPriceDivision ? this.header.mrp : null,
-                    netWeight:    this.isPriceDivision ? this.header.netWeight : null,
                     description:  this.header.description,
                     isActive:     this.header.isActive
                 },

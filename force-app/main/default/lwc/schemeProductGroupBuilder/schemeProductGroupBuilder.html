@@ -45,32 +45,6 @@
                         onchange={handleHeaderChange}>
                     </lightning-combobox>
                 </div>
-                <template if:true={isPriceDivision}>
-                    <div class="top-bar__field">
-                        <lightning-input
-                            type="number"
-                            label="MRP"
-                            data-field="mrp"
-                            value={header.mrp}
-                            required
-                            step="0.01"
-                            min="0"
-                            onchange={handleHeaderChange}>
-                        </lightning-input>
-                    </div>
-                    <div class="top-bar__field">
-                        <lightning-input
-                            type="number"
-                            label="Net Weight (g)"
-                            data-field="netWeight"
-                            value={header.netWeight}
-                            required
-                            step="0.01"
-                            min="0"
-                            onchange={handleHeaderChange}>
-                        </lightning-input>
-                    </div>
-                </template>
             </div>
 
             <div class="top-bar__divider"></div>

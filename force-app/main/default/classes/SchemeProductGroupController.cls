@@ -235,31 +235,27 @@ public with sharing class SchemeProductGroupController {
         }
 
         Boolean isPriceDivision = isPriceDivision(header.groupPurpose);
+        Decimal derivedMrp = null;
+        Decimal derivedNetWeight = null;
         if (isPriceDivision) {
-            if (header.mrp == null) {
-                throw new AuraHandledException('MRP is required for Price Division groups.');
-            }
-            if (header.netWeight == null) {
-                throw new AuraHandledException('Net Weight is required for Price Division groups.');
-            }
+            Set<Decimal> mrps = new Set<Decimal>();
+            Set<Decimal> weights = new Set<Decimal>();
             for (Product__c p : [
                 SELECT Id, Name, MRP__c, Net_Weight__c
                 FROM Product__c
                 WHERE Id IN :uniqueProductIds
             ]) {
-                if (p.MRP__c == null || p.MRP__c != header.mrp) {
-                    throw new AuraHandledException(
-                        'Mixed MRP not allowed for Price Division. ' + p.Name +
-                        ' has MRP ' + p.MRP__c + ' expected ' + header.mrp + '.'
-                    );
-                }
-                if (p.Net_Weight__c == null || p.Net_Weight__c != header.netWeight) {
-                    throw new AuraHandledException(
-                        'Mixed Net Weight not allowed for Price Division. ' + p.Name +
-                        ' has Net Weight ' + p.Net_Weight__c + ' expected ' + header.netWeight + '.'
-                    );
-                }
+                mrps.add(p.MRP__c);
+                weights.add(p.Net_Weight__c);
             }
+            if (mrps.size() > 1) {
+                throw new AuraHandledException('Mixed MRP not allowed for Price Division.');
+            }
+            if (weights.size() > 1) {
+                throw new AuraHandledException('Mixed Net Weight not allowed for Price Division.');
+            }
+            derivedMrp = mrps.isEmpty() ? null : new List<Decimal>(mrps)[0];
+            derivedNetWeight = weights.isEmpty() ? null : new List<Decimal>(weights)[0];
         }
 
         List<ConflictRow> conflicts = getConflictingProductIds(
@@ -287,8 +283,8 @@ public with sharing class SchemeProductGroupController {
         grp.Name             = header.groupLabel.trim();
         grp.Sales_Channel__c = header.salesChannel;
         grp.Group_Purpose__c = header.groupPurpose;
-        grp.MRP__c           = isPriceDivision ? header.mrp : null;
-        grp.Net_Weight__c    = isPriceDivision ? header.netWeight : null;
+        grp.MRP__c           = derivedMrp;
+        grp.Net_Weight__c    = derivedNetWeight;
         grp.Description__c   = header.description;
         grp.Is_Active__c     = header.isActive == null ? true : header.isActive;
         upsert grp;
