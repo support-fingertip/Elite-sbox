@@ -138,7 +138,7 @@ public with sharing class SchemeProductGroupController {
             return null;
         }
         Scheme_Product_Group__c grp = [
-            SELECT Id, Name, Group_Label__c, Sales_Channel__c, Group_Purpose__c,
+            SELECT Id, Name, Sales_Channel__c, Group_Purpose__c,
                    MRP__c, Net_Weight__c, Description__c, Is_Active__c
             FROM Scheme_Product_Group__c
             WHERE Id = :groupId
@@ -149,7 +149,7 @@ public with sharing class SchemeProductGroupController {
         result.id = grp.Id;
         result.name = grp.Name;
         result.header = new GroupHeader();
-        result.header.groupLabel   = grp.Group_Label__c;
+        result.header.groupLabel   = grp.Name;
         result.header.salesChannel = grp.Sales_Channel__c;
         result.header.groupPurpose = grp.Group_Purpose__c;
         result.header.mrp          = grp.MRP__c;
@@ -206,7 +206,7 @@ public with sharing class SchemeProductGroupController {
             throw new AuraHandledException('Group data is missing.');
         }
         if (String.isBlank(header.groupLabel)) {
-            throw new AuraHandledException('Group Label is required.');
+            throw new AuraHandledException('Name is required.');
         }
         if (String.isBlank(header.salesChannel)) {
             throw new AuraHandledException('Sales Channel is required.');
@@ -273,7 +273,7 @@ public with sharing class SchemeProductGroupController {
         } else {
             grp = new Scheme_Product_Group__c(Id = existingId);
         }
-        grp.Group_Label__c   = header.groupLabel.trim();
+        grp.Name             = header.groupLabel.trim();
         grp.Sales_Channel__c = header.salesChannel;
         grp.Group_Purpose__c = header.groupPurpose;
         grp.MRP__c           = isPriceDivision ? header.mrp : null;
