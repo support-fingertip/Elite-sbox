@@ -161,14 +161,14 @@ public with sharing class SchemeDefinitionController {
         if (resolvedPurpose == null) {
             return rows;
         }
-        String like = '%' + String.escapeSingleQuotes((searchTerm == null ? '' : searchTerm.trim())) + '%';
+        String searchPattern = '%' + String.escapeSingleQuotes((searchTerm == null ? '' : searchTerm.trim())) + '%';
         for (Scheme_Product_Group__c g : [
             SELECT Id, Name, Sales_Channel__c, Group_Purpose__c, Is_Active__c
             FROM Scheme_Product_Group__c
             WHERE Sales_Channel__c = :salesChannel
               AND Group_Purpose__c = :resolvedPurpose
               AND Is_Active__c = true
-              AND Name LIKE :like
+              AND Name LIKE :searchPattern
             ORDER BY Name
             LIMIT 50
         ]) {
