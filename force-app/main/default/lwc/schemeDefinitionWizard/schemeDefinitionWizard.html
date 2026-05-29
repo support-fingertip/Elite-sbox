@@ -481,6 +481,32 @@
                     <lightning-spinner alternative-text="Loading…" size="small"></lightning-spinner>
                 </template>
 
+                <!-- Outlet Categories -->
+                <div class="applicability-level">
+                    <div class="applicability-level__head">
+                        <h3>Outlet Categories</h3>
+                        <lightning-input
+                            type="toggle"
+                            label="Apply to all Outlet Categories"
+                            message-toggle-active="All"
+                            message-toggle-inactive="Specific"
+                            checked={outletCategoriesApplyToAll}
+                            onchange={handleOutletCategoriesApplyToAll}>
+                        </lightning-input>
+                    </div>
+                    <template if:false={outletCategoriesApplyToAll}>
+                        <lightning-dual-listbox
+                            label="Pick Outlet Categories"
+                            variant="label-hidden"
+                            source-label="Available"
+                            selected-label="Selected"
+                            options={outletCategoryOptions}
+                            value={outletCategoriesValues}
+                            onchange={handleOutletCategoriesChange}>
+                        </lightning-dual-listbox>
+                    </template>
+                </div>
+
                 <!-- Regions -->
                 <div class="applicability-level">
                     <div class="applicability-level__head">
@@ -555,32 +581,6 @@
                             options={territoryOptions}
                             value={territoriesValues}
                             onchange={handleTerritoriesChange}>
-                        </lightning-dual-listbox>
-                    </template>
-                </div>
-
-                <!-- Outlet Categories -->
-                <div class="applicability-level">
-                    <div class="applicability-level__head">
-                        <h3>Outlet Categories</h3>
-                        <lightning-input
-                            type="toggle"
-                            label="Apply to all Outlet Categories"
-                            message-toggle-active="All"
-                            message-toggle-inactive="Specific"
-                            checked={outletCategoriesApplyToAll}
-                            onchange={handleOutletCategoriesApplyToAll}>
-                        </lightning-input>
-                    </div>
-                    <template if:false={outletCategoriesApplyToAll}>
-                        <lightning-dual-listbox
-                            label="Pick Outlet Categories"
-                            variant="label-hidden"
-                            source-label="Available"
-                            selected-label="Selected"
-                            options={outletCategoryOptions}
-                            value={outletCategoriesValues}
-                            onchange={handleOutletCategoriesChange}>
                         </lightning-dual-listbox>
                     </template>
                 </div>

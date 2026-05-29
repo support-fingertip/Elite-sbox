@@ -701,11 +701,12 @@ export default class SchemeDefinitionWizard extends LightningElement {
         const terrSet = new Set((this.applicabilityOptions.territories || []).map(t => t.id));
         const ocSet   = new Set(this.applicabilityOptions.outletCategories || []);
         const a = this.applicability;
-        a.regions.values          = (a.regions.values || []).filter(v => regSet.has(v));
-        a.areas.values            = (a.areas.values || []).filter(v => areaSet.has(v));
-        a.territories.values      = (a.territories.values || []).filter(v => terrSet.has(v));
-        a.outletCategories.values = (a.outletCategories.values || []).filter(v => ocSet.has(v));
-        this.applicability = { ...a };
+        this.applicability = {
+            regions:          { applyToAll: a.regions.applyToAll,          values: (a.regions.values          || []).filter(v => regSet.has(v))  },
+            areas:            { applyToAll: a.areas.applyToAll,            values: (a.areas.values            || []).filter(v => areaSet.has(v)) },
+            territories:      { applyToAll: a.territories.applyToAll,      values: (a.territories.values      || []).filter(v => terrSet.has(v)) },
+            outletCategories: { applyToAll: a.outletCategories.applyToAll, values: (a.outletCategories.values || []).filter(v => ocSet.has(v))   }
+        };
     }
 
     handleRegionsApplyToAll(event)          { this.toggleApplyToAll('regions', event); }
