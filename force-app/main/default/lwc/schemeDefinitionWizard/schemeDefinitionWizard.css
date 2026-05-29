@@ -342,6 +342,24 @@
 .chip--info  { background: var(--info-light);    color: var(--info); }
 .chip--red   { background: var(--danger-light);  color: var(--danger); }
 
+.applicability-level {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+.applicability-level:last-child { border-bottom: none; }
+.applicability-level__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+.applicability-level__head h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
 @media (max-width: 1024px) {
     .wizard-wrapper { padding: 0.5rem; }
     .top-bar { flex-wrap: wrap; }

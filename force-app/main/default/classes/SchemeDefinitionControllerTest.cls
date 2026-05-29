@@ -431,6 +431,182 @@ private class SchemeDefinitionControllerTest {
         System.assert(threw, 'expected past start date rejection on update');
     }
 
+    private static Area__c makeTerritory(String name, String region, String area) {
+        Area__c t = new Area__c(
+            Name = name,
+            Region__c = region,
+            Area__c = area,
+            Sales_Channel__c = CHANNEL
+        );
+        insert t;
+        return t;
+    }
+
+    private static SchemeDefinitionController.LevelStateDto level(Boolean applyToAll, List<String> values) {
+        SchemeDefinitionController.LevelStateDto st = new SchemeDefinitionController.LevelStateDto();
+        st.applyToAll = applyToAll;
+        st.values = values == null ? new List<String>() : values;
+        return st;
+    }
+
+    private static SchemeDefinitionController.ApplicabilityDto allApplyToAll() {
+        SchemeDefinitionController.ApplicabilityDto a = new SchemeDefinitionController.ApplicabilityDto();
+        a.regions          = level(true, null);
+        a.areas            = level(true, null);
+        a.territories      = level(true, null);
+        a.outletCategories = level(true, null);
+        return a;
+    }
+
+    @isTest
+    static void saveSchemeWithApplicability_allApplyToAll_writesBooleansNoJunction() {
+        Scheme_Product_Group__c g = makeGroup('Appl All', 'PriceDivision');
+        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
+        SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
+
+        Test.startTest();
+        Id id = SchemeDefinitionController.saveSchemeWithApplicability(
+            m, new List<SchemeDefinitionController.SlabDto>{ s }, allApplyToAll(), null);
+        Test.stopTest();
+
+        Scheme__c sv = [SELECT Apply_to_All_Regions__c, Apply_to_All_Areas__c,
+                               Apply_to_All_Territories__c, Apply_to_All_Outlet_Categories__c,
+                               Applicability_Summary__c
+                        FROM Scheme__c WHERE Id = :id];
+        System.assert(sv.Apply_to_All_Regions__c);
+        System.assert(sv.Apply_to_All_Areas__c);
+        System.assert(sv.Apply_to_All_Territories__c);
+        System.assert(sv.Apply_to_All_Outlet_Categories__c);
+        Integer rows = [SELECT COUNT() FROM Scheme_Applicability__c WHERE Scheme__c = :id];
+        System.assertEquals(0, rows, 'no junction rows when all levels Apply to All');
+        System.assert(sv.Applicability_Summary__c.contains('Regions: All'));
+    }
+
+    @isTest
+    static void saveSchemeWithApplicability_specificValues_writesJunctionRows() {
+        Scheme_Product_Group__c g = makeGroup('Appl Specific', 'PriceDivision');
+        Area__c t1 = makeTerritory('T-KA-1', 'KA', 'North');
+        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
+        SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
+
+        SchemeDefinitionController.ApplicabilityDto a = new SchemeDefinitionController.ApplicabilityDto();
+        a.regions          = level(false, new List<String>{ 'KA' });
+        a.areas            = level(false, new List<String>{ 'North' });
+        a.territories      = level(false, new List<String>{ String.valueOf(t1.Id) });
+        a.outletCategories = level(true, null);
+
+        Test.startTest();
+        Id id = SchemeDefinitionController.saveSchemeWithApplicability(
+            m, new List<SchemeDefinitionController.SlabDto>{ s }, a, null);
+        Test.stopTest();
+
+        Map<String, Integer> byLevel = new Map<String, Integer>();
+        for (Scheme_Applicability__c r : [
+                SELECT Level__c FROM Scheme_Applicability__c WHERE Scheme__c = :id]) {
+            byLevel.put(r.Level__c, (byLevel.containsKey(r.Level__c) ? byLevel.get(r.Level__c) : 0) + 1);
+        }
+        System.assertEquals(1, byLevel.get('Region'));
+        System.assertEquals(1, byLevel.get('Area'));
+        System.assertEquals(1, byLevel.get('Territory'));
+        System.assert(!byLevel.containsKey('Outlet Category'),
+            'Outlet Category should have no junction when Apply to All');
+    }
+
+    @isTest
+    static void saveSchemeWithApplicability_rejectsEmptyLevelWithoutApplyToAll() {
+        Scheme_Product_Group__c g = makeGroup('Appl Empty', 'PriceDivision');
+        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
+        SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
+
+        SchemeDefinitionController.ApplicabilityDto a = allApplyToAll();
+        a.regions = level(false, new List<String>());
+
+        Boolean threw = false;
+        Test.startTest();
+        try {
+            SchemeDefinitionController.saveSchemeWithApplicability(
+                m, new List<SchemeDefinitionController.SlabDto>{ s }, a, null);
+        } catch (AuraHandledException ex) { threw = true; }
+        Test.stopTest();
+        System.assert(threw, 'expected empty level rejection');
+    }
+
+    @isTest
+    static void saveSchemeWithApplicability_updateReplacesJunctionRows() {
+        Scheme_Product_Group__c g = makeGroup('Appl Update', 'PriceDivision');
+        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
+        SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
+
+        SchemeDefinitionController.ApplicabilityDto a1 = allApplyToAll();
+        a1.regions = level(false, new List<String>{ 'KA', 'TN' });
+        Id id = SchemeDefinitionController.saveSchemeWithApplicability(
+            m, new List<SchemeDefinitionController.SlabDto>{ s }, a1, null);
+        System.assertEquals(2,
+            [SELECT COUNT() FROM Scheme_Applicability__c WHERE Scheme__c = :id AND Level__c = 'Region']);
+
+        SchemeDefinitionController.ApplicabilityDto a2 = allApplyToAll();
+        a2.regions = level(false, new List<String>{ 'KA' });
+
+        Test.startTest();
+        SchemeDefinitionController.saveSchemeWithApplicability(
+            masterFor(TYPE_QPS, g.Id), new List<SchemeDefinitionController.SlabDto>{ s }, a2, id);
+        Test.stopTest();
+
+        List<Scheme_Applicability__c> rows = [
+            SELECT Level__c, Value_Text__c FROM Scheme_Applicability__c WHERE Scheme__c = :id];
+        System.assertEquals(1, rows.size());
+        System.assertEquals('Region', rows[0].Level__c);
+        System.assertEquals('KA', rows[0].Value_Text__c);
+    }
+
+    @isTest
+    static void loadScheme_rehydratesApplicability() {
+        Scheme_Product_Group__c g = makeGroup('Appl Rehydrate', 'PriceDivision');
+        Area__c t1 = makeTerritory('T-KA-East', 'KA', 'North');
+        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
+        SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
+
+        SchemeDefinitionController.ApplicabilityDto a = allApplyToAll();
+        a.regions          = level(false, new List<String>{ 'KA' });
+        a.territories      = level(false, new List<String>{ String.valueOf(t1.Id) });
+        Id id = SchemeDefinitionController.saveSchemeWithApplicability(
+            m, new List<SchemeDefinitionController.SlabDto>{ s }, a, null);
+
+        Test.startTest();
+        SchemeDefinitionController.LoadSchemeResult result = SchemeDefinitionController.loadScheme(id);
+        Test.stopTest();
+
+        System.assertNotEquals(null, result.applicability);
+        System.assertEquals(false, result.applicability.regions.applyToAll);
+        System.assertEquals(1, result.applicability.regions.values.size());
+        System.assertEquals('KA', result.applicability.regions.values[0]);
+        System.assertEquals(true, result.applicability.areas.applyToAll);
+        System.assertEquals(1, result.savedTerritoryOptions.size());
+        System.assertEquals('T-KA-East', result.savedTerritoryOptions[0].name);
+    }
+
+    @isTest
+    static void getApplicabilityOptions_filtersByChannelRegionArea() {
+        makeTerritory('T-KA-1', 'KA', 'North');
+        makeTerritory('T-KA-2', 'KA', 'Central');
+        makeTerritory('T-TN-1', 'TN', 'North');
+
+        Test.startTest();
+        SchemeDefinitionController.ApplicabilityOptions all =
+            SchemeDefinitionController.getApplicabilityOptions(CHANNEL, null, null);
+        SchemeDefinitionController.ApplicabilityOptions kaOnly =
+            SchemeDefinitionController.getApplicabilityOptions(CHANNEL, new List<String>{ 'KA' }, null);
+        SchemeDefinitionController.ApplicabilityOptions kaNorth =
+            SchemeDefinitionController.getApplicabilityOptions(CHANNEL, new List<String>{ 'KA' }, new List<String>{ 'North' });
+        Test.stopTest();
+
+        System.assertEquals(2, all.regions.size(), 'two distinct regions');
+        System.assertEquals(3, all.territories.size());
+        System.assertEquals(2, kaOnly.territories.size());
+        System.assertEquals(1, kaNorth.territories.size());
+        System.assertEquals('T-KA-1', kaNorth.territories[0].name);
+    }
+
     @isTest
     static void saveSchemeWithSlabs_persistsIsActiveToggle() {
         Scheme_Product_Group__c g = makeGroup('Active Toggle', 'PriceDivision');

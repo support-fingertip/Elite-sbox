@@ -3,7 +3,8 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getPicklists from '@salesforce/apex/SchemeDefinitionController.getPicklists';
 import loadScheme from '@salesforce/apex/SchemeDefinitionController.loadScheme';
 import searchProductGroups from '@salesforce/apex/SchemeDefinitionController.searchProductGroups';
-import saveSchemeWithSlabs from '@salesforce/apex/SchemeDefinitionController.saveSchemeWithSlabs';
+import saveSchemeWithApplicability from '@salesforce/apex/SchemeDefinitionController.saveSchemeWithApplicability';
+import getApplicabilityOptions from '@salesforce/apex/SchemeDefinitionController.getApplicabilityOptions';
 import getSkusForChannel from '@salesforce/apex/SchemeProductGroupController.getSkusForChannel';
 
 const TYPE_FREE_QTY     = 'Free Quantity';
@@ -50,6 +51,19 @@ export default class SchemeDefinitionWizard extends LightningElement {
     @track slabs = [];
     @track productGroupResults = [];
     @track focUi = { activeUid: '', term: '', results: [] };
+
+    @track currentStep = 1;
+    @track applicability = {
+        regions:          { applyToAll: false, values: [] },
+        areas:            { applyToAll: false, values: [] },
+        territories:      { applyToAll: false, values: [] },
+        outletCategories: { applyToAll: false, values: [] }
+    };
+    @track applicabilityOptions = {
+        regions: [], areas: [], territories: [], outletCategories: []
+    };
+    @track savedTerritoryDisplay = {};
+    @track isLoadingApplicability = false;
 
     @track isLoadingPicklists = false;
     @track isHydrating = false;
@@ -123,11 +137,32 @@ export default class SchemeDefinitionWizard extends LightningElement {
             if (this.master.salesChannel && this.master.schemeType === TYPE_FOC_GIVEAWAY) {
                 this.loadFocProducts(this.master.salesChannel);
             }
+
+            const a = data.applicability;
+            if (a) {
+                this.applicability = {
+                    regions:          this.cloneLevel(a.regions),
+                    areas:            this.cloneLevel(a.areas),
+                    territories:      this.cloneLevel(a.territories),
+                    outletCategories: this.cloneLevel(a.outletCategories)
+                };
+            }
+            this.savedTerritoryDisplay = {};
+            for (const t of (data.savedTerritoryOptions || [])) {
+                this.savedTerritoryDisplay[t.id] = t.name;
+            }
         } catch (error) {
             this.toast('Error', this.reduceError(error), 'error');
         } finally {
             this.isHydrating = false;
         }
+    }
+
+    cloneLevel(src) {
+        return {
+            applyToAll: !!(src && src.applyToAll),
+            values: (src && Array.isArray(src.values)) ? [...src.values] : []
+        };
     }
 
     get isEditMode() { return !!this.recordId; }
@@ -294,8 +329,67 @@ export default class SchemeDefinitionWizard extends LightningElement {
         return 'Fill every slab row to enable Save.';
     }
 
+    get isStep1() { return this.currentStep === 1; }
+    get isStep2() { return this.currentStep === 2; }
+    get stepLabel() { return this.isStep1 ? 'Step 1 of 2 — Definition' : 'Step 2 of 2 — Applicability'; }
+
+    get isStep1Complete() {
+        return this.hasMasterMinimums && this.isMasterValid && this.isLinkageValid && this.areSlabsValid;
+    }
+    get isNextDisabled() { return this.isSaving || !this.isStep1Complete; }
     get isSaveDisabled() {
-        return this.isSaving || !this.hasMasterMinimums || !this.isMasterValid || !this.isLinkageValid || !this.areSlabsValid;
+        return this.isSaving || !this.isStep1Complete || !this.isApplicabilityValid;
+    }
+
+    get regionsApplyToAll()          { return this.applicability.regions.applyToAll; }
+    get areasApplyToAll()            { return this.applicability.areas.applyToAll; }
+    get territoriesApplyToAll()      { return this.applicability.territories.applyToAll; }
+    get outletCategoriesApplyToAll() { return this.applicability.outletCategories.applyToAll; }
+
+    get regionsPickerDisabled()          { return this.regionsApplyToAll; }
+    get areasPickerDisabled()            { return this.areasApplyToAll; }
+    get territoriesPickerDisabled()      { return this.territoriesApplyToAll; }
+    get outletCategoriesPickerDisabled() { return this.outletCategoriesApplyToAll; }
+
+    get regionOptions() {
+        return (this.applicabilityOptions.regions || []).map(v => ({ label: v, value: v }));
+    }
+    get areaOptions() {
+        return (this.applicabilityOptions.areas || []).map(v => ({ label: v, value: v }));
+    }
+    get territoryOptions() {
+        return (this.applicabilityOptions.territories || []).map(t => ({
+            label: t.name + (t.region || t.area ? ` — ${[t.region, t.area].filter(Boolean).join(' / ')}` : ''),
+            value: t.id
+        }));
+    }
+    get outletCategoryOptions() {
+        return (this.applicabilityOptions.outletCategories || []).map(v => ({ label: v, value: v }));
+    }
+
+    get regionsValues()          { return this.applicability.regions.values; }
+    get areasValues()            { return this.applicability.areas.values; }
+    get territoriesValues()      { return this.applicability.territories.values; }
+    get outletCategoriesValues() { return this.applicability.outletCategories.values; }
+
+    get isApplicabilityValid() {
+        return this.isLevelValid(this.applicability.regions)
+            && this.isLevelValid(this.applicability.areas)
+            && this.isLevelValid(this.applicability.territories)
+            && this.isLevelValid(this.applicability.outletCategories);
+    }
+
+    isLevelValid(level) {
+        if (!level) return false;
+        return level.applyToAll || (Array.isArray(level.values) && level.values.length > 0);
+    }
+
+    get applicabilityMessage() {
+        if (!this.isLevelValid(this.applicability.regions))          return { cls: 'chip chip--info', text: 'Pick at least one Region, or toggle Apply to all Regions.' };
+        if (!this.isLevelValid(this.applicability.areas))            return { cls: 'chip chip--info', text: 'Pick at least one Area, or toggle Apply to all Areas.' };
+        if (!this.isLevelValid(this.applicability.territories))      return { cls: 'chip chip--info', text: 'Pick at least one Territory, or toggle Apply to all Territories.' };
+        if (!this.isLevelValid(this.applicability.outletCategories)) return { cls: 'chip chip--info', text: 'Pick at least one Outlet Category, or toggle Apply to all Outlet Categories.' };
+        return { cls: 'chip chip--green', text: 'Ready to save.' };
     }
 
     get inlineMessage() {
@@ -553,6 +647,88 @@ export default class SchemeDefinitionWizard extends LightningElement {
         this.dispatchEvent(new CustomEvent('cancel'));
     }
 
+    async handleNext() {
+        if (this.isNextDisabled) return;
+        this.currentStep = 2;
+        await this.refreshApplicabilityOptions();
+    }
+
+    handleBack() {
+        this.currentStep = 1;
+    }
+
+    async refreshApplicabilityOptions() {
+        const channel = this.master.salesChannel;
+        if (!channel) return;
+        this.isLoadingApplicability = true;
+        try {
+            const a = this.applicability;
+            const regions = a.regions.applyToAll ? [] : (a.regions.values || []);
+            const areas   = a.areas.applyToAll   ? [] : (a.areas.values   || []);
+            const opts = await getApplicabilityOptions({
+                salesChannel: channel,
+                regions,
+                areas
+            });
+            this.applicabilityOptions = {
+                regions: opts.regions || [],
+                areas: opts.areas || [],
+                territories: opts.territories || [],
+                outletCategories: opts.outletCategories || []
+            };
+            this.pruneStaleSelections();
+        } catch (error) {
+            this.toast('Error', this.reduceError(error), 'error');
+        } finally {
+            this.isLoadingApplicability = false;
+        }
+    }
+
+    pruneStaleSelections() {
+        const regSet  = new Set(this.applicabilityOptions.regions || []);
+        const areaSet = new Set(this.applicabilityOptions.areas || []);
+        const terrSet = new Set((this.applicabilityOptions.territories || []).map(t => t.id));
+        const ocSet   = new Set(this.applicabilityOptions.outletCategories || []);
+        const a = this.applicability;
+        a.regions.values          = (a.regions.values || []).filter(v => regSet.has(v));
+        a.areas.values            = (a.areas.values || []).filter(v => areaSet.has(v));
+        a.territories.values      = (a.territories.values || []).filter(v => terrSet.has(v));
+        a.outletCategories.values = (a.outletCategories.values || []).filter(v => ocSet.has(v));
+        this.applicability = { ...a };
+    }
+
+    handleRegionsApplyToAll(event)          { this.toggleApplyToAll('regions', event); }
+    handleAreasApplyToAll(event)            { this.toggleApplyToAll('areas', event); }
+    handleTerritoriesApplyToAll(event)      { this.toggleApplyToAll('territories', event); }
+    handleOutletCategoriesApplyToAll(event) { this.toggleApplyToAll('outletCategories', event); }
+
+    toggleApplyToAll(levelKey, event) {
+        const checked = event.target && typeof event.target.checked === 'boolean'
+            ? event.target.checked
+            : !!(event.detail && event.detail.checked);
+        const next = { ...this.applicability };
+        next[levelKey] = { applyToAll: checked, values: checked ? [] : next[levelKey].values };
+        this.applicability = next;
+        if (levelKey === 'regions' || levelKey === 'areas') {
+            this.refreshApplicabilityOptions();
+        }
+    }
+
+    handleRegionsChange(event)          { this.setLevelValues('regions', event, true); }
+    handleAreasChange(event)            { this.setLevelValues('areas', event, true); }
+    handleTerritoriesChange(event)      { this.setLevelValues('territories', event, false); }
+    handleOutletCategoriesChange(event) { this.setLevelValues('outletCategories', event, false); }
+
+    setLevelValues(levelKey, event, refreshChildren) {
+        const values = (event.detail && event.detail.value) || [];
+        const next = { ...this.applicability };
+        next[levelKey] = { applyToAll: false, values: [...values] };
+        this.applicability = next;
+        if (refreshChildren) {
+            this.refreshApplicabilityOptions();
+        }
+    }
+
     async handleSave() {
         if (this.isSaveDisabled) return;
         this.isSaving = true;
@@ -580,9 +756,16 @@ export default class SchemeDefinitionWizard extends LightningElement {
                 benefitPercent: s.benefitPercent === '' ? null : s.benefitPercent,
                 focProductId:   s.focProductId   || null
             }));
-            const savedId = await saveSchemeWithSlabs({
+            const payloadApplicability = {
+                regions:          { applyToAll: !!this.applicability.regions.applyToAll,          values: this.applicability.regions.values || [] },
+                areas:            { applyToAll: !!this.applicability.areas.applyToAll,            values: this.applicability.areas.values || [] },
+                territories:      { applyToAll: !!this.applicability.territories.applyToAll,      values: this.applicability.territories.values || [] },
+                outletCategories: { applyToAll: !!this.applicability.outletCategories.applyToAll, values: this.applicability.outletCategories.values || [] }
+            };
+            const savedId = await saveSchemeWithApplicability({
                 master: payloadMaster,
                 slabs: payloadSlabs,
+                applicability: payloadApplicability,
                 existingId: this.recordId || null
             });
             this.toast('Success', this.isEditMode ? 'Scheme updated.' : 'Scheme created.', 'success');
