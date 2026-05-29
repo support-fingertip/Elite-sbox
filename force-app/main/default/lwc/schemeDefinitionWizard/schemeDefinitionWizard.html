@@ -5,7 +5,7 @@
         <div class="top-bar">
             <div class="top-bar__brand">
                 <div class="top-bar__title-wrap">
-                    <p class="top-bar__eyebrow">Scheme Definition</p>
+                    <p class="top-bar__eyebrow">{stepLabel}</p>
                     <p class="top-bar__title">{pageTitle}</p>
                 </div>
             </div>
@@ -20,12 +20,41 @@
                     onclick={handleCancel}
                     disabled={isSaving}>
                 </lightning-button>
-                <lightning-button
-                    label="Save"
-                    variant="brand"
-                    onclick={handleSave}
-                    disabled={isSaveDisabled}>
-                </lightning-button>
+                <template if:true={isStep1}>
+                    <lightning-button
+                        label="Next"
+                        variant="brand"
+                        onclick={handleNext}
+                        disabled={isNextDisabled}>
+                    </lightning-button>
+                </template>
+                <template if:true={isStep2}>
+                    <lightning-button
+                        label="Back"
+                        variant="neutral"
+                        onclick={handleBack}
+                        disabled={isSaving}>
+                    </lightning-button>
+                    <lightning-button
+                        label="Save"
+                        variant="brand"
+                        onclick={handleSave}
+                        disabled={isSaveDisabled}>
+                    </lightning-button>
+                </template>
+            </div>
+        </div>
+
+        <!-- Stepper -->
+        <div class="stepper">
+            <div class={step1Class} onclick={handleStepperStep1}>
+                <span class="stepper__num">1</span>
+                <span class="stepper__label">Definition</span>
+            </div>
+            <div class="stepper__divider"></div>
+            <div class={step2Class}>
+                <span class="stepper__num">2</span>
+                <span class="stepper__label">Applicability</span>
             </div>
         </div>
 
@@ -36,6 +65,8 @@
                 <span>Loading scheme…</span>
             </div>
         </template>
+
+        <template if:true={isStep1}>
 
         <!-- ============ CARD 1 — MASTER ============ -->
         <div class="card step-card">
@@ -434,10 +465,131 @@
             </template>
         </div>
 
-        <!-- Footer chip -->
+        <!-- Footer chip (step 1) -->
         <div class="chip-wrap">
             <span class={inlineMessage.cls}>{inlineMessage.text}</span>
         </div>
+
+        </template>
+
+        <!-- ============ STEP 2 — APPLICABILITY ============ -->
+        <template if:true={isStep2}>
+            <div class="card step-card">
+                <h2 class="card__title">Scheme Applicability</h2>
+
+                <template if:true={isLoadingApplicability}>
+                    <lightning-spinner alternative-text="Loading…" size="small"></lightning-spinner>
+                </template>
+
+                <!-- Regions -->
+                <div class="applicability-level">
+                    <div class="applicability-level__head">
+                        <h3>Regions</h3>
+                        <lightning-input
+                            type="toggle"
+                            label="Apply to all Regions"
+                            message-toggle-active="All"
+                            message-toggle-inactive="Specific"
+                            checked={regionsApplyToAll}
+                            onchange={handleRegionsApplyToAll}>
+                        </lightning-input>
+                    </div>
+                    <template if:false={regionsApplyToAll}>
+                        <lightning-dual-listbox
+                            label="Pick Regions"
+                            variant="label-hidden"
+                            source-label="Available"
+                            selected-label="Selected"
+                            options={regionOptions}
+                            value={regionsValues}
+                            onchange={handleRegionsChange}>
+                        </lightning-dual-listbox>
+                    </template>
+                </div>
+
+                <!-- Areas -->
+                <div class="applicability-level">
+                    <div class="applicability-level__head">
+                        <h3>Areas</h3>
+                        <lightning-input
+                            type="toggle"
+                            label="Apply to all Areas"
+                            message-toggle-active="All"
+                            message-toggle-inactive="Specific"
+                            checked={areasApplyToAll}
+                            onchange={handleAreasApplyToAll}>
+                        </lightning-input>
+                    </div>
+                    <template if:false={areasApplyToAll}>
+                        <lightning-dual-listbox
+                            label="Pick Areas"
+                            variant="label-hidden"
+                            source-label="Available"
+                            selected-label="Selected"
+                            options={areaOptions}
+                            value={areasValues}
+                            onchange={handleAreasChange}>
+                        </lightning-dual-listbox>
+                    </template>
+                </div>
+
+                <!-- Territories -->
+                <div class="applicability-level">
+                    <div class="applicability-level__head">
+                        <h3>Territories</h3>
+                        <lightning-input
+                            type="toggle"
+                            label="Apply to all Territories"
+                            message-toggle-active="All"
+                            message-toggle-inactive="Specific"
+                            checked={territoriesApplyToAll}
+                            onchange={handleTerritoriesApplyToAll}>
+                        </lightning-input>
+                    </div>
+                    <template if:false={territoriesApplyToAll}>
+                        <lightning-dual-listbox
+                            label="Pick Territories"
+                            variant="label-hidden"
+                            source-label="Available"
+                            selected-label="Selected"
+                            options={territoryOptions}
+                            value={territoriesValues}
+                            onchange={handleTerritoriesChange}>
+                        </lightning-dual-listbox>
+                    </template>
+                </div>
+
+                <!-- Outlet Categories -->
+                <div class="applicability-level">
+                    <div class="applicability-level__head">
+                        <h3>Outlet Categories</h3>
+                        <lightning-input
+                            type="toggle"
+                            label="Apply to all Outlet Categories"
+                            message-toggle-active="All"
+                            message-toggle-inactive="Specific"
+                            checked={outletCategoriesApplyToAll}
+                            onchange={handleOutletCategoriesApplyToAll}>
+                        </lightning-input>
+                    </div>
+                    <template if:false={outletCategoriesApplyToAll}>
+                        <lightning-dual-listbox
+                            label="Pick Outlet Categories"
+                            variant="label-hidden"
+                            source-label="Available"
+                            selected-label="Selected"
+                            options={outletCategoryOptions}
+                            value={outletCategoriesValues}
+                            onchange={handleOutletCategoriesChange}>
+                        </lightning-dual-listbox>
+                    </template>
+                </div>
+            </div>
+
+            <div class="chip-wrap">
+                <span class={applicabilityMessage.cls}>{applicabilityMessage.text}</span>
+            </div>
+        </template>
 
         <template if:true={isSaving}>
             <lightning-spinner alternative-text="Saving…" size="medium"></lightning-spinner>
