@@ -4590,7 +4590,7 @@ return getTaskData(objectId);
 
     private static String buyQtyClause(Decimal mn, Decimal mx) {
         if (mn == null) return null;
-        if (mx == null) return 'Buy ' + decToStr(mn) + ' EA or more';
+        if (mx == null) return 'Buy ' + decToStr(mn) + ' EA';
         if (mn == mx)   return 'Buy ' + decToStr(mn) + ' EA';
         return 'Buy ' + decToStr(mn) + ' to ' + decToStr(mx) + ' EA';
     }
