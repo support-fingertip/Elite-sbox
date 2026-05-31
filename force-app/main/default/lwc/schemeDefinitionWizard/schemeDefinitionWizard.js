@@ -257,48 +257,69 @@ export default class SchemeDefinitionWizard extends LightningElement {
 
     get slabsError() {
         if (!this.slabs.length) return 'Add at least one slab row.';
-        for (const s of this.slabs) {
+        for (let i = 0; i < this.slabs.length; i++) {
+            const s = this.slabs[i];
+            const n = i + 1;
             if (this.isFreeQty) {
-                if (s.qtyMin == null || s.qtyMin === '' || s.freeQty == null || s.freeQty === '') return 'Fill every slab row to continue.';
+                if (s.qtyMin == null || s.qtyMin === '' || s.freeQty == null || s.freeQty === '') return `Slab ${n}: fill Min Qty and Free Qty.`;
             } else if (this.isQps) {
-                if (s.qtyMin == null || s.qtyMin === '' || s.benefitPerEa == null || s.benefitPerEa === '') return 'Fill every slab row to continue.';
+                if (s.qtyMin == null || s.qtyMin === '' || s.benefitPerEa == null || s.benefitPerEa === '') return `Slab ${n}: fill Min Qty and Benefit / EA.`;
             } else if (this.isFoc) {
-                if (s.qtyMin == null || s.qtyMin === '' || s.freeQty == null || s.freeQty === '') return 'Fill every slab row to continue.';
-                if (!s.focProductId) return 'Pick the FOC product for every slab.';
+                if (s.qtyMin == null || s.qtyMin === '' || s.freeQty == null || s.freeQty === '') return `Slab ${n}: fill Min Qty and Free Qty.`;
+                if (!s.focProductId) return `Slab ${n}: pick the FOC product.`;
             } else if (this.isOrderValue || this.isCategoryValue) {
-                if (s.valueMin == null || s.valueMin === '' || s.benefitPercent == null || s.benefitPercent === '') return 'Fill every slab row to continue.';
+                if (s.valueMin == null || s.valueMin === '' || s.benefitPercent == null || s.benefitPercent === '') return `Slab ${n}: fill Min Value and Discount %.`;
             }
         }
         const isQtyType = this.isFreeQty || this.isQps || this.isFoc;
         const isValueType = this.isOrderValue || this.isCategoryValue;
+        if (!(isQtyType || isValueType)) return null;
         const minField  = isQtyType ? 'qtyMin' : 'valueMin';
         const maxField  = isQtyType ? 'qtyMax' : 'valueMax';
         const minLabel  = isQtyType ? 'Min Qty' : 'Min Value';
         const maxLabel  = isQtyType ? 'Max Qty' : 'Max Value';
-        if (!(isQtyType || isValueType)) return null;
 
-        const seen = new Set();
-        let openTops = 0;
-        for (const s of this.slabs) {
-            if (s[maxField] == null || s[maxField] === '') openTops++;
-            if (s[minField] != null && s[minField] !== '') {
-                const n = Number(s[minField]);
-                if (seen.has(n)) return `Duplicate ${minLabel} ${n}.`;
-                seen.add(n);
+        for (let i = 0; i < this.slabs.length; i++) {
+            const s = this.slabs[i];
+            const n = i + 1;
+            const max = s[maxField];
+            if (max != null && max !== '' && Number(max) < Number(s[minField])) {
+                return `Slab ${n}: ${maxLabel} (${max}) must be greater than or equal to ${minLabel} (${s[minField]}).`;
             }
         }
-        if (openTops > 1) return `Only one slab can leave ${maxLabel} blank (the open-top slab).`;
 
-        const sorted = [...this.slabs].sort((a, b) => Number(a[minField]) - Number(b[minField]));
-        for (let i = 0; i < sorted.length - 1; i++) {
-            const currMax = sorted[i][maxField];
-            const nextMin = sorted[i + 1][minField];
-            if (currMax == null || currMax === '') {
-                return `Only the last slab can leave ${maxLabel} blank — ${minLabel} ${sorted[i][minField]} has no ${maxLabel} but is followed by another slab.`;
+        const seenMin = new Map();
+        let openTopRow = -1;
+        for (let i = 0; i < this.slabs.length; i++) {
+            const s = this.slabs[i];
+            const n = i + 1;
+            if (s[maxField] == null || s[maxField] === '') {
+                if (openTopRow !== -1) {
+                    return `Slab ${openTopRow + 1} and Slab ${n} both leave ${maxLabel} blank — only one open-top slab is allowed.`;
+                }
+                openTopRow = i;
             }
+            if (s[minField] != null && s[minField] !== '') {
+                const m = Number(s[minField]);
+                if (seenMin.has(m)) {
+                    return `Slab ${seenMin.get(m) + 1} and Slab ${n} both use ${minLabel} ${m}.`;
+                }
+                seenMin.set(m, i);
+            }
+        }
+
+        const indexed = this.slabs.map((s, i) => ({ s, origIdx: i }));
+        indexed.sort((a, b) => Number(a.s[minField]) - Number(b.s[minField]));
+        for (let i = 0; i < indexed.length - 1; i++) {
+            const cur = indexed[i];
+            const nxt = indexed[i + 1];
+            if (cur.s[maxField] == null || cur.s[maxField] === '') {
+                return `Slab ${cur.origIdx + 1} has no ${maxLabel} but Slab ${nxt.origIdx + 1} comes after it. Only the last slab can be open-top.`;
+            }
+            const nextMin = nxt.s[minField];
             if (nextMin == null || nextMin === '') continue;
-            if (Number(currMax) >= Number(nextMin)) {
-                return `Slab ranges overlap at ${nextMin}.`;
+            if (Number(cur.s[maxField]) >= Number(nextMin)) {
+                return `Slab ${cur.origIdx + 1} and Slab ${nxt.origIdx + 1} ranges overlap.`;
             }
         }
         return null;
