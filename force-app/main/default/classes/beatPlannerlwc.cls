@@ -1635,6 +1635,7 @@ global with sharing class beatPlannerlwc {
         Set<String> channelSet = getProductsForSure(acc.Id,acc.Customer_Type__c);
         system.debug('channelSet'+channelSet);
         Set<String> areList = getProductsForArea(acc.Id,acc.Customer_Type__c);
+        
         List<Product_Mapping__c> prdMapList = new List<Product_Mapping__c>();
         Set<String> delivaryPlantSet = new Set<String> ();
         if(acc.Customer_Type__c == 'Primary Customer'){
@@ -1648,18 +1649,18 @@ global with sharing class beatPlannerlwc {
                 }
             }
         }
+        
         Map<String, Price_Change__c> priceChangeMap = new Map<String, Price_Change__c>();
         List<Price_Change__c> priceChanges = [
             SELECT customer_category__c, Off__c, Sales_Channel__c,Type__c
             FROM Price_Change__c 
             WHERE IsActive__c = true
         ];
-        
         for (Price_Change__c pc : priceChanges) {
             priceChangeMap.put(pc.customer_category__c, pc);
         }
-        
         system.debug('getAllPriceschnage '+priceChangeMap);
+        
         // Step 3: Get Active Products with PriceBooks
         Map<Id, productData> allProducts = new Map<Id, productData>();
         List<Sales_Channel_To_SKU__c> channels = new  List<Sales_Channel_To_SKU__c>();
@@ -1846,8 +1847,6 @@ global with sharing class beatPlannerlwc {
             
         }
         
-        
-        
         String accSecCategory = acc.Secondary_Customer_Category__c;
 
         List<Scheme__c> schemes = [
@@ -1859,9 +1858,7 @@ global with sharing class beatPlannerlwc {
             WHERE Scheme_Start_Date__c <= :Date.today()
             AND Scheme_End_Date__c >= :Date.today()
         ];
-        
         List<schemeData> schemeList = new List<schemeData>();
-        
         for (Scheme__c sch : schemes) {
             schemeData wrapper = new schemeData();
             wrapper.id = sch.Id;
@@ -1908,9 +1905,14 @@ global with sharing class beatPlannerlwc {
                 schemeList.add(wrapper);
             }
         }
+        
         system.debug('schemeList.size() '+schemeList.size());
         system.debug('schemeList '+schemeList);
+        
         Set<Id> allProductIds = new Set<Id>(allProducts.keySet());
+
+        Map<String, List<productData>> strategyGroups = new Map<String, List<productData>>();
+        Set<Id> coveredProductIds = new Set<Id>();
         
         // Step 4: Get Valid Strategies for those Products
         List<Sales_Strategy__c> strategies = [
@@ -1920,10 +1922,6 @@ global with sharing class beatPlannerlwc {
             AND From_Date__c <= TODAY
             AND To_Date__c >= TODAY
         ];
-        
-        Map<String, List<productData>> strategyGroups = new Map<String, List<productData>>();
-        Set<Id> coveredProductIds = new Set<Id>();
-        
         for (Sales_Strategy__c s : strategies) {
             Boolean match = false;
             if (s.Type__c == 'Customer' && s.Account__c == acc.Id){
@@ -2207,6 +2205,230 @@ global with sharing class beatPlannerlwc {
         
     }
     
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, String>> getAreaOptions() {
+        // Create a list to hold the area options
+        List<Map<String, String>> areaOptions = new List<Map<String, String>>();
+        
+        // Fetching the picklist values for the Area__c field in Territory__c
+        Schema.DescribeFieldResult areaField = Area__c.Area__c.getDescribe();
+        List<Schema.PicklistEntry> picklistValues = areaField.getPicklistValues();
+        
+        // Add a default "Select Area" option
+        Map<String, String> defaultOption = new Map<String, String>();
+        defaultOption.put('label', 'Select Area');
+        defaultOption.put('value', '');
+        areaOptions.add(defaultOption);
+        
+        // Add each available Territory picklist value as an object with 'label' and 'value'
+        for (Schema.PicklistEntry entry : picklistValues) {
+            Map<String, String> areaOption = new Map<String, String>();
+            areaOption.put('label', entry.getLabel());
+            areaOption.put('value', entry.getValue());
+            areaOptions.add(areaOption);
+        }
+        
+        return areaOptions;
+    }
+    
+    //Getting Schemes
+    @AuraEnabled(cacheable=true)
+    global static CoverageDto getSchemeCoverageForAccount(Id accountId) {
+        CoverageDto out = new CoverageDto();
+        out.schemes = new List<CoverageScheme>();
+        out.productSchemeIds = new Map<Id, List<Id>>();
+        if (accountId == null) return out;
+        
+        Account acc = [
+            SELECT Id, Region__c, Secondary_Customer_Category__c, Customer_Type__c
+            FROM Account WHERE Id = :accountId LIMIT 1
+        ];
+        
+        Date today = Date.today();
+        List<Scheme__c> candidates = [
+            SELECT Id, Name, Scheme_Type__c, Sales_Channel__c,
+            Scheme_Start_Date__c, Scheme_End_Date__c,
+            Scheme_Product_Group__c, Scheme_Product_Group__r.Name,
+            Scheme_Product_Category__c,
+            Apply_to_All_Regions__c, Apply_to_All_Areas__c,
+            Apply_to_All_Territories__c, Apply_to_All_Outlet_Categories__c
+            FROM Scheme__c
+            WHERE IsActive__c = true
+            AND Scheme_Start_Date__c <= :today
+            AND Scheme_End_Date__c >= :today
+        ];
+        if (candidates.isEmpty()) return out;
+        
+        Set<Id> schemeIds = new Set<Id>();
+        for (Scheme__c s : candidates) schemeIds.add(s.Id);
+        
+        Map<Id, Map<String, Set<String>>> appByScheme = new Map<Id, Map<String, Set<String>>>();
+        for (Scheme_Applicability__c r : [
+            SELECT Scheme__c, Level__c, Value_Text__c, Value_Lookup__c
+            FROM Scheme_Applicability__c
+            WHERE Scheme__c IN :schemeIds
+        ]) {
+            if (!appByScheme.containsKey(r.Scheme__c)) {
+                appByScheme.put(r.Scheme__c, new Map<String, Set<String>>());
+            }
+            Map<String, Set<String>> lvls = appByScheme.get(r.Scheme__c);
+            if (!lvls.containsKey(r.Level__c)) lvls.put(r.Level__c, new Set<String>());
+            String v = (r.Value_Lookup__c != null) ? String.valueOf(r.Value_Lookup__c) : r.Value_Text__c;
+            if (v != null) lvls.get(r.Level__c).add(v);
+        }
+        
+        List<Scheme__c> matched = new List<Scheme__c>();
+        Set<Id> matchedGroupIds = new Set<Id>();
+        for (Scheme__c s : candidates) {
+            // skip schemes that have no membership signal at all (no group + no category),
+            // except Order Value which applies to the whole order
+            if (s.Scheme_Product_Group__c == null && String.isBlank(s.Scheme_Product_Category__c) && s.Scheme_Type__c != 'Order Value') continue;
+            Map<String, Set<String>> lvls = appByScheme.containsKey(s.Id) ? appByScheme.get(s.Id) : new Map<String, Set<String>>();
+            
+            Boolean regionOk = s.Apply_to_All_Regions__c == true || acc.Region__c == null
+                || (lvls.containsKey('Region') && lvls.get('Region').contains(acc.Region__c));
+            
+            Boolean outletOk = s.Apply_to_All_Outlet_Categories__c == true
+                || acc.Secondary_Customer_Category__c == null
+                || (lvls.containsKey('Outlet Category') && lvls.get('Outlet Category').contains(acc.Secondary_Customer_Category__c));
+            
+            Boolean areaOk = s.Apply_to_All_Areas__c == true || !lvls.containsKey('Area');
+            Boolean territoryOk = s.Apply_to_All_Territories__c == true || !lvls.containsKey('Territory');
+            
+            if (regionOk && outletOk && areaOk && territoryOk) {
+                matched.add(s);
+                if (s.Scheme_Product_Group__c != null) matchedGroupIds.add(s.Scheme_Product_Group__c);
+            }
+        }
+        if (matched.isEmpty()) return out;
+        
+        Map<Id, List<CoverageProductRef>> productsByGroup = new Map<Id, List<CoverageProductRef>>();
+        for (Scheme_Product_Group_Item__c it : [
+            SELECT Scheme_Product_Group__c, Product__c, Product__r.Name, Product__r.SKU_Code__c
+            FROM Scheme_Product_Group_Item__c
+            WHERE Scheme_Product_Group__c IN :matchedGroupIds
+            ORDER BY Product__r.Name
+        ]) {
+            if (it.Product__c == null) continue;
+            if (!productsByGroup.containsKey(it.Scheme_Product_Group__c)) {
+                productsByGroup.put(it.Scheme_Product_Group__c, new List<CoverageProductRef>());
+            }
+            CoverageProductRef p = new CoverageProductRef();
+            p.id   = it.Product__c;
+            p.name = it.Product__r.Name;
+            p.sku  = it.Product__r.SKU_Code__c;
+            productsByGroup.get(it.Scheme_Product_Group__c).add(p);
+        }
+        
+        Set<Id> matchedSchemeIds = new Set<Id>();
+        for (Scheme__c m : matched) matchedSchemeIds.add(m.Id);
+        Map<Id, List<Scheme_Slab__c>> slabsByScheme = new Map<Id, List<Scheme_Slab__c>>();
+        for (Scheme_Slab__c sl : [
+            SELECT Scheme__c, Slab_Sequence__c, Slab_Type__c,
+            Qualifying_Qty_Min__c, Qualifying_Qty_Max__c,
+            Qualifying_Value_Min__c, Qualifying_Value_Max__c,
+            Free_Qty__c, Benefit_Amount_Per_EA__c, Benefit_Percent__c,
+            FOC_Product__c, FOC_Product__r.Name
+            FROM Scheme_Slab__c
+            WHERE Scheme__c IN :matchedSchemeIds
+            ORDER BY Slab_Sequence__c ASC NULLS LAST, CreatedDate ASC
+        ]) {
+            if (!slabsByScheme.containsKey(sl.Scheme__c)) slabsByScheme.put(sl.Scheme__c, new List<Scheme_Slab__c>());
+            slabsByScheme.get(sl.Scheme__c).add(sl);
+        }
+        
+        for (Scheme__c s : matched) {
+            CoverageScheme cs = new CoverageScheme();
+            cs.id               = s.Id;
+            cs.name             = s.Name;
+            cs.schemeType       = s.Scheme_Type__c;
+            cs.salesChannel     = s.Sales_Channel__c;
+            cs.startDate        = s.Scheme_Start_Date__c;
+            cs.endDate          = s.Scheme_End_Date__c;
+            cs.validLabel       = formatDdMmYyyy(s.Scheme_Start_Date__c) + ' to ' + formatDdMmYyyy(s.Scheme_End_Date__c);
+            cs.productGroupId   = s.Scheme_Product_Group__c;
+            cs.productGroupName = s.Scheme_Product_Group__r == null ? null : s.Scheme_Product_Group__r.Name;
+            cs.productCategory  = s.Scheme_Product_Category__c;
+            cs.products         = productsByGroup.containsKey(s.Scheme_Product_Group__c)
+                ? productsByGroup.get(s.Scheme_Product_Group__c)
+                : new List<CoverageProductRef>();
+            cs.slabRows         = buildSlabRows(s.Scheme_Type__c, slabsByScheme.get(s.Id));
+            out.schemes.add(cs);
+            for (CoverageProductRef p : cs.products) {
+                if (!out.productSchemeIds.containsKey(p.id)) out.productSchemeIds.put(p.id, new List<Id>());
+                out.productSchemeIds.get(p.id).add(s.Id);
+            }
+        }
+        return out;
+    }
+    
+    private static List<CoverageSlabRow> buildSlabRows(String schemeType, List<Scheme_Slab__c> slabs) {
+        List<CoverageSlabRow> rows = new List<CoverageSlabRow>();
+        if (slabs == null || slabs.isEmpty()) return rows;
+        Boolean multi = slabs.size() > 1;
+        Integer i = 1;
+        for (Scheme_Slab__c sl : slabs) {
+            String label = multi ? 'Tier ' + i : 'Offer';
+            String sentence = slabSentence(schemeType, sl);
+            if (sentence != null) rows.add(new CoverageSlabRow(label, sentence));
+            i++;
+        }
+        return rows;
+    }
+    
+    private static String slabSentence(String schemeType, Scheme_Slab__c sl) {
+        if (schemeType == 'Free Quantity') {
+            String buy = buyThresholdClause(sl.Qualifying_Qty_Min__c, sl.Qualifying_Qty_Max__c);
+            if (buy == null || sl.Free_Qty__c == null) return null;
+            return '🛒 ' + buy + ' → 🎁 Get ' + decToStr(sl.Free_Qty__c) + ' EA Free';
+        } else if (schemeType == 'QPS') {
+            String buy = buyQtyClause(sl.Qualifying_Qty_Min__c, sl.Qualifying_Qty_Max__c);
+            if (buy == null || sl.Benefit_Amount_Per_EA__c == null) return null;
+            return '🛒 ' + buy + ' → 💰 ₹' + decToStr(sl.Benefit_Amount_Per_EA__c) + ' off per EA';
+        } else if (schemeType == 'FOC Giveaway') {
+            String buy = buyThresholdClause(sl.Qualifying_Qty_Min__c, sl.Qualifying_Qty_Max__c);
+            if (buy == null || sl.Free_Qty__c == null) return null;
+            String focName = (sl.FOC_Product__c != null && sl.FOC_Product__r != null) ? sl.FOC_Product__r.Name : 'free product';
+            return '🛒 ' + buy + ' → 🎁 Get ' + decToStr(sl.Free_Qty__c) + ' EA of ' + focName + ' Free';
+        } else if (schemeType == 'Order Value' || schemeType == 'Category Value') {
+            String order = orderValueClause(sl.Qualifying_Value_Min__c, sl.Qualifying_Value_Max__c);
+            if (order == null || sl.Benefit_Percent__c == null) return null;
+            return '🛒 ' + order + ' → 💰 ' + decToStr(sl.Benefit_Percent__c) + '% Off';
+        }
+        return null;
+    }
+    
+    private static String buyThresholdClause(Decimal mn, Decimal mx) {
+        if (mn == null) return null;
+        if (mx == null || mn == mx) return 'Buy ' + decToStr(mn) + ' EA';
+        return 'Buy ' + decToStr(mn) + ' to ' + decToStr(mx) + ' EA';
+    }
+    
+    private static String buyQtyClause(Decimal mn, Decimal mx) {
+        if (mn == null) return null;
+        if (mx == null) return 'Buy ' + decToStr(mn) + ' EA';
+        if (mn == mx)   return 'Buy ' + decToStr(mn) + ' EA';
+        return 'Buy ' + decToStr(mn) + ' to ' + decToStr(mx) + ' EA';
+    }
+    
+    private static String orderValueClause(Decimal mn, Decimal mx) {
+        if (mn == null) return null;
+        if (mx == null) return 'Order ₹' + decToStr(mn) + ' or more';
+        return 'Order ₹' + decToStr(mn) + ' to ₹' + decToStr(mx);
+    }
+    private static String decToStr(Decimal d) {
+        if (d == null) return '';
+        if (d == d.setScale(0)) return String.valueOf(d.setScale(0));
+        return String.valueOf(d);
+    }
+    private static String formatDdMmYyyy(Date d) {
+        if (d == null) return '';
+        String dd = String.valueOf(d.day()).leftPad(2, '0');
+        String mm = String.valueOf(d.month()).leftPad(2, '0');
+        return dd + '-' + mm + '-' + String.valueOf(d.year());
+    }
+    
+    
 
     /*
     public static Set<String> getProductsForSure1(string accountId,string customerType) {
@@ -2304,32 +2526,8 @@ global with sharing class beatPlannerlwc {
         
     }
 	*/
-    @AuraEnabled(cacheable=true)
-    public static List<Map<String, String>> getAreaOptions() {
-        // Create a list to hold the area options
-        List<Map<String, String>> areaOptions = new List<Map<String, String>>();
-        
-        // Fetching the picklist values for the Area__c field in Territory__c
-        Schema.DescribeFieldResult areaField = Area__c.Area__c.getDescribe();
-        List<Schema.PicklistEntry> picklistValues = areaField.getPicklistValues();
-        
-        // Add a default "Select Area" option
-        Map<String, String> defaultOption = new Map<String, String>();
-        defaultOption.put('label', 'Select Area');
-        defaultOption.put('value', '');
-        areaOptions.add(defaultOption);
-        
-        // Add each available Territory picklist value as an object with 'label' and 'value'
-        for (Schema.PicklistEntry entry : picklistValues) {
-            Map<String, String> areaOption = new Map<String, String>();
-            areaOption.put('label', entry.getLabel());
-            areaOption.put('value', entry.getValue());
-            areaOptions.add(areaOption);
-        }
-        
-        return areaOptions;
-    }
     
+
     /**Display Format Data **/
     @AuraEnabled
     public static LeadWrapper createLead(String name, String phone, String location, List<String> photoDocIds, Id visitId) {
@@ -4357,201 +4555,5 @@ global with sharing class beatPlannerlwc {
         @AuraEnabled public Map<Id, List<Id>> productSchemeIds { get; set; }
     }
 
-    @AuraEnabled(cacheable=true)
-    global static CoverageDto getSchemeCoverageForAccount(Id accountId) {
-        CoverageDto out = new CoverageDto();
-        out.schemes = new List<CoverageScheme>();
-        out.productSchemeIds = new Map<Id, List<Id>>();
-        if (accountId == null) return out;
-
-        Account acc = [
-            SELECT Id, Region__c, Secondary_Customer_Category__c, Customer_Type__c
-            FROM Account WHERE Id = :accountId LIMIT 1
-        ];
-
-        Date today = Date.today();
-        List<Scheme__c> candidates = [
-            SELECT Id, Name, Scheme_Type__c, Sales_Channel__c,
-                   Scheme_Start_Date__c, Scheme_End_Date__c,
-                   Scheme_Product_Group__c, Scheme_Product_Group__r.Name,
-                   Scheme_Product_Category__c,
-                   Apply_to_All_Regions__c, Apply_to_All_Areas__c,
-                   Apply_to_All_Territories__c, Apply_to_All_Outlet_Categories__c
-            FROM Scheme__c
-            WHERE IsActive__c = true
-              AND Scheme_Start_Date__c <= :today
-              AND Scheme_End_Date__c >= :today
-        ];
-        if (candidates.isEmpty()) return out;
-
-        Set<Id> schemeIds = new Set<Id>();
-        for (Scheme__c s : candidates) schemeIds.add(s.Id);
-
-        Map<Id, Map<String, Set<String>>> appByScheme = new Map<Id, Map<String, Set<String>>>();
-        for (Scheme_Applicability__c r : [
-            SELECT Scheme__c, Level__c, Value_Text__c, Value_Lookup__c
-            FROM Scheme_Applicability__c
-            WHERE Scheme__c IN :schemeIds
-        ]) {
-            if (!appByScheme.containsKey(r.Scheme__c)) {
-                appByScheme.put(r.Scheme__c, new Map<String, Set<String>>());
-            }
-            Map<String, Set<String>> lvls = appByScheme.get(r.Scheme__c);
-            if (!lvls.containsKey(r.Level__c)) lvls.put(r.Level__c, new Set<String>());
-            String v = (r.Value_Lookup__c != null) ? String.valueOf(r.Value_Lookup__c) : r.Value_Text__c;
-            if (v != null) lvls.get(r.Level__c).add(v);
-        }
-
-        List<Scheme__c> matched = new List<Scheme__c>();
-        Set<Id> matchedGroupIds = new Set<Id>();
-        for (Scheme__c s : candidates) {
-            // skip schemes that have no membership signal at all (no group + no category),
-            // except Order Value which applies to the whole order
-            if (s.Scheme_Product_Group__c == null && String.isBlank(s.Scheme_Product_Category__c)
-                    && s.Scheme_Type__c != 'Order Value') continue;
-            Map<String, Set<String>> lvls = appByScheme.containsKey(s.Id) ? appByScheme.get(s.Id) : new Map<String, Set<String>>();
-
-            Boolean regionOk = s.Apply_to_All_Regions__c == true
-                || acc.Region__c == null
-                || (lvls.containsKey('Region') && lvls.get('Region').contains(acc.Region__c));
-
-            Boolean outletOk = s.Apply_to_All_Outlet_Categories__c == true
-                || acc.Secondary_Customer_Category__c == null
-                || (lvls.containsKey('Outlet Category') && lvls.get('Outlet Category').contains(acc.Secondary_Customer_Category__c));
-
-            Boolean areaOk = s.Apply_to_All_Areas__c == true || !lvls.containsKey('Area');
-            Boolean territoryOk = s.Apply_to_All_Territories__c == true || !lvls.containsKey('Territory');
-
-            if (regionOk && outletOk && areaOk && territoryOk) {
-                matched.add(s);
-                if (s.Scheme_Product_Group__c != null) matchedGroupIds.add(s.Scheme_Product_Group__c);
-            }
-        }
-        if (matched.isEmpty()) return out;
-
-        Map<Id, List<CoverageProductRef>> productsByGroup = new Map<Id, List<CoverageProductRef>>();
-        for (Scheme_Product_Group_Item__c it : [
-            SELECT Scheme_Product_Group__c, Product__c, Product__r.Name, Product__r.SKU_Code__c
-            FROM Scheme_Product_Group_Item__c
-            WHERE Scheme_Product_Group__c IN :matchedGroupIds
-            ORDER BY Product__r.Name
-        ]) {
-            if (it.Product__c == null) continue;
-            if (!productsByGroup.containsKey(it.Scheme_Product_Group__c)) {
-                productsByGroup.put(it.Scheme_Product_Group__c, new List<CoverageProductRef>());
-            }
-            CoverageProductRef p = new CoverageProductRef();
-            p.id   = it.Product__c;
-            p.name = it.Product__r.Name;
-            p.sku  = it.Product__r.SKU_Code__c;
-            productsByGroup.get(it.Scheme_Product_Group__c).add(p);
-        }
-
-        Set<Id> matchedSchemeIds = new Set<Id>();
-        for (Scheme__c m : matched) matchedSchemeIds.add(m.Id);
-        Map<Id, List<Scheme_Slab__c>> slabsByScheme = new Map<Id, List<Scheme_Slab__c>>();
-        for (Scheme_Slab__c sl : [
-            SELECT Scheme__c, Slab_Sequence__c, Slab_Type__c,
-                   Qualifying_Qty_Min__c, Qualifying_Qty_Max__c,
-                   Qualifying_Value_Min__c, Qualifying_Value_Max__c,
-                   Free_Qty__c, Benefit_Amount_Per_EA__c, Benefit_Percent__c,
-                   FOC_Product__c, FOC_Product__r.Name
-            FROM Scheme_Slab__c
-            WHERE Scheme__c IN :matchedSchemeIds
-            ORDER BY Slab_Sequence__c ASC NULLS LAST, CreatedDate ASC
-        ]) {
-            if (!slabsByScheme.containsKey(sl.Scheme__c)) slabsByScheme.put(sl.Scheme__c, new List<Scheme_Slab__c>());
-            slabsByScheme.get(sl.Scheme__c).add(sl);
-        }
-
-        for (Scheme__c s : matched) {
-            CoverageScheme cs = new CoverageScheme();
-            cs.id               = s.Id;
-            cs.name             = s.Name;
-            cs.schemeType       = s.Scheme_Type__c;
-            cs.salesChannel     = s.Sales_Channel__c;
-            cs.startDate        = s.Scheme_Start_Date__c;
-            cs.endDate          = s.Scheme_End_Date__c;
-            cs.validLabel       = formatDdMmYyyy(s.Scheme_Start_Date__c) + ' to ' + formatDdMmYyyy(s.Scheme_End_Date__c);
-            cs.productGroupId   = s.Scheme_Product_Group__c;
-            cs.productGroupName = s.Scheme_Product_Group__r == null ? null : s.Scheme_Product_Group__r.Name;
-            cs.productCategory  = s.Scheme_Product_Category__c;
-            cs.products         = productsByGroup.containsKey(s.Scheme_Product_Group__c)
-                                   ? productsByGroup.get(s.Scheme_Product_Group__c)
-                                   : new List<CoverageProductRef>();
-            cs.slabRows         = buildSlabRows(s.Scheme_Type__c, slabsByScheme.get(s.Id));
-            out.schemes.add(cs);
-            for (CoverageProductRef p : cs.products) {
-                if (!out.productSchemeIds.containsKey(p.id)) out.productSchemeIds.put(p.id, new List<Id>());
-                out.productSchemeIds.get(p.id).add(s.Id);
-            }
-        }
-        return out;
-    }
-
-    private static List<CoverageSlabRow> buildSlabRows(String schemeType, List<Scheme_Slab__c> slabs) {
-        List<CoverageSlabRow> rows = new List<CoverageSlabRow>();
-        if (slabs == null || slabs.isEmpty()) return rows;
-        Boolean multi = slabs.size() > 1;
-        Integer i = 1;
-        for (Scheme_Slab__c sl : slabs) {
-            String label = multi ? 'Tier ' + i : 'Offer';
-            String sentence = slabSentence(schemeType, sl);
-            if (sentence != null) rows.add(new CoverageSlabRow(label, sentence));
-            i++;
-        }
-        return rows;
-    }
-
-    private static String slabSentence(String schemeType, Scheme_Slab__c sl) {
-        if (schemeType == 'Free Quantity') {
-            String buy = buyThresholdClause(sl.Qualifying_Qty_Min__c, sl.Qualifying_Qty_Max__c);
-            if (buy == null || sl.Free_Qty__c == null) return null;
-            return '🛒 ' + buy + ' → 🎁 Get ' + decToStr(sl.Free_Qty__c) + ' EA Free';
-        } else if (schemeType == 'QPS') {
-            String buy = buyQtyClause(sl.Qualifying_Qty_Min__c, sl.Qualifying_Qty_Max__c);
-            if (buy == null || sl.Benefit_Amount_Per_EA__c == null) return null;
-            return '🛒 ' + buy + ' → 💰 ₹' + decToStr(sl.Benefit_Amount_Per_EA__c) + ' off per EA';
-        } else if (schemeType == 'FOC Giveaway') {
-            String buy = buyThresholdClause(sl.Qualifying_Qty_Min__c, sl.Qualifying_Qty_Max__c);
-            if (buy == null || sl.Free_Qty__c == null) return null;
-            String focName = (sl.FOC_Product__c != null && sl.FOC_Product__r != null) ? sl.FOC_Product__r.Name : 'free product';
-            return '🛒 ' + buy + ' → 🎁 Get ' + decToStr(sl.Free_Qty__c) + ' EA of ' + focName + ' Free';
-        } else if (schemeType == 'Order Value' || schemeType == 'Category Value') {
-            String order = orderValueClause(sl.Qualifying_Value_Min__c, sl.Qualifying_Value_Max__c);
-            if (order == null || sl.Benefit_Percent__c == null) return null;
-            return '🛒 ' + order + ' → 💰 ' + decToStr(sl.Benefit_Percent__c) + '% Off';
-        }
-        return null;
-    }
-
-    private static String buyThresholdClause(Decimal mn, Decimal mx) {
-        if (mn == null) return null;
-        if (mx == null || mn == mx) return 'Buy ' + decToStr(mn) + ' EA';
-        return 'Buy ' + decToStr(mn) + ' to ' + decToStr(mx) + ' EA';
-    }
-
-    private static String buyQtyClause(Decimal mn, Decimal mx) {
-        if (mn == null) return null;
-        if (mx == null) return 'Buy ' + decToStr(mn) + ' EA';
-        if (mn == mx)   return 'Buy ' + decToStr(mn) + ' EA';
-        return 'Buy ' + decToStr(mn) + ' to ' + decToStr(mx) + ' EA';
-    }
-
-    private static String orderValueClause(Decimal mn, Decimal mx) {
-        if (mn == null) return null;
-        if (mx == null) return 'Order ₹' + decToStr(mn) + ' or more';
-        return 'Order ₹' + decToStr(mn) + ' to ₹' + decToStr(mx);
-    }
-    private static String decToStr(Decimal d) {
-        if (d == null) return '';
-        if (d == d.setScale(0)) return String.valueOf(d.setScale(0));
-        return String.valueOf(d);
-    }
-    private static String formatDdMmYyyy(Date d) {
-        if (d == null) return '';
-        String dd = String.valueOf(d.day()).leftPad(2, '0');
-        String mm = String.valueOf(d.month()).leftPad(2, '0');
-        return dd + '-' + mm + '-' + String.valueOf(d.year());
-    }
+  
 }
