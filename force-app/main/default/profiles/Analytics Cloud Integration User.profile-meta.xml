@@ -7318,6 +7318,16 @@
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Order_Scheme_Applied__c.Order_Item__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Order_Scheme_Applied__c.Scheme__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Order_Type_Dependency__mdt.Division__c</field>
         <readable>false</readable>
@@ -12646,6 +12656,9 @@
         <layout>Order_Item__c-Order Item Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
+        <layout>Order_Scheme_Applied__c-Order Item Scheme Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
         <layout>Order_Type_Dependency__mdt-Order Type Dependency Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
@@ -13454,6 +13467,15 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
         <object>Order_Item__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Order_Scheme_Applied__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
