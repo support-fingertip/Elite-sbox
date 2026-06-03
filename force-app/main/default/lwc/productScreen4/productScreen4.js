@@ -39,6 +39,7 @@ export default class ProductScreen4 extends LightningElement {
     @track coverageSchemes = [];
     coverageProductSchemeIds = {};
     @track expandedProductIds = [];
+    @track breakupExpandedIds = [];   // lines whose scheme price breakup is expanded
     @track collapsedSchemeIds = [];
     @track coverageSearch = '';
     @track deliveryTo = '';
@@ -1440,20 +1441,33 @@ export default class ProductScreen4 extends LightningElement {
         const schemesById = {};
         for (const s of (this.coverageSchemes || [])) schemesById[s.id] = s;
         const expanded = new Set(this.expandedProductIds);
+        const breakupOpen = new Set(this.breakupExpandedIds);
         return this.schemePro.map(itm => ({
             ...itm,
             products: (itm.products || []).map(p => {
                 const sids = psm[p.id] || [];
                 const isExpanded = expanded.has(p.id);
+                const showBreakup = breakupOpen.has(p.id);
                 return {
                     ...p,
                     hasSchemeGroupMatch: sids.length > 0,
                     isSchemeExpanded: isExpanded,
                     schemeExpandIcon: isExpanded ? 'utility:chevrondown' : 'utility:chevronright',
-                    coveringSchemes: sids.map(id => schemesById[id]).filter(Boolean)
+                    coveringSchemes: sids.map(id => schemesById[id]).filter(Boolean),
+                    priceSteps: Array.isArray(p._priceSteps) ? p._priceSteps : [],
+                    showBreakup: showBreakup,
+                    breakupIcon: showBreakup ? 'utility:chevrondown' : 'utility:chevronright'
                 };
             })
         }));
+    }
+
+    toggleSchemeBreakup(event) {
+        const pid = event.currentTarget.dataset.productId;
+        if (!pid) return;
+        const next = new Set(this.breakupExpandedIds);
+        if (next.has(pid)) next.delete(pid); else next.add(pid);
+        this.breakupExpandedIds = Array.from(next);
     }
 
     toggleProductSchemes(event) {
@@ -1999,6 +2013,12 @@ export default class ProductScreen4 extends LightningElement {
         m.schemeLabel = scheme.name;
     }
 
+    // Record a step in a line's price-breakup ledger (Base -> Free Quantity -> QPS ...).
+    _addPriceStep(m, label) {
+        if (!Array.isArray(m._priceSteps)) m._priceSteps = [];
+        m._priceSteps.push({ label: label, price: this._round2(m._wkUnit).toFixed(2) });
+    }
+
     // True if any group product of this scheme is currently ordered (qty > 0).
     _schemeHasQualifyingQty(scheme) {
         return this._groupMembers(scheme).length > 0;
@@ -2039,7 +2059,11 @@ export default class ProductScreen4 extends LightningElement {
             const free = Math.floor(totalQty / parseFloat(slab.qtyMin)) * parseFloat(slab.freeQty);
             if (free <= 0) return;
             const factor = totalQty / (totalQty + free);
-            members.forEach(m => { m._wkUnit = m._wkUnit * factor; this._flagLine(m, scheme); });
+            members.forEach(m => {
+                m._wkUnit = m._wkUnit * factor;
+                this._flagLine(m, scheme);
+                this._addPriceStep(m, 'Free Quantity — ' + scheme.name);
+            });
             this.appliedSchemeRecords.push({
                 schemeId: scheme.id, slabId: slab.slabId, schemeType: 'Free Quantity',
                 freeQty: free, sequence: slab.seq,
@@ -2057,7 +2081,11 @@ export default class ProductScreen4 extends LightningElement {
             const slab = this._pickSlabByQty(scheme.slabsRaw, totalQty);
             if (!slab || slab.benefitAmtPerEA == null) return;
             const off = parseFloat(slab.benefitAmtPerEA);
-            members.forEach(m => { m._wkUnit = Math.max(0, m._wkUnit - off); this._flagLine(m, scheme); });
+            members.forEach(m => {
+                m._wkUnit = Math.max(0, m._wkUnit - off);
+                this._flagLine(m, scheme);
+                this._addPriceStep(m, 'QPS — ' + scheme.name);
+            });
             this.appliedSchemeRecords.push({
                 schemeId: scheme.id, slabId: slab.slabId, schemeType: 'QPS',
                 benefitAmount: off, sequence: slab.seq,
@@ -2085,6 +2113,9 @@ export default class ProductScreen4 extends LightningElement {
                 existing.appliedScheme = true;
                 existing.schemeLabel = scheme.name;
                 if (!existing._appliedSchemeId) existing._appliedSchemeId = scheme.id;
+                if (Array.isArray(existing._priceSteps)) {
+                    existing._priceSteps.push({ label: 'FOC Giveaway — ' + focQty + ' EA free', price: this._round2(existing._wkUnit).toFixed(2) });
+                }
             } else {
                 this.focLines.push({
                     id: slab.focProductId,
@@ -2171,6 +2202,7 @@ export default class ProductScreen4 extends LightningElement {
             p._focMergeQty = 0;
             p._focMergeDiscount = 0;
             p._lineDiscount = 0;
+            p._priceSteps = [{ label: 'Base Price', price: base.toFixed(2) }];
             p.discountedUnitPrice = base.toFixed(2);
             p.discountedPrice = base * (parseFloat(p.value) || 0);
         });

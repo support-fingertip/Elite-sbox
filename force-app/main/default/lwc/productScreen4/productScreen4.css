@@ -845,6 +845,83 @@
     font-size: 0.875rem;
 }
 
+/* Classic scheme price band + expandable breakup */
+.scheme-price-band {
+    margin: 0.5rem 0;
+    border: 1px solid #c9e7d4;
+    border-left: 4px solid #2e844a;
+    border-radius: 0.3rem;
+    background: linear-gradient(180deg, #f6fbf7 0%, #eef7f1 100%);
+    overflow: hidden;
+}
+
+.scheme-price-band__main {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+}
+
+.scheme-price-band__final {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1b5e34;
+    letter-spacing: 0.2px;
+}
+
+.scheme-price-band__actual {
+    font-size: 0.8rem;
+    color: #8a8f94;
+    text-decoration: line-through;
+}
+
+.scheme-price-band__tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #2e844a;
+    background: #e3f3e9;
+    border: 1px solid #bfe3cc;
+    border-radius: 1rem;
+    padding: 0.05rem 0.55rem;
+    white-space: nowrap;
+}
+
+.scheme-price-band__toggle {
+    margin-left: auto;
+    --slds-c-icon-color-foreground-default: #2e844a;
+}
+
+.scheme-breakup {
+    border-top: 1px dashed #c9e7d4;
+    background: #ffffff;
+    padding: 0.25rem 0.6rem 0.4rem;
+}
+
+.scheme-breakup__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.25rem 0;
+    font-size: 0.8rem;
+    border-bottom: 1px dotted #ececec;
+}
+
+.scheme-breakup__row:last-child {
+    border-bottom: none;
+}
+
+.scheme-breakup__label {
+    color: #54698d;
+}
+
+.scheme-breakup__price {
+    font-weight: 600;
+    color: #16325c;
+    white-space: nowrap;
+}
+
 .has-schemes::after {
     content: '';
     position: absolute;

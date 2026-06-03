@@ -151,11 +151,33 @@
                                                             <b> Quantity : {item.value} || Total : {item.total}</b>
 
                                                             <template if:true={item.appliedScheme}>
-                                                                <div class="scheme-applied-banner">
-                                                                    <div>Final Price: ₹{item.discountedUnitPrice} || Actual
-                                                                        Price : {item.UnitPricePriceBook}</div>
-                                                                    <template if:true={item.schemeLabel}>
-                                                                        <div>Scheme: {item.schemeLabel}</div>
+                                                                <div class="scheme-price-band">
+                                                                    <div class="scheme-price-band__main">
+                                                                        <span class="scheme-price-band__final">₹{item.discountedUnitPrice}</span>
+                                                                        <span class="scheme-price-band__actual">₹{item.UnitPricePriceBook}</span>
+                                                                        <template if:true={item.schemeLabel}>
+                                                                            <span class="scheme-price-band__tag">{item.schemeLabel}</span>
+                                                                        </template>
+                                                                        <lightning-button-icon
+                                                                            icon-name={item.breakupIcon}
+                                                                            variant="bare"
+                                                                            size="small"
+                                                                            alternative-text="Show price breakup"
+                                                                            title="Show price breakup"
+                                                                            data-product-id={item.id}
+                                                                            onclick={toggleSchemeBreakup}
+                                                                            class="scheme-price-band__toggle">
+                                                                        </lightning-button-icon>
+                                                                    </div>
+                                                                    <template if:true={item.showBreakup}>
+                                                                        <div class="scheme-breakup">
+                                                                            <template for:each={item.priceSteps} for:item="step" for:index="si">
+                                                                                <div key={si} class="scheme-breakup__row">
+                                                                                    <span class="scheme-breakup__label">{step.label}</span>
+                                                                                    <span class="scheme-breakup__price">₹{step.price}</span>
+                                                                                </div>
+                                                                            </template>
+                                                                        </div>
                                                                     </template>
                                                                 </div>
                                                             </template>
