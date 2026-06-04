@@ -1,10 +1,16 @@
-/* Rendered inside an Aura overlayLibrary modal — fill the modal box edge to edge. */
+/* Rendered inside an Aura overlayLibrary modal — fill the modal box edge to edge
+   and lay out as a flex column so the header/footer pin and only the body scrolls. */
 .sdp-card {
+    display: flex;
+    flex-direction: column;
+    max-height: 74vh;
+    overflow: hidden;
     margin: -1rem -1.5rem;
 }
 
-/* Header */
+/* Header (pinned) */
 .sdp-header {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -48,8 +54,11 @@
     color: #fff;
 }
 
-/* Body */
+/* Body (only this scrolls) */
 .sdp-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
     position: relative;
     padding: 0.5rem 1.5rem;
     background: #fff;
@@ -73,8 +82,9 @@
     margin-bottom: 0.6rem;
 }
 
-/* Footer */
+/* Footer (pinned) */
 .sdp-footer {
+    flex: 0 0 auto;
     display: flex;
     justify-content: flex-end;
     padding: 1rem 1.5rem;
