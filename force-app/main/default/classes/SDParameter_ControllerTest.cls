@@ -60,8 +60,38 @@ private class SDParameter_ControllerTest {
         System.assert(soql.contains('GROUP BY CreatedById'), 'GROUP BY expected');
         System.assert(soql.contains('(Type ='), 'self-ref prefix should be stripped: ' + soql);
         System.assert(!soql.contains('MasterRecord.Type'), 'MasterRecord prefix should be gone');
-        System.assert(packSoql.contains('FOCUS_PACK_REVENUE'), 'Focus pack note expected');
+        System.assert(packSoql.contains('Select a Focused Pack') || packSoql.contains('Select an Object'),
+            'Focus pack without config returns a guidance note: ' + packSoql);
         System.assertNotEquals(null, saved.SOQL_Query__c, 'SOQL stored on save');
+    }
+
+    @isTest
+    static void testBuildSoqlFocusPack() {
+        Focused_Pack__c fp = [SELECT Id FROM Focused_Pack__c LIMIT 1];
+        S_D_Parameter__c packParam = new S_D_Parameter__c(
+            Name = 'Focus Pack 1',
+            Object__c = 'Invoice_item__c',
+            Operator__c = 'FOCUS_PACK_REVENUE',
+            Field__c = 'Amount__c',
+            User_Field__c = 'OwnerId',
+            Date_Field__c = 'CreatedDate',
+            SKU_Field__c = 'SKU__c',
+            Focused_Pack__c = fp.Id
+        );
+
+        Test.startTest();
+        String soql = SDParameter_Controller.buildSoql(packParam);
+        Test.stopTest();
+
+        System.assert(soql.contains('SUM(Amount__c)'), 'measure SUM expected: ' + soql);
+        System.assert(soql.contains('FROM Invoice_item__c'), 'FROM line object expected');
+        System.assert(
+            soql.contains('SKU__c IN (SELECT SKU__c FROM Focused_Pack_Item__c WHERE Focused_Pack__c = \'' + fp.Id + '\')'),
+            'Focus pack SKU semi-join expected: ' + soql
+        );
+        System.assert(soql.contains('CreatedDate >= :startDate'), 'period expected');
+        System.assert(soql.contains('OwnerId IN :userIds'), 'user gate expected');
+        System.assert(soql.contains('GROUP BY OwnerId'), 'GROUP BY expected');
     }
 
     @isTest

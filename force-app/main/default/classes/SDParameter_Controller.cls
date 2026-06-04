@@ -31,7 +31,7 @@ public with sharing class SDParameter_Controller {
     public static S_D_Parameter__c getParameter(Id parameterId) {
         return [
             SELECT Id, Name, Object__c, Operator__c, Field__c, User_Field__c, Date_Field__c,
-                   Focused_Pack__c, Focused_Pack__r.Name, Sales_Channel__c,
+                   SKU_Field__c, Focused_Pack__c, Focused_Pack__r.Name, Sales_Channel__c,
                    Filters__c, Filter_Logic__c, SOQL_Query__c, Is_Active__c
             FROM S_D_Parameter__c
             WHERE Id = :parameterId
@@ -87,14 +87,7 @@ public with sharing class SDParameter_Controller {
     public static String buildSoql(S_D_Parameter__c parameter) {
         if (parameter == null) return '';
         String op = parameter.Operator__c;
-
-        // Focus-Pack metrics are computed by the engine from the Focused Pack's SKUs.
-        if (op == 'FOCUS_PACK_VOLUME' || op == 'FOCUS_PACK_REVENUE') {
-            String measure = (op == 'FOCUS_PACK_VOLUME') ? 'quantity' : 'revenue';
-            return '-- ' + op + ': computed by the achievement engine.\n'
-                + '-- Sums invoice-line ' + measure + ' for SKUs in the selected Focused Pack,\n'
-                + '-- grouped by salesperson, within the incentive period (:startDate .. :endDate).';
-        }
+        Boolean isFocusPack = (op == 'FOCUS_PACK_VOLUME' || op == 'FOCUS_PACK_REVENUE');
 
         if (String.isBlank(parameter.Object__c)) {
             return '-- Select an Object to generate the SOQL.';
@@ -104,26 +97,40 @@ public with sharing class SDParameter_Controller {
         String userField = stripSelfRel(
             String.isBlank(parameter.User_Field__c) ? 'OwnerId' : parameter.User_Field__c, selfRels);
         String dateField = stripSelfRel(parameter.Date_Field__c, selfRels);
-        String sumField = stripSelfRel(parameter.Field__c, selfRels);
+        String measureField = stripSelfRel(parameter.Field__c, selfRels);
+        String skuField = stripSelfRel(parameter.SKU_Field__c, selfRels);
 
-        // Aggregate expression
+        // Aggregate expression: COUNT counts rows; SUM and Focus Pack sum the measure field.
         String agg;
-        if (op == 'SUM') {
-            if (String.isBlank(sumField)) return '-- Select a Field to SUM to generate the SOQL.';
-            agg = 'SUM(' + sumField + ') total';
-        } else { // COUNT
+        if (op == 'COUNT') {
             agg = 'COUNT(Id) total';
+        } else {
+            if (String.isBlank(measureField)) {
+                return '-- Select a Field to ' + (isFocusPack ? 'aggregate' : 'SUM') + ' to generate the SOQL.';
+            }
+            agg = 'SUM(' + measureField + ') total';
         }
 
-        // Conditions: period, configured filters (self-rel stripped), then the user gate.
         List<String> conds = new List<String>();
+
+        // Focus Pack: restrict to the pack's SKUs via a semi-join on Focused_Pack_Item__c.
+        if (isFocusPack) {
+            if (parameter.Focused_Pack__c == null) return '-- Select a Focused Pack to generate the SOQL.';
+            if (String.isBlank(skuField)) return '-- Select a SKU Field to generate the SOQL.';
+            conds.add(skuField + ' IN (SELECT SKU__c FROM Focused_Pack_Item__c WHERE Focused_Pack__c = \''
+                + parameter.Focused_Pack__c + '\')');
+        }
+
+        // Period scope
         if (String.isNotBlank(dateField)) {
             conds.add(dateField + ' >= :startDate');
             conds.add(dateField + ' <= :endDate');
         }
+        // Configured filters (self-rel stripped)
         String where = TAM_FilterEngine_Service.buildWhereClause(
             stripSelfRelFromFilters(parameter.Filters__c, selfRels), parameter.Filter_Logic__c);
         if (String.isNotBlank(where)) conds.add(where);
+        // User gate
         conds.add(userField + ' IN :userIds');
 
         return 'SELECT ' + userField + ', ' + agg

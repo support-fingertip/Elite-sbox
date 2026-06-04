@@ -29,6 +29,7 @@ export default class SdParameterBuilder extends LightningElement {
         Field__c: '',
         User_Field__c: '',
         Date_Field__c: '',
+        SKU_Field__c: '',
         Focused_Pack__c: '',
         Sales_Channel__c: '',
         Filter_Logic__c: '',
@@ -104,6 +105,7 @@ export default class SdParameterBuilder extends LightningElement {
                 Field__c: rec.Field__c || '',
                 User_Field__c: rec.User_Field__c || '',
                 Date_Field__c: rec.Date_Field__c || '',
+                SKU_Field__c: rec.SKU_Field__c || '',
                 Focused_Pack__c: rec.Focused_Pack__c || '',
                 Sales_Channel__c: rec.Sales_Channel__c || '',
                 Filter_Logic__c: rec.Filter_Logic__c || '',
@@ -134,6 +136,15 @@ export default class SdParameterBuilder extends LightningElement {
     }
     get isSum() {
         return this.param.Operator__c === 'SUM';
+    }
+    // Source object/field/date/user mapping is needed for every operator now
+    // (Focus Pack sums a measure with an added SKU sub-filter).
+    get showSourceMapping() {
+        return this.isAggregateOperator || this.isFocusPackOperator;
+    }
+    // The measure Field is summed for SUM and both Focus Pack operators (not COUNT).
+    get showMeasureField() {
+        return this.isSum || this.isFocusPackOperator;
     }
 
     get fieldOptions() {
@@ -174,7 +185,14 @@ export default class SdParameterBuilder extends LightningElement {
     }
     handleObjectChange(event) {
         const value = event.detail.value;
-        this.param = { ...this.param, Object__c: value, Field__c: '', User_Field__c: '', Date_Field__c: '' };
+        this.param = {
+            ...this.param,
+            Object__c: value,
+            Field__c: '',
+            User_Field__c: '',
+            Date_Field__c: '',
+            SKU_Field__c: ''
+        };
         this.filters = [];
         this.isLoading = true;
         this.loadFields(value).finally(() => (this.isLoading = false));
@@ -236,16 +254,20 @@ export default class SdParameterBuilder extends LightningElement {
             this.toast('Required', 'Choose an operator', 'warning');
             return false;
         }
-        if (this.isAggregateOperator && !this.param.Object__c) {
+        if (this.showSourceMapping && !this.param.Object__c) {
             this.toast('Required', 'Choose a source object', 'warning');
             return false;
         }
-        if (this.isSum && !this.param.Field__c) {
+        if (this.showMeasureField && !this.param.Field__c) {
             this.toast('Required', 'Choose a field to SUM', 'warning');
             return false;
         }
         if (this.isFocusPackOperator && !this.param.Focused_Pack__c) {
             this.toast('Required', 'Choose a Focused Pack', 'warning');
+            return false;
+        }
+        if (this.isFocusPackOperator && !this.param.SKU_Field__c) {
+            this.toast('Required', 'Choose a SKU field for the Focus Pack', 'warning');
             return false;
         }
         return true;
