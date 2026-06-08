@@ -667,6 +667,12 @@ public class EmployeeeController {
                     if (currentUserMetadata.Non_Payroll__c && record.Employee_Type__c == 'No') {
                         allowedProfileLabels.add(record.Label);
                     }
+                    // Profile supports BOTH payroll types (Employee_Type__c left blank) -
+                    // allow if the current user can create at least one type.
+                    if (String.isBlank(record.Employee_Type__c)
+                        && (currentUserMetadata.Payroll__c || currentUserMetadata.Non_Payroll__c)) {
+                        allowedProfileLabels.add(record.Label);
+                    }
                 }
             }
             

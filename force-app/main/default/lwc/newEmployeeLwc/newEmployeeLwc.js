@@ -100,6 +100,7 @@ export default class NewEmployeeLwc extends LightningElement {
 
     @track userList = [];
     @track payrollList = [];
+    @track allowedPayrollOptions = [];
     @track profileOptions = [];
 
     mandateReplacedFor= false;
@@ -212,11 +213,7 @@ export default class NewEmployeeLwc extends LightningElement {
         .then(result => {
             this.userList = result.userList;
             this.roleList = result.roleList;
-           /* this.payrollList = result.payrollList;
-            if( this.payrollList.length === 1 && this.payrollList[0].value == 'No')
-            {
-                this.mandateContractType = true;
-            }*/
+            this.allowedPayrollOptions = result.payrollList || [];
             this.currentUser = result.currentUser;
             this.iscurrentUserAdmin = result.currentUser.isAdmin__c;
             if(this.iscurrentUserAdmin)
@@ -340,7 +337,7 @@ export default class NewEmployeeLwc extends LightningElement {
                 };
                 this.employee = { ...this.employee, ...newValues };
 
-                this.setpayrollValues(emp.Profile__c);
+                this.setpayrollValues(emp.Profile__c, true);
                 this.isCloningCompleted =  emp.Cloning_is_Completed__c;
                 this.selectedProfileHirachyNumber = emp.Heirarchial_Number__c;
                 this.isShowAllSections = (emp.Profile__c == 'SSA' || emp.Profile__c == 'DSM') ? false : true ;
@@ -384,25 +381,25 @@ export default class NewEmployeeLwc extends LightningElement {
       
     }
 
-    setpayrollValues(fieldValue)
+    setpayrollValues(fieldValue, preserveSelection = false)
     {
         const payrollLabel = this.payrollMap?.[fieldValue] || '';
-        this.payrollList = [];
         if (payrollLabel) {
-            this.payrollList.push({
-                label: payrollLabel,
-                value: payrollLabel
-            });
+            // Fixed single type (Employee_Type__c = Yes/No)
+            this.payrollList = [{ label: payrollLabel, value: payrollLabel }];
+            this.employee.Payroll__c = payrollLabel;
+        } else {
+            // Both types allowed (Employee_Type__c blank) - limit to creator's access
+            this.payrollList = [...this.allowedPayrollOptions];
+            if (!preserveSelection) {
+                // auto-select when only one option, otherwise force a pick
+                this.employee.Payroll__c =
+                    this.allowedPayrollOptions.length === 1
+                        ? this.allowedPayrollOptions[0].value
+                        : '';
+            }
         }
-        this.employee.Payroll__c = payrollLabel;
-        if( this.employee.Payroll__c == 'No')
-        {
-            this.mandateContractType = true;
-        }
-        else
-        {
-            this.mandateContractType = false;
-        }
+        this.mandateContractType = this.employee.Payroll__c === 'No';
     }
     updateProfileBasedValues(fieldValue,operation)
     {
@@ -1049,7 +1046,13 @@ export default class NewEmployeeLwc extends LightningElement {
             return isAllValid;
         }
     
-        if (!this.isAdminProfile &&  employee.Payroll__c && employee.Payroll__c === 'No' && !employee.Contract_Type__c) {
+        if (!this.isAdminProfile && !employee.Payroll__c) {
+            this.showFieldError('employeeFields');
+            this.showToast('Error', 'Please select Payroll', 'error');
+            isAllValid = false;
+            return isAllValid;
+        }
+        else if (!this.isAdminProfile &&  employee.Payroll__c && employee.Payroll__c === 'No' && !employee.Contract_Type__c) {
             this.showFieldError('employeeFields'); 
             this.showToast('Error', 'Please select Contract Type', 'error');
             isAllValid = false;
