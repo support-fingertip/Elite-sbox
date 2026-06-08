@@ -1,7 +1,9 @@
-/* Full-page screen, white, rounded corners */
+/* Full-page screen, rounded corners.
+   :host is transparent so the page background shows in the gutter and the
+   card's rounded corners are visible (a white host would hide them). */
 :host {
     display: block;
-    background: #fff;
+    background: transparent;
     min-height: 100%;
 }
 
