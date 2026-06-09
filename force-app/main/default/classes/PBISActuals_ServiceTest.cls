@@ -175,10 +175,10 @@ private class PBISActuals_ServiceTest {
 
     // ===== helpers =====
     private static PBIS_Incentive_Slab__c slab(Id policyId, String profile, Integer num,
-            Decimal from, Decimal upto, Decimal monthly, Decimal quarterly) {
+            Decimal fromPct, Decimal upto, Decimal monthly, Decimal quarterly) {
         return new PBIS_Incentive_Slab__c(
             PBIS_Policy__c = policyId, Profile__c = profile, Slab_Number__c = num,
-            Achievement_From__c = from, Achievement_To__c = upto,
+            Achievement_From__c = fromPct, Achievement_To__c = upto,
             Monthly_Incentive_Percent__c = monthly, Quarterly_Incentive_Percent__c = quarterly,
             Is_Active__c = true
         );
