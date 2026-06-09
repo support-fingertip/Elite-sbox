@@ -91,6 +91,47 @@ public class SecondaryTarget_ControllerTest {
     }
 
     @isTest
+    static void testDuplicateActiveTargetBlocked() {
+        Target_Criteria__c crit = [SELECT Id FROM Target_Criteria__c LIMIT 1];
+        User u = [SELECT Id FROM User WHERE LastName = 'stctrl' LIMIT 1];
+
+        // Seeded target covers today-5 .. today+5. A new active target overlapping that
+        // window for the same user + criteria must be rejected.
+        Secondary_Target__c dup = new Secondary_Target__c(
+            User__c = u.Id, Target_Criteria__c = crit.Id, Target_Value__c = 500,
+            Is_Active__c = true,
+            Start_Date__c = Date.today(), End_Date__c = Date.today().addDays(10)
+        );
+        Boolean threw = false;
+        Test.startTest();
+        try {
+            SecondaryTarget_Controller.saveTarget(dup);
+        } catch (AuraHandledException e) {
+            threw = true;
+        }
+        Test.stopTest();
+        System.assert(threw, 'overlapping active duplicate should be blocked');
+
+        // Inactive duplicate is allowed.
+        Secondary_Target__c inactive = new Secondary_Target__c(
+            User__c = u.Id, Target_Criteria__c = crit.Id, Target_Value__c = 500,
+            Is_Active__c = false,
+            Start_Date__c = Date.today(), End_Date__c = Date.today().addDays(10)
+        );
+        Secondary_Target__c saved = SecondaryTarget_Controller.saveTarget(inactive);
+        System.assertNotEquals(null, saved.Id);
+
+        // Editing the original record (same Id) must NOT trigger self-conflict.
+        Secondary_Target__c orig = [SELECT Id, User__c, Target_Criteria__c, Target_Value__c,
+                                           Is_Active__c, Start_Date__c, End_Date__c
+                                    FROM Secondary_Target__c
+                                    WHERE Is_Active__c = true LIMIT 1];
+        orig.Target_Value__c = 3000;
+        Secondary_Target__c reSaved = SecondaryTarget_Controller.saveTarget(orig);
+        System.assertEquals(3000, reSaved.Target_Value__c);
+    }
+
+    @isTest
     static void testRecalculateTarget() {
         Secondary_Target__c t = [SELECT Id FROM Secondary_Target__c LIMIT 1];
 

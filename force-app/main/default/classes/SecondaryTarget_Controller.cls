@@ -40,6 +40,38 @@ public with sharing class SecondaryTarget_Controller {
             User u = [SELECT Name FROM User WHERE Id = :target.User__c LIMIT 1];
             target.User_Name__c = u.Name;
         }
+        // BRD 3.1.1 — block overlapping active duplicates (same user, criteria, pack).
+        // A revision should close the old record (Is_Active = false) and create a new one.
+        if (target.Is_Active__c == true
+            && target.User__c != null
+            && target.Target_Criteria__c != null
+            && target.Start_Date__c != null
+            && target.End_Date__c != null) {
+
+            List<Secondary_Target__c> overlaps = [
+                SELECT Id, Name, Focused_Pack__c, Start_Date__c, End_Date__c
+                FROM Secondary_Target__c
+                WHERE Is_Active__c = true
+                  AND User__c = :target.User__c
+                  AND Target_Criteria__c = :target.Target_Criteria__c
+                  AND Start_Date__c <= :target.End_Date__c
+                  AND End_Date__c >= :target.Start_Date__c
+            ];
+            List<String> conflictNames = new List<String>();
+            for (Secondary_Target__c o : overlaps) {
+                if (o.Id == target.Id) continue;                       // skip self on edit
+                if (o.Focused_Pack__c != target.Focused_Pack__c) continue; // different pack is OK
+                conflictNames.add(o.Name);
+            }
+            if (!conflictNames.isEmpty()) {
+                throw new AuraHandledException(
+                    'An active Secondary Target already exists for this user, criteria' +
+                    (target.Focused_Pack__c != null ? ' and Focus Pack' : '') +
+                    ' with an overlapping period: ' + String.join(conflictNames, ', ') +
+                    '. Close that target (uncheck Is Active) before creating a new one.'
+                );
+            }
+        }
         upsert target;
         return getTarget(target.Id);
     }
