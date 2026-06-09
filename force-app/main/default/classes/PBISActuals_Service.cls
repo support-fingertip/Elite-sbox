@@ -159,9 +159,9 @@ public without sharing class PBISActuals_Service {
     private static PBIS_Incentive_Slab__c matchSlab(List<PBIS_Incentive_Slab__c> slabs, Decimal pct) {
         if (slabs == null || pct == null) return null;
         for (PBIS_Incentive_Slab__c s : slabs) {
-            Decimal from = s.Achievement_From__c;
+            Decimal fromPct = s.Achievement_From__c;
             Decimal upto = s.Achievement_To__c;
-            if (from != null && pct >= from && (upto == null || pct <= upto)) {
+            if (fromPct != null && pct >= fromPct && (upto == null || pct <= upto)) {
                 return s;
             }
         }
