@@ -13040,4 +13040,8 @@
         <enabled>true</enabled>
         <name>ViewGlobalHeader</name>
     </userPermissions>
+    <tabVisibilities>
+        <tab>Secondary_KPI_Dashboard</tab>
+        <visibility>DefaultOn</visibility>
+    </tabVisibilities>
 </Profile>

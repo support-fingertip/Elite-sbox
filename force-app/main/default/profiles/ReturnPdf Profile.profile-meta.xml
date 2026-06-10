@@ -13118,4 +13118,8 @@
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <userLicense>Guest User License</userLicense>
+    <tabVisibilities>
+        <tab>Secondary_KPI_Dashboard</tab>
+        <visibility>DefaultOn</visibility>
+    </tabVisibilities>
 </Profile>
