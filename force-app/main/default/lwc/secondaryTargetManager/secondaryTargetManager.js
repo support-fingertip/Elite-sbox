@@ -376,12 +376,20 @@ export default class SecondaryTargetManager extends LightningElement {
     }
 
     parseCsv(text) {
+        // Strip UTF-8 BOM that Excel adds to the first cell of column A.
+        if (text && text.charCodeAt(0) === 0xFEFF) text = text.substring(1);
         const lines = text.split(/\r?\n/).filter(l => l.length > 0);
         if (lines.length < 2) return [];
-        const headers = this.splitCsvLine(lines[0]).map(h => h.trim());
+        // Auto-detect the delimiter from the header line — Excel locales
+        // may export CSVs with ';' instead of ','.
+        const headerLine = lines[0];
+        const commaCount = (headerLine.match(/,/g) || []).length;
+        const semiCount = (headerLine.match(/;/g) || []).length;
+        const sep = semiCount > commaCount ? ';' : ',';
+        const headers = this.splitCsvLine(headerLine, sep).map(h => h.trim());
         const out = [];
         for (let i = 1; i < lines.length; i++) {
-            const cells = this.splitCsvLine(lines[i]);
+            const cells = this.splitCsvLine(lines[i], sep);
             if (cells.every(c => !c || !c.trim())) continue;
             const row = {};
             headers.forEach((h, j) => { row[h] = (cells[j] !== undefined ? String(cells[j]).trim() : ''); });
@@ -401,16 +409,17 @@ export default class SecondaryTargetManager extends LightningElement {
         return out;
     }
 
-    splitCsvLine(line) {
+    splitCsvLine(line, sep) {
         const out = [];
         let cur = '';
         let inQ = false;
+        const delim = sep || ',';
         for (let i = 0; i < line.length; i++) {
             const c = line[i];
             if (c === '"') {
                 if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
                 else inQ = !inQ;
-            } else if (c === ',' && !inQ) {
+            } else if (c === delim && !inQ) {
                 out.push(cur);
                 cur = '';
             } else {
