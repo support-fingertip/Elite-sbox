@@ -51,21 +51,53 @@ the **customer type**, explained next.
 
 The single most important field on a customer is **`Customer_Type__c`**. It has two values:
 
-- **Primary Customer**
-- **Secondary Customer**
+- **Primary Customer** — these are the upstream trade partners: **Distributors** and **Super Stockists**.
+- **Secondary Customer** — these are the downstream points: **Outlets** and **Sub Stockists**.
 
 Each value is automatically mapped to a matching **Record Type** of the same name when the customer
 is created, which controls the page layout, required fields, and approval path.
 
 | | **Primary Customer** | **Secondary Customer** |
 |---|---|---|
-| **Who they are** | A distributor billed directly by the company | A retailer/outlet served by a distributor |
-| **Sales type** | Primary (company → distributor) | Secondary (distributor → retailer) |
-| **Parent link** | — | `Distributor__c` points to its parent distributor |
+| **Who they are** | **Distributor** or **Super Stockist** (billed/served directly by the company) | **Outlet** or **Sub Stockist** (served through the chain) |
+| **Sales type** | Primary (company → distributor / super stockist) | Secondary (distributor or sub stockist → outlet) |
+| **Parent link** | — (top of the chain) | Mapped to its parent **through Product Mapping**, *not* a Distributor lookup — see below |
 | **Classification fields** | `Primary_Customer_Type__c`, `Primary_Customer_Business_Type__c` | `Secondary_Customer_Type__c`, `Secondary_Customer_Category__c` |
 | **Money fields** | Bank details, `Payment_Type__c`, `Credit_Limit__c` | `High_Margin__c` |
 | **Approval path** | Up to **Credit Dept. approval** (3 levels) | Up to **Level 2 approval** (2 levels) |
 | **ERP / SAP sync** | Synced after credit approval & activation | Synced on creation and on activation |
+
+#### Customer hierarchy & distribution flow
+
+The same DMS supports **two distribution chains**, depending on whether goods flow through a
+super-stockist tier:
+
+```
+ Chain A (direct):     Company ──► Distributor ─────────────► Outlets
+
+ Chain B (two-tier):   Company ──► Super Stockist ──► Sub Stockist ──► Outlets
+```
+
+How each role maps to the customer type:
+
+| Role | Customer Type | Position in the chain |
+|---|---|---|
+| **Distributor** | Primary Customer | Buys from the company, sells to **Outlets** |
+| **Super Stockist** | Primary Customer | Buys from the company, supplies **Sub Stockists** |
+| **Sub Stockist** | Secondary Customer | Buys from a Super Stockist, sells to **Outlets** |
+| **Outlet** | Secondary Customer | The retail end-point (served by a Distributor or a Sub Stockist) |
+
+> **Important — how parent↔child is actually stored.** In the Customer Master we do **not** use a
+> `Distributor__c` lookup on the customer record to say "this outlet belongs to that distributor."
+> Instead the **child → parent relationship is captured on the `Product_Mapping__c` object**, which
+> is created during customer creation (the *Product Mapping* screen). Each mapping row links:
+> - `Customer__c` → the customer being created (the **child** — an Outlet or Sub Stockist), and
+> - `Primary_Customer__c` → its **parent** (the Distributor / Super Stockist), and
+> - `Sub_Stockiest__c` → the intervening **Sub Stockist** when the chain is two-tier.
+>
+> So the hierarchy lives in **Product Mapping**, per product/territory context — *not* as a single
+> distributor field on the Account. (All three of those fields are lookups to **Account**; see
+> [Section 2.6](#26-related-objects-map-account-at-the-center).)
 
 ### 1.3 How to Create a Customer — step by step (the screens)
 
@@ -302,7 +334,7 @@ the field that links them back to Account.
 | `Return__c` | `Customer__c` / `Sub_Stockiest__c` | Primary return |
 | `Credit_Note__c` | `Customer__c` | Primary credit adjustment |
 | `Debit_Note__c` | `Customer__c` / `Distributor__c` | Primary debit adjustment |
-| `Product_Mapping__c` | `Customer__c` / `Primary_Customer__c` / `Sub_Stockiest__c` | Which products a customer can transact |
+| `Product_Mapping__c` | `Customer__c` (child) / `Primary_Customer__c` (parent) / `Sub_Stockiest__c` | Products a customer can transact **and the child→parent hierarchy** (this is where an Outlet/Sub-Stockist is tied to its Distributor/Super-Stockist — see [1.2](#customer-hierarchy--distribution-flow)) |
 | `Price_Book__c` | `Customer__c` | Customer-specific pricing |
 
 **Secondary sales (distributor → retailer)** — *these use Master-Detail to the customer*
@@ -380,7 +412,7 @@ the field that links them back to Account.
 | `State__c`, `District__c`, `Pincode__c`, `GeoLocation__c` | Location |
 | `UniqueFileId__c` | Used to link uploaded documents to the account |
 | `ERP_Check__c`, `ERP_Update__c`, `By_Pass_Validation__c` | ERP-sync control flags |
-| `Distributor__c` | Parent distributor (for Secondary customers) |
+| `Distributor__c` | A distributor reference field on the Account. **Note:** the Customer Master does **not** rely on this to model the hierarchy — parent↔child is mapped via `Product_Mapping__c` (see [1.2](#customer-hierarchy--distribution-flow)). |
 
 ### 2.8 Glossary
 
