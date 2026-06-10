@@ -275,23 +275,36 @@ public without sharing class SecondaryKpiDashboard_Controller {
         if (directChildRoles.isEmpty()) return rows;
 
         // Active users assigned to those direct child roles.
-        List<User> directUsers = [
-            SELECT Id, Name, UserRoleId, UserRole.Name, Profile.Name
+        // Group BY ROLE — Salesforce hierarchy is per-role, so when several users
+        // share a UserRoleId their teams are identical. Rendering them as separate
+        // rows would show duplicate aggregates (one row per peer in the same role).
+        Map<Id, UserRole> roleById = new Map<Id, UserRole>([
+            SELECT Id, Name FROM UserRole WHERE Id IN :directChildRoles
+        ]);
+        Map<Id, List<User>> roleToUsers = new Map<Id, List<User>>();
+        for (User du : [
+            SELECT Id, Name, UserRoleId, Profile.Name
             FROM User
             WHERE UserRoleId IN :directChildRoles AND IsActive = true
-            ORDER BY UserRole.Name, Name
-        ];
-        if (directUsers.isEmpty()) return rows;
+            ORDER BY Name
+        ]) {
+            if (!roleToUsers.containsKey(du.UserRoleId)) {
+                roleToUsers.put(du.UserRoleId, new List<User>());
+            }
+            roleToUsers.get(du.UserRoleId).add(du);
+        }
+        if (roleToUsers.isEmpty()) return rows;
 
-        // For each direct user, compute their downline universe (their role's subtree).
-        Map<Id, Set<Id>> userToUniverse = new Map<Id, Set<Id>>();
+        // Compute each role's downline universe once (include the role itself so
+        // role-peers count toward the team).
+        Map<Id, Set<Id>> roleToUniverse = new Map<Id, Set<Id>>();
         Set<Id> allTeamUserIds = new Set<Id>();
-        for (User du : directUsers) {
+        for (Id rid : roleToUsers.keySet()) {
             Set<Id> downlineRoles = new Set<Id>();
-            collectDescendantRoles(du.UserRoleId, parentToChildren, downlineRoles);
+            collectDescendantRoles(rid, parentToChildren, downlineRoles);
+            downlineRoles.add(rid);
             Set<Id> teamUserIds = usersInRoles(downlineRoles);
-            teamUserIds.add(du.Id);
-            userToUniverse.put(du.Id, teamUserIds);
+            roleToUniverse.put(rid, teamUserIds);
             allTeamUserIds.addAll(teamUserIds);
         }
 
@@ -299,38 +312,47 @@ public without sharing class SecondaryKpiDashboard_Controller {
         Map<Id, Decimal[]> perUserTgt = perUserTargetTotals(allTeamUserIds, monthStart, monthEnd);
         Map<Id, Decimal> perUserIncentive = perUserIncentiveTotals(allTeamUserIds, year, month);
 
-        for (User du : directUsers) {
-            Set<Id> universe = userToUniverse.get(du.Id);
-            TeamRow tr = new TeamRow();
-            tr.leadUserId = du.Id;
-            tr.leadUserName = du.Name;
-            tr.leadRole = du.Profile != null ? du.Profile.Name : null;
-            tr.leadRoleLabel = du.UserRole != null ? du.UserRole.Name : null;
-            tr.teamSize = universe.size();
-            tr.hasSubordinates = parentToChildren.containsKey(du.UserRoleId)
-                                 && !parentToChildren.get(du.UserRoleId).isEmpty();
+        for (Id rid : roleToUsers.keySet()) {
+            List<User> usersInRole = roleToUsers.get(rid);
+            User lead = usersInRole[0];
+            Set<Id> universe = roleToUniverse.get(rid);
+
             Decimal tgt = 0, ach = 0, inc = 0;
             Integer atc = 0;
+            // "Team Size" = users actually carrying targets — matches the hero
+            // "Targeted Users" semantic so the numbers are comparable.
+            Integer targetedInTeam = 0;
             for (Id uid : universe) {
                 Decimal[] rec = perUserTgt.get(uid);
                 if (rec != null) {
                     atc += rec[0].intValue();
                     tgt += rec[1];
                     ach += rec[2];
+                    targetedInTeam++;
                 }
                 Decimal incAmt = perUserIncentive.get(uid);
                 if (incAmt != null) inc += incAmt;
             }
+            // Skip teams with nothing to do with secondary sales (distributors,
+            // finance, partner users, etc.).
+            if (atc == 0 && (inc == null || inc == 0)) continue;
+
+            TeamRow tr = new TeamRow();
+            tr.leadUserId = lead.Id;
+            tr.leadUserName = usersInRole.size() == 1
+                ? lead.Name
+                : lead.Name + ' (+' + (usersInRole.size() - 1) + ' more)';
+            tr.leadRole = lead.Profile != null ? lead.Profile.Name : null;
+            UserRole rec = roleById.get(rid);
+            tr.leadRoleLabel = rec != null ? rec.Name : null;
+            tr.teamSize = targetedInTeam;
+            tr.hasSubordinates = parentToChildren.containsKey(rid)
+                                 && !parentToChildren.get(rid).isEmpty();
             tr.activeTargets = atc;
             tr.totalTarget = tgt;
             tr.totalAchievement = ach;
             tr.achievementPct = pct(ach, tgt);
             tr.totalIncentive = inc;
-            // Hide subordinate teams that have nothing to do with secondary sales
-            // (distributors, finance, partner users, etc.). A team belongs on the
-            // dashboard only if it carries at least one active target or earned a
-            // PBIS payout in the selected period.
-            if (atc == 0 && (inc == null || inc == 0)) continue;
             rows.add(tr);
         }
         return rows;

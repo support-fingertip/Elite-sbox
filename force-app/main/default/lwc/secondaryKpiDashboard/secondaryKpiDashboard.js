@@ -18,7 +18,7 @@ const CCY = { currencyCode: 'INR', minimumFractionDigits: 0, maximumFractionDigi
 const TEAM_COLUMNS = [
     { label: 'Lead', fieldName: 'leadUserName', type: 'text', wrapText: true },
     { label: 'Role', fieldName: 'leadRole', type: 'text', initialWidth: 140 },
-    { label: 'Team Size', fieldName: 'teamSize', type: 'number',
+    { label: 'Targeted', fieldName: 'teamSize', type: 'number',
       cellAttributes: { alignment: 'right' }, initialWidth: 110 },
     { label: 'Active Targets', fieldName: 'activeTargets', type: 'number',
       cellAttributes: { alignment: 'right' }, initialWidth: 130 },
