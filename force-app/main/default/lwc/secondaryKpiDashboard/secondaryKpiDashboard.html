@@ -1,0 +1,205 @@
+<template>
+    <lightning-card title="Secondary KPI Dashboard" icon-name="standard:dashboard">
+        <lightning-button slot="actions" label="Refresh" icon-name="utility:refresh"
+            onclick={handleRefresh} class="slds-m-right_x-small"></lightning-button>
+        <lightning-button slot="actions" label="My Team" icon-name="utility:home"
+            onclick={handleHome}></lightning-button>
+
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+
+            <!-- Period picker + breadcrumbs -->
+            <div class="slds-grid slds-gutters slds-grid_vertical-align-end slds-wrap slds-m-bottom_small">
+                <div class="slds-col slds-size_1-of-6">
+                    <lightning-input type="number" label="Year" value={year}
+                        onchange={handleYear}></lightning-input>
+                </div>
+                <div class="slds-col slds-size_1-of-6">
+                    <lightning-combobox label="Month" value={month}
+                        options={monthOptions} onchange={handleMonth}></lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_4-of-6 slds-p-bottom_x-small">
+                    <template if:true={hasBreadcrumbs}>
+                        <div class="slds-text-title slds-text-color_weak slds-m-bottom_xxx-small">Viewing</div>
+                        <nav class="kpi-crumbs">
+                            <template for:each={crumbView} for:item="c" for:index="i">
+                                <span key={c.userId} class="kpi-crumb">
+                                    <template if:true={c.isClickable}>
+                                        <a data-id={c.userId} onclick={handleCrumbClick}>{c.userName}</a>
+                                    </template>
+                                    <template if:false={c.isClickable}>
+                                        <strong>{c.userName}</strong>
+                                    </template>
+                                    <template if:true={c.role}>
+                                        <span class="kpi-crumb-role"> · {c.role}</span>
+                                    </template>
+                                    <span class="kpi-crumb-sep"> › </span>
+                                </span>
+                            </template>
+                        </nav>
+                    </template>
+                </div>
+            </div>
+
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </template>
+
+            <template if:true={hasData}>
+                <!-- Header: who/where -->
+                <div class="kpi-header slds-m-bottom_small">
+                    <h2 class="slds-text-heading_medium">{rootHeading}</h2>
+                    <p class="slds-text-color_weak">Period — {data.periodLabel}</p>
+                </div>
+
+                <!-- Hero KPI tiles -->
+                <template if:true={hasHero}>
+                    <div class="slds-grid slds-gutters slds-wrap kpi-tiles slds-m-bottom_medium">
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="kpi-tile">
+                                <div class="kpi-label">Team Size</div>
+                                <div class="kpi-value">{hero.totalUsers}</div>
+                                <div class="kpi-sub">users in downline</div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="kpi-tile">
+                                <div class="kpi-label">Active Targets</div>
+                                <div class="kpi-value">{hero.activeTargets}</div>
+                                <div class="kpi-sub">covering {data.periodLabel}</div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="kpi-tile kpi-tile_target">
+                                <div class="kpi-label">Total Target</div>
+                                <div class="kpi-value">{heroTotalTarget}</div>
+                                <div class="kpi-sub">sum of target values</div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="kpi-tile kpi-tile_ach">
+                                <div class="kpi-label">Total Achievement</div>
+                                <div class="kpi-value">{heroTotalAchievement}</div>
+                                <div class="kpi-sub">
+                                    <span class={heroPctClass}>{heroAchievementPct}</span> of target
+                                </div>
+                                <div class="kpi-progress">
+                                    <div class="kpi-progress-fill" style={heroProgressStyle}></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="kpi-tile kpi-tile_incentive">
+                                <div class="kpi-label">PBIS Incentive</div>
+                                <div class="kpi-value">{heroTotalIncentive}</div>
+                                <div class="kpi-sub">{hero.incentiveLines} credit lines</div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Two-column: teams + side panels -->
+                <div class="slds-grid slds-gutters slds-wrap">
+                    <!-- Direct teams table -->
+                    <div class="slds-col slds-size_1-of-1 slds-large-size_2-of-3">
+                        <div class="kpi-panel">
+                            <h3 class="slds-text-heading_small slds-m-bottom_x-small">
+                                Direct Subordinates
+                            </h3>
+                            <template if:true={hasTeams}>
+                                <lightning-datatable key-field="leadUserId" data={teams} columns={teamColumns}
+                                    hide-checkbox-column onrowaction={handleTeamAction}></lightning-datatable>
+                                <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                                    Click the row action to drill into a subordinate's team.
+                                </p>
+                            </template>
+                            <template if:false={hasTeams}>
+                                <p class="slds-text-body_regular slds-text-color_weak slds-p-around_medium">
+                                    No direct subordinates with secondary targets for this period.
+                                </p>
+                            </template>
+                        </div>
+
+                        <!-- Criteria breakdown -->
+                        <div class="kpi-panel slds-m-top_medium">
+                            <h3 class="slds-text-heading_small slds-m-bottom_x-small">
+                                Achievement by Criterion
+                            </h3>
+                            <template if:true={hasCriteria}>
+                                <template for:each={criteriaRows} for:item="cr">
+                                    <div key={cr.criteriaId} class="kpi-bar-row">
+                                        <div class="kpi-bar-row-head">
+                                            <span class="kpi-bar-label">{cr.criteriaName}</span>
+                                            <span class="kpi-bar-pct"
+                                                style="font-weight:600;">{cr.pctText}</span>
+                                        </div>
+                                        <div class="progress-track">
+                                            <div class={cr.barClass} style={cr.barStyle}></div>
+                                        </div>
+                                        <div class="kpi-bar-row-meta slds-text-body_small slds-text-color_weak">
+                                            {cr.achText} of {cr.targetText} · {cr.userCount} users
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={hasCriteria}>
+                                <p class="slds-text-body_regular slds-text-color_weak">No criteria data for this period.</p>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Side: channel + top/bottom performers -->
+                    <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+                        <div class="kpi-panel">
+                            <h3 class="slds-text-heading_small slds-m-bottom_x-small">By Sales Channel</h3>
+                            <template if:true={hasChannels}>
+                                <template for:each={channelRows} for:item="ch">
+                                    <div key={ch.channel} class="kpi-bar-row">
+                                        <div class="kpi-bar-row-head">
+                                            <span class="kpi-bar-label">{ch.channelLabel}</span>
+                                            <span class="kpi-bar-pct">{ch.pctText}</span>
+                                        </div>
+                                        <div class="progress-track">
+                                            <div class={ch.barClass} style={ch.barStyle}></div>
+                                        </div>
+                                        <div class="kpi-bar-row-meta slds-text-body_small slds-text-color_weak">
+                                            {ch.achText} of {ch.targetText} · {ch.userCount} users
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={hasChannels}>
+                                <p class="slds-text-body_regular slds-text-color_weak">No channel data.</p>
+                            </template>
+                        </div>
+
+                        <div class="kpi-panel slds-m-top_medium">
+                            <h3 class="slds-text-heading_small slds-m-bottom_x-small">
+                                Top Performers
+                            </h3>
+                            <template if:true={hasTopPerformers}>
+                                <lightning-datatable key-field="userId" data={topPerformers}
+                                    columns={performerColumns} hide-checkbox-column></lightning-datatable>
+                            </template>
+                            <template if:false={hasTopPerformers}>
+                                <p class="slds-text-body_regular slds-text-color_weak">No data.</p>
+                            </template>
+                        </div>
+
+                        <div class="kpi-panel slds-m-top_medium">
+                            <h3 class="slds-text-heading_small slds-m-bottom_x-small">
+                                Needs Attention
+                            </h3>
+                            <template if:true={hasBottomPerformers}>
+                                <lightning-datatable key-field="userId" data={bottomPerformers}
+                                    columns={performerColumns} hide-checkbox-column></lightning-datatable>
+                            </template>
+                            <template if:false={hasBottomPerformers}>
+                                <p class="slds-text-body_regular slds-text-color_weak">No data.</p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
