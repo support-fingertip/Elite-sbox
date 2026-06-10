@@ -370,6 +370,51 @@ export default class SecondaryTargetManager extends LightningElement {
         link.click();
     }
 
+    // ===== Export current view to CSV =====
+    handleExport() {
+        if (!this.rows || !this.rows.length) {
+            this.toast('Nothing to export', 'The list is empty.', 'warning');
+            return;
+        }
+        const headers = [
+            'Target Name', 'User', 'Criteria', 'Focus Pack', 'Channel',
+            'Start Date', 'End Date', 'Year',
+            'Target Value', 'Achievement Value', 'Achievement %', 'Pending', 'Working Days',
+            'Active', 'Last Updated'
+        ];
+        const fmtBool = b => (b === true ? 'TRUE' : 'FALSE');
+        const fmtDate = d => (d ? String(d) : '');
+        const fmtNum = n => (n === null || n === undefined ? '' : String(n));
+        const csvRows = this.rows.map(r => [
+            r.Name,
+            r.userName,
+            r.criteriaName,
+            r.packName,
+            r.Sales_Channel__c,
+            fmtDate(r.Start_Date__c),
+            fmtDate(r.End_Date__c),
+            fmtNum(r.Year__c),
+            fmtNum(r.Target_Value__c),
+            fmtNum(r.Achievement_Value__c),
+            fmtNum(r.Achievement_Percent__c),
+            fmtNum(r.Pending_Target__c),
+            fmtNum(r.Working_Days__c),
+            fmtBool(r.Is_Active__c),
+            fmtDate(r.Last_Updated__c)
+        ]);
+        const csv = [headers, ...csvRows]
+            .map(row => row.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(','))
+            .join('\n');
+        const dataUri = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(csv);
+        const link = this.template.querySelector('.csv-download-link');
+        if (!link) return;
+        const today = new Date().toISOString().slice(0, 10);
+        link.setAttribute('href', dataUri);
+        link.setAttribute('download', `secondary_targets_${today}.csv`);
+        link.click();
+        this.toast('Exported', `${this.rows.length} row${this.rows.length === 1 ? '' : 's'} downloaded.`, 'success');
+    }
+
     // ===== CSV Import =====
     openFilePicker() {
         const input = this.template.querySelector('.csv-file-input');

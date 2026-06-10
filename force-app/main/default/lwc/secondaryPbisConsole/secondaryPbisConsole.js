@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import runMonthAsync from '@salesforce/apex/SecondaryPBIS_Controller.runMonthAsync';
 import getOverlappingTargets from '@salesforce/apex/SecondaryPBIS_Controller.getOverlappingTargets';
+import getAllMonthlyRows from '@salesforce/apex/SecondaryPBIS_Controller.getAllMonthlyRows';
 import getUserMonthlyTotals from '@salesforce/apex/SecondaryPBIS_Controller.getUserMonthlyTotals';
 import getUserMonthlyRows from '@salesforce/apex/SecondaryPBIS_Controller.getUserMonthlyRows';
 
@@ -113,6 +114,59 @@ export default class SecondaryPbisConsole extends LightningElement {
     }
 
     handleRefresh() { this.loadTotals(); }
+
+    handleExport() {
+        if (!this.year || !this.month) {
+            this.toast('Validation', 'Pick Year and Month first.', 'error');
+            return;
+        }
+        this.isLoading = true;
+        getAllMonthlyRows({ year: this.year, month: this.month })
+            .then(rows => {
+                if (!rows || !rows.length) {
+                    this.toast('Nothing to export', `No PBIS rows for ${this.periodLabel}.`, 'warning');
+                    return;
+                }
+                const headers = [
+                    'Executive', 'Channel', 'Year', 'Month', 'Secondary Target',
+                    'Criterion', 'Operator', 'Focus Pack', 'Compare On',
+                    'Achievement Value', 'Achievement %',
+                    'Slab From', 'Slab To', 'Incentive Amount', 'Computed At'
+                ];
+                const fmt = v => (v === null || v === undefined ? '' : String(v));
+                const csvRows = rows.map(r => [
+                    (r.Executive__r && r.Executive__r.Name) || r.User_Name__c || '',
+                    fmt(r.Sales_Channel__c),
+                    fmt(r.Year__c),
+                    fmt(r.Month__c),
+                    (r.Secondary_Target__r && r.Secondary_Target__r.Name) || '',
+                    (r.Target_Criteria__r && r.Target_Criteria__r.Name) || '',
+                    (r.Target_Criteria__r && r.Target_Criteria__r.Operator__c) || '',
+                    (r.Focused_Pack__r && r.Focused_Pack__r.Name) || '',
+                    fmt(r.Compare_On__c),
+                    fmt(r.Achievement_Value__c),
+                    fmt(r.Achievement_Percent__c),
+                    fmt(r.Matched_Slab__r && r.Matched_Slab__r.Achievement_From__c),
+                    fmt(r.Matched_Slab__r && r.Matched_Slab__r.Achievement_To__c),
+                    fmt(r.Credit_Amount__c),
+                    fmt(r.Computed_At__c)
+                ]);
+                const csv = [headers, ...csvRows]
+                    .map(row => row.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(','))
+                    .join('\n');
+                const dataUri = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(csv);
+                const link = this.template.querySelector('.pbis-download-link');
+                if (!link) return;
+                const yearStr = String(this.year);
+                const monthStr = String(this.month).padStart(2, '0');
+                link.setAttribute('href', dataUri);
+                link.setAttribute('download', `secondary_pbis_${yearStr}_${monthStr}.csv`);
+                link.click();
+                this.toast('Exported', `${rows.length} row${rows.length === 1 ? '' : 's'} downloaded.`, 'success');
+            })
+            .catch(e => this.toast('Error', this.msg(e), 'error'))
+            .finally(() => { this.isLoading = false; });
+    }
 
     loadTotals() {
         if (!this.year || !this.month) return;

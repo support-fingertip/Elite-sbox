@@ -1,5 +1,7 @@
 <template>
     <lightning-card title="Secondary Targets" icon-name="standard:goals">
+        <lightning-button slot="actions" label="Export" icon-name="utility:save"
+            onclick={handleExport} class="slds-m-right_x-small"></lightning-button>
         <lightning-button slot="actions" label="Download Template" icon-name="utility:download"
             onclick={handleDownloadTemplate} class="slds-m-right_x-small"></lightning-button>
         <lightning-button slot="actions" label="Import CSV" icon-name="utility:upload"

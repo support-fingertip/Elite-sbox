@@ -1,9 +1,13 @@
 <template>
     <lightning-card title="Secondary PBIS Console" icon-name="standard:reward">
+        <lightning-button slot="actions" label="Export" icon-name="utility:save"
+            onclick={handleExport} class="slds-m-right_x-small"></lightning-button>
         <lightning-button slot="actions" label="Refresh" icon-name="utility:refresh"
             onclick={handleRefresh} class="slds-m-right_x-small"></lightning-button>
         <lightning-button slot="actions" label="Run PBIS for this Month" icon-name="utility:play"
             variant="brand" onclick={handleRun}></lightning-button>
+
+        <a class="pbis-download-link" style="display:none;"></a>
 
         <div class="slds-p-horizontal_medium">
             <div class="slds-grid slds-gutters slds-grid_vertical-align-end slds-m-bottom_small slds-wrap">

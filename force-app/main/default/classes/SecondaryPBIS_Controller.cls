@@ -132,6 +132,26 @@ public with sharing class SecondaryPBIS_Controller {
         return result;
     }
 
+    /** Flat per-incentive-row export for the whole month — every user, every criterion. */
+    @AuraEnabled(cacheable=false)
+    public static List<Incentive_Credit__c> getAllMonthlyRows(Integer year, Integer month) {
+        if (year == null || month == null) return new List<Incentive_Credit__c>();
+        return [
+            SELECT Id, Executive__c, Executive__r.Name, User_Name__c, Sales_Channel__c, Year__c, Month__c,
+                   Target_Criteria__c, Target_Criteria__r.Name, Target_Criteria__r.Operator__c,
+                   Focused_Pack__c, Focused_Pack__r.Name, Matched_Slab__c,
+                   Matched_Slab__r.Achievement_From__c, Matched_Slab__r.Achievement_To__c,
+                   Matched_Slab__r.Incentive_Amount__c,
+                   Secondary_Target__c, Secondary_Target__r.Name,
+                   Achievement_Value__c, Achievement_Percent__c, Compare_On__c,
+                   Credit_Amount__c, Computed_At__c
+            FROM Incentive_Credit__c
+            WHERE Source__c = 'Secondary PBIS'
+              AND Year__c = :year AND Month__c = :month
+            ORDER BY Executive__r.Name, Target_Criteria__r.Name
+        ];
+    }
+
     @AuraEnabled(cacheable=false)
     public static List<Incentive_Credit__c> getUserMonthlyRows(Id executiveId, Integer year, Integer month) {
         return [
