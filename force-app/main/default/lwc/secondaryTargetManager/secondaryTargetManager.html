@@ -191,53 +191,47 @@
                     <div class="slds-box slds-box_x-small slds-m-bottom_medium">
                         <div class="slds-grid slds-gutters slds-wrap">
                             <div class="slds-col slds-size_1-of-2">
-                                <span class="tcb-detail-label">Criterion</span>
-                                <div class="tcb-detail-value">{explain.criterionName}</div>
+                                <dl class="slds-dl_horizontal">
+                                    <dt class="slds-dl_horizontal__label">Criterion</dt>
+                                    <dd class="slds-dl_horizontal__detail">{explain.criterionName}</dd>
+                                    <dt class="slds-dl_horizontal__label">Source Object</dt>
+                                    <dd class="slds-dl_horizontal__detail">{explain.sourceObject}</dd>
+                                    <dt class="slds-dl_horizontal__label">Date Field</dt>
+                                    <dd class="slds-dl_horizontal__detail">{explain.dateField}</dd>
+                                    <dt class="slds-dl_horizontal__label">User Field</dt>
+                                    <dd class="slds-dl_horizontal__detail">{explain.userField}</dd>
+                                    <template if:true={explain.focusPackName}>
+                                        <dt class="slds-dl_horizontal__label">Focus Pack</dt>
+                                        <dd class="slds-dl_horizontal__detail">{explain.focusPackName}</dd>
+                                    </template>
+                                </dl>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
-                                <span class="tcb-detail-label">Operator</span>
-                                <div class="tcb-detail-value">{explain.operator}</div>
+                                <dl class="slds-dl_horizontal">
+                                    <dt class="slds-dl_horizontal__label">Operator</dt>
+                                    <dd class="slds-dl_horizontal__detail">
+                                        <span class="slds-badge slds-badge_lightest">{explain.operator}</span>
+                                    </dd>
+                                    <dt class="slds-dl_horizontal__label">Period</dt>
+                                    <dd class="slds-dl_horizontal__detail">
+                                        <lightning-formatted-date-time value={explain.startDate}
+                                            year="numeric" month="short" day="2-digit"></lightning-formatted-date-time>
+                                        &nbsp;–&nbsp;
+                                        <lightning-formatted-date-time value={explain.endDate}
+                                            year="numeric" month="short" day="2-digit"></lightning-formatted-date-time>
+                                    </dd>
+                                    <dt class="slds-dl_horizontal__label">Working Days</dt>
+                                    <dd class="slds-dl_horizontal__detail">{explain.workingDays}</dd>
+                                    <dt class="slds-dl_horizontal__label">Achievement Value</dt>
+                                    <dd class="slds-dl_horizontal__detail">
+                                        <strong>{explain.achievementValue}</strong>
+                                    </dd>
+                                    <template if:true={explain.focusPackName}>
+                                        <dt class="slds-dl_horizontal__label">Minimum Qualifying Qty</dt>
+                                        <dd class="slds-dl_horizontal__detail">{explain.minQualifyingQty}</dd>
+                                    </template>
+                                </dl>
                             </div>
-                            <div class="slds-col slds-size_1-of-3">
-                                <span class="tcb-detail-label">Source Object</span>
-                                <div class="tcb-detail-value">{explain.sourceObject}</div>
-                            </div>
-                            <div class="slds-col slds-size_1-of-3">
-                                <span class="tcb-detail-label">Date Field</span>
-                                <div class="tcb-detail-value">{explain.dateField}</div>
-                            </div>
-                            <div class="slds-col slds-size_1-of-3">
-                                <span class="tcb-detail-label">User Field</span>
-                                <div class="tcb-detail-value">{explain.userField}</div>
-                            </div>
-                            <div class="slds-col slds-size_1-of-3">
-                                <span class="tcb-detail-label">Period</span>
-                                <div class="tcb-detail-value">
-                                    <lightning-formatted-date-time value={explain.startDate}
-                                        year="numeric" month="short" day="2-digit"></lightning-formatted-date-time>
-                                    &nbsp;–&nbsp;
-                                    <lightning-formatted-date-time value={explain.endDate}
-                                        year="numeric" month="short" day="2-digit"></lightning-formatted-date-time>
-                                </div>
-                            </div>
-                            <div class="slds-col slds-size_1-of-3">
-                                <span class="tcb-detail-label">Working Days</span>
-                                <div class="tcb-detail-value">{explain.workingDays}</div>
-                            </div>
-                            <div class="slds-col slds-size_1-of-3">
-                                <span class="tcb-detail-label">Achievement Value</span>
-                                <div class="tcb-detail-value"><strong>{explain.achievementValue}</strong></div>
-                            </div>
-                            <template if:true={explain.focusPackName}>
-                                <div class="slds-col slds-size_1-of-2">
-                                    <span class="tcb-detail-label">Focus Pack</span>
-                                    <div class="tcb-detail-value">{explain.focusPackName}</div>
-                                </div>
-                                <div class="slds-col slds-size_1-of-2">
-                                    <span class="tcb-detail-label">Minimum Qualifying Qty</span>
-                                    <div class="tcb-detail-value">{explain.minQualifyingQty}</div>
-                                </div>
-                            </template>
                         </div>
                     </div>
 
