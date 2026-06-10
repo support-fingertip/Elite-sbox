@@ -28,6 +28,28 @@ public without sharing class SecondaryPBIS_Service {
         @AuraEnabled public String reason;
     }
 
+    /**
+     * Read-only scan of overlapping active targets for the month. Same dedup
+     * rule the engine uses — admins can preview / monitor without running PBIS.
+     */
+    public static List<SkippedTargetInfo> findOverlappingTargets(Integer year, Integer month) {
+        Date monthStart = Date.newInstance(year, month, 1);
+        Date monthEnd = monthStart.addMonths(1).addDays(-1);
+        List<Secondary_Target__c> targets = [
+            SELECT Id, Name, User__c, User__r.Name, Target_Criteria__c,
+                   Target_Criteria__r.Name, Focused_Pack__c, Focused_Pack__r.Name,
+                   Achievement_Value__c, Achievement_Percent__c,
+                   LastModifiedDate
+            FROM Secondary_Target__c
+            WHERE Is_Active__c = true
+              AND Target_Criteria__c != NULL
+              AND User__c != NULL
+              AND Start_Date__c <= :monthEnd
+              AND End_Date__c >= :monthStart
+        ];
+        return collectSkipped(targets);
+    }
+
     /** Compute and persist Secondary PBIS rows for the given month. */
     public static PbisRunResult computeForMonth(Integer year, Integer month) {
         PbisRunResult res = new PbisRunResult();
@@ -52,33 +74,9 @@ public without sharing class SecondaryPBIS_Service {
         // (user, criterion, pack) and both overlap the month, only the best one
         // pays. Tie-breaker order: highest Achievement_Percent, then highest
         // Achievement_Value, then latest LastModifiedDate.
-        Map<String, Secondary_Target__c> bestByKey = new Map<String, Secondary_Target__c>();
-        for (Secondary_Target__c t : targets) {
-            String key = String.valueOf(t.User__c) + '|' +
-                String.valueOf(t.Target_Criteria__c) + '|' +
-                (t.Focused_Pack__c == null ? '_' : String.valueOf(t.Focused_Pack__c));
-            Secondary_Target__c kept = bestByKey.get(key);
-            if (kept == null || isBetterTarget(t, kept)) bestByKey.put(key, t);
-        }
-        // Capture losers (anything not chosen for its key) so the admin can clean them up.
-        for (Secondary_Target__c t : targets) {
-            String key = String.valueOf(t.User__c) + '|' +
-                String.valueOf(t.Target_Criteria__c) + '|' +
-                (t.Focused_Pack__c == null ? '_' : String.valueOf(t.Focused_Pack__c));
-            Secondary_Target__c winner = bestByKey.get(key);
-            if (winner.Id == t.Id) continue;
-            SkippedTargetInfo s = new SkippedTargetInfo();
-            s.targetId = t.Id;
-            s.targetName = t.Name;
-            s.userName = t.User__r != null ? t.User__r.Name : null;
-            s.criterionName = t.Target_Criteria__r != null ? t.Target_Criteria__r.Name : null;
-            s.focusPackName = t.Focused_Pack__r != null ? t.Focused_Pack__r.Name : null;
-            s.keptTargetId = winner.Id;
-            s.keptTargetName = winner.Name;
-            s.reason = 'Overlapping active duplicate for the same user / criterion / pack — kept ' + winner.Name + ' instead.';
-            res.skipped.add(s);
-        }
-        targets = bestByKey.values();
+        Map<Id, Secondary_Target__c> winnersById = pickBestPerKey(targets);
+        res.skipped = collectSkippedFromWinners(targets, winnersById);
+        targets = winnersById.values();
 
         List<Incentive_Slab__c> slabs = [
             SELECT Id, Target_Criteria__c, Sales_Channel__c, Focused_Pack__c,
@@ -166,6 +164,53 @@ public without sharing class SecondaryPBIS_Service {
             }
         }
         return best;
+    }
+
+    private static String keyOf(Secondary_Target__c t) {
+        return String.valueOf(t.User__c) + '|' +
+            String.valueOf(t.Target_Criteria__c) + '|' +
+            (t.Focused_Pack__c == null ? '_' : String.valueOf(t.Focused_Pack__c));
+    }
+
+    private static Map<Id, Secondary_Target__c> pickBestPerKey(List<Secondary_Target__c> targets) {
+        Map<String, Secondary_Target__c> bestByKey = new Map<String, Secondary_Target__c>();
+        for (Secondary_Target__c t : targets) {
+            String k = keyOf(t);
+            Secondary_Target__c kept = bestByKey.get(k);
+            if (kept == null || isBetterTarget(t, kept)) bestByKey.put(k, t);
+        }
+        Map<Id, Secondary_Target__c> out = new Map<Id, Secondary_Target__c>();
+        for (Secondary_Target__c w : bestByKey.values()) out.put(w.Id, w);
+        return out;
+    }
+
+    private static List<SkippedTargetInfo> collectSkippedFromWinners(
+        List<Secondary_Target__c> targets, Map<Id, Secondary_Target__c> winnersById
+    ) {
+        Map<String, Secondary_Target__c> winnerByKey = new Map<String, Secondary_Target__c>();
+        for (Secondary_Target__c w : winnersById.values()) winnerByKey.put(keyOf(w), w);
+        List<SkippedTargetInfo> out = new List<SkippedTargetInfo>();
+        for (Secondary_Target__c t : targets) {
+            if (winnersById.containsKey(t.Id)) continue;
+            Secondary_Target__c w = winnerByKey.get(keyOf(t));
+            SkippedTargetInfo s = new SkippedTargetInfo();
+            s.targetId = t.Id;
+            s.targetName = t.Name;
+            s.userName = t.User__r != null ? t.User__r.Name : null;
+            s.criterionName = t.Target_Criteria__r != null ? t.Target_Criteria__r.Name : null;
+            s.focusPackName = t.Focused_Pack__r != null ? t.Focused_Pack__r.Name : null;
+            s.keptTargetId = w == null ? null : w.Id;
+            s.keptTargetName = w == null ? null : w.Name;
+            s.reason = 'Overlapping active duplicate for the same user / criterion / pack — kept '
+                + (w == null ? '(unknown)' : w.Name) + ' instead.';
+            out.add(s);
+        }
+        return out;
+    }
+
+    private static List<SkippedTargetInfo> collectSkipped(List<Secondary_Target__c> targets) {
+        Map<Id, Secondary_Target__c> winners = pickBestPerKey(targets);
+        return collectSkippedFromWinners(targets, winners);
     }
 
     // Returns true when candidate is strictly better than kept.

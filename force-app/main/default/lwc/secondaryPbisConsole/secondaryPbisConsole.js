@@ -1,6 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import runMonth from '@salesforce/apex/SecondaryPBIS_Controller.runMonth';
+import runMonthAsync from '@salesforce/apex/SecondaryPBIS_Controller.runMonthAsync';
+import getOverlappingTargets from '@salesforce/apex/SecondaryPBIS_Controller.getOverlappingTargets';
 import getUserMonthlyTotals from '@salesforce/apex/SecondaryPBIS_Controller.getUserMonthlyTotals';
 import getUserMonthlyRows from '@salesforce/apex/SecondaryPBIS_Controller.getUserMonthlyRows';
 
@@ -94,21 +95,18 @@ export default class SecondaryPbisConsole extends LightningElement {
             return;
         }
         this.isLoading = true;
-        runMonth({ year: this.year, month: this.month })
-            .then(res => {
-                const rows = (res && res.rowsWritten) || 0;
-                const skipped = (res && res.skipped) || [];
-                this.skippedDuplicates = skipped.map((s, i) => ({ id: i + 1, ...s }));
-                const tail = skipped.length
-                    ? ` ${skipped.length} duplicate target${skipped.length === 1 ? '' : 's'} skipped.`
-                    : '';
+        this.skippedDuplicates = [];   // clear stale info from a previous sync run
+        runMonthAsync({ year: this.year, month: this.month })
+            .then(() => {
                 this.toast(
-                    'Done',
-                    `Wrote ${rows} incentive row${rows === 1 ? '' : 's'} for ${this.periodLabel}.${tail}`,
-                    skipped.length ? 'warning' : 'success'
+                    'Started',
+                    `PBIS computation started for ${this.periodLabel}. Refreshing shortly…`,
+                    'success'
                 );
-                this.loadTotals();
                 this.showLines = false;
+                // Auto-refresh after a short delay so the queueable has time to commit.
+                // eslint-disable-next-line @lwc/lwc/no-async-operation
+                setTimeout(() => this.loadTotals(), 5000);
             })
             .catch(e => this.toast('Error', this.msg(e), 'error'))
             .finally(() => { this.isLoading = false; });
@@ -119,8 +117,15 @@ export default class SecondaryPbisConsole extends LightningElement {
     loadTotals() {
         if (!this.year || !this.month) return;
         this.isLoading = true;
-        getUserMonthlyTotals({ year: this.year, month: this.month })
-            .then(d => { this.totals = d || []; this.showLines = false; })
+        Promise.all([
+            getUserMonthlyTotals({ year: this.year, month: this.month }),
+            getOverlappingTargets({ year: this.year, month: this.month })
+        ])
+            .then(([totals, dupes]) => {
+                this.totals = totals || [];
+                this.skippedDuplicates = (dupes || []).map((s, i) => ({ id: i + 1, ...s }));
+                this.showLines = false;
+            })
             .catch(e => this.toast('Error', this.msg(e), 'error'))
             .finally(() => { this.isLoading = false; });
     }

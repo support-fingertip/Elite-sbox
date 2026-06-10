@@ -81,6 +81,12 @@ public with sharing class SecondaryPBIS_Controller {
         return SecondaryPBIS_Service.computeForMonth(year, month);
     }
 
+    @AuraEnabled(cacheable=false)
+    public static List<SecondaryPBIS_Service.SkippedTargetInfo> getOverlappingTargets(Integer year, Integer month) {
+        if (year == null || month == null || month < 1 || month > 12) return new List<SecondaryPBIS_Service.SkippedTargetInfo>();
+        return SecondaryPBIS_Service.findOverlappingTargets(year, month);
+    }
+
     @AuraEnabled
     public static Id runMonthAsync(Integer year, Integer month) {
         if (year == null || month == null || month < 1 || month > 12) {
