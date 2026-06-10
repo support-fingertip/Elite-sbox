@@ -67,25 +67,74 @@ is created, which controls the page layout, required fields, and approval path.
 | **Approval path** | Up to **Credit Dept. approval** (3 levels) | Up to **Level 2 approval** (2 levels) |
 | **ERP / SAP sync** | Synced after credit approval & activation | Synced on creation and on activation |
 
-### 1.3 How to Create a Customer — step by step
+### 1.3 How to Create a Customer — step by step (the screens)
 
-> The standard Salesforce "New / Edit Account" screen is replaced by a custom Elite screen, so the
-> create experience is tailored to the DMS process.
+> The standard Salesforce "New / Edit Account" screen is replaced by a custom Elite wizard. The
+> screens described below are the actual screens in the **`newCustomerLwc`** component
+> (`force-app/main/default/lwc/newCustomerLwc`) — open its `.html` to see each field, and its `.js`
+> for the navigation rules. The whole thing is a **pop-up wizard** with a heading that shows the
+> current step and **Proceed** / **Previous** (or **Cancel** / **Save**) buttons at the bottom.
 
-1. **Start a new customer.** Use the **New Customer** action. This opens the custom creation form
-   (the standard New/Edit Account screen is overridden by Elite's own screen).
-2. **Pick the customer type** — *Primary Customer* or *Secondary Customer*. The form fields adjust
-   to what that type needs.
-3. **Fill in the details:**
-   - **Identity & contact:** name, contact person, phone(s), email.
-   - **KYC / compliance:** GST number, PAN, Aadhaar, etc.
-   - **Address & location:** state, district, pincode, street, geo-location.
-   - **Banking & credit** *(mainly Primary)*: bank account details, payment type, credit limit.
-   - For **Secondary**, also select the parent **distributor** and the high-margin value.
-4. **Upload supporting documents** (KYC proofs, agreements). The upload step attaches files to the
-   new customer record.
-5. **Save.** The customer is created in **Pending** approval status.
-6. **Assign to a sales rep / employee** so the right person services this customer on their beat.
+**Where the wizard goes (the screen sequence):**
+
+```
+                                           ┌─ Primary Customer ───────────┐
+ [1] Customer Details ─► [2] Product Mapping┤                              ├─► [4] CCN Verification ─► Save
+                                           └─ Secondary + On-Premises ─────┘            ▲
+                                                                              [3] Photo Upload
+                                           ┌─ Secondary, NOT On-Premises ──────────────────────────────────┐
+                                           └────────────────────────► [4] CCN Verification ─► Save (no Photo)┘
+```
+
+> The exact path depends on **Customer Type** and the **On Customer Premises** toggle. Photo Upload
+> and CCN Verification can also be **skipped automatically** for certain customer types / sales
+> channels (driven by config), in which case the button becomes **Save** earlier.
+
+---
+
+**Screen 1 — Customer Details** *(`showAccountScreen`)*
+Open the **New Customer** action; this is the first screen. It is organized into sub-sections:
+- **Customer Information** — pick **Customer Type** (Primary/Secondary) first; the rest of the form
+  reshapes itself. Then Name; for Primary: Customer Group + Primary type/business type; for
+  Secondary: Secondary type/business type/category.
+- **Contact Information** — Primary Phone (10-digit, required), Aadhaar, GST (required for Primary),
+  Email, contact person details, PAN.
+- **Bank Information & Reference Information** *(Primary only)* — company/owner name, security
+  cheque, full bank account details, reference contacts.
+- **Additional Information** — payment type, credit limit (Primary), payment term + high margin
+  (Secondary), the **Beat** search/picker, and the **On Customer Premises** toggle.
+- **Address Information** — state, district, city/town, pincode, street (required), plus door/
+  building/landmark.
+
+On **Proceed**, the screen validates the fields and runs a **duplicate-customer check** before
+moving on.
+
+**Screen 2 — Product Mapping** *(`showProductScreen`)*
+Add one or more product-mapping rows (with add / clone / delete on each row):
+- **Secondary** customers: pick the **Executive**, the parent **Primary Customer**, and optionally a
+  **Sub Stockiest**.
+- **Primary** customers: pick Executive, **Sales Channel, Territory, PDP Day, Sales Organization,
+  Delivery Plant, Sales Office, Division, Order Type, Distribution Channel, Payment Term, Credit
+  Description, Inco Terms**.
+
+On **Proceed**, rows are validated; if **On Customer Premises** is on, the device **geo-location** is
+captured here.
+
+**Screen 3 — Photo Upload** *(`showCameraScreen`)*
+Shown for **Primary** customers and for **Secondary** customers created **on the customer's
+premises**. It embeds the **`customerFileUploadLwc`** component to capture/upload KYC photos &
+documents (linked to the account via `UniqueFileId__c`).
+
+**Screen 4 — CCN Verification** *(`showVerificationScreen`)*
+A **Customer Confirmation Number (CCN/OTP)** is sent to the customer's primary mobile. The user
+selects the number, clicks **Send CCN**, enters the code, and clicks **Verify CCN** (with a resend
+timer). On success a confirmation screen appears and the **Save** button completes the process.
+This step can be skipped automatically for certain customer types / sales channels.
+
+**Final — Save & assign**
+On the last step the **Proceed** button reads **Save**. Saving creates the customer in **Pending**
+approval status; the customer is then assigned to a sales rep / employee
+(`customerAssignment`) so it appears on their beat.
 
 **What happens automatically when you save** (no manual action needed):
 
