@@ -340,14 +340,13 @@ export default class SecondaryTargetManager extends LightningElement {
         const lines = [CSV_HEADERS, ...CSV_SAMPLES]
             .map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))
             .join('\n');
-        // BOM for Excel UTF-8 friendliness
-        const blob = new Blob(['﻿' + lines], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'secondary_targets_template.csv';
-        a.click();
-        URL.revokeObjectURL(url);
+        // %EF%BB%BF is the URL-encoded UTF-8 BOM so Excel opens it cleanly.
+        const dataUri = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(lines);
+        const link = this.template.querySelector('.csv-download-link');
+        if (!link) return;
+        link.setAttribute('href', dataUri);
+        link.setAttribute('download', 'secondary_targets_template.csv');
+        link.click();
     }
 
     // ===== CSV Import =====
