@@ -74,7 +74,7 @@ public with sharing class SecondaryPBIS_Controller {
     // ===== Run PBIS =====
 
     @AuraEnabled
-    public static Integer runMonth(Integer year, Integer month) {
+    public static SecondaryPBIS_Service.PbisRunResult runMonth(Integer year, Integer month) {
         if (year == null || month == null || month < 1 || month > 12) {
             throw new AuraHandledException('Year and month (1-12) are required.');
         }
@@ -134,7 +134,8 @@ public with sharing class SecondaryPBIS_Controller {
                    Focused_Pack__c, Focused_Pack__r.Name, Matched_Slab__c,
                    Matched_Slab__r.Achievement_From__c, Matched_Slab__r.Achievement_To__c,
                    Matched_Slab__r.Incentive_Amount__c,
-                   Secondary_Target__c, Achievement_Value__c, Achievement_Percent__c,
+                   Secondary_Target__c, Secondary_Target__r.Name,
+                   Achievement_Value__c, Achievement_Percent__c,
                    Compare_On__c, Credit_Amount__c, Computed_At__c
             FROM Incentive_Credit__c
             WHERE Source__c = 'Secondary PBIS'

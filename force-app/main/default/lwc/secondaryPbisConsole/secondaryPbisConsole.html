@@ -40,6 +40,41 @@
                 </div>
             </template>
 
+            <template if:true={hasSkippedDuplicates}>
+                <div class="slds-m-top_medium slds-box slds-box_x-small slds-theme_warning">
+                    <h3 class="slds-text-heading_small slds-m-bottom_x-small">
+                        Duplicates skipped ({skippedCount})
+                    </h3>
+                    <p class="slds-text-body_small slds-m-bottom_small">
+                        Multiple active Secondary Targets overlapped the same (user, criterion, focus pack).
+                        Each row below was ignored — its winner was kept instead. Deactivate the duplicates to
+                        clear this notice on the next run.
+                    </p>
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                        <thead>
+                            <tr class="slds-text-title_caps">
+                                <th>Skipped Target</th>
+                                <th>User</th>
+                                <th>Criterion</th>
+                                <th>Focus Pack</th>
+                                <th>Kept Target</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={skippedDuplicates} for:item="s">
+                                <tr key={s.id}>
+                                    <td>{s.targetName}</td>
+                                    <td>{s.userName}</td>
+                                    <td>{s.criterionName}</td>
+                                    <td>{s.focusPackName}</td>
+                                    <td>{s.keptTargetName}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
             <template if:true={showLines}>
                 <div class="slds-m-top_medium">
                     <h2 class="slds-text-heading_small slds-m-bottom_x-small">

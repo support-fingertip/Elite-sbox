@@ -29,6 +29,7 @@ const TOTAL_COLUMNS = [
 ];
 
 const LINE_COLUMNS = [
+    { label: 'Target', fieldName: 'targetName', type: 'text', initialWidth: 110 },
     { label: 'Criterion', fieldName: 'criteriaName', type: 'text' },
     { label: 'Focus Pack', fieldName: 'packName', type: 'text' },
     { label: 'Compare', fieldName: 'Compare_On__c', type: 'text', initialWidth: 90 },
@@ -56,6 +57,7 @@ export default class SecondaryPbisConsole extends LightningElement {
     @track selectedUserName = '';
     @track isLoading = false;
     @track showLines = false;
+    @track skippedDuplicates = [];
 
     connectedCallback() {
         const now = new Date();
@@ -67,6 +69,8 @@ export default class SecondaryPbisConsole extends LightningElement {
 
     get hasTotals() { return this.totals && this.totals.length > 0; }
     get hasLines() { return this.lines && this.lines.length > 0; }
+    get hasSkippedDuplicates() { return this.skippedDuplicates && this.skippedDuplicates.length > 0; }
+    get skippedCount() { return this.skippedDuplicates ? this.skippedDuplicates.length : 0; }
     get periodLabel() {
         const opt = MONTHS.find(o => o.value === Number(this.month));
         return (opt ? opt.label : '') + ' ' + (this.year || '');
@@ -91,8 +95,18 @@ export default class SecondaryPbisConsole extends LightningElement {
         }
         this.isLoading = true;
         runMonth({ year: this.year, month: this.month })
-            .then(count => {
-                this.toast('Done', `Wrote ${count} incentive row${count === 1 ? '' : 's'} for ${this.periodLabel}.`, 'success');
+            .then(res => {
+                const rows = (res && res.rowsWritten) || 0;
+                const skipped = (res && res.skipped) || [];
+                this.skippedDuplicates = skipped.map((s, i) => ({ id: i + 1, ...s }));
+                const tail = skipped.length
+                    ? ` ${skipped.length} duplicate target${skipped.length === 1 ? '' : 's'} skipped.`
+                    : '';
+                this.toast(
+                    'Done',
+                    `Wrote ${rows} incentive row${rows === 1 ? '' : 's'} for ${this.periodLabel}.${tail}`,
+                    skipped.length ? 'warning' : 'success'
+                );
                 this.loadTotals();
                 this.showLines = false;
             })
@@ -122,6 +136,7 @@ export default class SecondaryPbisConsole extends LightningElement {
                     ...r,
                     criteriaName: (r.Target_Criteria__r && r.Target_Criteria__r.Name) || '',
                     operator: (r.Target_Criteria__r && r.Target_Criteria__r.Operator__c) || '',
+                    targetName: (r.Secondary_Target__r && r.Secondary_Target__r.Name) || '',
                     packName: (r.Focused_Pack__r && r.Focused_Pack__r.Name) || '',
                     achPct: r.Achievement_Percent__c != null ? r.Achievement_Percent__c / 100 : null,
                     slabFrom: (r.Matched_Slab__r && r.Matched_Slab__r.Achievement_From__c) ?? null,

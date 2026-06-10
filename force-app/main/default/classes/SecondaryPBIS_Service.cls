@@ -12,14 +12,32 @@ public without sharing class SecondaryPBIS_Service {
 
     public static final String SOURCE_SEC_PBIS = 'Secondary PBIS';
 
-    /** Returns the number of Incentive_Credit__c rows written. */
-    public static Integer computeForMonth(Integer year, Integer month) {
+    public class PbisRunResult {
+        @AuraEnabled public Integer rowsWritten = 0;
+        @AuraEnabled public List<SkippedTargetInfo> skipped = new List<SkippedTargetInfo>();
+    }
+
+    public class SkippedTargetInfo {
+        @AuraEnabled public Id targetId;
+        @AuraEnabled public String targetName;
+        @AuraEnabled public String userName;
+        @AuraEnabled public String criterionName;
+        @AuraEnabled public String focusPackName;
+        @AuraEnabled public Id keptTargetId;
+        @AuraEnabled public String keptTargetName;
+        @AuraEnabled public String reason;
+    }
+
+    /** Compute and persist Secondary PBIS rows for the given month. */
+    public static PbisRunResult computeForMonth(Integer year, Integer month) {
+        PbisRunResult res = new PbisRunResult();
         Date monthStart = Date.newInstance(year, month, 1);
         Date monthEnd = monthStart.addMonths(1).addDays(-1);
 
         List<Secondary_Target__c> targets = [
-            SELECT Id, User__c, User__r.Name, Sales_Channel__c, Target_Criteria__c,
-                   Focused_Pack__c, Achievement_Value__c, Achievement_Percent__c,
+            SELECT Id, Name, User__c, User__r.Name, Sales_Channel__c, Target_Criteria__c,
+                   Target_Criteria__r.Name, Focused_Pack__c, Focused_Pack__r.Name,
+                   Achievement_Value__c, Achievement_Percent__c,
                    Start_Date__c, End_Date__c, LastModifiedDate
             FROM Secondary_Target__c
             WHERE Is_Active__c = true
@@ -28,7 +46,7 @@ public without sharing class SecondaryPBIS_Service {
               AND Start_Date__c <= :monthEnd
               AND End_Date__c >= :monthStart
         ];
-        if (targets.isEmpty()) return 0;
+        if (targets.isEmpty()) return res;
 
         // Safety-net dedup: if two active targets exist for the same
         // (user, criterion, pack) and both overlap the month, only the best one
@@ -41,6 +59,24 @@ public without sharing class SecondaryPBIS_Service {
                 (t.Focused_Pack__c == null ? '_' : String.valueOf(t.Focused_Pack__c));
             Secondary_Target__c kept = bestByKey.get(key);
             if (kept == null || isBetterTarget(t, kept)) bestByKey.put(key, t);
+        }
+        // Capture losers (anything not chosen for its key) so the admin can clean them up.
+        for (Secondary_Target__c t : targets) {
+            String key = String.valueOf(t.User__c) + '|' +
+                String.valueOf(t.Target_Criteria__c) + '|' +
+                (t.Focused_Pack__c == null ? '_' : String.valueOf(t.Focused_Pack__c));
+            Secondary_Target__c winner = bestByKey.get(key);
+            if (winner.Id == t.Id) continue;
+            SkippedTargetInfo s = new SkippedTargetInfo();
+            s.targetId = t.Id;
+            s.targetName = t.Name;
+            s.userName = t.User__r != null ? t.User__r.Name : null;
+            s.criterionName = t.Target_Criteria__r != null ? t.Target_Criteria__r.Name : null;
+            s.focusPackName = t.Focused_Pack__r != null ? t.Focused_Pack__r.Name : null;
+            s.keptTargetId = winner.Id;
+            s.keptTargetName = winner.Name;
+            s.reason = 'Overlapping active duplicate for the same user / criterion / pack — kept ' + winner.Name + ' instead.';
+            res.skipped.add(s);
         }
         targets = bestByKey.values();
 
@@ -90,7 +126,8 @@ public without sharing class SecondaryPBIS_Service {
         if (!prior.isEmpty()) delete prior;
 
         if (!credits.isEmpty()) insert credits;
-        return credits.size();
+        res.rowsWritten = credits.size();
+        return res;
     }
 
     /**
