@@ -365,6 +365,10 @@ export default class SecondaryTargetManager extends LightningElement {
         reader.onload = (ev) => {
             const text = ev.target.result;
             const rows = this.parseCsv(text);
+            // Diagnostic — open the browser console (F12) to inspect what the parser
+            // built before posting to Apex. Helps diagnose header mismatches.
+            // eslint-disable-next-line no-console
+            console.log('[Secondary Target Import] parsed rows:', JSON.stringify(rows, null, 2));
             if (!rows.length) {
                 this.toast('Validation', 'CSV has no data rows.', 'error');
                 return;
