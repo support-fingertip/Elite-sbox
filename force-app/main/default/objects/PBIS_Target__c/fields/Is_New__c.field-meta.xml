@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>PBIS_Policy__c</fullName>
+    <fullName>Is_New__c</fullName>
     <externalId>false</externalId>
-    <formula>User__r.PBIS_Policy__c</formula>
+    <formula>ISBLANK( Id)</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-    <label>PBIS Policy</label>
-    <required>false</required>
+    <label>Is New</label>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
-    <type>Text</type>
-    <unique>false</unique>
+    <type>Checkbox</type>
 </CustomField>
