@@ -15,7 +15,7 @@
     <filters>
         <field>Sales_Channel__c</field>
         <operation>equals</operation>
-        <value>Cake,CPD</value>
+        <value>KA</value>
     </filters>
     <label>All</label>
 </ListView>

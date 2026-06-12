@@ -1,0 +1,164 @@
+/* Full-page screen, rounded corners.
+   :host is transparent so the page background shows in the gutter and the
+   card's rounded corners are visible (a white host would hide them). */
+:host {
+    display: block;
+    background: transparent;
+    min-height: 100%;
+}
+
+.pbp-page {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.pbp-card {
+    background: #fff;
+    border: 1px solid #e0e5ee;
+    border-radius: 1rem !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden !important;
+}
+
+/* Header */
+.pbp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    background: linear-gradient(90deg, #0b5cab 0%, #1589ee 100%);
+    color: #fff;
+    padding: 1.1rem 1.5rem;
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+}
+
+.pbp-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.pbp-header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.18);
+    flex-shrink: 0;
+}
+
+.pbp-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.pbp-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+/* Body */
+.pbp-body {
+    position: relative;
+    padding: 0.5rem 1.5rem;
+}
+
+.pbp-section {
+    padding: 1rem 0 1.25rem;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.pbp-section_last {
+    border-bottom: none;
+}
+
+.pbp-section-label {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #0b5cab;
+    margin-bottom: 0.6rem;
+}
+
+/* Keep the Active toggle clear of the dual-listbox (fixes the overlap) */
+.pbp-active {
+    margin-top: 1rem;
+    clear: both;
+}
+
+/* Profile card */
+.pbp-profile-card {
+    border: 1px solid #dfe3ea;
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    background: #fbfcfe;
+}
+
+.pbp-profile-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.pbp-profile-left {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+}
+
+.pbp-profile-select {
+    flex: 0 1 22rem;
+    max-width: 22rem;
+}
+
+.pbp-slab-count {
+    font-size: 0.72rem;
+    color: #706e6b;
+    padding-bottom: 0.35rem;
+}
+
+.pbp-profile-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Slab grid */
+.pbp-slab-head {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #514f4d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #e5e9f2;
+}
+
+.pbp-slab-row {
+    padding: 0.2rem 0;
+}
+
+.pbp-slab-num {
+    font-weight: 700;
+    color: #16325c;
+}
+
+/* Footer */
+.pbp-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem;
+    background: #fafafb;
+    border-top: 1px solid #eef1f6;
+}

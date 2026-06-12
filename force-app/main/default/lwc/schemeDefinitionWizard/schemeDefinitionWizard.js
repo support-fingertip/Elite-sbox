@@ -255,78 +255,91 @@ export default class SchemeDefinitionWizard extends LightningElement {
         return true;
     }
 
-    get areSlabsValid() {
-        if (!this.slabs.length) return false;
-        for (const s of this.slabs) {
-            if (this.isFreeQty) {
-                if (s.qtyMin == null || s.qtyMin === '' || s.freeQty == null || s.freeQty === '') return false;
-            } else if (this.isQps) {
-                if (s.qtyMin == null || s.qtyMin === '' || s.benefitPerEa == null || s.benefitPerEa === '') return false;
-            } else if (this.isFoc) {
-                if (s.qtyMin == null || s.qtyMin === '' || s.freeQty == null || s.freeQty === '') return false;
-                if (!s.focProductId) return false;
-            } else if (this.isOrderValue || this.isCategoryValue) {
-                if (s.valueMin == null || s.valueMin === '' || s.benefitPercent == null || s.benefitPercent === '') return false;
-            }
-        }
-        const isQtyType = this.isFreeQty || this.isQps || this.isFoc;
+    get slabsError() {
+        if (!this.slabs.length) return 'Add at least one slab row.';
+
+        const isQtyType   = this.isFreeQty || this.isQps || this.isFoc;
         const isValueType = this.isOrderValue || this.isCategoryValue;
-        if (isQtyType) {
-            let openTops = 0;
-            const seen = new Set();
-            for (const s of this.slabs) {
-                if (s.qtyMax == null || s.qtyMax === '') openTops++;
-                if (s.qtyMin != null && s.qtyMin !== '') {
-                    if (seen.has(Number(s.qtyMin))) return false;
-                    seen.add(Number(s.qtyMin));
+        if (!(isQtyType || isValueType)) return null;
+
+        const minField    = isQtyType ? 'qtyMin' : 'valueMin';
+        const maxField    = isQtyType ? 'qtyMax' : 'valueMax';
+        const minLabel    = isQtyType ? 'Min Qty' : 'Min Value';
+        const maxLabel    = isQtyType ? 'Max Qty' : 'Max Value';
+        const benefitField = (this.isFreeQty || this.isFoc) ? 'freeQty'
+                           : this.isQps ? 'benefitPerEa' : 'benefitPercent';
+        const benefitLabel = (this.isFreeQty || this.isFoc) ? 'Free Qty'
+                           : this.isQps ? 'Benefit / EA' : 'Discount %';
+        const filled = v => v != null && v !== '';
+        const num    = v => Number(v);
+
+        for (let i = 0; i < this.slabs.length; i++) {
+            const s = this.slabs[i];
+            const n = i + 1;
+
+            if (this.isFoc && !s.focProductId) return `Slab ${n}: pick the FOC product.`;
+            if (!filled(s[minField])) return `Slab ${n}: fill ${minLabel}.`;
+            if (!filled(s[benefitField])) return `Slab ${n}: fill ${benefitLabel}.`;
+
+            if (num(s[minField]) <= 0)     return `Slab ${n}: ${minLabel} must be greater than 0.`;
+            if (num(s[benefitField]) <= 0) return `Slab ${n}: ${benefitLabel} must be greater than 0.`;
+            if ((this.isOrderValue || this.isCategoryValue) && num(s[benefitField]) > 100) {
+                return `Slab ${n}: Discount % cannot exceed 100.`;
+            }
+            if (filled(s[maxField])) {
+                if (num(s[maxField]) <= 0) return `Slab ${n}: ${maxLabel} must be greater than 0.`;
+                if (num(s[maxField]) < num(s[minField])) {
+                    return `Slab ${n}: ${maxLabel} (${s[maxField]}) must be greater than or equal to ${minLabel} (${s[minField]}).`;
                 }
             }
-            if (openTops > 1) return false;
-        } else if (isValueType) {
-            let openTops = 0;
-            const seen = new Set();
-            for (const s of this.slabs) {
-                if (s.valueMax == null || s.valueMax === '') openTops++;
-                if (s.valueMin != null && s.valueMin !== '') {
-                    if (seen.has(Number(s.valueMin))) return false;
-                    seen.add(Number(s.valueMin));
-                }
-            }
-            if (openTops > 1) return false;
         }
-        return true;
+
+        let openTopRow = -1;
+        for (let i = 0; i < this.slabs.length; i++) {
+            if (!filled(this.slabs[i][maxField])) {
+                if (openTopRow !== -1) {
+                    return `Slab ${openTopRow + 1} and Slab ${i + 1} both leave ${maxLabel} blank — only one open-top slab is allowed.`;
+                }
+                openTopRow = i;
+            }
+        }
+
+        for (let i = 1; i < this.slabs.length; i++) {
+            const prev = num(this.slabs[i - 1][minField]);
+            const cur  = num(this.slabs[i][minField]);
+            if (cur <= prev) {
+                return `Slab ${i + 1}'s ${minLabel} (${cur}) must be greater than Slab ${i}'s ${minLabel} (${prev}). Enter slabs in ascending order.`;
+            }
+        }
+
+        for (let i = 0; i < this.slabs.length - 1; i++) {
+            const curMax = this.slabs[i][maxField];
+            const nxtMin = this.slabs[i + 1][minField];
+            if (!filled(curMax)) {
+                return `Slab ${i + 1} has no ${maxLabel} but Slab ${i + 2} comes after it. Only the last slab can be open-top.`;
+            }
+            if (filled(nxtMin) && num(curMax) >= num(nxtMin)) {
+                return `Slab ${i + 1} and Slab ${i + 2} ranges overlap.`;
+            }
+        }
+
+        for (let i = 1; i < this.slabs.length; i++) {
+            const prev = num(this.slabs[i - 1][benefitField]);
+            const cur  = num(this.slabs[i][benefitField]);
+            if (cur <= prev) {
+                return `Slab ${i + 1}'s ${benefitLabel} (${cur}) must be greater than Slab ${i}'s ${benefitLabel} (${prev}). Higher slabs should give a better deal.`;
+            }
+        }
+
+        return null;
+    }
+
+    get areSlabsValid() {
+        return this.slabsError === null;
     }
 
     get slabsValidationMessage() {
-        if (!this.slabs.length) return 'Add at least one slab row.';
-        const isQtyType = this.isFreeQty || this.isQps || this.isFoc;
-        const isValueType = this.isOrderValue || this.isCategoryValue;
-        if (isQtyType) {
-            let openTops = 0;
-            const seen = new Set();
-            for (const s of this.slabs) {
-                if (s.qtyMax == null || s.qtyMax === '') openTops++;
-                if (s.qtyMin != null && s.qtyMin !== '') {
-                    const n = Number(s.qtyMin);
-                    if (seen.has(n)) return `Duplicate Min Qty ${n}.`;
-                    seen.add(n);
-                }
-            }
-            if (openTops > 1) return 'Only one slab can leave Max Qty blank (the open-top slab).';
-        } else if (isValueType) {
-            let openTops = 0;
-            const seen = new Set();
-            for (const s of this.slabs) {
-                if (s.valueMax == null || s.valueMax === '') openTops++;
-                if (s.valueMin != null && s.valueMin !== '') {
-                    const n = Number(s.valueMin);
-                    if (seen.has(n)) return `Duplicate Min Value ${n}.`;
-                    seen.add(n);
-                }
-            }
-            if (openTops > 1) return 'Only one slab can leave Max Value blank (the open-top slab).';
-        }
-        return 'Fill every slab row to enable Save.';
+        return this.slabsError || 'Fill every slab row to continue.';
     }
 
     get isStep1() { return this.currentStep === 1; }
@@ -741,6 +754,32 @@ export default class SchemeDefinitionWizard extends LightningElement {
         }
     }
 
+    resetWizard() {
+        this.master = {
+            name: '',
+            schemeType: '',
+            salesChannel: '',
+            startDate: '',
+            endDate: '',
+            description: '',
+            isActive: true
+        };
+        this.savedStartDate = '';
+        this.linkage = { productGroupId: '', productGroupName: '', productCategory: '' };
+        this.slabs = [];
+        this.productGroupResults = [];
+        this.focUi = { activeUid: '', term: '', results: [] };
+        this.applicability = {
+            regions:          { applyToAll: false, values: [] },
+            areas:            { applyToAll: false, values: [] },
+            territories:      { applyToAll: false, values: [] },
+            outletCategories: { applyToAll: false, values: [] }
+        };
+        this.applicabilityOptions = { regions: [], areas: [], territories: [], outletCategories: [] };
+        this.savedTerritoryDisplay = {};
+        this.currentStep = 1;
+    }
+
     async handleSave() {
         if (this.isSaveDisabled) return;
         this.isSaving = true;
@@ -780,8 +819,12 @@ export default class SchemeDefinitionWizard extends LightningElement {
                 applicability: payloadApplicability,
                 existingId: this.recordId || null
             });
-            this.toast('Success', this.isEditMode ? 'Scheme updated.' : 'Scheme created.', 'success');
+            const wasEdit = this.isEditMode;
+            this.toast('Success', wasEdit ? 'Scheme updated.' : 'Scheme created.', 'success');
             this.dispatchEvent(new CustomEvent('complete', { detail: { recordId: savedId } }));
+            if (!wasEdit) {
+                this.resetWizard();
+            }
         } catch (error) {
             this.toast('Error', this.reduceError(error), 'error');
         } finally {

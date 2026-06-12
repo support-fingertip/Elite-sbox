@@ -1,0 +1,314 @@
+<template>
+    <div class="sdp-card">
+        <!-- Header -->
+        <div class="sdp-header">
+            <div class="sdp-header-inner">
+                <div class="sdp-header-icon">
+                    <lightning-icon icon-name="custom:custom63" size="small" variant="inverse"></lightning-icon>
+                </div>
+                <div>
+                    <h1 class="sdp-title">{headerTitle}</h1>
+                    <p class="sdp-subtitle">Define how this S&amp;D parameter's achievement is measured</p>
+                </div>
+            </div>
+            <lightning-button-icon
+                icon-name="utility:close"
+                variant="bare-inverse"
+                size="large"
+                alternative-text="Close"
+                class="sdp-close"
+                onclick={handleCancel}>
+            </lightning-button-icon>
+        </div>
+
+        <!-- Body -->
+        <div class="sdp-body">
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </template>
+
+            <!-- Section: Basics -->
+            <div class="sdp-section">
+                <p class="sdp-section-label">Parameter</p>
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input
+                            label="Parameter Name"
+                            data-field="Name"
+                            value={param.Name}
+                            onchange={handleField}
+                            required>
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-combobox
+                            label="Operator"
+                            value={param.Operator__c}
+                            options={operatorOptions}
+                            onchange={handleOperatorChange}
+                            required>
+                        </lightning-combobox>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Aggregate mapping (SUM / COUNT) -->
+            <template if:true={showSourceMapping}>
+                <div class="sdp-section">
+                    <p class="sdp-section-label">Source Mapping</p>
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <div class="slds-col slds-size_1-of-2">
+                            <c-searchable-combobox
+                                label="Object"
+                                placeholder="Search source object…"
+                                options={objectOptions}
+                                value={param.Object__c}
+                                onchange={handleObjectChange}>
+                            </c-searchable-combobox>
+                        </div>
+                        <template if:true={showMeasureField}>
+                            <div class="slds-col slds-size_1-of-2">
+                                <c-searchable-combobox
+                                    label={measureFieldLabel}
+                                    placeholder="Search field…"
+                                    options={fieldOptions}
+                                    value={param.Field__c}
+                                    data-field="Field__c"
+                                    onchange={handleComboChange}>
+                                </c-searchable-combobox>
+                            </div>
+                        </template>
+                        <div class="slds-col slds-size_1-of-2">
+                            <c-searchable-combobox
+                                label="User Field"
+                                placeholder="Search user field…"
+                                options={userFieldOptions}
+                                value={param.User_Field__c}
+                                data-field="User_Field__c"
+                                onchange={handleComboChange}>
+                            </c-searchable-combobox>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <c-searchable-combobox
+                                label="Date Field"
+                                placeholder="Search date field for the period…"
+                                options={dateFieldOptions}
+                                value={param.Date_Field__c}
+                                data-field="Date_Field__c"
+                                onchange={handleComboChange}>
+                            </c-searchable-combobox>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Filters -->
+                <div class="sdp-section">
+                    <p class="sdp-section-label">Filters</p>
+                    <c-tam-filter-builder
+                        fields-metadata={fieldsMetadata}
+                        value={filters}
+                        onfilterchange={handleFilterChange}>
+                    </c-tam-filter-builder>
+                    <lightning-textarea
+                        class="slds-m-top_small"
+                        label="Filter Logic"
+                        placeholder="e.g. 1 AND 2"
+                        data-field="Filter_Logic__c"
+                        value={param.Filter_Logic__c}
+                        onchange={handleField}>
+                    </lightning-textarea>
+                </div>
+            </template>
+
+            <!-- Section: Focus Pack mapping -->
+            <template if:true={isFocusPackOperator}>
+                <div class="sdp-section">
+                    <p class="sdp-section-label">Focus Pack</p>
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-combobox
+                                label="Sales Channel"
+                                placeholder="Select channel"
+                                value={param.Sales_Channel__c}
+                                options={channelOptions}
+                                data-field="Sales_Channel__c"
+                                onchange={handleComboChange}>
+                            </lightning-combobox>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <c-searchable-combobox
+                                label="Focused Pack"
+                                placeholder="Search Focused Pack…"
+                                options={focusedPackOptions}
+                                value={param.Focused_Pack__c}
+                                data-field="Focused_Pack__c"
+                                required
+                                onchange={handleComboChange}>
+                            </c-searchable-combobox>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <c-searchable-combobox
+                                label="SKU Field"
+                                placeholder="Search product/SKU field…"
+                                options={fieldOptions}
+                                value={param.SKU_Field__c}
+                                data-field="SKU_Field__c"
+                                required
+                                onchange={handleComboChange}>
+                            </c-searchable-combobox>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Section: Unique Customers across multiple objects -->
+            <template if:true={isMultiObjectDistinct}>
+                <div class="sdp-section">
+                    <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_x-small">
+                        <p class="sdp-section-label slds-m-bottom_none">Sources (unique customers across objects)</p>
+                        <lightning-button
+                            label="Add Source"
+                            icon-name="utility:add"
+                            onclick={addSource}
+                            variant="brand-outline">
+                        </lightning-button>
+                    </div>
+                    <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
+                        Each source contributes one object + customer field. The achievement is the count of
+                        distinct customers across all sources, per salesperson, within the target period.
+                    </p>
+
+                    <template for:each={sources} for:item="source">
+                        <div key={source.key} class="slds-box slds-box_x-small slds-m-bottom_small">
+                            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_x-small">
+                                <p class="sdp-section-label slds-m-bottom_none">Source</p>
+                                <lightning-button-icon
+                                    icon-name="utility:delete"
+                                    variant="border-filled"
+                                    alternative-text="Remove source"
+                                    data-key={source.key}
+                                    onclick={removeSource}>
+                                </lightning-button-icon>
+                            </div>
+                            <div class="slds-grid slds-wrap slds-gutters">
+                                <div class="slds-col slds-size_1-of-2">
+                                    <c-searchable-combobox
+                                        label="Object"
+                                        placeholder="Search object…"
+                                        options={objectOptions}
+                                        value={source.object}
+                                        data-key={source.key}
+                                        onchange={handleSourceObjectChange}>
+                                    </c-searchable-combobox>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                    <c-searchable-combobox
+                                        label="Customer Field"
+                                        placeholder="Search customer field…"
+                                        options={source.fieldOptions}
+                                        value={source.customerField}
+                                        data-key={source.key}
+                                        data-field="customerField"
+                                        onchange={handleSourceField}>
+                                    </c-searchable-combobox>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                    <c-searchable-combobox
+                                        label="User Field"
+                                        placeholder="Search user field…"
+                                        options={source.userFieldOptions}
+                                        value={source.userField}
+                                        data-key={source.key}
+                                        data-field="userField"
+                                        onchange={handleSourceField}>
+                                    </c-searchable-combobox>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                    <c-searchable-combobox
+                                        label="Date Field"
+                                        placeholder="Search date field for the period…"
+                                        options={source.dateFieldOptions}
+                                        value={source.dateField}
+                                        data-key={source.key}
+                                        data-field="dateField"
+                                        onchange={handleSourceField}>
+                                    </c-searchable-combobox>
+                                </div>
+                            </div>
+                            <div class="slds-m-top_small">
+                                <p class="sdp-section-label">Filters</p>
+                                <c-tam-filter-builder
+                                    fields-metadata={source.fieldsMetadata}
+                                    value={source.filters}
+                                    data-key={source.key}
+                                    onfilterchange={handleSourceFilterChange}>
+                                </c-tam-filter-builder>
+                                <lightning-textarea
+                                    class="slds-m-top_small"
+                                    label="Filter Logic"
+                                    placeholder="e.g. 1 AND 2"
+                                    data-key={source.key}
+                                    value={source.filterLogic}
+                                    onchange={handleSourceFilterLogic}>
+                                </lightning-textarea>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Section: Generated SOQL -->
+            <div class="sdp-section">
+                <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_x-small">
+                    <p class="sdp-section-label slds-m-bottom_none">Generated SOQL</p>
+                    <lightning-button
+                        label="Preview SOQL"
+                        icon-name="utility:preview"
+                        onclick={handlePreviewSoql}
+                        variant="brand-outline">
+                    </lightning-button>
+                </div>
+                <pre class="sdp-soql">{soqlDisplay}</pre>
+                <p class="slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+                    This query is regenerated and stored on Save, and used by the achievement calculation.
+                </p>
+            </div>
+
+            <!-- Section: Status -->
+            <div class="sdp-section sdp-section_last">
+                <div class="slds-grid slds-wrap slds-gutters slds-grid_vertical-align-center">
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input
+                            type="checkbox"
+                            label="Mandatory parameter (value/volume gate)"
+                            checked={param.Is_Mandatory__c}
+                            onchange={handleMandatory}>
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input
+                            type="toggle"
+                            label="Active"
+                            message-toggle-active="Active"
+                            message-toggle-inactive="Inactive"
+                            checked={param.Is_Active__c}
+                            onchange={handleActive}>
+                        </lightning-input>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="sdp-footer">
+            <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>
+            <lightning-button
+                variant="brand"
+                label="Save"
+                onclick={handleSave}
+                disabled={isLoading}
+                class="slds-m-left_x-small">
+            </lightning-button>
+        </div>
+    </div>
+</template>

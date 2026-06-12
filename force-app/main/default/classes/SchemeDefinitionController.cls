@@ -357,6 +357,7 @@ public without sharing class SchemeDefinitionController {
             throw new AuraHandledException('At least one slab is required.');
         }
         validateLinkage(master);
+        validateActiveDuplicate(master, existingId);
         validateSlabs(master.schemeType, slabs);
         if (applicability != null) {
             validateApplicability(applicability);
@@ -554,6 +555,69 @@ public without sharing class SchemeDefinitionController {
         }
     }
 
+    private static void validateActiveDuplicate(MasterDto m, Id existingId) {
+        // No two ACTIVE schemes may match the same selling context with
+        // overlapping date ranges. Match fields vary by scheme type.
+        Boolean willBeActive = (m.isActive == null) ? true : m.isActive;
+        if (!willBeActive) return; // inactive saves never conflict
+
+        String t = m.schemeType;
+        List<Scheme__c> dupes = null;
+        String criteria = null;
+
+        // Overlap: existing.start <= new.end AND existing.end >= new.start
+        if (t == TYPE_FREE_QTY || t == TYPE_QPS || t == TYPE_FOC_GIVEAWAY) {
+            if (m.productGroupId == null) return;
+            criteria = 'Scheme Type, Product Group and Sales Channel';
+            dupes = [
+                SELECT Id, Name FROM Scheme__c
+                WHERE Scheme_Type__c = :t
+                  AND Scheme_Product_Group__c = :m.productGroupId
+                  AND Sales_Channel__c = :m.salesChannel
+                  AND IsActive__c = true
+                  AND Id != :existingId
+                  AND Scheme_Start_Date__c <= :m.endDate
+                  AND Scheme_End_Date__c   >= :m.startDate
+                LIMIT 1
+            ];
+        } else if (t == TYPE_CATEGORY) {
+            if (String.isBlank(m.productCategory)) return;
+            criteria = 'Scheme Type, Product Category and Sales Channel';
+            dupes = [
+                SELECT Id, Name FROM Scheme__c
+                WHERE Scheme_Type__c = :t
+                  AND Scheme_Product_Category__c = :m.productCategory
+                  AND Sales_Channel__c = :m.salesChannel
+                  AND IsActive__c = true
+                  AND Id != :existingId
+                  AND Scheme_Start_Date__c <= :m.endDate
+                  AND Scheme_End_Date__c   >= :m.startDate
+                LIMIT 1
+            ];
+        } else if (t == TYPE_ORDER_VALUE) {
+            criteria = 'Scheme Type and Sales Channel';
+            dupes = [
+                SELECT Id, Name FROM Scheme__c
+                WHERE Scheme_Type__c = :t
+                  AND Sales_Channel__c = :m.salesChannel
+                  AND IsActive__c = true
+                  AND Id != :existingId
+                  AND Scheme_Start_Date__c <= :m.endDate
+                  AND Scheme_End_Date__c   >= :m.startDate
+                LIMIT 1
+            ];
+        } else {
+            return;
+        }
+
+        if (dupes != null && !dupes.isEmpty()) {
+            throw new AuraHandledException(
+                'An active scheme with the same ' + criteria
+                + ' and an overlapping date range already exists ("'
+                + dupes[0].Name + '"). Deactivate it or use non-overlapping dates.');
+        }
+    }
+
     private static void validateSlabs(String schemeType, List<SlabDto> slabs) {
         Set<Integer> seenSeq = new Set<Integer>();
         for (Integer i = 0; i < slabs.size(); i++) {
@@ -565,27 +629,40 @@ public without sharing class SchemeDefinitionController {
             if (schemeType == TYPE_FREE_QTY) {
                 if (d.qtyMin == null) throw new AuraHandledException(label + ': Buy Qty is required.');
                 if (d.freeQty == null) throw new AuraHandledException(label + ': Free Qty is required.');
-                if (d.qtyMax != null && d.qtyMax < d.qtyMin) {
-                    throw new AuraHandledException(label + ': Max Qty must be >= Buy Qty.');
+                if (d.qtyMin <= 0) throw new AuraHandledException(label + ': Min Qty must be greater than 0.');
+                if (d.freeQty <= 0) throw new AuraHandledException(label + ': Free Qty must be greater than 0.');
+                if (d.qtyMax != null) {
+                    if (d.qtyMax <= 0) throw new AuraHandledException(label + ': Max Qty must be greater than 0.');
+                    if (d.qtyMax < d.qtyMin) throw new AuraHandledException(label + ': Max Qty must be >= Buy Qty.');
                 }
             } else if (schemeType == TYPE_QPS) {
                 if (d.qtyMin == null) throw new AuraHandledException(label + ': Qualifying Cases is required.');
                 if (d.benefitPerEa == null) throw new AuraHandledException(label + ': Benefit per Case is required.');
-                if (d.qtyMax != null && d.qtyMax < d.qtyMin) {
-                    throw new AuraHandledException(label + ': Max Qty must be >= Min Qty.');
+                if (d.qtyMin <= 0) throw new AuraHandledException(label + ': Min Qty must be greater than 0.');
+                if (d.benefitPerEa <= 0) throw new AuraHandledException(label + ': Benefit / EA must be greater than 0.');
+                if (d.qtyMax != null) {
+                    if (d.qtyMax <= 0) throw new AuraHandledException(label + ': Max Qty must be greater than 0.');
+                    if (d.qtyMax < d.qtyMin) throw new AuraHandledException(label + ': Max Qty must be >= Min Qty.');
                 }
             } else if (schemeType == TYPE_FOC_GIVEAWAY) {
                 if (d.qtyMin == null) throw new AuraHandledException(label + ': Min Qualifying Qty is required.');
                 if (d.focProductId == null) throw new AuraHandledException(label + ': FOC Product is required.');
                 if (d.freeQty == null) throw new AuraHandledException(label + ': Free Qty is required.');
-                if (d.qtyMax != null && d.qtyMax < d.qtyMin) {
-                    throw new AuraHandledException(label + ': Max Qty must be >= Min Qty.');
+                if (d.qtyMin <= 0) throw new AuraHandledException(label + ': Min Qty must be greater than 0.');
+                if (d.freeQty <= 0) throw new AuraHandledException(label + ': Free Qty must be greater than 0.');
+                if (d.qtyMax != null) {
+                    if (d.qtyMax <= 0) throw new AuraHandledException(label + ': Max Qty must be greater than 0.');
+                    if (d.qtyMax < d.qtyMin) throw new AuraHandledException(label + ': Max Qty must be >= Min Qty.');
                 }
             } else if (schemeType == TYPE_ORDER_VALUE || schemeType == TYPE_CATEGORY) {
                 if (d.valueMin == null) throw new AuraHandledException(label + ': Slab From is required.');
                 if (d.benefitPercent == null) throw new AuraHandledException(label + ': Discount % is required.');
-                if (d.valueMax != null && d.valueMax < d.valueMin) {
-                    throw new AuraHandledException(label + ': Slab To must be >= Slab From.');
+                if (d.valueMin <= 0) throw new AuraHandledException(label + ': Min Value must be greater than 0.');
+                if (d.benefitPercent <= 0) throw new AuraHandledException(label + ': Discount % must be greater than 0.');
+                if (d.benefitPercent > 100) throw new AuraHandledException(label + ': Discount % cannot exceed 100.');
+                if (d.valueMax != null) {
+                    if (d.valueMax <= 0) throw new AuraHandledException(label + ': Max Value must be greater than 0.');
+                    if (d.valueMax < d.valueMin) throw new AuraHandledException(label + ': Slab To must be >= Slab From.');
                 }
             } else {
                 throw new AuraHandledException('Unsupported scheme type: ' + schemeType);
@@ -598,6 +675,9 @@ public without sharing class SchemeDefinitionController {
             }
         }
 
+        assertSlabsAscending(schemeType, slabs);
+        assertBenefitsIncrease(schemeType, slabs);
+
         if (schemeType == TYPE_FREE_QTY || schemeType == TYPE_QPS || schemeType == TYPE_FOC_GIVEAWAY) {
             assertAtMostOneOpenTopQty(slabs);
             assertUniqueQtyMin(slabs);
@@ -606,6 +686,57 @@ public without sharing class SchemeDefinitionController {
             assertAtMostOneOpenTopValue(slabs);
             assertUniqueValueMin(slabs);
             assertNoValueOverlap(slabs);
+        }
+    }
+
+    private static Boolean isQtyType(String t) {
+        return t == TYPE_FREE_QTY || t == TYPE_QPS || t == TYPE_FOC_GIVEAWAY;
+    }
+    private static Boolean isValueType(String t) {
+        return t == TYPE_ORDER_VALUE || t == TYPE_CATEGORY;
+    }
+    private static Decimal slabMin(SlabDto d, String t) {
+        return isQtyType(t) ? d.qtyMin : d.valueMin;
+    }
+    private static Decimal slabBenefit(SlabDto d, String t) {
+        if (t == TYPE_FREE_QTY || t == TYPE_FOC_GIVEAWAY) return d.freeQty;
+        if (t == TYPE_QPS) return d.benefitPerEa;
+        return d.benefitPercent;
+    }
+    private static String benefitLabelFor(String t) {
+        if (t == TYPE_FREE_QTY || t == TYPE_FOC_GIVEAWAY) return 'Free Qty';
+        if (t == TYPE_QPS) return 'Benefit / EA';
+        return 'Discount %';
+    }
+    private static String minLabelFor(String t) {
+        return isQtyType(t) ? 'Min Qty' : 'Min Value';
+    }
+
+    private static void assertSlabsAscending(String schemeType, List<SlabDto> slabs) {
+        for (Integer i = 1; i < slabs.size(); i++) {
+            Decimal prev = slabMin(slabs[i - 1], schemeType);
+            Decimal cur  = slabMin(slabs[i], schemeType);
+            if (prev == null || cur == null) continue;
+            if (cur <= prev) {
+                throw new AuraHandledException(
+                    'Slab ' + (i + 1) + '\'s ' + minLabelFor(schemeType) + ' (' + cur +
+                    ') must be greater than Slab ' + i + '\'s ' + minLabelFor(schemeType) + ' (' + prev +
+                    '). Enter slabs in ascending order.');
+            }
+        }
+    }
+
+    private static void assertBenefitsIncrease(String schemeType, List<SlabDto> slabs) {
+        for (Integer i = 1; i < slabs.size(); i++) {
+            Decimal prev = slabBenefit(slabs[i - 1], schemeType);
+            Decimal cur  = slabBenefit(slabs[i], schemeType);
+            if (prev == null || cur == null) continue;
+            if (cur <= prev) {
+                throw new AuraHandledException(
+                    'Slab ' + (i + 1) + '\'s ' + benefitLabelFor(schemeType) + ' (' + cur +
+                    ') must be greater than Slab ' + i + '\'s ' + benefitLabelFor(schemeType) + ' (' + prev +
+                    '). Higher slabs should give a better deal.');
+            }
         }
     }
 
@@ -655,9 +786,12 @@ public without sharing class SchemeDefinitionController {
         List<SlabDto> sorted = new List<SlabDto>(slabs);
         sorted.sort(new MinQtyComparator());
         for (Integer i = 0; i < sorted.size() - 1; i++) {
+            if (sorted[i].qtyMax == null) {
+                throw new AuraHandledException('Only the last slab can leave Max Qty blank — Min ' + sorted[i].qtyMin + ' has no Max but is followed by another slab.');
+            }
             Decimal currMax = sorted[i].qtyMax;
             Decimal nextMin = sorted[i + 1].qtyMin;
-            if (currMax == null || nextMin == null) continue;
+            if (nextMin == null) continue;
             if (currMax >= nextMin) {
                 throw new AuraHandledException('Slab quantity ranges overlap at ' + nextMin + '.');
             }
@@ -668,9 +802,12 @@ public without sharing class SchemeDefinitionController {
         List<SlabDto> sorted = new List<SlabDto>(slabs);
         sorted.sort(new MinValueComparator());
         for (Integer i = 0; i < sorted.size() - 1; i++) {
+            if (sorted[i].valueMax == null) {
+                throw new AuraHandledException('Only the last slab can leave Max Value blank — Min ' + sorted[i].valueMin + ' has no Max but is followed by another slab.');
+            }
             Decimal currMax = sorted[i].valueMax;
             Decimal nextMin = sorted[i + 1].valueMin;
-            if (currMax == null || nextMin == null) continue;
+            if (nextMin == null) continue;
             if (currMax >= nextMin) {
                 throw new AuraHandledException('Slab value ranges overlap at ' + nextMin + '.');
             }

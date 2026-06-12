@@ -5,6 +5,7 @@ import getAccountsByArea from '@salesforce/apex/beatPlannerlwc.getAccountsByArea
 import saveOrderItemData from '@salesforce/apex/beatPlannerlwc.upsertOrder';
 import saveStockItem from '@salesforce/apex/beatPlannerlwc.upsertStock';
 import getAreaOptions from '@salesforce/apex/beatPlannerlwc.getAreaOptions';
+import getSchemeCoverageForAccount from '@salesforce/apex/beatPlannerlwc.getSchemeCoverageForAccount';
 import PLANNER_ICON from '@salesforce/resourceUrl/planner';
 import FORM_FACTOR from '@salesforce/client/formFactor';
 import GOOGLE_ICONS from '@salesforce/resourceUrl/googleIcons';
@@ -32,9 +33,16 @@ export default class ProductScreen4 extends LightningElement {
     @track isModerTrade = false;
     @track isPrimaryAccount = false;
     @track isSecondaryAccount = false;
+    isSSADSM = false;   // current user flagged SSA/DSM -> account picker shows Secondary only
     @track isShowOwner = false;
     @track productData = [];
     @track getSelectedProduct = [];
+    @track coverageSchemes = [];
+    coverageProductSchemeIds = {};
+    @track expandedProductIds = [];
+    @track breakupExpandedIds = [];   // lines whose scheme price breakup is expanded
+    @track collapsedSchemeIds = [];
+    @track coverageSearch = '';
     @track deliveryTo = '';
     @track expectedDeliveryDate = '';
     @track OrderOwnerId = '';
@@ -46,6 +54,7 @@ export default class ProductScreen4 extends LightningElement {
     @track accounts = [];    // Accounts data from Apex
     @track areaOptions = []; // Dropdown options for Area
     @track isLoading = false;
+    @track isContentLoading = false; // Skeleton while account data loads after selection
     @track isDropdownOpen = true;  // By default, the dropdown is open
     dropdownClass = 'slds-dropdown-trigger slds-dropdown-trigger_click';
     productCatDropdown = [];
@@ -71,6 +80,14 @@ export default class ProductScreen4 extends LightningElement {
     @track accNam = ''; forceHeight = false; finalOrderPlace; listView
     currentLocationRequestId = '';
 
+    // ===== Scheme engine (Scheme__c / Scheme_Slab__c) — secondary accounts =====
+    @track focLines = [];               // synthetic FOC giveaway lines (net 0)
+    @track categoryValueDiscount = 0;   // -> Order__c.Category_Discount__c
+    @track orderValueDiscount = 0;      // -> Order__c.Order_Value_Discount__c
+    @track netPayable = 0;              // grand total minus header discounts
+    appliedSchemeRecords = [];          // -> Order_Scheme_Applied__c rows
+    _lastInvalidSig = '';               // throttles the "schemes skipped" toast
+
     renderedCallback() {
         if (this.forceHeight) {
             if (this.orderRecordId == undefined && this.isOrderTrue) {
@@ -95,34 +112,21 @@ export default class ProductScreen4 extends LightningElement {
             ? 'slds-col slds-size_1-of-2 custom_Css'
             : 'slds-col slds-size_1-of-1';
 
+        this.initLoadFlow();
+    }
+
+    initLoadFlow() {
         // CASE 1: Create Mode + accountId (from related list New override)
         if (!this.orderRecordId && this.isOrderTrue && this.acccountId) {
-            //alert('1');
+            console.log('My Visit Order');
             this.isFieldsDisabled = false;
             this.forceHeight = true;
-
-            /*getAccountData({areaFilter: this.areaFilter })
-                .then(result => {
-                    this.accountDataOriginal = result.Account;
-                    this.listView = result.listViewRecords.Id;
-    
-                    const foundAcc = result.Account.find(acc => acc.Id === this.acccountId);
-                    if (foundAcc) {
-                        this.accNam = foundAcc.Name;
-                        this.isPrimaryAccount = foundAcc.Customer_Type__c === 'Primary Customer';
-                        this.isSecondaryAccount = acc.Customer_Type__c === 'Secondary Customer';
-                        this.getData();
-                    }
-                })
-                .catch(error => {
-                    console.error('Account fetch error:', error);
-                });*/
-
             return; // prevent going below
         }
 
         // CASE 2: Create Mode + No accountId
         if (!this.orderRecordId && this.isOrderTrue) {
+            console.log('Separate Order Tab');
             this.isFieldsDisabled = true;
             this.forceHeight = true;
             this.showAreaSearch = true;
@@ -132,6 +136,7 @@ export default class ProductScreen4 extends LightningElement {
 
         // CASE 3: Edit Mode
         if (this.orderRecordId && this.isOrderTrue) {
+            console.log('Edit Mode');
             this.isFieldsDisabled = false;
             this.showAreaSearch = false;
             this.getAccountData(); // for fetching account name
@@ -141,6 +146,7 @@ export default class ProductScreen4 extends LightningElement {
 
         // CASE 4: Non-order flow
         if (!this.isOrderTrue) {
+            console.log('My Visit Order 2');
             this.isFieldsDisabled = false;
             this.customClass_Grid = this.isDesktop
                 ? 'slds-col slds-size_1-of-2 custom_Css'
@@ -186,7 +192,7 @@ export default class ProductScreen4 extends LightningElement {
         this.isLoading = true; // Show loading spinner
         // Call your Apex method to fetch accounts based on areaFilter
         //alert(this.areaFilter);
-        getAccountsByArea({ area: this.areaFilter, searchTerm: this.accNam })
+        getAccountsByArea({ area: this.areaFilter, searchTerm: this.accNam, onlySecondary: this.isSSADSM })
             .then(result => {
                 //alert('result '+result);
                 this.accountDataOriginal = result;  // Store the filtered accounts
@@ -198,11 +204,6 @@ export default class ProductScreen4 extends LightningElement {
                 console.error('Error fetching accounts:', error);
             });
     }
-
-
-
-
-
 
 
     applyCategoryStyles(groupList) {
@@ -261,6 +262,7 @@ export default class ProductScreen4 extends LightningElement {
         this.isPageLoaded = false;
         getAccountData({ areaFilter: this.areaFilter })
             .then(result => {
+                this.isSSADSM = result.isDSM_SSA === true;
                 this.accountDataOriginal = result.Account;
                 this.listView = result.listViewRecords.Id;
             })
@@ -270,6 +272,7 @@ export default class ProductScreen4 extends LightningElement {
             });
     }
     getData() {
+        this.isContentLoading = true;
         getApexData({
             visitId: this.recordId,
             AccountId: this.acccountId,
@@ -296,6 +299,7 @@ export default class ProductScreen4 extends LightningElement {
                 this.productCatDropdown = result.productCatDropdown;
                 this.isShowOwner = result.isShowOwner;
 
+                this.loadCoverage();
 
                 if (result.Account) {
                     const acc = result.Account.find(a => a.Id === this.acccountId);
@@ -394,10 +398,12 @@ export default class ProductScreen4 extends LightningElement {
                     this.isProductAdded = false;
                     this.isSummaryProduct = false;
                 }
+                this.isContentLoading = false;
             })
             .catch(error => {
                 console.error(error);
                 this.isPageLoaded = false;
+                this.isContentLoading = false;
             });
     }
 
@@ -937,7 +943,7 @@ export default class ProductScreen4 extends LightningElement {
             products: plantGroup.products.map(item => ({
                 Product__c: item.id,
                 Product_Category__c: item.proCate,
-                Quantity__c: item.value,
+                Quantity__c: (parseInt(item.value) || 0) + (parseInt(item._focMergeQty) || 0),
                 Case_Qyt__c: item.crateQty,
                 Each_Qyt__c: item.eachQty,
                 Unit_price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
@@ -946,11 +952,15 @@ export default class ProductScreen4 extends LightningElement {
                 Before_Scheme_Unit_Price__c: item.UnitPricePriceBook,
                 After_Scheme_Unit_Price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
                 Scheme_Item__c: item.schemeItemId || null,
+                Discount__c: item._lineDiscount || 0,
                 Tax__c: item.taxPercent || 0,
                 Tax_Amount__c: parseFloat(item.taxAmt),
                 Total_Amount__c: parseFloat(item.netValue),
                 SKU_Weight__c : parseFloat(item.netWeight)
             })),
+            categoryDiscount: this.categoryValueDiscount || 0,
+            orderValueDiscount: this.orderValueDiscount || 0,
+            appliedSchemes: this.appliedSchemeRecords || [],
             deliveryTo: this.deliveryTo,
             expectedDate: this.expectedDeliveryDate,
             poNum: this.poNum,
@@ -1342,6 +1352,10 @@ export default class ProductScreen4 extends LightningElement {
             this.schemePro = null;
             this.getSelectedProduct = null;
             this.orderSummery = null;
+            // Customer removed: content collapses, so keep the card tall enough
+            // that the customer search dropdown isn't clipped by .tasks overflow.
+            const tasksEl = this.template.querySelector('.tasks');
+            if (tasksEl) tasksEl.classList.add('force-height');
         }
     }
     handleOnBlur() {
@@ -1352,6 +1366,8 @@ export default class ProductScreen4 extends LightningElement {
     selectObjName(event) {
         this.acccountId = event.currentTarget.dataset.id;
         this.accNam = event.currentTarget.dataset.name;
+        this.accountData = null; // close the customer search popup immediately
+        this.isContentLoading = true; // show the loading screen while data loads
         this.getData();
     }
     handleCheckBoxProSceme(event) {
@@ -1374,6 +1390,108 @@ export default class ProductScreen4 extends LightningElement {
         this.showAccountSearch = false;
         this.isSummaryProduct = false;
         this.isProductAdded = false;
+    }
+
+    loadCoverage() {
+        if (!this.acccountId) return;
+        getSchemeCoverageForAccount({ accountId: this.acccountId })
+            .then(result => {
+                this.coverageSchemes = (result && result.schemes) ? result.schemes : [];
+                this.coverageProductSchemeIds = (result && result.productSchemeIds) ? result.productSchemeIds : {};
+                // Recompute prices now that scheme data is available
+                this.applySchemeEngine();
+            })
+            .catch((error) => {
+                // eslint-disable-next-line no-console
+                console.error('getSchemeCoverageForAccount failed', error);
+                this.coverageSchemes = [];
+                this.coverageProductSchemeIds = {};
+            });
+    }
+
+    get hasCoverageSchemes() {
+        return Array.isArray(this.coverageSchemes) && this.coverageSchemes.length > 0;
+    }
+
+    get hasHeaderDiscounts() {
+        return (parseFloat(this.categoryValueDiscount) || 0) > 0
+            || (parseFloat(this.orderValueDiscount) || 0) > 0;
+    }
+
+    get displayCoverageSchemes() {
+        const collapsed = new Set(this.collapsedSchemeIds);
+        const term = (this.coverageSearch || '').trim().toLowerCase();
+        return (this.coverageSchemes || [])
+            .filter(s => {
+                if (!term) return true;
+                if ((s.name || '').toLowerCase().includes(term)) return true;
+                return (s.products || []).some(p =>
+                    (p.name || '').toLowerCase().includes(term)
+                    || (p.sku || '').toLowerCase().includes(term));
+            })
+            .map(s => {
+                const isExpanded = !collapsed.has(s.id);
+                return {
+                    ...s,
+                    isExpanded,
+                    expandIcon: isExpanded ? 'utility:chevronup' : 'utility:chevrondown'
+                };
+            });
+    }
+
+    handleCoverageSearch(event) {
+        this.coverageSearch = event.target.value || '';
+    }
+
+    get displaySchemePro() {
+        if (!Array.isArray(this.schemePro)) return this.schemePro;
+        const psm = this.coverageProductSchemeIds || {};
+        const schemesById = {};
+        for (const s of (this.coverageSchemes || [])) schemesById[s.id] = s;
+        const expanded = new Set(this.expandedProductIds);
+        const breakupOpen = new Set(this.breakupExpandedIds);
+        return this.schemePro.map(itm => ({
+            ...itm,
+            products: (itm.products || []).map(p => {
+                const sids = psm[p.id] || [];
+                const isExpanded = expanded.has(p.id);
+                const showBreakup = breakupOpen.has(p.id);
+                return {
+                    ...p,
+                    hasSchemeGroupMatch: sids.length > 0,
+                    isSchemeExpanded: isExpanded,
+                    schemeExpandIcon: isExpanded ? 'utility:chevrondown' : 'utility:chevronright',
+                    coveringSchemes: sids.map(id => schemesById[id]).filter(Boolean),
+                    priceSteps: Array.isArray(p._priceSteps) ? p._priceSteps : [],
+                    showBreakup: showBreakup,
+                    breakupIcon: showBreakup ? 'utility:chevrondown' : 'utility:chevronright'
+                };
+            })
+        }));
+    }
+
+    toggleSchemeBreakup(event) {
+        const pid = event.currentTarget.dataset.productId;
+        if (!pid) return;
+        const next = new Set(this.breakupExpandedIds);
+        if (next.has(pid)) next.delete(pid); else next.add(pid);
+        this.breakupExpandedIds = Array.from(next);
+    }
+
+    toggleProductSchemes(event) {
+        const pid = event.currentTarget.dataset.productId;
+        if (!pid) return;
+        const next = new Set(this.expandedProductIds);
+        if (next.has(pid)) next.delete(pid); else next.add(pid);
+        this.expandedProductIds = Array.from(next);
+    }
+
+    toggleCoverageScheme(event) {
+        const sid = event.currentTarget.dataset.schemeId;
+        if (!sid) return;
+        const next = new Set(this.collapsedSchemeIds);
+        if (next.has(sid)) next.delete(sid); else next.add(sid);
+        this.collapsedSchemeIds = Array.from(next);
     }
 
     selectScheme(event) {
@@ -1485,9 +1603,11 @@ export default class ProductScreen4 extends LightningElement {
         product.total = netValue.toFixed(2);  // Rounded net value
 
         this.schemePro = [...this.schemePro];
-        //this.syncQuantityToSchemeOffer(product.id, totalQty);
-        //this.autoSelectBestScheme(product.id);
-        this.recalculateTotals();
+        if (this.isSecondaryAccount) {
+            this.applySchemeEngine();
+        } else {
+            this.recalculateTotals();
+        }
     }
     handleEachQtyChange(event) {
         const index1 = parseInt(event.target.dataset.id);
@@ -1513,14 +1633,16 @@ export default class ProductScreen4 extends LightningElement {
         // Ensure reactivity
         this.schemePro = [...this.schemePro];
         if (this.isSecondaryAccount) {
-            this.syncQuantityToSchemeOffer(product.id, totalQty, product.total);
-            this.autoSelectBestScheme(product.id);
+            // New Scheme__c engine owns secondary-account pricing.
+            this.applySchemeEngine();
+        } else {
+            this.recalculateTotals();
         }
-        this.recalculateTotals();
 
     }
 
     syncQuantityToSchemeOffer(productId, newQty, totalValue) {
+        if (this.isSecondaryAccount) return; // new Scheme__c engine handles secondary pricing
         if (!this.schemeOffer) return;
 
         let changed = false;
@@ -1590,7 +1712,10 @@ export default class ProductScreen4 extends LightningElement {
         this.recalculateTotals(); // Recalculate the totals after applying the discount
     }
 
+    // LEGACY Buy_Product__c scheme engine — primary accounts only.
+    // Secondary accounts are priced by the new Scheme__c engine (applySchemeEngine).
     autoSelectBestScheme(productId) {
+        if (this.isSecondaryAccount) { this.applySchemeEngine(); return; }
         if (!productId) return;
 
         const product = this.allProDtas.find(p => p.id === productId);
@@ -1807,7 +1932,10 @@ export default class ProductScreen4 extends LightningElement {
         for (const group of allProducts) {
             for (const item of group.products) {
                 const quantity = parseFloat(item.value || 0);
-                const price = parseFloat(item.UnitPricePriceBook); // Use discounted price if available
+                // Secondary accounts: use the scheme engine's discounted price; primary keeps base.
+                const price = this.isSecondaryAccount
+                    ? parseFloat(item.discountedUnitPrice || item.UnitPricePriceBook)
+                    : parseFloat(item.UnitPricePriceBook);
 
                 totalQty += quantity;
                 totalAmt += quantity * price;
@@ -1823,6 +1951,319 @@ export default class ProductScreen4 extends LightningElement {
         this.totalSelectedAmount = totalAmt.toFixed(2);
         this.totalTaxAmt = totalTaxAmt.toFixed(2);
         this.grandTotalAmt = (totalAmt + totalTaxAmt).toFixed(2);
+        this.subTotalAmt = totalAmt.toFixed(2);
+        // Net payable after order-wide scheme discounts (category value + order value)
+        const headerDisc = (parseFloat(this.categoryValueDiscount) || 0) + (parseFloat(this.orderValueDiscount) || 0);
+        this.netPayable = Math.max(0, (totalAmt + totalTaxAmt) - headerDisc).toFixed(2);
+    }
+
+    /* =========================================================================
+     * Scheme engine (Scheme__c / Scheme_Slab__c / Scheme_Product_Group__c).
+     * Runs only for Secondary accounts. Applies five passes in fixed order over
+     * the live order items, sets per-line discounted prices (Free Quantity /
+     * QPS), adds FOC giveaway lines, and computes order-wide Category Value /
+     * Order Value discounts. Idempotent: every run resets to base price first.
+     * ========================================================================= */
+
+    _round2(n) {
+        const v = parseFloat(n) || 0;
+        return Math.round((v + Number.EPSILON) * 100) / 100;
+    }
+
+    _gstMult(item) {
+        return 1 + (parseFloat(item.taxPercent || 0) / 100);
+    }
+
+    // Flat list of live order-item refs (scheme groups + other products).
+    _allEngineItems() {
+        const out = [];
+        (this.schemePro || []).forEach(g => (g.products || []).forEach(p => { if (p) out.push(p); }));
+        (this.productData || []).forEach(p => { if (p) out.push(p); });
+        return out;
+    }
+
+    _groupMembers(scheme) {
+        const ids = new Set((scheme.groupProductIds || []).map(String));
+        return this._allEngineItems().filter(p => ids.has(String(p.id)) && (parseFloat(p.value) || 0) > 0);
+    }
+
+    // Highest qualifying slab by quantity (qtyMin treated as 0, null qtyMax as +inf).
+    _pickSlabByQty(slabs, qty) {
+        let best = null;
+        (slabs || []).forEach(sl => {
+            const mn = (sl.qtyMin != null) ? parseFloat(sl.qtyMin) : 0;
+            const mx = (sl.qtyMax != null) ? parseFloat(sl.qtyMax) : null;
+            if (qty >= mn && (mx == null || qty <= mx)) {
+                const bestMn = (best && best.qtyMin != null) ? parseFloat(best.qtyMin) : -1;
+                if (!best || mn > bestMn) best = sl;
+            }
+        });
+        return best;
+    }
+
+    // Slab whose value range contains val (valMin treated as 0, null valMax as +inf).
+    _pickSlabByValue(slabs, val) {
+        let best = null;
+        (slabs || []).forEach(sl => {
+            const mn = (sl.valMin != null) ? parseFloat(sl.valMin) : 0;
+            const mx = (sl.valMax != null) ? parseFloat(sl.valMax) : null;
+            if (val >= mn && (mx == null || val <= mx)) {
+                const bestMn = (best && best.valMin != null) ? parseFloat(best.valMin) : -1;
+                if (!best || mn > bestMn) best = sl;
+            }
+        });
+        return best;
+    }
+
+    _flagLine(m, scheme) {
+        m.appliedScheme = true;
+        if (!m._appliedSchemeId) m._appliedSchemeId = scheme.id;
+        m.schemeLabel = scheme.name;
+    }
+
+    // Record a step in a line's price-breakup ledger (Base -> Free Quantity -> QPS ...).
+    _addPriceStep(m, label) {
+        if (!Array.isArray(m._priceSteps)) m._priceSteps = [];
+        m._priceSteps.push({ key: 'step-' + m._priceSteps.length, label: label, price: this._round2(m._wkUnit).toFixed(2) });
+    }
+
+    // True if any group product of this scheme is currently ordered (qty > 0).
+    _schemeHasQualifyingQty(scheme) {
+        return this._groupMembers(scheme).length > 0;
+    }
+
+    // Partition applicable schemes by type and resolve invalid combinations.
+    // FOC Giveaway cannot coexist with Free Quantity / QPS (per valid-combo set).
+    buildSchemeContext() {
+        const byType = {
+            'Free Quantity': [], 'QPS': [], 'FOC Giveaway': [],
+            'Category Value': [], 'Order Value': []
+        };
+        (this.coverageSchemes || []).forEach(s => {
+            if (byType[s.schemeType]) byType[s.schemeType].push(s);
+        });
+        const skipped = [];
+        // Only treat a family as "active" when it has schemes with qualifying ordered qty,
+        // so we don't warn about configured-but-untriggered schemes.
+        const discountActive = byType['Free Quantity'].some(s => this._schemeHasQualifyingQty(s))
+            || byType['QPS'].some(s => this._schemeHasQualifyingQty(s));
+        const focActive = byType['FOC Giveaway'].some(s => this._schemeHasQualifyingQty(s));
+        if (discountActive && focActive) {
+            // Invalid: skip the FOC giveaway schemes, keep the Free Quantity / QPS track.
+            byType['FOC Giveaway'].forEach(s => { if (this._schemeHasQualifyingQty(s)) skipped.push(s.name); });
+            byType['FOC Giveaway'] = [];
+        }
+        return { byType, skipped };
+    }
+
+    // ORDER 1 — Free Quantity (group based)
+    _pass1FreeQuantity(byType) {
+        byType['Free Quantity'].forEach(scheme => {
+            const members = this._groupMembers(scheme);
+            const totalQty = members.reduce((s, m) => s + (parseFloat(m.value) || 0), 0);
+            if (totalQty <= 0) return;
+            const slab = this._pickSlabByQty(scheme.slabsRaw, totalQty);
+            if (!slab || !slab.qtyMin || parseFloat(slab.qtyMin) <= 0 || !slab.freeQty) return;
+            const free = Math.floor(totalQty / parseFloat(slab.qtyMin)) * parseFloat(slab.freeQty);
+            if (free <= 0) return;
+            const factor = totalQty / (totalQty + free);
+            members.forEach(m => {
+                m._wkUnit = m._wkUnit * factor;
+                this._flagLine(m, scheme);
+                this._addPriceStep(m, 'Free Quantity — ' + scheme.name);
+            });
+            this.appliedSchemeRecords.push({
+                schemeId: scheme.id, slabId: slab.slabId, schemeType: 'Free Quantity',
+                freeQty: free, sequence: slab.seq,
+                description: 'Free Quantity: ' + free + ' EA free on ' + totalQty + ' EA'
+            });
+        });
+    }
+
+    // ORDER 2 — QPS (group based, price after Order 1)
+    _pass2QPS(byType) {
+        byType['QPS'].forEach(scheme => {
+            const members = this._groupMembers(scheme);
+            const totalQty = members.reduce((s, m) => s + (parseFloat(m.value) || 0), 0);
+            if (totalQty <= 0) return;
+            const slab = this._pickSlabByQty(scheme.slabsRaw, totalQty);
+            if (!slab || slab.benefitAmtPerEA == null) return;
+            const off = parseFloat(slab.benefitAmtPerEA);
+            members.forEach(m => {
+                m._wkUnit = Math.max(0, m._wkUnit - off);
+                this._flagLine(m, scheme);
+                this._addPriceStep(m, 'QPS — ' + scheme.name);
+            });
+            this.appliedSchemeRecords.push({
+                schemeId: scheme.id, slabId: slab.slabId, schemeType: 'QPS',
+                benefitAmount: off, sequence: slab.seq,
+                description: 'QPS: ₹' + off + ' off per EA'
+            });
+        });
+    }
+
+    // ORDER 3 — FOC Giveaway (group based; merges if FOC product is also ordered)
+    _pass3FOCGiveaway(byType) {
+        byType['FOC Giveaway'].forEach(scheme => {
+            const members = this._groupMembers(scheme);
+            const totalQty = members.reduce((s, m) => s + (parseFloat(m.value) || 0), 0);
+            if (totalQty <= 0) return;
+            const slab = this._pickSlabByQty(scheme.slabsRaw, totalQty);
+            if (!slab || !slab.qtyMin || parseFloat(slab.qtyMin) <= 0 || !slab.freeQty || !slab.focProductId) return;
+            const focQty = Math.floor(totalQty / parseFloat(slab.qtyMin)) * parseFloat(slab.freeQty);
+            if (focQty <= 0) return;
+            const focPrice = parseFloat(slab.focUnitPrice) || 0;
+            const focTax = parseFloat(slab.focTaxPercent) || 0;
+            const existing = this._allEngineItems().find(p => String(p.id) === String(slab.focProductId) && (parseFloat(p.value) || 0) > 0);
+            if (existing) {
+                existing._focMergeQty = (existing._focMergeQty || 0) + focQty;
+                existing._focMergeDiscount = (existing._focMergeDiscount || 0) + (focPrice * focQty);
+                existing.appliedScheme = true;
+                existing.schemeLabel = scheme.name;
+                if (!existing._appliedSchemeId) existing._appliedSchemeId = scheme.id;
+                if (Array.isArray(existing._priceSteps)) {
+                    existing._priceSteps.push({ key: 'step-' + existing._priceSteps.length, label: 'FOC Giveaway — ' + focQty + ' EA free', price: this._round2(existing._wkUnit).toFixed(2) });
+                }
+            } else {
+                this.focLines.push({
+                    id: slab.focProductId,
+                    name: slab.focProductName,
+                    isFOC: true,
+                    value: focQty,
+                    crateQty: 0,
+                    eachQty: focQty,
+                    proCate: null,
+                    UnitPricePriceBook: focPrice,
+                    originalUnitPrice: focPrice,
+                    discountedUnitPrice: focPrice.toFixed(2),
+                    taxPercent: focTax,
+                    netWeight: 0,
+                    _lineDiscount: this._round2(focPrice * focQty),
+                    _appliedSchemeId: scheme.id,
+                    appliedScheme: true,
+                    schemeLabel: scheme.name
+                });
+            }
+            this.appliedSchemeRecords.push({
+                schemeId: scheme.id, slabId: slab.slabId, schemeType: 'FOC Giveaway',
+                freeQty: focQty, focProductId: slab.focProductId, sequence: slab.seq,
+                description: 'FOC Giveaway: ' + focQty + ' EA of ' + (slab.focProductName || 'product')
+            });
+        });
+    }
+
+    // ORDER 4 — Category Value (sub-group based, header discount)
+    _pass4CategoryValue(byType) {
+        byType['Category Value'].forEach(scheme => {
+            const cat = scheme.productCategory;
+            if (!cat) return;
+            const members = this._allEngineItems().filter(p =>
+                p.subGroup === cat && (parseFloat(p.value) || 0) > 0);
+            const catVal = members.reduce((s, m) =>
+                s + (m._wkUnit * (parseFloat(m.value) || 0) * this._gstMult(m)), 0);
+            if (catVal <= 0) return;
+            const slab = this._pickSlabByValue(scheme.slabsRaw, catVal);
+            if (!slab || slab.benefitPercent == null) return;
+            const pct = parseFloat(slab.benefitPercent);
+            const disc = catVal * pct / 100;
+            this.categoryValueDiscount += disc;
+            this.appliedSchemeRecords.push({
+                schemeId: scheme.id, slabId: slab.slabId, schemeType: 'Category Value',
+                discountPercent: pct, benefitAmount: this._round2(disc), sequence: slab.seq,
+                description: 'Category Value: ' + pct + '% on ' + cat
+            });
+        });
+    }
+
+    // ORDER 5 — Order Value (whole order, header discount)
+    _pass5OrderValue(byType) {
+        byType['Order Value'].forEach(scheme => {
+            const members = this._allEngineItems().filter(p => (parseFloat(p.value) || 0) > 0);
+            const orderVal = members.reduce((s, m) =>
+                s + (m._wkUnit * (parseFloat(m.value) || 0) * this._gstMult(m)), 0);
+            if (orderVal <= 0) return;
+            const slab = this._pickSlabByValue(scheme.slabsRaw, orderVal);
+            if (!slab || slab.benefitPercent == null) return;
+            const pct = parseFloat(slab.benefitPercent);
+            const disc = orderVal * pct / 100;
+            this.orderValueDiscount += disc;
+            this.appliedSchemeRecords.push({
+                schemeId: scheme.id, slabId: slab.slabId, schemeType: 'Order Value',
+                discountPercent: pct, benefitAmount: this._round2(disc), sequence: slab.seq,
+                description: 'Order Value: ' + pct + '% on order'
+            });
+        });
+    }
+
+    applySchemeEngine() {
+        if (!this.isSecondaryAccount) return;
+        try {
+            this._runSchemeEngine();
+        } catch (e) {
+            // Never let a pricing-engine error break the screen or wipe scheme coverage.
+            // eslint-disable-next-line no-console
+            console.error('applySchemeEngine failed', e);
+            try { this.recalculateTotals(); } catch (ignore) { /* noop */ }
+        }
+    }
+
+    _runSchemeEngine() {
+        const items = this._allEngineItems();
+
+        // Reset working state to base price (idempotent across runs)
+        items.forEach(p => {
+            const base = parseFloat(p.UnitPricePriceBook) || 0;
+            p._baseUnit = base;
+            p._wkUnit = base;
+            p.appliedScheme = false;
+            p._appliedSchemeId = null;
+            p.schemeLabel = null;
+            p._focMergeQty = 0;
+            p._focMergeDiscount = 0;
+            p._lineDiscount = 0;
+            p._priceSteps = [{ key: 'base', label: 'Base Price', price: base.toFixed(2) }];
+            p.discountedUnitPrice = base.toFixed(2);
+            p.discountedPrice = base * (parseFloat(p.value) || 0);
+        });
+        this.focLines = [];
+        this.categoryValueDiscount = 0;
+        this.orderValueDiscount = 0;
+        this.appliedSchemeRecords = [];
+
+        const ctx = this.buildSchemeContext();
+        this._pass1FreeQuantity(ctx.byType);
+        this._pass2QPS(ctx.byType);
+        this._pass3FOCGiveaway(ctx.byType);
+        this._pass4CategoryValue(ctx.byType);
+        this._pass5OrderValue(ctx.byType);
+
+        // Write back per-line results
+        items.forEach(p => {
+            const finalUnit = this._round2(p._wkUnit);
+            const qty = parseFloat(p.value) || 0;
+            p.discountedUnitPrice = finalUnit.toFixed(2);
+            p.discountedPrice = finalUnit * qty;
+            p._lineDiscount = this._round2((p._baseUnit - finalUnit) * qty + (p._focMergeDiscount || 0));
+            if (finalUnit !== p._baseUnit || (p._focMergeQty || 0) > 0) p.appliedScheme = true;
+        });
+        this.categoryValueDiscount = this._round2(this.categoryValueDiscount);
+        this.orderValueDiscount = this._round2(this.orderValueDiscount);
+
+        // Reactivity + downstream recompute
+        if (this.schemePro) this.schemePro = [...this.schemePro];
+        this.recalculateTotals();
+        if (this.isSummaryProduct) this.setProducts();
+
+        // Warn once per distinct invalid-combination signature
+        const sig = ctx.skipped.slice().sort().join('|');
+        if (ctx.skipped.length && sig !== this._lastInvalidSig) {
+            this.genericDispatchToastEvent(
+                'Schemes Skipped',
+                'These schemes were not applied (invalid combination): ' + ctx.skipped.join(', '),
+                'warning'
+            );
+        }
+        this._lastInvalidSig = sig;
     }
 
     //disable pull to refesh
@@ -2160,6 +2601,26 @@ export default class ProductScreen4 extends LightningElement {
                 grandTotalAmt = parseFloat((grandTotalAmt + netTotal).toFixed(2));
                 totalQnt += quantity;
             });
+
+            // Append FOC giveaway lines (net 0) produced by the scheme engine
+            if (Array.isArray(this.focLines) && this.focLines.length > 0 && plantGroups['All Products']) {
+                this.focLines.forEach(foc => {
+                    const focQty = parseFloat(foc.value) || 0;
+                    plantGroups['All Products'].products.push({
+                        ...foc,
+                        displayQty: focQty,
+                        unitPrice: (parseFloat(foc.UnitPricePriceBook) || 0).toFixed(2),
+                        taxPercent: parseFloat(foc.taxPercent) || 0,
+                        taxAmt: '0.00',
+                        netValue: '0.00',
+                        netWeight: 0,
+                        productNetWeight: '0.00',
+                        caseQuantity: 0,
+                        eachQuantity: focQty
+                    });
+                    plantGroups['All Products'].plantEachQyt += focQty;
+                });
+            }
         } else {
             // If the customer is a Primary Customer, proceed with the original grouping logic
             // First collect all products for sorting
@@ -2261,6 +2722,9 @@ export default class ProductScreen4 extends LightningElement {
         this.subTotalAmt = subTotalAmt.toFixed(2);
         this.totalTaxAmt = totalTaxAmt.toFixed(2);
         this.grandTotalAmt = grandTotalAmt.toFixed(2);
+        // Net payable after order-wide scheme discounts (category value + order value)
+        const headerDisc = (parseFloat(this.categoryValueDiscount) || 0) + (parseFloat(this.orderValueDiscount) || 0);
+        this.netPayable = Math.max(0, grandTotalAmt - headerDisc).toFixed(2);
         this.totalNetWeight = totalNetWeight.toFixed(2); // NEW: Store total net weight
         this.alternateUOMGroups = Object.values(alternateUOMGroups); // NEW: Store grouped alternate UOM data
     }
