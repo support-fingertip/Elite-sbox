@@ -3364,7 +3364,24 @@ global with sharing class beatPlannerlwc {
                 if (osa.Scheme_Slab__c != null && !liveSlabs.contains(osa.Scheme_Slab__c))                 osa.Scheme_Slab__c = null;
                 if (osa.FOC_Giveaway_Product__c != null && !liveProds.contains(osa.FOC_Giveaway_Product__c)) osa.FOC_Giveaway_Product__c = null;
             }
-            Database.insert(allAppliedSchemes, false);
+            // Capture row-level failures (partial-success insert swallows them) so the
+            // real org-side blocker (validation rule / required field / flow) is visible.
+            List<Database.SaveResult> osaResults = Database.insert(allAppliedSchemes, false);
+            Integer osaFailed = 0;
+            for (Database.SaveResult sr : osaResults) {
+                if (!sr.isSuccess()) {
+                    osaFailed++;
+                    for (Database.Error e : sr.getErrors()) {
+                        System.debug(LoggingLevel.ERROR,
+                            'OSA_INSERT_ERROR: ' + e.getStatusCode() + ' | ' + e.getMessage()
+                            + ' | fields=' + e.getFields());
+                    }
+                }
+            }
+            System.debug(LoggingLevel.ERROR,
+                'OSA_INSERT_SUMMARY total=' + allAppliedSchemes.size() + ' failed=' + osaFailed);
+        } else {
+            System.debug(LoggingLevel.ERROR, 'OSA_INSERT_SKIPPED: appliedSchemes payload was empty');
         }
 
         // Prepare response
