@@ -128,16 +128,16 @@
     </actionOverrides>
     <actionOverrides>
         <actionName>View</actionName>
-        <comment>Action override created by Lightning App Builder during activation.</comment>
-        <content>Primary_PBIS_Target_Record_Page1</content>
+        <comment>Action override updated by Lightning App Builder during activation.</comment>
+        <content>Primary_PBIS_Target_Record_Page</content>
         <formFactor>Large</formFactor>
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>
     </actionOverrides>
     <actionOverrides>
         <actionName>View</actionName>
-        <comment>Action override created by Lightning App Builder during activation.</comment>
-        <content>Primary_PBIS_Target_Record_Page1</content>
+        <comment>Action override updated by Lightning App Builder during activation.</comment>
+        <content>Primary_PBIS_Target_Record_Page</content>
         <formFactor>Small</formFactor>
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>
@@ -182,7 +182,7 @@
         <searchResultsAdditionalFields>Start_Date__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>End_Date__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Incentive_Period__c</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>PBIS_Policy__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>PBIS_Policy_Name__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Gross_Salary__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>User__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Total_Incentive_Value__c</searchResultsAdditionalFields>

@@ -897,6 +897,14 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>PrimaryKpiDashboard_Controller</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>PrimaryKpiDashboard_ControllerTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>PrimaryTargetsBatch</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -8119,11 +8127,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>PBIS_Target__c.End_Date__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
         <field>PBIS_Target__c.External_Id__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -8194,7 +8197,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_10_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_10_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8229,7 +8242,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_1_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_1_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8264,7 +8287,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_2_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_2_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8299,7 +8332,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_3_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_3_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8334,7 +8377,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_4_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_4_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8369,7 +8422,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_5_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_5_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8404,7 +8467,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_6_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_6_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8439,7 +8512,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_7_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_7_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8474,7 +8557,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_8_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_8_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8509,7 +8602,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_9_Incentive_Percentage__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Qualified_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.S_D_Parameter_9_Slab__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8525,16 +8628,6 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>PBIS_Target__c.Sales_Channel__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>PBIS_Target__c.Start_Date__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -14046,6 +14139,10 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>Junction_Beat__c</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>KPI_Dashboard</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>

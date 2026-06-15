@@ -186,7 +186,7 @@ global class getDataIntegrationController {
                                     invItem.Batch_Expiry__c = date.Valueof(ad.batchExpiry); 
                                 }
                                 //Extra paramets                             
-                                invItem.SAP_Order_Id__c = obj.SAPOrderId; 
+                                invItem.SAP_Order_Id__c = ad.SAP_OrderId; 
                                 // Set Order__r from obj.sfOrderId if present
                                 if(ad.sfOrderId != null && ad.sfOrderId != '') invItem.Order__r = new Order__c(Order_Id_Text__c = ad.sfOrderId);
 

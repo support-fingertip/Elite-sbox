@@ -3,10 +3,15 @@
     <fullName>Weightage_Must_Total_100</fullName>
     <active>true</active>
     <description>BR-02: when any S&amp;D Parameter weightage is entered, the ten weightages must total 100%.</description>
-    <errorConditionFormula>AND(
-  Total_Weightage__c &lt;&gt; 0,
-  Total_Weightage__c &lt;&gt; 100
-)</errorConditionFormula>
-    <errorDisplayField>Total_Weightage__c</errorDisplayField>
+    <errorConditionFormula>NULLVALUE(S_D_Parameter_1_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_2_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_3_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_4_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_5_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_6_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_7_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_8_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_9_Weightage__c, 0) +
+NULLVALUE(S_D_Parameter_10_Weightage__c, 0) &lt;&gt; 1</errorConditionFormula>
     <errorMessage>S &amp; D Parameter weightages must total 100%.</errorMessage>
 </ValidationRule>
