@@ -21,6 +21,8 @@
         <enabled>true</enabled>
     </classAccesses>
     <description>Primary PBIS Task 3: full access to the PBIS Target wide upload object, its fields and tab. Use alongside PBIS_Policy_Admin / PBIS Admin Access.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>PBIS Target Admin</label>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Designation__c</field>
@@ -103,6 +105,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_10_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Target__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -133,7 +140,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_1_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_1_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -168,7 +185,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_2_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_2_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -203,7 +230,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_3_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_3_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -238,7 +275,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_4_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_4_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -273,7 +320,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_5_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_5_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -308,7 +365,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_6_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_6_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -343,7 +410,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_7_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_7_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -378,7 +455,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_8_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_8_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -413,7 +500,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_9_Incentive_Percentage__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Qualified_Slab__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>PBIS_Target__c.S_D_Parameter_9_Slab__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -461,8 +558,6 @@
         <field>PBIS_Target__c.Validation_Message__c</field>
         <readable>true</readable>
     </fieldPermissions>
-    <hasActivationRequired>false</hasActivationRequired>
-    <label>PBIS Target Admin</label>
     <objectPermissions>
         <allowCreate>true</allowCreate>
         <allowDelete>true</allowDelete>
@@ -478,104 +573,10 @@
     </pageAccesses>
     <fieldPermissions>
         <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_1_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_1_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_2_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_2_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_3_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_3_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_4_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_4_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_5_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_5_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_6_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_6_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_7_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_7_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_8_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_8_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_9_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_9_Incentive_Percentage__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>PBIS_Target__c.S_D_Parameter_10_Slab__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Incentive_Percentage__c</field>
         <readable>true</readable>
-    </fieldPermissions>    <tabSettings>
+    </fieldPermissions>
+    <tabSettings>
         <tab>PBIS_Target__c</tab>
         <visibility>Visible</visibility>
     </tabSettings>
