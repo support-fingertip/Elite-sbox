@@ -2029,13 +2029,8 @@ export default class ProductScreen4 extends LightningElement {
         m._priceSteps.push({ key: 'step-' + m._priceSteps.length, label: label, price: this._round2(m._wkUnit).toFixed(2) });
     }
 
-    // True if any group product of this scheme is currently ordered (qty > 0).
-    _schemeHasQualifyingQty(scheme) {
-        return this._groupMembers(scheme).length > 0;
-    }
-
-    // Partition applicable schemes by type and resolve invalid combinations.
-    // FOC Giveaway cannot coexist with Free Quantity / QPS (per valid-combo set).
+    // Partition applicable schemes by type. FOC Giveaway, Free Quantity and QPS
+    // all apply independently to their own groups (no cross-type exclusion).
     buildSchemeContext() {
         const byType = {
             'Free Quantity': [], 'QPS': [], 'FOC Giveaway': [],
@@ -2044,18 +2039,7 @@ export default class ProductScreen4 extends LightningElement {
         (this.coverageSchemes || []).forEach(s => {
             if (byType[s.schemeType]) byType[s.schemeType].push(s);
         });
-        const skipped = [];
-        // Only treat a family as "active" when it has schemes with qualifying ordered qty,
-        // so we don't warn about configured-but-untriggered schemes.
-        const discountActive = byType['Free Quantity'].some(s => this._schemeHasQualifyingQty(s))
-            || byType['QPS'].some(s => this._schemeHasQualifyingQty(s));
-        const focActive = byType['FOC Giveaway'].some(s => this._schemeHasQualifyingQty(s));
-        if (discountActive && focActive) {
-            // Invalid: skip the FOC giveaway schemes, keep the Free Quantity / QPS track.
-            byType['FOC Giveaway'].forEach(s => { if (this._schemeHasQualifyingQty(s)) skipped.push(s.name); });
-            byType['FOC Giveaway'] = [];
-        }
-        return { byType, skipped };
+        return { byType, skipped: [] };
     }
 
     // ORDER 1 — Free Quantity (group based)
