@@ -46,9 +46,5 @@
         <members>PBIS_Target__c-PBIS_Target_Layout</members>
         <name>Layout</name>
     </types>
-    <types>
-        <members>PBIS_Target_Admin</members>
-        <name>PermissionSet</name>
-    </types>
     <version>59.0</version>
 </Package>
