@@ -4,7 +4,7 @@
     sf project deploy start -x manifest/pbis_kpi_slab.xml -o <org>
   Covers: the per-slot snapshot fields (Slab band + Incentive %), the PBISActuals_Service
   that populates them, the Primary/KPI dashboard LWCs + controller, the KPI Dashboard tab,
-  and the PBIS_Target_Admin / KPI_Dashboard_Access permission sets.
+  and the KPI_Dashboard_Access permission set.
   Depends on the existing secondaryKpiDashboard LWC being present in the target org
   (kpiDashboard references c-secondary-kpi-dashboard).
 -->
@@ -50,7 +50,6 @@
         <name>CustomTab</name>
     </types>
     <types>
-        <members>PBIS_Target_Admin</members>
         <members>KPI_Dashboard_Access</members>
         <name>PermissionSet</name>
     </types>
