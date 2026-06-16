@@ -20,6 +20,7 @@ public with sharing class PBIS_TargetTriggerHandler {
             }
         }
         applyGrossSalary(withUser);
+        checkUniqueParameters(rows);
         checkPeriodOverlaps(rows, null);
     }
 
@@ -38,7 +39,34 @@ public with sharing class PBIS_TargetTriggerHandler {
             }
         }
         applyGrossSalary(changedWithUser);
+        checkUniqueParameters(rows);
         checkPeriodOverlaps(rows, oldMap);
+    }
+
+    private static final Integer SLOTS = 10;
+
+    /**
+     * A PBIS Target may not reference the same S&D Parameter in more than one slot (1-10).
+     * Each offending row is failed via addError naming the matching slots, e.g.
+     * "S & D Parameter 1 and S & D Parameter 2 are matching ...".
+     */
+    private static void checkUniqueParameters(List<PBIS_Target__c> rows) {
+        for (PBIS_Target__c t : rows) {
+            Map<Id, Integer> firstSlotByParam = new Map<Id, Integer>();
+            List<String> dupMsgs = new List<String>();
+            for (Integer n = 1; n <= SLOTS; n++) {
+                Id pid = (Id) t.get('S_D_Parameter_' + n + '__c');
+                if (pid == null) continue;
+                if (firstSlotByParam.containsKey(pid)) {
+                    dupMsgs.add('S & D Parameter ' + firstSlotByParam.get(pid) + ' and S & D Parameter ' + n + ' are matching');
+                } else {
+                    firstSlotByParam.put(pid, n);
+                }
+            }
+            if (!dupMsgs.isEmpty()) {
+                t.addError(String.join(dupMsgs, '; ') + '. Please add unique Parameters.');
+            }
+        }
     }
 
     /**

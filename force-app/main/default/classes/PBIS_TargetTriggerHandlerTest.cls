@@ -195,4 +195,43 @@ private class PBIS_TargetTriggerHandlerTest {
         System.assert(r.isSuccess(), 'Different Incentive Period is a different target');
         System.assertEquals(2, [SELECT COUNT() FROM PBIS_Target__c WHERE User__c = :u1.Id]);
     }
+
+    // ===== unique S&D parameter per record =====
+    @isTest
+    static void testDuplicateParameterRejected() {
+        User u1 = userByAlias('pbisone');
+        S_D_Parameter__c p = new S_D_Parameter__c(Name = 'Vol', Is_Mandatory__c = true, Is_Active__c = true);
+        insert p;
+
+        PBIS_Target__c t = newTargetDates(u1.Id, 'Monthly', Date.today().addDays(1), Date.today().addDays(30));
+        t.S_D_Parameter_1__c = p.Id; t.S_D_Parameter_1_Weightage__c = 50; t.S_D_Parameter_1_Target__c = 10;
+        t.S_D_Parameter_2__c = p.Id; t.S_D_Parameter_2_Weightage__c = 50; t.S_D_Parameter_2_Target__c = 10;
+
+        Test.startTest();
+        Database.SaveResult r = Database.insert(t, false);
+        Test.stopTest();
+
+        System.assert(!r.isSuccess(), 'Same parameter in two slots should be rejected');
+        System.assert(r.getErrors()[0].getMessage().containsIgnoreCase('matching'),
+            'Error names the matching slots: ' + r.getErrors()[0].getMessage());
+    }
+
+    @isTest
+    static void testDistinctParametersAllowed() {
+        User u1 = userByAlias('pbisone');
+        S_D_Parameter__c p1 = new S_D_Parameter__c(Name = 'Vol', Is_Mandatory__c = true, Is_Active__c = true);
+        S_D_Parameter__c p2 = new S_D_Parameter__c(Name = 'FP', Is_Mandatory__c = false, Is_Active__c = true);
+        insert new List<S_D_Parameter__c>{ p1, p2 };
+
+        PBIS_Target__c t = newTargetDates(u1.Id, 'Monthly', Date.today().addDays(1), Date.today().addDays(30));
+        t.S_D_Parameter_1__c = p1.Id; t.S_D_Parameter_1_Weightage__c = 50; t.S_D_Parameter_1_Target__c = 10;
+        t.S_D_Parameter_2__c = p2.Id; t.S_D_Parameter_2_Weightage__c = 50; t.S_D_Parameter_2_Target__c = 10;
+
+        Test.startTest();
+        Database.SaveResult r = Database.insert(t, false);
+        Test.stopTest();
+
+        System.assert(r.isSuccess(), 'Distinct parameters allowed: '
+            + (r.isSuccess() ? '' : r.getErrors()[0].getMessage()));
+    }
 }
