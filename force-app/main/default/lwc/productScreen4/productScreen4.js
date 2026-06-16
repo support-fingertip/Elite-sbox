@@ -2054,6 +2054,7 @@ export default class ProductScreen4 extends LightningElement {
             if (free <= 0) return;
             const factor = totalQty / (totalQty + free);
             members.forEach(m => {
+                const before = m._wkUnit;
                 m._wkUnit = m._wkUnit * factor;
                 this._flagLine(m, scheme);
                 this._addPriceStep(m, 'Free Quantity — ' + scheme.name);
@@ -2061,7 +2062,8 @@ export default class ProductScreen4 extends LightningElement {
                 this.appliedSchemeRecords.push({
                     productId: m.id,
                     schemeId: scheme.id, slabId: slab.slabId, schemeType: 'Free Quantity',
-                    freeQty: free, sequence: slab.seq,
+                    freeQty: free, benefitAmount: this._round2((before - m._wkUnit) * (parseFloat(m.value) || 0)),
+                    sequence: slab.seq,
                     description: 'Free Quantity: ' + free + ' EA free on ' + totalQty + ' EA'
                 });
             });
@@ -2078,6 +2080,7 @@ export default class ProductScreen4 extends LightningElement {
             if (!slab || slab.benefitAmtPerEA == null) return;
             const off = parseFloat(slab.benefitAmtPerEA);
             members.forEach(m => {
+                const before = m._wkUnit;
                 m._wkUnit = Math.max(0, m._wkUnit - off);
                 this._flagLine(m, scheme);
                 this._addPriceStep(m, 'QPS — ' + scheme.name);
@@ -2085,7 +2088,8 @@ export default class ProductScreen4 extends LightningElement {
                 this.appliedSchemeRecords.push({
                     productId: m.id,
                     schemeId: scheme.id, slabId: slab.slabId, schemeType: 'QPS',
-                    benefitAmount: off, sequence: slab.seq,
+                    benefitAmount: this._round2((before - m._wkUnit) * (parseFloat(m.value) || 0)),
+                    sequence: slab.seq,
                     description: 'QPS: ₹' + off + ' off per EA'
                 });
             });
@@ -2137,7 +2141,8 @@ export default class ProductScreen4 extends LightningElement {
             this.appliedSchemeRecords.push({
                 productId: slab.focProductId, // links to the giveaway / merged order line
                 schemeId: scheme.id, slabId: slab.slabId, schemeType: 'FOC Giveaway',
-                freeQty: focQty, focProductId: slab.focProductId, sequence: slab.seq,
+                freeQty: focQty, benefitAmount: this._round2(focPrice * focQty),
+                focProductId: slab.focProductId, sequence: slab.seq,
                 description: 'FOC Giveaway: ' + focQty + ' EA of ' + (slab.focProductName || 'product')
             });
         });
