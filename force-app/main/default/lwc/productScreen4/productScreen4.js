@@ -264,7 +264,7 @@ export default class ProductScreen4 extends LightningElement {
             .then(result => {
                 this.isSSADSM = result.isDSM_SSA === true;
                 this.accountDataOriginal = result.Account;
-                this.listView = result.listViewRecords.Id;
+                this.listView = (result.ListViewDetails && result.ListViewDetails.Id) || this.listView;
             })
             .catch(error => {
                 console.error(error);
@@ -282,6 +282,7 @@ export default class ProductScreen4 extends LightningElement {
                 this.resultData = result;
                 this.originalResultData = result;
                 this.acccountId = result.orderAccountId;
+                this.listView = (result.ListViewDetails && result.ListViewDetails.Id) || this.listView;
                 this.productData = result.allOtherProducts.length !== 0 ? result.allOtherProducts : null;
                 this.originalSelectedProduct = result.allOtherProducts.length !== 0 ? result.allOtherProducts : null;
 
