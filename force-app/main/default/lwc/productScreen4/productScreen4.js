@@ -2729,8 +2729,11 @@ export default class ProductScreen4 extends LightningElement {
         }
 
         this.plantGroups = Object.values(plantGroups);
-        // Round each plant's total weight to 2 decimals (avoids float artifacts like 257.20000000000005)
+        // Round each plant's totals to 2 decimals (avoids float artifacts like 3336.5600000000004 / 257.20000000000005)
         this.plantGroups.forEach(g => {
+            g.plantSubTotal      = (parseFloat(g.plantSubTotal) || 0).toFixed(2);
+            g.plantTax           = (parseFloat(g.plantTax) || 0).toFixed(2);
+            g.plantTotal         = (parseFloat(g.plantTotal) || 0).toFixed(2);
             g.plantProductWeight = (parseFloat(g.plantProductWeight) || 0).toFixed(2);
         });
         this.totalQnt = totalQnt;
