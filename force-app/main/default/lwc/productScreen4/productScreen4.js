@@ -942,24 +942,31 @@ export default class ProductScreen4 extends LightningElement {
         // Prepare order data
         const ordersData = this.plantGroups.map(plantGroup => ({
             plantName: plantGroup.plantName,
-            products: plantGroup.products.map(item => ({
-                Product__c: item.id,
-                Product_Category__c: item.proCate,
-                Quantity__c: (parseInt(item.value) || 0) + (parseInt(item._focMergeQty) || 0),
-                Case_Qyt__c: item.crateQty,
-                Each_Qyt__c: item.eachQty,
-                Unit_price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
-                Before_Category_Slab_Unit_Price__c: item.originalUnitPrice || item.UnitPricePriceBook,
-                After_Category_Slab_Unit_Price__c: item.UnitPricePriceBook,
-                Before_Scheme_Unit_Price__c: item.UnitPricePriceBook,
-                After_Scheme_Unit_Price__c: item.discountedUnitPrice || item.UnitPricePriceBook,
-                Scheme_Item__c: item.schemeItemId || null,
-                Discount__c: item._lineDiscount || 0,
-                Tax__c: item.taxPercent || 0,
-                Tax_Amount__c: parseFloat(item.taxAmt),
-                Total_Amount__c: parseFloat(item.netValue),
-                SKU_Weight__c : parseFloat(item.netWeight)
-            })),
+            products: plantGroup.products.map(item => {
+                // Round base/before prices to 2dp so they match the already-rounded
+                // discounted price; avoids spurious +/-0.01 claim amounts on no-scheme lines.
+                const base2 = (this._round2(parseFloat(item.UnitPricePriceBook) || 0)).toFixed(2);
+                const orig2 = (this._round2(parseFloat(item.originalUnitPrice || item.UnitPricePriceBook) || 0)).toFixed(2);
+                const disc2 = item.discountedUnitPrice || base2; // already 2dp from the engine
+                return {
+                    Product__c: item.id,
+                    Product_Category__c: item.proCate,
+                    Quantity__c: (parseInt(item.value) || 0) + (parseInt(item._focMergeQty) || 0),
+                    Case_Qyt__c: item.crateQty,
+                    Each_Qyt__c: item.eachQty,
+                    Unit_price__c: disc2,
+                    Before_Category_Slab_Unit_Price__c: orig2,
+                    After_Category_Slab_Unit_Price__c: base2,
+                    Before_Scheme_Unit_Price__c: base2,
+                    After_Scheme_Unit_Price__c: disc2,
+                    Scheme_Item__c: item.schemeItemId || null,
+                    Discount__c: item._lineDiscount || 0,
+                    Tax__c: item.taxPercent || 0,
+                    Tax_Amount__c: parseFloat(item.taxAmt),
+                    Total_Amount__c: parseFloat(item.netValue),
+                    SKU_Weight__c : parseFloat(item.netWeight)
+                };
+            }),
             categoryDiscount: this.categoryValueDiscount || 0,
             orderValueDiscount: this.orderValueDiscount || 0,
             appliedSchemes: this.appliedSchemeRecords || [],
