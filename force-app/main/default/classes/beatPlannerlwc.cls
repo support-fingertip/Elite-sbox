@@ -3360,8 +3360,9 @@ global with sharing class beatPlannerlwc {
                     Order_Item__c oi = itemByOrderProduct.get(
                         String.valueOf(allAppliedSchemes[j].Order_Request__c) + '|' + String.valueOf(pid));
                     if (oi != null) {
+                        // Order_Item__c link only; Benefit_Amount__c is the engine's
+                        // per-scheme amount (set in the OSA-build from the payload).
                         allAppliedSchemes[j].Order_Item__c = oi.Id;
-                        allAppliedSchemes[j].Benefit_Amount__c = oi.Discount__c; // per-item scheme benefit
                     }
                 }
             }
