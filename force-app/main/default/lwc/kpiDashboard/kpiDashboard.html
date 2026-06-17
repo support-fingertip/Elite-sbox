@@ -1,0 +1,32 @@
+<template>
+    <div class="kd">
+        <div class="kd-header">
+            <h1 class="kd-title">KPI Dashboard</h1>
+            <div class="kd-tabs" role="tablist">
+                <button type="button" class={primaryTabClass} onclick={selectPrimary} role="tab">
+                    <lightning-icon icon-name="utility:moneybag" size="x-small" class="kd-tab-icon"></lightning-icon>
+                    <span>Primary KPI</span>
+                </button>
+                <button type="button" class={secondaryTabClass} onclick={selectSecondary} role="tab">
+                    <lightning-icon icon-name="utility:cart" size="x-small" class="kd-tab-icon"></lightning-icon>
+                    <span>Secondary KPI</span>
+                </button>
+            </div>
+        </div>
+
+        <div class={primaryPaneClass}>
+            <div class="kd-card">
+                <template if:true={primaryLoaded}>
+                    <c-primary-kpi-dashboard></c-primary-kpi-dashboard>
+                </template>
+            </div>
+        </div>
+        <div class={secondaryPaneClass}>
+            <div class="kd-card kd-secondary">
+                <template if:true={secondaryLoaded}>
+                    <c-secondary-kpi-dashboard></c-secondary-kpi-dashboard>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

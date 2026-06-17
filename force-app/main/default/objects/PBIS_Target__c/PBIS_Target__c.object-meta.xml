@@ -182,7 +182,7 @@
         <searchResultsAdditionalFields>Start_Date__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>End_Date__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Incentive_Period__c</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>PBIS_Policy__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>PBIS_Policy_Name__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Gross_Salary__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>User__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Total_Incentive_Value__c</searchResultsAdditionalFields>
