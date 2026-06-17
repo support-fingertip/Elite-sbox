@@ -657,7 +657,7 @@ export default class SecondaryOrders extends LightningElement {
                 Product__c: f.id,
                 Product_Name__c: f.name,
                 Quantity__c: fq,
-                Unit_Price__c: 0,
+                Unit_Price__c: Number(f.UnitPricePriceBook) || 0,
                 Tax_Amount__c: 0,
                 Tax_Percent__c: Number(f.taxPercent) || 0,
                 Order_Item__c: oid,
