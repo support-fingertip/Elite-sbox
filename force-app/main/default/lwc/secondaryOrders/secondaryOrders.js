@@ -253,7 +253,7 @@ export default class SecondaryOrders extends LightningElement {
                 name: f.name,
                 qty: Number(f.value) || 0,
                 focFreeQty: 0,
-                unitPrice: '0.00',
+                unitPrice: (Number(f.UnitPricePriceBook) || 0).toFixed(2),
                 taxAmt: '0.00',
                 netValue: '0.00',
                 isFOC: true
