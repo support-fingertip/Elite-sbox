@@ -1618,8 +1618,23 @@ global with sharing class beatPlannerlwc {
             for(Order_Item__c item : items){
                 productIdToQty.put(item.Product__c, item);
             }
-            
+
             responseData.existingOrderProductQuantities = productIdToQty;
+
+            // FOC giveaway free quantities recorded on this order — so edit-restore can put back
+            // only the PAID portion of a giveaway product (the engine regenerates the free units).
+            Map<Id, Decimal> focFree = new Map<Id, Decimal>();
+            for (Order_Scheme_Applied__c osa : [
+                SELECT FOC_Giveaway_Product__c, Free_Qty__c
+                FROM Order_Scheme_Applied__c
+                WHERE Order_Request__c = :orderRecordId
+                AND Scheme_Type__c = 'FOC Giveaway' AND FOC_Giveaway_Product__c != null
+            ]) {
+                Decimal q = (osa.Free_Qty__c != null) ? osa.Free_Qty__c : 0;
+                Decimal cur = focFree.containsKey(osa.FOC_Giveaway_Product__c) ? focFree.get(osa.FOC_Giveaway_Product__c) : 0;
+                focFree.put(osa.FOC_Giveaway_Product__c, cur + q);
+            }
+            responseData.existingFocFreeByProduct = focFree;
         }
         if (String.isBlank(accId)) throw new AuraHandledException('Account not found.');
         
@@ -4269,6 +4284,7 @@ global with sharing class beatPlannerlwc {
         @AuraEnabled public List<ReturnDataSummary> summaryReturnData { get; set; }
         @AuraEnabled public List<salesSummery> sales { get; set; }
         @AuraEnabled public Map<Id, Order_Item__c> existingOrderProductQuantities{get;set;}
+        @AuraEnabled public Map<Id, Decimal> existingFocFreeByProduct{get;set;}
         @AuraEnabled public Decimal minumumOrderValue{get;set;}
         @AuraEnabled public String deliveryTo{get;set;}
         @AuraEnabled public Date estimatedDeliveryDate{get;set;}

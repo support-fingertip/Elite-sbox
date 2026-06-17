@@ -347,6 +347,10 @@ export default class ProductScreen4 extends LightningElement {
 
                 if (this.orderRecordId && result.existingOrderProductQuantities) {
                     const existingQty = result.existingOrderProductQuantities;
+                    // FOC giveaway free units recorded on the order — restore only the PAID portion
+                    // for those products; the scheme engine regenerates the free units (so an
+                    // unordered giveaway comes back as a ₹0 FREE line, not a charged paid line).
+                    const focFreeMap = (result.existingFocFreeByProduct) || {};
 
                     // Restore the ORDERED qty from the split fields. Quantity__c includes
                     // merged FOC giveaway free units, so using it would inflate the order
@@ -357,9 +361,18 @@ export default class ProductScreen4 extends LightningElement {
                         const crate = parseInt(oi.Case_Qyt__c) || 0;
                         const each  = parseInt(oi.Each_Qyt__c) || 0;
                         const uomConv = parseFloat(product.uomConversion) || 1;
-                        product.crateQty = crate;
-                        product.eachQty  = each;
-                        product.value = (crate * uomConv) + each;
+                        const focFree = parseFloat(focFreeMap[product.id] || 0);
+                        if (focFree > 0) {
+                            const totalQ = parseFloat(oi.Quantity__c) || ((crate * uomConv) + each);
+                            const paid = Math.max(0, totalQ - focFree);
+                            product.crateQty = 0;
+                            product.eachQty  = paid;
+                            product.value    = paid;
+                        } else {
+                            product.crateQty = crate;
+                            product.eachQty  = each;
+                            product.value = (crate * uomConv) + each;
+                        }
                     };
 
                     if (this.schemePro) {
