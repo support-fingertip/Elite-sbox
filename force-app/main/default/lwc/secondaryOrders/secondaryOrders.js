@@ -437,6 +437,7 @@ export default class SecondaryOrders extends LightningElement {
                     discountedUnitPrice: focPrice.toFixed(2),
                     taxPercent: focTax,
                     netWeight: 0,
+                    _lineDiscount: this._round2(focPrice * focQty),
                     _appliedSchemeId: scheme.id,
                     appliedScheme: true,
                     schemeLabel: scheme.name
@@ -633,6 +634,7 @@ export default class SecondaryOrders extends LightningElement {
                 After_Category_Slab_Unit_Price__c: p.afterCategorySlabUnitPrice,
                 Before_Scheme_Unit_Price__c: base,
                 After_Scheme_Unit_Price__c: unit,
+                Discount__c: this._round2(Number(p._lineDiscount) || 0),
                 Scheme_Issue__c: isIssue,
                 Scheme_Issue_Reason__c: isIssue ? issueByProduct[String(p.id)] : null
             });
@@ -662,6 +664,7 @@ export default class SecondaryOrders extends LightningElement {
                 Total_Amount__c: 0,
                 Before_Scheme_Unit_Price__c: 0,
                 After_Scheme_Unit_Price__c: 0,
+                Discount__c: this._round2(Number(f._lineDiscount) || 0),
                 Scheme_Issue__c: false,
                 Scheme_Issue_Reason__c: null
             });
