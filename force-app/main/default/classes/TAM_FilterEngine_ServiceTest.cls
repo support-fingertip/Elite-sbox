@@ -102,8 +102,11 @@ public class TAM_FilterEngine_ServiceTest {
 
     @isTest
     static void dateTimeRendersAsSoqlDateTimeLiteral() {
+        // Datetime.valueOf in Apex parses the SOQL local-time form
+        // "YYYY-MM-DD HH:mm:ss" (space separator, no Z). The service formats it
+        // back out into the ISO/Z literal SOQL expects in WHERE clauses.
         String json = payload(new List<String>{
-            row(1, 'CreatedDate', '>=', '2026-06-01T10:00:00Z', 'DateTime')
+            row(1, 'CreatedDate', '>=', '2026-06-01 10:00:00', 'DateTime')
         });
         Test.startTest();
         String clause = TAM_FilterEngine_Service.buildWhereClause(json, null);
