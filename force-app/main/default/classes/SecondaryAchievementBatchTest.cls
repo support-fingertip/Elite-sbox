@@ -1,10 +1,35 @@
 @isTest
 public class SecondaryAchievementBatchTest {
 
+    // Order_Item__c.Order_Type__c is bound to a global value set whose
+    // members can differ per org (SAP-style codes in some orgs, the literal
+    // 'Secondary Order' in others). Discover a valid active value once so
+    // both the criterion filter and the inserted rows speak the same
+    // dialect — otherwise REQUIRED_FIELD / INVALID_OR_NULL_FOR_RESTRICTED
+    // errors trip the @TestSetup.
+    private static final String ORDER_TYPE_VALUE = pickOrderTypeValue();
     private static final String SECONDARY_FILTER =
-        '{"filters":[{"id":1,"field":"Order_Type__c","operator":"=","type":"Picklist","value":"Secondary Order"}]}';
+        '{"filters":[{"id":1,"field":"Order_Type__c","operator":"=","type":"Picklist","value":"'
+        + ORDER_TYPE_VALUE + '"}]}';
     private static final String VISIT_SOURCE =
         '[{"object":"Visit_Form__c","userField":"OwnerId","dateField":"CreatedDate","distinctField":"CustomerId__c"}]';
+
+    private static String pickOrderTypeValue() {
+        // Prefer 'Secondary Order' when it's a valid picklist value (so the
+        // production code paths that filter on that exact string keep
+        // matching). Otherwise fall back to the first active value the org
+        // exposes — the engine doesn't care what string it is, as long as
+        // filter + records agree.
+        List<Schema.PicklistEntry> entries =
+            Order_Item__c.Order_Type__c.getDescribe().getPicklistValues();
+        for (Schema.PicklistEntry e : entries) {
+            if (e.isActive() && e.getValue() == 'Secondary Order') return 'Secondary Order';
+        }
+        for (Schema.PicklistEntry e : entries) {
+            if (e.isActive()) return e.getValue();
+        }
+        return 'Secondary Order';
+    }
 
     private static Date startDate = Date.today().addDays(-5);
     private static Date endDate = Date.today().addDays(5);
@@ -132,20 +157,20 @@ public class SecondaryAchievementBatchTest {
         };
 
         // Orders — one per (user, date, type) since item date/owner derive from the order.
-        Order__c oRevD1 = makeOrder(uRev.Id, acc1.Id, 'Secondary Order', day1);
-        Order__c oRevD2 = makeOrder(uRev.Id, acc1.Id, 'Secondary Order', day2);
+        Order__c oRevD1 = makeOrder(uRev.Id, acc1.Id, ORDER_TYPE_VALUE, day1);
+        Order__c oRevD2 = makeOrder(uRev.Id, acc1.Id, ORDER_TYPE_VALUE, day2);
         Order__c oRevPri = makeOrder(uRev.Id, acc1.Id, 'Primary Order', day1);
-        Order__c oUboD1 = makeOrder(uUbo.Id, acc1.Id, 'Secondary Order', day1);
-        Order__c oUboD2 = makeOrder(uUbo.Id, acc1.Id, 'Secondary Order', day2);
-        Order__c oTcD1 = makeOrder(uTc.Id, acc1.Id, 'Secondary Order', day1);
-        Order__c oPcD1 = makeOrder(uPc.Id, acc1.Id, 'Secondary Order', day1);
-        Order__c oPcD2 = makeOrder(uPc.Id, acc1.Id, 'Secondary Order', day2);
-        Order__c oTlsdD1 = makeOrder(uTlsd.Id, acc1.Id, 'Secondary Order', day1);
-        Order__c oTlsdD2 = makeOrder(uTlsd.Id, acc1.Id, 'Secondary Order', day2);
-        Order__c oFpRev = makeOrder(uFpRev.Id, acc1.Id, 'Secondary Order', day1);
-        Order__c oEco1 = makeOrder(uFpEco.Id, acc1.Id, 'Secondary Order', day1);
-        Order__c oEco2 = makeOrder(uFpEco.Id, acc2.Id, 'Secondary Order', day1);
-        Order__c oEco3 = makeOrder(uFpEco.Id, acc2.Id, 'Secondary Order', day1);
+        Order__c oUboD1 = makeOrder(uUbo.Id, acc1.Id, ORDER_TYPE_VALUE, day1);
+        Order__c oUboD2 = makeOrder(uUbo.Id, acc1.Id, ORDER_TYPE_VALUE, day2);
+        Order__c oTcD1 = makeOrder(uTc.Id, acc1.Id, ORDER_TYPE_VALUE, day1);
+        Order__c oPcD1 = makeOrder(uPc.Id, acc1.Id, ORDER_TYPE_VALUE, day1);
+        Order__c oPcD2 = makeOrder(uPc.Id, acc1.Id, ORDER_TYPE_VALUE, day2);
+        Order__c oTlsdD1 = makeOrder(uTlsd.Id, acc1.Id, ORDER_TYPE_VALUE, day1);
+        Order__c oTlsdD2 = makeOrder(uTlsd.Id, acc1.Id, ORDER_TYPE_VALUE, day2);
+        Order__c oFpRev = makeOrder(uFpRev.Id, acc1.Id, ORDER_TYPE_VALUE, day1);
+        Order__c oEco1 = makeOrder(uFpEco.Id, acc1.Id, ORDER_TYPE_VALUE, day1);
+        Order__c oEco2 = makeOrder(uFpEco.Id, acc2.Id, ORDER_TYPE_VALUE, day1);
+        Order__c oEco3 = makeOrder(uFpEco.Id, acc2.Id, ORDER_TYPE_VALUE, day1);
         insert new List<Order__c>{
             oRevD1, oRevD2, oRevPri, oUboD1, oUboD2, oTcD1, oPcD1, oPcD2,
             oTlsdD1, oTlsdD2, oFpRev, oEco1, oEco2, oEco3
@@ -153,33 +178,33 @@ public class SecondaryAchievementBatchTest {
 
         List<Order_Item__c> items = new List<Order_Item__c>();
         // Revenue: 1000 (d1) + 500 (d2) secondary, plus 9999 primary (excluded)
-        items.add(makeItem(oRevD1.Id, prodC.Id, acc1.Id, 1, 1000, 'Secondary Order'));
-        items.add(makeItem(oRevD2.Id, prodC.Id, acc1.Id, 1, 500, 'Secondary Order'));
+        items.add(makeItem(oRevD1.Id, prodC.Id, acc1.Id, 1, 1000, ORDER_TYPE_VALUE));
+        items.add(makeItem(oRevD2.Id, prodC.Id, acc1.Id, 1, 500, ORDER_TYPE_VALUE));
         items.add(makeItem(oRevPri.Id, prodC.Id, acc1.Id, 1, 9999, 'Primary Order'));
         // UBO distinct outlets: acc1, acc1, acc2 -> 2
-        items.add(makeItem(oUboD1.Id, prodC.Id, acc1.Id, 1, 10, 'Secondary Order'));
-        items.add(makeItem(oUboD1.Id, prodC.Id, acc2.Id, 1, 10, 'Secondary Order'));
-        items.add(makeItem(oUboD2.Id, prodC.Id, acc1.Id, 1, 10, 'Secondary Order'));
+        items.add(makeItem(oUboD1.Id, prodC.Id, acc1.Id, 1, 10, ORDER_TYPE_VALUE));
+        items.add(makeItem(oUboD1.Id, prodC.Id, acc2.Id, 1, 10, ORDER_TYPE_VALUE));
+        items.add(makeItem(oUboD2.Id, prodC.Id, acc1.Id, 1, 10, ORDER_TYPE_VALUE));
         // TC: orders today acc1, acc2 (visit forms add acc1 dedup + acc3)
-        items.add(makeItem(oTcD1.Id, prodC.Id, acc1.Id, 1, 10, 'Secondary Order'));
-        items.add(makeItem(oTcD1.Id, prodC.Id, acc2.Id, 1, 10, 'Secondary Order'));
+        items.add(makeItem(oTcD1.Id, prodC.Id, acc1.Id, 1, 10, ORDER_TYPE_VALUE));
+        items.add(makeItem(oTcD1.Id, prodC.Id, acc2.Id, 1, 10, ORDER_TYPE_VALUE));
         // PC: day1 acc1+acc2, day2 acc1 -> tuples 3, active days 2 -> 1.5
-        items.add(makeItem(oPcD1.Id, prodC.Id, acc1.Id, 1, 10, 'Secondary Order'));
-        items.add(makeItem(oPcD1.Id, prodC.Id, acc2.Id, 1, 10, 'Secondary Order'));
-        items.add(makeItem(oPcD2.Id, prodC.Id, acc1.Id, 1, 10, 'Secondary Order'));
+        items.add(makeItem(oPcD1.Id, prodC.Id, acc1.Id, 1, 10, ORDER_TYPE_VALUE));
+        items.add(makeItem(oPcD1.Id, prodC.Id, acc2.Id, 1, 10, ORDER_TYPE_VALUE));
+        items.add(makeItem(oPcD2.Id, prodC.Id, acc1.Id, 1, 10, ORDER_TYPE_VALUE));
         // TLSD: day1 amt 100+200 qty 2+4 -> 300/6=50 ; day2 amt 90 qty 3 -> 30 ; /2 days = 40
-        items.add(makeItem(oTlsdD1.Id, prodC.Id, acc1.Id, 2, 100, 'Secondary Order'));
-        items.add(makeItem(oTlsdD1.Id, prodC.Id, acc1.Id, 4, 200, 'Secondary Order'));
-        items.add(makeItem(oTlsdD2.Id, prodC.Id, acc1.Id, 3, 90, 'Secondary Order'));
+        items.add(makeItem(oTlsdD1.Id, prodC.Id, acc1.Id, 2, 100, ORDER_TYPE_VALUE));
+        items.add(makeItem(oTlsdD1.Id, prodC.Id, acc1.Id, 4, 200, ORDER_TYPE_VALUE));
+        items.add(makeItem(oTlsdD2.Id, prodC.Id, acc1.Id, 3, 90, ORDER_TYPE_VALUE));
         // Focus Pack Revenue: prodA 300 + prodB 200 (+ prodC 1000 excluded) = 500
-        items.add(makeItem(oFpRev.Id, prodA.Id, acc1.Id, 1, 300, 'Secondary Order'));
-        items.add(makeItem(oFpRev.Id, prodB.Id, acc1.Id, 1, 200, 'Secondary Order'));
-        items.add(makeItem(oFpRev.Id, prodC.Id, acc1.Id, 1, 1000, 'Secondary Order'));
+        items.add(makeItem(oFpRev.Id, prodA.Id, acc1.Id, 1, 300, ORDER_TYPE_VALUE));
+        items.add(makeItem(oFpRev.Id, prodB.Id, acc1.Id, 1, 200, ORDER_TYPE_VALUE));
+        items.add(makeItem(oFpRev.Id, prodC.Id, acc1.Id, 1, 1000, ORDER_TYPE_VALUE));
         // Focus Pack ECO (min 12): order1 acc1 6+6=12 qualifies; acc2 split across orders 6/6 fails
-        items.add(makeItem(oEco1.Id, prodA.Id, acc1.Id, 6, 60, 'Secondary Order'));
-        items.add(makeItem(oEco1.Id, prodB.Id, acc1.Id, 6, 60, 'Secondary Order'));
-        items.add(makeItem(oEco2.Id, prodA.Id, acc2.Id, 6, 60, 'Secondary Order'));
-        items.add(makeItem(oEco3.Id, prodB.Id, acc2.Id, 6, 60, 'Secondary Order'));
+        items.add(makeItem(oEco1.Id, prodA.Id, acc1.Id, 6, 60, ORDER_TYPE_VALUE));
+        items.add(makeItem(oEco1.Id, prodB.Id, acc1.Id, 6, 60, ORDER_TYPE_VALUE));
+        items.add(makeItem(oEco2.Id, prodA.Id, acc2.Id, 6, 60, ORDER_TYPE_VALUE));
+        items.add(makeItem(oEco3.Id, prodB.Id, acc2.Id, 6, 60, ORDER_TYPE_VALUE));
         insert items;
 
         // Visit forms for TC (CreatedDate = today)
