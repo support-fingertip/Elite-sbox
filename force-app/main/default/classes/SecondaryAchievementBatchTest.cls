@@ -109,9 +109,9 @@ public class SecondaryAchievementBatchTest {
         Account acc3 = makeAccount('Outlet 3');
         insert new List<Account>{ acc1, acc2, acc3 };
 
-        Product__c prodA = new Product__c(Name = 'Pack A', Net_Weight__c = 1);
-        Product__c prodB = new Product__c(Name = 'Pack B', Net_Weight__c = 1);
-        Product__c prodC = new Product__c(Name = 'Other C', Net_Weight__c = 1);
+        Product__c prodA = new Product__c(Name = 'Pack A', Net_Weight__c = 1, SKU_Code__c = 'SAB-A');
+        Product__c prodB = new Product__c(Name = 'Pack B', Net_Weight__c = 1, SKU_Code__c = 'SAB-B');
+        Product__c prodC = new Product__c(Name = 'Other C', Net_Weight__c = 1, SKU_Code__c = 'SAB-C');
         insert new List<Product__c>{ prodA, prodB, prodC };
 
         // Focus packs

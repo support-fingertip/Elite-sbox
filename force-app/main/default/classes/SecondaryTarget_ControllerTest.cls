@@ -29,7 +29,7 @@ public class SecondaryTarget_ControllerTest {
             State__c = 'Karnataka', District__c = 'Kolar');
         insert acc;
 
-        Product__c prod = new Product__c(Name = 'P', Net_Weight__c = 1);
+        Product__c prod = new Product__c(Name = 'P', Net_Weight__c = 1, SKU_Code__c = 'STC-P');
         insert prod;
 
         Order__c o = new Order__c(Order_Type__c = 'Secondary Order', Account__c = acc.Id,

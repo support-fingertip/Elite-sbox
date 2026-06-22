@@ -49,8 +49,8 @@ public class TAM_CalculationEngine_ServiceTest {
             State__c = 'Karnataka', District__c = 'Kolar');
         insert new List<Account>{ acc1, acc2 };
 
-        Product__c prodA = new Product__c(Name = 'A', Net_Weight__c = 1);
-        Product__c prodB = new Product__c(Name = 'B', Net_Weight__c = 1);
+        Product__c prodA = new Product__c(Name = 'A', Net_Weight__c = 1, SKU_Code__c = 'TCE-A');
+        Product__c prodB = new Product__c(Name = 'B', Net_Weight__c = 1, SKU_Code__c = 'TCE-B');
         insert new List<Product__c>{ prodA, prodB };
 
         Focused_Pack__c fp = new Focused_Pack__c(Name = 'Pack', Minimum_Qualifying_Quantity__c = 12);
