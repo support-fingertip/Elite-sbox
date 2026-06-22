@@ -131,7 +131,9 @@ public class SecondaryTarget_ControllerTest {
         System.assertNotEquals(null, saved.Id);
 
         // Editing the original record (same Id) must NOT trigger self-conflict.
-        Secondary_Target__c orig = [SELECT Id, User__c, Target_Criteria__c, Target_Value__c,
+        // Include User_Name__c so saveTarget's "auto-fill from User.Name if
+        // blank" branch doesn't throw a 'field not queried' error.
+        Secondary_Target__c orig = [SELECT Id, User__c, User_Name__c, Target_Criteria__c, Target_Value__c,
                                            Is_Active__c, Start_Date__c, End_Date__c
                                     FROM Secondary_Target__c
                                     WHERE Is_Active__c = true LIMIT 1];
