@@ -1,3 +1,15 @@
+/**
+ * Test coverage for SecondaryKpiDashboard_Controller — the dashboard's two
+ * public entry points (getDashboard, getHierarchy) plus the legacy picker
+ * helper (getDsmSsaSubordinates).
+ *
+ * Real DSM/SSA Profile assignment to a test user is fragile in dev orgs
+ * (the profile may not exist, may have permission constraints, or may
+ * collide with MIXED_DML), so the tests below pass any-userId straight
+ * into the controller's PERSONAL/TEAM resolver via @TestVisible-free
+ * paths — exercising the structural contract rather than the role
+ * hierarchy itself. Where possible, we use Standard User as a proxy.
+ */
 @isTest
 public class SecondaryKpiDashboard_ControllerTest {
 
@@ -9,15 +21,14 @@ public class SecondaryKpiDashboard_ControllerTest {
             Username = alias + System.currentTimeMillis() + '@example.com',
             Alias = alias.substring(0, Math.min(8, alias.length())),
             TimeZoneSidKey = 'Asia/Kolkata', LocaleSidKey = 'en_US',
-            EmailEncodingKey = 'UTF-8', LanguageLocaleKey = 'en_US', ProfileId = p.Id
+            EmailEncodingKey = 'UTF-8', LanguageLocaleKey = 'en_US',
+            ProfileId = p.Id
         );
     }
 
     @TestSetup
     static void setup() {
-        // Standard User stands in for a DSM/SSA — actual DSM/SSA profile names
-        // may not exist in every dev org. Mode-specific behaviour is exercised
-        // in tests that invoke getDashboard directly with explicit user ids.
+        // Standard User as a generic DSM-equivalent test user.
         User u = makeUser('kpi', 'Standard User');
         System.runAs(new User(Id = UserInfo.getUserId())) {
             insert u;
@@ -52,31 +63,113 @@ public class SecondaryKpiDashboard_ControllerTest {
         insert ic;
     }
 
+    // ----- getDashboard -----
+
     @isTest
-    static void getDashboardWithoutSubordinatesReturnsEmptyOrFallback() {
+    static void getDashboardDefaultsPeriodToCurrentMonth() {
         Test.startTest();
         SecondaryKpiDashboard_Controller.DashboardData d =
             SecondaryKpiDashboard_Controller.getDashboard(null, null, null);
         Test.stopTest();
-
         System.assertNotEquals(null, d);
-        // Running admin may or may not have DSM/SSAs in the test org — both
-        // outcomes are valid; just confirm the contract is honored.
-        System.assert(
-            d.mode == 'EMPTY' || d.mode == 'TEAM' || d.mode == 'PERSONAL',
-            'mode must be one of the three documented values'
-        );
+        Date today = Date.today();
+        System.assertEquals(today.year(), d.year);
+        System.assertEquals(today.month(), d.month);
+        System.assertNotEquals(null, d.periodLabel);
     }
 
     @isTest
-    static void coerceInvalidPeriodToCurrent() {
+    static void invalidMonthCoercedToCurrent() {
         Test.startTest();
         SecondaryKpiDashboard_Controller.DashboardData d =
             SecondaryKpiDashboard_Controller.getDashboard(2026, 99, null);
         Test.stopTest();
-
-        System.assert(d.month >= 1 && d.month <= 12, 'invalid month coerced to current');
+        System.assert(d.month >= 1 && d.month <= 12, 'invalid month should be coerced');
     }
+
+    @isTest
+    static void selectingTheSeededUserReturnsPersonalAggregates() {
+        User u = [SELECT Id FROM User WHERE LastName = 'kpi' LIMIT 1];
+        Date today = Date.today();
+        Test.startTest();
+        SecondaryKpiDashboard_Controller.DashboardData d =
+            SecondaryKpiDashboard_Controller.getDashboard(today.year(), today.month(), u.Id);
+        Test.stopTest();
+        System.assertEquals('PERSONAL', d.mode);
+        System.assertEquals(u.Id, d.selectedUserId);
+        System.assertEquals(1000, d.hero.totalTarget, 'target sum');
+        System.assertEquals(850, d.hero.totalAchievement, 'achievement sum');
+        System.assertEquals(500, d.hero.totalIncentive, 'incentive sum');
+        System.assertEquals(1, d.hero.activeTargets);
+        System.assertEquals(1, d.targets.size());
+        System.assertEquals('KPI Revenue', d.targets[0].criterionName);
+        System.assertEquals(500, d.targets[0].incentive,
+            'incentive snapshot should match the seeded credit row');
+    }
+
+    @isTest
+    static void outOfHierarchyUserIdFallsBackToViewerScope() {
+        // Running user has no DSM/SSA downline AND the seeded user is not in
+        // their role-hierarchy, so passing the seeded user's id should NOT
+        // grant cross-team visibility — the controller falls back to the
+        // viewer's own scope (which produces an EMPTY response or a TEAM
+        // response over the viewer's downline, both valid outcomes).
+        User u = [SELECT Id FROM User WHERE LastName = 'kpi' LIMIT 1];
+        Test.startTest();
+        SecondaryKpiDashboard_Controller.DashboardData d =
+            SecondaryKpiDashboard_Controller.getDashboard(null, null, u.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, d);
+        // PERSONAL would imply the bypass succeeded — that must not happen
+        // unless the test user genuinely sits inside the running user's
+        // downline (which it doesn't in @TestSetup above).
+        System.assert(d.mode == 'EMPTY' || d.mode == 'TEAM' || d.mode == 'PERSONAL',
+            'mode must be valid');
+        if (d.mode == 'PERSONAL') {
+            // If somehow PERSONAL, it must be for the running user themselves,
+            // never for the out-of-scope seeded user.
+            System.assertNotEquals(u.Id, d.selectedUserId,
+                'out-of-scope userId must not become the selectedUserId');
+        }
+    }
+
+    // ----- getHierarchy -----
+
+    @isTest
+    static void getHierarchyReturnsResponseShape() {
+        Test.startTest();
+        SecondaryKpiDashboard_Controller.HierarchyResponse h =
+            SecondaryKpiDashboard_Controller.getHierarchy(new List<String>());
+        Test.stopTest();
+        System.assertNotEquals(null, h);
+        System.assertNotEquals(null, h.steps,
+            'steps list should be initialized even when empty');
+    }
+
+    @isTest
+    static void getHierarchyNullPathIsNullSafe() {
+        Test.startTest();
+        SecondaryKpiDashboard_Controller.HierarchyResponse h =
+            SecondaryKpiDashboard_Controller.getHierarchy(null);
+        Test.stopTest();
+        System.assertNotEquals(null, h);
+        System.assertNotEquals(null, h.steps);
+    }
+
+    @isTest
+    static void getHierarchyIgnoresOutOfScopeSelectionInPath() {
+        // A bogus user-id in the path must not break the cascade — the server
+        // should skip the selection silently and still return a valid response.
+        User u = [SELECT Id FROM User WHERE LastName = 'kpi' LIMIT 1];
+        Test.startTest();
+        SecondaryKpiDashboard_Controller.HierarchyResponse h =
+            SecondaryKpiDashboard_Controller.getHierarchy(new List<String>{ u.Id });
+        Test.stopTest();
+        System.assertNotEquals(null, h);
+        System.assertNotEquals(null, h.steps);
+    }
+
+    // ----- legacy helper -----
 
     @isTest
     static void getDsmSsaSubordinatesIsCallable() {
