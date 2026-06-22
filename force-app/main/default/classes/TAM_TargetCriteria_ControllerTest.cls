@@ -5,7 +5,7 @@
  * Covers all 13 @AuraEnabled methods: object/field discovery, list and
  * single-record fetch, save (with duplicate-name guard), prerequisite
  * options, linked-target counting, single + bulk delete (with cascade
- * to Target_Actual__c), single + bulk active toggle, clone, and the
+ * + bulk delete, single + bulk active toggle, clone, and the
  * preview pipeline.
  */
 @isTest
@@ -31,10 +31,17 @@ public class TAM_TargetCriteria_ControllerTest {
         Target_Criteria__c b = makeCriteria('TAM Test Calls');
         insert new List<Target_Criteria__c>{ a, b };
 
-        // A linked Target_Actual__c so the cascade path is exercised on delete.
-        insert new Target_Actual__c(
+        // A linked Secondary_Target__c so getLinkedTargetCount returns >0
+        // for the 'a' criterion.
+        Date today = Date.today();
+        insert new Secondary_Target__c(
             Target_Criteria__c = a.Id,
-            Target_Value__c = 100
+            Target_Value__c = 100,
+            Achievement_Value__c = 0,
+            Achievement_Percent__c = 0,
+            Is_Active__c = true,
+            Start_Date__c = today,
+            End_Date__c = today.addMonths(1)
         );
     }
 
@@ -172,28 +179,32 @@ public class TAM_TargetCriteria_ControllerTest {
     }
 
     @isTest
-    static void getLinkedTargetCountReflectsCascade() {
+    static void getLinkedTargetCountCountsSecondaryTargets() {
         Target_Criteria__c seed = [SELECT Id FROM Target_Criteria__c WHERE Name = 'TAM Test Revenue' LIMIT 1];
         Test.startTest();
         Integer count = TAM_TargetCriteria_Controller.getLinkedTargetCount(seed.Id);
         Test.stopTest();
-        System.assertEquals(1, count, 'one linked Target_Actual__c was seeded');
+        System.assertEquals(1, count, 'one linked Secondary_Target__c was seeded');
     }
 
     // ----- Delete (single + bulk) -----
 
     @isTest
-    static void deleteCriteriaCascadesLinkedActuals() {
+    static void deleteCriteriaDeletesTheRecord() {
+        // The "linked Secondary Target" must go first — Salesforce's standard
+        // lookup-deletion rule otherwise blocks the criterion delete.
         Target_Criteria__c seed = [SELECT Id FROM Target_Criteria__c WHERE Name = 'TAM Test Revenue' LIMIT 1];
+        delete [SELECT Id FROM Secondary_Target__c WHERE Target_Criteria__c = :seed.Id];
         Test.startTest();
         TAM_TargetCriteria_Controller.deleteCriteria(seed.Id);
         Test.stopTest();
         System.assertEquals(0, [SELECT COUNT() FROM Target_Criteria__c WHERE Id = :seed.Id]);
-        System.assertEquals(0, [SELECT COUNT() FROM Target_Actual__c WHERE Target_Criteria__c = :seed.Id]);
     }
 
     @isTest
-    static void bulkDeleteCascadesLinkedActuals() {
+    static void bulkDeleteRemovesEveryCriterionInTheList() {
+        // Drop the seeded Secondary Target first for the same reason.
+        delete [SELECT Id FROM Secondary_Target__c];
         Map<Id, Target_Criteria__c> all = new Map<Id, Target_Criteria__c>(
             [SELECT Id FROM Target_Criteria__c]
         );
@@ -201,7 +212,6 @@ public class TAM_TargetCriteria_ControllerTest {
         TAM_TargetCriteria_Controller.bulkDelete(new List<Id>(all.keySet()));
         Test.stopTest();
         System.assertEquals(0, [SELECT COUNT() FROM Target_Criteria__c]);
-        System.assertEquals(0, [SELECT COUNT() FROM Target_Actual__c]);
     }
 
     // ----- Active toggle (single + bulk) -----
