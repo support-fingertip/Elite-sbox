@@ -60,21 +60,23 @@ public class TAM_CalculationEngine_ServiceTest {
             new Focused_Pack_Item__c(Focused_Pack__c = fp.Id, SKU__c = prodB.Id)
         };
 
-        // acc1 qualifies (12 in one order); acc2 has 6 only -> not qualified
-        Order__c o1 = new Order__c(Order_Type__c = 'Secondary Order', Account__c = acc1.Id,
-            OwnerId = u.Id, Order_Fulfillment_Status__c = 'Not Fulfilled', Order_Date__c = Date.today());
-        Order__c o2 = new Order__c(Order_Type__c = 'Secondary Order', Account__c = acc2.Id,
-            OwnerId = u.Id, Order_Fulfillment_Status__c = 'Not Fulfilled', Order_Date__c = Date.today());
+        // acc1 qualifies (12 in one order); acc2 has 6 only -> not qualified.
+        // Order_Type__c (both objects) + Order_Fulfillment_Status__c are
+        // optional restricted picklists whose active values vary per org
+        // (SAP codes in some, the literal 'Secondary Order' in others). The
+        // engine doesn't read them in this test path, so leave them null.
+        Order__c o1 = new Order__c(Account__c = acc1.Id, OwnerId = u.Id, Order_Date__c = Date.today());
+        Order__c o2 = new Order__c(Account__c = acc2.Id, OwnerId = u.Id, Order_Date__c = Date.today());
         insert new List<Order__c>{ o1, o2 };
 
         // Order_Owner_Id__c and Order_Date__c are formula fields from the parent Order.
         insert new List<Order_Item__c>{
             new Order_Item__c(Order__c = o1.Id, Product__c = prodA.Id, Account__c = acc1.Id,
-                Order_Type__c = 'Secondary Order', Quantity__c = 6, Total_Amount__c = 60),
+                Quantity__c = 6, Total_Amount__c = 60),
             new Order_Item__c(Order__c = o1.Id, Product__c = prodB.Id, Account__c = acc1.Id,
-                Order_Type__c = 'Secondary Order', Quantity__c = 6, Total_Amount__c = 60),
+                Quantity__c = 6, Total_Amount__c = 60),
             new Order_Item__c(Order__c = o2.Id, Product__c = prodA.Id, Account__c = acc2.Id,
-                Order_Type__c = 'Secondary Order', Quantity__c = 6, Total_Amount__c = 60)
+                Quantity__c = 6, Total_Amount__c = 60)
         };
 
         Target_Criteria__c crit = new Target_Criteria__c(
