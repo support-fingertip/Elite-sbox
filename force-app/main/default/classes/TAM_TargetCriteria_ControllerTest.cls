@@ -88,9 +88,9 @@ public class TAM_TargetCriteria_ControllerTest {
     @isTest
     static void getAllCriteriaReturnsSeededRecords() {
         Test.startTest();
-        List<Target_Criteria__c> list = TAM_TargetCriteria_Controller.getAllCriteria();
+        List<Target_Criteria__c> all = TAM_TargetCriteria_Controller.getAllCriteria();
         Test.stopTest();
-        System.assert(list.size() >= 2, 'two seeded records expected');
+        System.assert(all.size() >= 2, 'two seeded records expected');
     }
 
     @isTest

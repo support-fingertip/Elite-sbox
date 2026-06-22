@@ -1,57 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Focused manifest for the Secondary Targets / PBIS / KPI Dashboard module
-  test classes.
+  Focused manifest for the Secondary Targets / PBIS / KPI Dashboard test
+  classes that are NEW or MODIFIED in this branch.
+
+  Pre-existing test classes (SecondaryTarget_ControllerTest,
+  SecondaryPBIS_ServiceTest, SecondaryPBIS_ControllerTest,
+  SecondaryAchievementBatchTest, TAM_CalculationEngine_ServiceTest,
+  TAM_AttendanceServiceTest, FocusedPackControllerTest) are already in
+  the target org and intentionally left out of this manifest so the
+  deploy doesn't fail when their production class siblings have
+  diverged in the repo. Deploy those classes separately if you need
+  to refresh them.
 
   Deploy from the repo root:
     sf project deploy start \
       --manifest manifest/package-secondary-tests.xml \
       --target-org <alias> \
       --test-level RunSpecifiedTests \
-      --tests SecondaryTarget_ControllerTest \
-      --tests SecondaryPBIS_ServiceTest \
-      --tests SecondaryPBIS_ControllerTest \
-      --tests SecondaryAchievementBatchTest \
-      --tests SecondaryAchievementSchedulerTest \
-      --tests SecondaryPBISSchedulerTest \
-      --tests SecondaryKpiDashboard_ControllerTest \
-      --tests TAM_CalculationEngine_ServiceTest \
-      --tests TAM_AttendanceServiceTest \
-      --tests TAM_FilterEngine_ServiceTest \
       --tests TAM_TargetCriteria_ControllerTest \
-      --tests FocusedPackControllerTest
+      --tests TAM_FilterEngine_ServiceTest \
+      --tests SecondaryPBISSchedulerTest \
+      --tests SecondaryAchievementSchedulerTest \
+      --tests SecondaryKpiDashboard_ControllerTest
 
-  Or dry-run first with `--dry-run` appended.
-
-  Note: this manifest deploys only the *test* sources. The production
-  classes they exercise must already exist in the target org. If you're
-  deploying to a fresh sandbox, deploy the full force-app/ tree first,
-  then run this manifest with RunSpecifiedTests for a focused test pass.
+  Add `--dry-run` for a validation-only pass first.
 -->
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
-        <!-- Secondary Targets engine -->
-        <members>SecondaryTarget_ControllerTest</members>
-        <members>SecondaryAchievementBatchTest</members>
-        <members>SecondaryAchievementSchedulerTest</members>
-
-        <!-- Secondary PBIS (monthly incentive) -->
-        <members>SecondaryPBIS_ServiceTest</members>
-        <members>SecondaryPBIS_ControllerTest</members>
-        <members>SecondaryPBISSchedulerTest</members>
-
-        <!-- KPI Dashboard -->
-        <members>SecondaryKpiDashboard_ControllerTest</members>
-
-        <!-- Target Achievement Module (TAM) shared services -->
+        <!-- Target Criteria CRUD (13 @AuraEnabled methods) -->
         <members>TAM_TargetCriteria_ControllerTest</members>
-        <members>TAM_CalculationEngine_ServiceTest</members>
-        <members>TAM_AttendanceServiceTest</members>
+        <!-- WHERE-clause builder for every filtered criterion -->
         <members>TAM_FilterEngine_ServiceTest</members>
-
-        <!-- Focused Pack master -->
-        <members>FocusedPackControllerTest</members>
-
+        <!-- Monthly PBIS scheduler -->
+        <members>SecondaryPBISSchedulerTest</members>
+        <!-- Daily achievement scheduler -->
+        <members>SecondaryAchievementSchedulerTest</members>
+        <!-- KPI Dashboard controller (expanded coverage) -->
+        <members>SecondaryKpiDashboard_ControllerTest</members>
         <name>ApexClass</name>
     </types>
     <version>65.0</version>
