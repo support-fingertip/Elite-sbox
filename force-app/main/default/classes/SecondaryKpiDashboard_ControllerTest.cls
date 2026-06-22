@@ -15,14 +15,20 @@ public class SecondaryKpiDashboard_ControllerTest {
 
     private static User makeUser(String alias, String profileName) {
         Profile p = [SELECT Id FROM Profile WHERE Name = :profileName LIMIT 1];
+        // Employee_Code__c carries a unique constraint in this org. Setting it
+        // explicitly to a millisecond-based value avoids colliding with any
+        // existing User or with whatever flow/process is auto-assigning a value
+        // on insert.
+        String stamp = String.valueOf(System.currentTimeMillis());
         return new User(
             FirstName = 'T', LastName = alias,
             Email = alias + '@example.com',
-            Username = alias + System.currentTimeMillis() + '@example.com',
+            Username = alias + stamp + '@example.com',
             Alias = alias.substring(0, Math.min(8, alias.length())),
             TimeZoneSidKey = 'Asia/Kolkata', LocaleSidKey = 'en_US',
             EmailEncodingKey = 'UTF-8', LanguageLocaleKey = 'en_US',
-            ProfileId = p.Id
+            ProfileId = p.Id,
+            Employee_Code__c = 'KPI-' + stamp
         );
     }
 
