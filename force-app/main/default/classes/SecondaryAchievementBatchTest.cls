@@ -7,28 +7,37 @@ public class SecondaryAchievementBatchTest {
     // both the criterion filter and the inserted rows speak the same
     // dialect — otherwise REQUIRED_FIELD / INVALID_OR_NULL_FOR_RESTRICTED
     // errors trip the @TestSetup.
-    private static final String ORDER_TYPE_VALUE = pickOrderTypeValue();
+    //
+    // Order__c.Order_Type__c is a SEPARATE picklist on the parent Order
+    // and may not share values with the item's global set, so we resolve
+    // it independently. Same defensive pattern is applied to every other
+    // restricted picklist the test setup touches.
+    private static final String ORDER_TYPE_VALUE        = firstActivePicklist(Order_Item__c.Order_Type__c, 'Secondary Order');
+    private static final String PARENT_ORDER_TYPE_VALUE = firstActivePicklist(Order__c.Order_Type__c, 'Secondary Order');
+    private static final String FULFILLMENT_STATUS      = firstActivePicklist(Order__c.Order_Fulfillment_Status__c, 'Not Fulfilled');
+    private static final String CUSTOMER_TYPE_VALUE     = firstActivePicklist(Account.Customer_Type__c, 'Secondary Customer');
     private static final String SECONDARY_FILTER =
         '{"filters":[{"id":1,"field":"Order_Type__c","operator":"=","type":"Picklist","value":"'
         + ORDER_TYPE_VALUE + '"}]}';
     private static final String VISIT_SOURCE =
         '[{"object":"Visit_Form__c","userField":"OwnerId","dateField":"CreatedDate","distinctField":"CustomerId__c"}]';
 
-    private static String pickOrderTypeValue() {
-        // Prefer 'Secondary Order' when it's a valid picklist value (so the
-        // production code paths that filter on that exact string keep
-        // matching). Otherwise fall back to the first active value the org
-        // exposes — the engine doesn't care what string it is, as long as
-        // filter + records agree.
-        List<Schema.PicklistEntry> entries =
-            Order_Item__c.Order_Type__c.getDescribe().getPicklistValues();
+    /**
+     * Returns the requested 'preferred' value if it's an active picklist entry
+     * on the given field; otherwise the first active value the org exposes.
+     * Falls back to the preferred string if the field has no active entries
+     * at all (so the failure mode is the same INVALID_OR_NULL_FOR_RESTRICTED
+     * error you'd get without the helper, instead of an opaque NullPointer).
+     */
+    private static String firstActivePicklist(Schema.SObjectField field, String preferred) {
+        List<Schema.PicklistEntry> entries = field.getDescribe().getPicklistValues();
         for (Schema.PicklistEntry e : entries) {
-            if (e.isActive() && e.getValue() == 'Secondary Order') return 'Secondary Order';
+            if (e.isActive() && e.getValue() == preferred) return preferred;
         }
         for (Schema.PicklistEntry e : entries) {
             if (e.isActive()) return e.getValue();
         }
-        return 'Secondary Order';
+        return preferred;
     }
 
     private static Date startDate = Date.today().addDays(-5);
@@ -52,16 +61,19 @@ public class SecondaryAchievementBatchTest {
 
     private static Account makeAccount(String name) {
         return new Account(
-            Name = name, Customer_Type__c = 'Secondary Customer',
+            Name = name, Customer_Type__c = CUSTOMER_TYPE_VALUE,
             Pincode__c = '123456', Primary_Phone_Number__c = '9876543210',
             State__c = 'Karnataka', District__c = 'Kolar'
         );
     }
 
+    // makeOrder ignores the `type` arg — the parent Order's picklist is a
+    // different set than the item's, and the engine filter targets only the
+    // item's Order_Type__c. We use the parent-specific value here.
     private static Order__c makeOrder(Id ownerId, Id accId, String type, Date orderDate) {
         return new Order__c(
-            Order_Type__c = type, Account__c = accId, OwnerId = ownerId,
-            Order_Fulfillment_Status__c = 'Not Fulfilled', Order_Date__c = orderDate
+            Order_Type__c = PARENT_ORDER_TYPE_VALUE, Account__c = accId, OwnerId = ownerId,
+            Order_Fulfillment_Status__c = FULFILLMENT_STATUS, Order_Date__c = orderDate
         );
     }
 
