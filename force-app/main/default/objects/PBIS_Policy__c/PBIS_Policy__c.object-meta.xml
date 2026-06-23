@@ -190,6 +190,6 @@
         <searchResultsAdditionalFields>CREATEDBY_USER</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>CREATED_DATE</searchResultsAdditionalFields>
     </searchLayouts>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>Read</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

@@ -10,7 +10,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AccountController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AccountControllerTest</apexClass>
@@ -18,7 +18,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AccountDocumentMailer</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AccountEditAccessController</apexClass>
@@ -38,11 +38,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AccountTriggerRecursion</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ApproverReplacementQueue</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AreaTriggerTest</apexClass>
@@ -50,11 +50,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AutoMapSecondaryCustomersQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AutoPJPCreationScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AutoPJPCreationSchedulerTest</apexClass>
@@ -62,7 +62,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AzureAccountSyncQueue</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AzureAccountSyncQueueTest</apexClass>
@@ -70,7 +70,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>AzureIntegrationController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>AzureIntegrationControllerTest</apexClass>
@@ -86,7 +86,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>BatchPasswordReset</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BatchPasswordResetTest</apexClass>
@@ -94,15 +94,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>Batch_TargetActualsActuals</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatCloneBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatItemTriggerTest</apexClass>
@@ -114,7 +114,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>BeatTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>BeatTriggerHandlerTest</apexClass>
@@ -126,7 +126,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>BeatVisitSummaries</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CSVCreator</apexClass>
@@ -178,11 +178,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ClientInspectorController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CloneBeatController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CollectionTriggerHandler</apexClass>
@@ -194,7 +194,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesLandingController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesLandingControllerTest</apexClass>
@@ -202,7 +202,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesLoginController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesLoginControllerTest</apexClass>
@@ -210,7 +210,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesSelfRegConfirmController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesSelfRegConfirmControllerTest</apexClass>
@@ -218,7 +218,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesSelfRegController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CommunitiesSelfRegControllerTest</apexClass>
@@ -242,7 +242,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CreateMissingPriceBooksBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CreateMissingPriceBooksBatchTest</apexClass>
@@ -290,7 +290,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>CustomerReplacementController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>CustomerReplacementControllerTest</apexClass>
@@ -298,7 +298,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DMSPortalLwc</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DMSPortalLwcTest</apexClass>
@@ -306,15 +306,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotification</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationBatchScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationBatchTest</apexClass>
@@ -322,7 +322,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogNotificationSchedulerTest</apexClass>
@@ -334,11 +334,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DailyLogOrderAmountBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DashboardService</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DataType</apexClass>
@@ -346,7 +346,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DataUploaderController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DeactivatePJPScheduler</apexClass>
@@ -366,7 +366,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>DistanceCalculationQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>DistanceCalculationQueueableTest</apexClass>
@@ -382,19 +382,19 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EODReport</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportBatchScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportPdfController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportPdfControllerTest</apexClass>
@@ -402,7 +402,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportQueueableMail</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EODReportQueueableMailTest</apexClass>
@@ -450,15 +450,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeProductMappingCloneBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeReplacementBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeReplacementUpdateQueue</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeSubmitForApprovalController</apexClass>
@@ -470,11 +470,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeSubordinateController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeSubordinateControllerTest</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeeTransferService</apexClass>
@@ -510,15 +510,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeesWithoutAttendenceBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>EmployeesWithoutAttendenceBatchScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExceptionHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExceptionHandlerTest</apexClass>
@@ -526,7 +526,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseApprovalController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseApprovalController_Test</apexClass>
@@ -534,11 +534,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseApprovalHistoryController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseController_Test</apexClass>
@@ -550,7 +550,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseLineItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseListViewController</apexClass>
@@ -558,15 +558,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseLwcController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpensePeriodUtil</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ExpenseTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>FileController</apexClass>
@@ -578,7 +578,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>FocusedPackController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>FocusedPackControllerTest</apexClass>
@@ -590,15 +590,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ForecastActualsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ForecastApprovalEmailQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ForecastSubmissionController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ForecastSubmissionControllerTest</apexClass>
@@ -614,7 +614,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>GRNNotificationQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>GRNNotificationQueueableTest</apexClass>
@@ -622,7 +622,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>GRNPdfController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>GRNPdfControllerTest</apexClass>
@@ -630,7 +630,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>GTInvoiceController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>GTInvoiceControllerTest</apexClass>
@@ -650,19 +650,19 @@
     </classAccesses>
     <classAccesses>
         <apexClass>GoogleMapsConfigController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceHeaderTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>InvoiceItemTriggerHandlerTest</apexClass>
@@ -686,7 +686,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LeavesTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LeavesTriggerHandlerTest</apexClass>
@@ -710,7 +710,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LightningForgotPasswordController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LightningForgotPasswordControllerTest</apexClass>
@@ -718,7 +718,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LightningLoginFormController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LightningLoginFormControllerTest</apexClass>
@@ -726,7 +726,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LightningSelfRegisterController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>LightningSelfRegisterControllerTest</apexClass>
@@ -742,11 +742,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>MapMissingMappings</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>MappingHelper</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>MappingHelperTest</apexClass>
@@ -754,7 +754,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>MicrobatchSelfRegController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>MicrobatchSelfRegControllerTest</apexClass>
@@ -786,15 +786,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>OrderFulfilmentController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>OrderItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>OrderNumberingQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>OrderPdfController</apexClass>
@@ -806,7 +806,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>OrderTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>OrderTriggerHandlerTest</apexClass>
@@ -814,27 +814,27 @@
     </classAccesses>
     <classAccesses>
         <apexClass>OrderViewForm</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PBISActualsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PBISActualsRefreshController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PBISActualsScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PBISActuals_Controller</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PBISActuals_Service</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PBISActuals_ServiceTest</apexClass>
@@ -842,7 +842,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PBISPolicy_Controller</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PBISPolicy_ControllerTest</apexClass>
@@ -850,7 +850,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PBIS_TargetTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PBIS_TargetTriggerHandlerTest</apexClass>
@@ -878,15 +878,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PostHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PriceBookSharingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PriceBookTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PriceBookTriggerHandlerTest</apexClass>
@@ -898,7 +898,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PrimaryKpiDashboard_Controller</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PrimaryKpiDashboard_ControllerTest</apexClass>
@@ -906,7 +906,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PrimaryTargetsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PrimaryTargetsBatchTest</apexClass>
@@ -914,15 +914,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ProductControllerGRIDVIEW</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ProductForecastTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ProductGalleryController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ProductMappingTriggerHandler</apexClass>
@@ -934,11 +934,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PushOrderToSAQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogiSchedular</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogiSchedularTest</apexClass>
@@ -946,7 +946,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogisticsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogisticsBatchTest</apexClass>
@@ -954,11 +954,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>PushToLogisticsScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>RejectOrder</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>RejectOrderTest</apexClass>
@@ -974,7 +974,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ResetPasswordController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>RetunPdfController</apexClass>
@@ -994,7 +994,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnItemTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnItemTriggerHandlerTest</apexClass>
@@ -1002,7 +1002,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ReturnTriggerHandlerTest</apexClass>
@@ -1018,7 +1018,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>RunningSchemeController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>RunningSchemeControllerTest</apexClass>
@@ -1026,7 +1026,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SDParameter_Controller</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SDParameter_ControllerTest</apexClass>
@@ -1054,7 +1054,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SchemeDefinitionController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SchemeDefinitionControllerTest</apexClass>
@@ -1070,11 +1070,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SchemeProductGroupController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SchemeProductGroupControllerTest</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryAchievementBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryAchievementBatchTest</apexClass>
@@ -1082,15 +1086,19 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryAchievementScheduler</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryAchievementSchedulerTest</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCreditNoteSharingHandlerTest</apexClass>
@@ -1098,7 +1106,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCustomerController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCustomerControllerTest</apexClass>
@@ -1106,7 +1114,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCustomerMappingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryCustomerTransferBatchProcessor</apexClass>
@@ -1114,11 +1122,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryInvoiceSharingHandlerTest</apexClass>
@@ -1134,7 +1142,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryNoteUploadController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryNoteUploadControllerTest</apexClass>
@@ -1142,15 +1150,19 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryPBISQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryPBISScheduler</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryPBISSchedulerTest</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryPBIS_Controller</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryPBIS_ControllerTest</apexClass>
@@ -1158,7 +1170,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryPBIS_Service</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryPBIS_ServiceTest</apexClass>
@@ -1166,7 +1178,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryTarget_Controller</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryTarget_ControllerTest</apexClass>
@@ -1174,11 +1186,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SendAccountDocumentsOrgWide</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SendEmailNotificationToBillingTeam</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SendEmailNotificationToBillingTeam_Test</apexClass>
@@ -1206,7 +1218,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>StockTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>StockTriggerHandlerTest</apexClass>
@@ -1230,11 +1242,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SyncApprovers</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayBatchTest</apexClass>
@@ -1242,7 +1254,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayControllerTest</apexClass>
@@ -1250,7 +1262,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDayScheduler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>SystemEndDaySchedulerTest</apexClass>
@@ -1258,7 +1270,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>TAM_AttendanceService</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TAM_AttendanceServiceTest</apexClass>
@@ -1266,7 +1278,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>TAM_CalculationEngine_Service</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TAM_CalculationEngine_ServiceTest</apexClass>
@@ -1274,23 +1286,35 @@
     </classAccesses>
     <classAccesses>
         <apexClass>TAM_FieldMetadata_Service</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>TAM_FieldMetadata_ServiceTest</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TAM_FilterEngine_Service</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>TAM_FilterEngine_ServiceTest</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TAM_TargetCriteria_Controller</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>TAM_TargetCriteria_ControllerTest</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TargetActualsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TargetActualsChartController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TargetActualsTriggerTest</apexClass>
@@ -1306,15 +1330,15 @@
     </classAccesses>
     <classAccesses>
         <apexClass>TransactionController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UnlockExpenseRecord</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateCustomerChannelsAndPlantsBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateCustomerChannelsAndPlantsBatchTest</apexClass>
@@ -1322,11 +1346,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateDailyLogBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateDailyLogBatchForAccountCount</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateDailyLogBatchTest</apexClass>
@@ -1334,7 +1358,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateLastOrderBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateLastOrderBatchTest</apexClass>
@@ -1342,11 +1366,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateProductiveVisitBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateSKUWeightBatch</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateSKUWeightBatchTest</apexClass>
@@ -1354,11 +1378,11 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateSalesChannelAndDepotQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateSecondarySalesChannelQueueable</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UpdateUsersQueueable</apexClass>
@@ -1370,7 +1394,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UserFreezeStatusController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UserFreezeStatusControllerTest</apexClass>
@@ -1378,7 +1402,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>UserListController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>UserRoleSyncBatch</apexClass>
@@ -1398,7 +1422,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>VerifyEmailController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>VerifyEmailControllerTest</apexClass>
@@ -1406,7 +1430,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormControllerTest</apexClass>
@@ -1414,7 +1438,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormTriggerHandler</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>VisitFormTriggerHandlerTest</apexClass>
@@ -1446,7 +1470,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>ceoDashboardController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>ceoDashboardControllerTest</apexClass>
@@ -1462,7 +1486,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>getDataIntegrationController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>getDataIntegrationController_Test</apexClass>
@@ -1470,7 +1494,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>mapController</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>mapControllerTest</apexClass>
@@ -1486,7 +1510,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>newStockAdjustment</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>postHandler_TestClass</apexClass>
@@ -1494,7 +1518,7 @@
     </classAccesses>
     <classAccesses>
         <apexClass>primaryorderTABLEVIEW</apexClass>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>userProfileLWC</apexClass>
@@ -5647,6 +5671,56 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Benefit_Amount__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Descritption__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Discount_Percent__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.FOC_Giveaway_Product__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Free_Qty__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Scheme_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Scheme_Type__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Scheme__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Secondary_Invoice_Item__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Sequence__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Invoice__c.Account_Owner_Name__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -7097,11 +7171,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Order_Item__c.Discount_Amount__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>Order_Item__c.Discount__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -8118,7 +8187,7 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Designation__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
@@ -8128,32 +8197,32 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.External_Id__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Gross_Salary__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Has_Mandatory_Parameter__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Incentive_Period__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Is_Active__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Is_Eligible__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
@@ -8163,7 +8232,7 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Max_Incentive_Value__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
@@ -8183,472 +8252,477 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_10__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_1__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_2__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_3__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_4__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_5__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_6__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_7__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_8__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Achievement_Percent__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Achievement__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Incentive_Amount__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Incentive_Percentage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Qualified_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Slab__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Target__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.Total_Incentive_Amount__c</field>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Total_Incentive_Value__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Total_Weightage__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.User__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.Validation_Message__c</field>
-        <readable>false</readable>
+        <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
@@ -10666,6 +10740,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Secondary_Invoice_Item__c.Discount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice_Item__c.GSTIN__c</field>
         <readable>true</readable>
@@ -10729,6 +10808,16 @@
         <editable>false</editable>
         <field>Secondary_Invoice_Item__c.Scheme_Claim_Amount__c</field>
         <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Scheme_Issue_Reason__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Scheme_Issue__c</field>
+        <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
@@ -13446,6 +13535,9 @@
         <layout>InternalOrganizationUnit-Internal Organization Unit Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
+        <layout>Invoice_Scheme_Applied__c-Invoice Scheme Applied Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
         <layout>Invoice__c-Invoice Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
@@ -14170,6 +14262,15 @@
         <allowEdit>true</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
+        <object>Order_Counter__c</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
         <object>Order_Item__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
@@ -14198,6 +14299,15 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
         <object>Outstanding__c</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>PBIS_Target__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
@@ -14849,7 +14959,7 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>KPI_Dashboard</tab>
-        <visibility>Hidden</visibility>
+        <visibility>DefaultOn</visibility>
     </tabVisibilities>
     <tabVisibilities>
         <tab>KPI_Home</tab>

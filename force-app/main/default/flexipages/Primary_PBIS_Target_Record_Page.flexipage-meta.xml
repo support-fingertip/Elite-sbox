@@ -111,10 +111,10 @@
             <fieldInstance>
                 <fieldInstanceProperties>
                     <name>uiBehavior</name>
-                    <value>readonly</value>
+                    <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.PBIS_Policy__c</fieldItem>
-                <identifier>RecordPBIS_Policy_cField</identifier>
+                <fieldItem>Record.PBIS_Policy_Name__c</fieldItem>
+                <identifier>RecordPBIS_Policy_Name_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -223,10 +223,10 @@
             <fieldInstance>
                 <fieldInstanceProperties>
                     <name>uiBehavior</name>
-                    <value>readonly</value>
+                    <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Total_Incentive_Value__c</fieldItem>
-                <identifier>RecordTotal_Incentive_Value_cField</identifier>
+                <fieldItem>Record.Total_Incentive_Amount__c</fieldItem>
+                <identifier>RecordTotal_Incentive_Amount_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -237,6 +237,13 @@
                 </fieldInstanceProperties>
                 <fieldItem>Record.Is_Eligible__c</fieldItem>
                 <identifier>RecordIs_Eligible_cField</identifier>
+                <visibilityRule>
+                    <criteria>
+                        <leftValue>{!Record.Is_New__c}</leftValue>
+                        <operator>EQUAL</operator>
+                        <rightValue>false</rightValue>
+                    </criteria>
+                </visibilityRule>
             </fieldInstance>
         </itemInstances>
         <name>Facet-ed997c8a-5ee4-4bb9-b22b-06891b2b870d</name>

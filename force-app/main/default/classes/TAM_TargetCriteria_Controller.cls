@@ -180,20 +180,19 @@ public with sharing class TAM_TargetCriteria_Controller {
     // =====================
     @AuraEnabled
     public static Integer getLinkedTargetCount(Id criteriaId) {
-        return [SELECT COUNT() FROM Target_Actual__c WHERE Target_Criteria__c = :criteriaId];
+        // Counts Secondary_Target__c rows that reference this criterion — used
+        // by the LWC to warn the admin before deletion ("X targets reference
+        // this criterion"). The legacy primary-scheme Target_Actual__c
+        // cascade was removed; Salesforce's standard lookup-deletion behaviour
+        // (block / set null per the field config) is what enforces integrity.
+        return [SELECT COUNT() FROM Secondary_Target__c WHERE Target_Criteria__c = :criteriaId];
     }
 
     // =====================
-    // 7. DELETE CRITERIA (cascade deletes linked Target_Actual__c)
+    // 7. DELETE CRITERIA
     // =====================
     @AuraEnabled
     public static void deleteCriteria(Id criteriaId) {
-        List<Target_Actual__c> linkedActuals = [
-            SELECT Id FROM Target_Actual__c WHERE Target_Criteria__c = :criteriaId
-        ];
-        if (!linkedActuals.isEmpty()) {
-            delete linkedActuals;
-        }
         Target_Criteria__c rec = [SELECT Id FROM Target_Criteria__c WHERE Id = :criteriaId LIMIT 1];
         delete rec;
     }
@@ -215,13 +214,6 @@ public with sharing class TAM_TargetCriteria_Controller {
     // =====================
     @AuraEnabled
     public static void bulkDelete(List<Id> criteriaIds) {
-        // Cascade: delete linked target actuals first
-        List<Target_Actual__c> linkedActuals = [
-            SELECT Id FROM Target_Actual__c WHERE Target_Criteria__c IN :criteriaIds
-        ];
-        if (!linkedActuals.isEmpty()) {
-            delete linkedActuals;
-        }
         List<Target_Criteria__c> recs = [SELECT Id FROM Target_Criteria__c WHERE Id IN :criteriaIds];
         delete recs;
     }

@@ -100,16 +100,16 @@
                     <value>true</value>
                 </componentInstanceProperties>
                 <componentName>force:relatedListContainer</componentName>
-                <identifier>force_relatedListContainer2</identifier>
+                <identifier>force_relatedListContainer</identifier>
             </componentInstance>
         </itemInstances>
         <mode>Replace</mode>
         <name>sidebar</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Secondary Invoice Item Record Page</masterLabel>
+    <masterLabel>Order Scheme Applied Record Page</masterLabel>
     <parentFlexiPage>flexipage__default_rec_L</parentFlexiPage>
-    <sobjectType>Secondary_Invoice_Item__c</sobjectType>
+    <sobjectType>Order_Scheme_Applied__c</sobjectType>
     <template>
         <name>flexipage:recordHomeTemplateDesktop</name>
     </template>

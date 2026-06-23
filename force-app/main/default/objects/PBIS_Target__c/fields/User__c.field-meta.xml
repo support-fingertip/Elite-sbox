@@ -5,6 +5,15 @@
     <externalId>false</externalId>
     <inlineHelpText>The salesperson. Mapped during import (e.g. by Username). Designation derives from this User.</inlineHelpText>
     <label>User</label>
+    <lookupFilter>
+        <active>true</active>
+        <filterItems>
+            <field>User.Payroll__c</field>
+            <operation>equals</operation>
+            <value>Yes</value>
+        </filterItems>
+        <isOptional>false</isOptional>
+    </lookupFilter>
     <referenceTo>User</referenceTo>
     <relationshipName>PBIS_Targets</relationshipName>
     <required>false</required>

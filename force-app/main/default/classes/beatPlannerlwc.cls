@@ -1874,66 +1874,6 @@ global with sharing class beatPlannerlwc {
         
         String accSecCategory = acc.Secondary_Customer_Category__c;
 
-        List<Scheme__c> schemes = [
-            SELECT Id, Name, Description__c, Scheme_Start_Date__c, Scheme_End_Date__c,
-            (SELECT Id, Product__c, Min__c, Sale_Value__c,Sale_Value_Threshold__c,Discount__c,Buy_Quantity__c, Product__r.Name
-             FROM Buy_Products__r where Sales_Channel__c in:channelSet AND 
-             (Secondary_Customer_Category__c = :accSecCategory) )
-            FROM Scheme__c
-            WHERE Scheme_Start_Date__c <= :Date.today()
-            AND Scheme_End_Date__c >= :Date.today()
-        ];
-        List<schemeData> schemeList = new List<schemeData>();
-        for (Scheme__c sch : schemes) {
-            schemeData wrapper = new schemeData();
-            wrapper.id = sch.Id;
-            wrapper.name = sch.Name;
-            wrapper.isSchemeSelected = false;
-            wrapper.description = sch.Description__c;
-            system.debug('sch.Buy_Products__r '+sch.Buy_Products__r);
-            for (Buy_Product__c sli : sch.Buy_Products__r) {
-                // Only attach schemes relevant to our products
-                
-                schemeLineItemData line = new schemeLineItemData();
-                
-                line.id = sli.Id;
-                line.productId = sli.Product__c;
-                line.offerProductId = sli.Product__c;
-                line.offerProductName = sli.Product__r != null ? sli.Product__r.Name : null;
-                line.isSelected = false;
-                line.discountedPrice = 0;
-                
-                
-                
-                // 🔁 Determine scheme type
-                if (sli.Buy_Quantity__c != 0 && sli.Min__c != 0) {
-                    line.minQty = Integer.valueOf(sli.Min__c);
-                    line.freeQty = Integer.valueOf(sli.Buy_Quantity__c);
-                    line.schemeCategory = 'Free Product';
-                    line.isFreeProduct = true;
-                } else if (sli.Discount__c != 0) {
-                    line.saleValueThreshold = sli.Sale_Value_Threshold__c;
-                    line.discountPerUOM = sli.Discount__c;
-                    line.schemeCategory = 'Per UOM Discount';
-                    line.isPerUOMDiscount = true;
-                } else if (sli.Sale_Value_Threshold__c != 0 && sli.Sale_Value__c != 0) {
-                    line.saleValueThreshold = sli.Sale_Value_Threshold__c;
-                    line.discountPercentOnSale = sli.Sale_Value__c;
-                    line.schemeCategory = 'Sale Value Discount';
-                    line.isSaleValueDiscount = true;
-                }
-                
-                wrapper.lineItems.add(line);
-            }
-            
-            if (!wrapper.lineItems.isEmpty()) {
-                schemeList.add(wrapper);
-            }
-        }
-        
-        system.debug('schemeList.size() '+schemeList.size());
-        system.debug('schemeList '+schemeList);
-        
         Set<Id> allProductIds = new Set<Id>(allProducts.keySet());
 
         Map<String, List<productData>> strategyGroups = new Map<String, List<productData>>();
@@ -2004,7 +1944,6 @@ global with sharing class beatPlannerlwc {
         responseData.strategyProductMapList = schemeProList;
         responseData.allProDtas = new List<productData>(allProducts.values());
         responseData.minumumOrderValue = us.Minimum_Order_value__c;
-        responseData.schemessss = schemeList;
         return responseData;
     }
    
@@ -2044,7 +1983,7 @@ global with sharing class beatPlannerlwc {
     }
 
     // PRIMARY: Direct query on Customer__c = accountId
-    private static Set<String> getPrimaryCustomerChannels(String accountId, Id currentUserId,Set<String> salesChannelList, String alternateSalesChannel) {
+    public static Set<String> getPrimaryCustomerChannels(String accountId, Id currentUserId,Set<String> salesChannelList, String alternateSalesChannel) {
         Set<String> channelSet = new Set<String>();
         
         List<Product_Mapping__c> primaryMappings;
@@ -2434,24 +2373,56 @@ global with sharing class beatPlannerlwc {
     // Region/Area/Territory for a Secondary Customer from its own Product_Mapping rows.
     // Mirrors getSecondaryCustomerChannels: executive filter first, sales-channel fallback.
     private static AccountGeo getSecondaryCustomerGeo(Id accountId, Id currentUserId,
-                                                      Set<String> salesChannelList) {
+                                                      Set<String> salesChannelList) 
+    {
         List<Product_Mapping__c> mappings = [
-            SELECT Area__c, Area_Area_Name__c, Region_Name__c
+            SELECT Area__c, Area_Area_Name__c, Region_Name__c,Primary_Customer__c
             FROM Product_Mapping__c
             WHERE Customer__c = :accountId AND Exectuive__c = :currentUserId
         ];
         if (mappings.isEmpty()) {
             mappings = [
-                SELECT Area__c, Area_Area_Name__c, Region_Name__c
+                SELECT Area__c, Area_Area_Name__c, Region_Name__c,Primary_Customer__c
                 FROM Product_Mapping__c
                 WHERE Customer__c = :accountId
                 AND Exectuive__r.Sales_Channel__c IN :salesChannelList
             ];
         }
         if (mappings.isEmpty()) return null;   // signal: no mapping -> no schemes
-
+        
+        Set<String> primaryCustomerIds = new Set<String>();
+        for (Product_Mapping__c prodMap : mappings) {
+            if (prodMap.Primary_Customer__c != null) {
+                primaryCustomerIds.add(prodMap.Primary_Customer__c);
+            }
+        }
+        
+        if (primaryCustomerIds.isEmpty()) {
+            return null; // Nothing to resolve
+        }
+        
+        // Step 2: Query Product_Mapping__c using those Primary Customer Ids (with executive filter)
+        List<Product_Mapping__c> primaryChannelMappings = [
+            SELECT Chanel__c, Area__c, Area_Area_Name__c, Region_Name__c
+            FROM Product_Mapping__c 
+            WHERE Customer__c IN :primaryCustomerIds 
+            AND Chanel__c IN :salesChannelList 
+            AND Exectuive__c = :currentUserId
+        ];
+        
+        // Step 3: Fallback — same query without executive filter
+        if (primaryChannelMappings.isEmpty()) {
+            primaryChannelMappings = [
+                SELECT Chanel__c , Area__c, Area_Area_Name__c, Region_Name__c
+                FROM Product_Mapping__c 
+                WHERE Customer__c IN :primaryCustomerIds 
+                AND Chanel__c IN :salesChannelList
+            ];
+        }
+        
+        
         AccountGeo geo = new AccountGeo();
-        for (Product_Mapping__c pm : mappings) {
+        for (Product_Mapping__c pm : primaryChannelMappings) {
             if (String.isNotBlank(pm.Region_Name__c))    geo.regions.add(pm.Region_Name__c);
             if (String.isNotBlank(pm.Area_Area_Name__c)) geo.areas.add(pm.Area_Area_Name__c);
             if (pm.Area__c != null)                      geo.territoryIds.add(String.valueOf(pm.Area__c));

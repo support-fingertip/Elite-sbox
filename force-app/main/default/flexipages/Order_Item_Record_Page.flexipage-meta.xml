@@ -67,6 +67,10 @@
                     <value>false</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
+                    <name>hideSlackAction</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>numVisibleActions</name>
                     <value>3</value>
                 </componentInstanceProperties>
@@ -112,10 +116,30 @@
             <fieldInstance>
                 <fieldInstanceProperties>
                     <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Order_Qty_in_Case__c</fieldItem>
+                <identifier>RecordOrder_Qty_in_Case__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
                     <value>readonly</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Unit_price__c</fieldItem>
-                <identifier>RecordUnit_price_cField</identifier>
+                <fieldItem>Record.Tax_Amount__c</fieldItem>
+                <identifier>RecordTax_Amount_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>readonly</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Total_Amount__c</fieldItem>
+                <identifier>RecordTotal_Amount_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -134,212 +158,8 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Item_Code__c</fieldItem>
-                <identifier>RecordItem_Code__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Product_Description__c</fieldItem>
-                <identifier>RecordProduct_Description__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Non_Taxable_Order_Value__c</fieldItem>
-                <identifier>RecordNon_Taxable_Order_Value__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Total_Order_Value__c</fieldItem>
-                <identifier>RecordTotal_Order_Value__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Order_Type__c</fieldItem>
-                <identifier>RecordOrder_Type__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Division__c</fieldItem>
-                <identifier>RecordDivision__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Sales_Organization_c__c</fieldItem>
-                <identifier>RecordSales_Organization_c__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Distribution_Channel__c</fieldItem>
-                <identifier>RecordDistribution_Channel__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.NET_WEIGHT__c</fieldItem>
-                <identifier>RecordNET_WEIGHT__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Delivered_Net_Weight__c</fieldItem>
-                <identifier>RecordDelivered_Net_Weight__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Order_Qty_in_Case__c</fieldItem>
-                <identifier>RecordOrder_Qty_in_Case__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.SKU_Name__c</fieldItem>
-                <identifier>RecordSKU_Name__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
                 <fieldItem>Record.Secondary_Invoice_Quantitty__c</fieldItem>
                 <identifier>RecordSecondary_Invoice_Quantitty__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Secondary_Invoice_Pending_Quantity__c</fieldItem>
-                <identifier>RecordSecondary_Invoice_Pending_Quantity__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Before_Category_Slab_Unit_Price__c</fieldItem>
-                <identifier>RecordBefore_Category_Slab_Unit_Price__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.After_Category_Slab_Unit_Price__c</fieldItem>
-                <identifier>RecordAfter_Category_Slab_Unit_Price__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.Category_Slab_Claim_Amount__c</fieldItem>
-                <identifier>RecordCategory_Slab_Claim_Amount__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.Before_Scheme_Unit_Price__c</fieldItem>
-                <identifier>RecordBefore_Scheme_Unit_Price__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.After_Scheme_Unit_Price__c</fieldItem>
-                <identifier>RecordAfter_Scheme_Unit_Price__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.Scheme_Claim_Amount__c</fieldItem>
-                <identifier>RecordScheme_Claim_Amount__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.Total_Claim_Amount__c</fieldItem>
-                <identifier>RecordTotal_Claim_Amount__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.Difference_Category_Slab_Unit_Per_EA__c</fieldItem>
-                <identifier>RecordDifference_Category_Slab_Unit_Per_EA__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.Difference_Scheme_Unit_per_EA__c</fieldItem>
-                <identifier>RecordDifference_Scheme_Unit_per_EA__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.Scheme_Item__c</fieldItem>
-                <identifier>RecordScheme_Item__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldItem>Record.Customer_Order_Type__c</fieldItem>
-                <identifier>RecordCustomer_Order_Type__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-4625aad9-677a-43e3-9bba-8f177cd007bf</name>
@@ -370,16 +190,6 @@
             <fieldInstance>
                 <fieldInstanceProperties>
                     <name>uiBehavior</name>
-                    <value>readonly</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Tax_Amount__c</fieldItem>
-                <identifier>RecordTax_Amount_cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
                 <fieldItem>Record.Delivered_Quantity__c</fieldItem>
@@ -392,8 +202,8 @@
                     <name>uiBehavior</name>
                     <value>readonly</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Total_Amount__c</fieldItem>
-                <identifier>RecordTotal_Amount_cField</identifier>
+                <fieldItem>Record.Unit_price__c</fieldItem>
+                <identifier>RecordUnit_price_cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -402,8 +212,8 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Case_Qyt__c</fieldItem>
-                <identifier>RecordCase_Qyt_cField</identifier>
+                <fieldItem>Record.Non_Taxable_Order_Value__c</fieldItem>
+                <identifier>RecordNon_Taxable_Order_Value__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <itemInstances>
@@ -412,8 +222,28 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
-                <fieldItem>Record.Each_Qyt__c</fieldItem>
-                <identifier>RecordEach_Qyt_cField</identifier>
+                <fieldItem>Record.NET_WEIGHT__c</fieldItem>
+                <identifier>RecordNET_WEIGHT__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Delivered_Net_Weight__c</fieldItem>
+                <identifier>RecordDelivered_Net_Weight__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Secondary_Invoice_Pending_Quantity__c</fieldItem>
+                <identifier>RecordSecondary_Invoice_Pending_Quantity__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-b342c23f-cb6c-4c47-82b7-caa1ec4f0262</name>
@@ -441,6 +271,118 @@
             </componentInstance>
         </itemInstances>
         <name>Facet-38b5a321-b1b4-4db7-bfaf-affff74a38d8</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Before_Category_Slab_Unit_Price__c</fieldItem>
+                <identifier>RecordBefore_Category_Slab_Unit_Price__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.After_Category_Slab_Unit_Price__c</fieldItem>
+                <identifier>RecordAfter_Category_Slab_Unit_Price__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Category_Slab_Claim_Amount__c</fieldItem>
+                <identifier>RecordCategory_Slab_Claim_Amount__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Total_Claim_Amount__c</fieldItem>
+                <identifier>RecordTotal_Claim_Amount__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <name>Facet-eb1456e9-0df8-4859-ba75-bb9fed208abb</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Before_Scheme_Unit_Price__c</fieldItem>
+                <identifier>RecordBefore_Scheme_Unit_Price__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.After_Scheme_Unit_Price__c</fieldItem>
+                <identifier>RecordAfter_Scheme_Unit_Price__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Scheme_Claim_Amount__c</fieldItem>
+                <identifier>RecordScheme_Claim_Amount__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Discount__c</fieldItem>
+                <identifier>RecordDiscount_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <name>Facet-5cefdf0c-5eab-477e-8978-40fe1d149ef7</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-eb1456e9-0df8-4859-ba75-bb9fed208abb</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:column</componentName>
+                <identifier>flexipage_column5</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-5cefdf0c-5eab-477e-8978-40fe1d149ef7</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:column</componentName>
+                <identifier>flexipage_column6</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-13914d2a-962f-48ee-87d2-46c7900fc0ea</name>
         <type>Facet</type>
     </flexiPageRegions>
     <flexiPageRegions>
@@ -504,7 +446,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>horizontalAlignment</name>
-                    <value>false</value>
+                    <value>true</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>label</name>
@@ -512,6 +454,24 @@
                 </componentInstanceProperties>
                 <componentName>flexipage:fieldSection</componentName>
                 <identifier>flexipage_fieldSection</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>columns</name>
+                    <value>Facet-13914d2a-962f-48ee-87d2-46c7900fc0ea</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>horizontalAlignment</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>label</name>
+                    <value>Discount Information</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:fieldSection</componentName>
+                <identifier>flexipage_fieldSection3</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>

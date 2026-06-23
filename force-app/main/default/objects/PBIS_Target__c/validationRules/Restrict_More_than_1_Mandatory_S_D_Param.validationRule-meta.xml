@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Restrict_More_than_1_Mandatory_S_D_Param</fullName>
+    <active>true</active>
+    <errorConditionFormula>(IF(S_D_Parameter_1__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_2__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_3__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_4__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_5__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_6__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_7__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_8__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_9__r.Is_Mandatory__c, 1, 0) +
+ IF(S_D_Parameter_10__r.Is_Mandatory__c, 1, 0)) &gt; 1</errorConditionFormula>
+    <errorMessage>A PBIS Target can have only one Mandatory S&amp;D Parameter. Please ensure only one Parameter has &apos;Is Mandatory&apos; set to true.</errorMessage>
+</ValidationRule>

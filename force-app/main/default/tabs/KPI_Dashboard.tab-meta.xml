@@ -2,5 +2,5 @@
 <CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
     <label>KPI Dashboard</label>
     <lwcComponent>kpiDashboard</lwcComponent>
-    <motif>Custom63: Chip</motif>
+    <motif>Custom51: Apple</motif>
 </CustomTab>

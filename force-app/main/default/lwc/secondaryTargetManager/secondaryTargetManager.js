@@ -33,13 +33,13 @@ const COLUMNS = [
     { label: 'End', fieldName: 'End_Date__c', type: 'date-local', initialWidth: 110,
       typeAttributes: { year: 'numeric', month: 'short', day: '2-digit' } },
     { label: 'Target', fieldName: 'Target_Value__c', type: 'number', initialWidth: 95,
-      cellAttributes: { alignment: 'right' } },
+      cellAttributes: { alignment: 'right', class: { fieldName: 'statusCellClass' } } },
     { label: 'Achieved', fieldName: 'Achievement_Value__c', type: 'number', initialWidth: 95,
-      cellAttributes: { alignment: 'right' } },
+      cellAttributes: { alignment: 'right', class: { fieldName: 'statusCellClass' } } },
     { label: '% Ach.', fieldName: 'pctFraction', type: 'percent', initialWidth: 90,
-      cellAttributes: { alignment: 'right' }, typeAttributes: { step: '0.01' } },
+      cellAttributes: { alignment: 'right', class: { fieldName: 'statusCellClass' } }, typeAttributes: { step: '0.01' } },
     { label: 'Pending', fieldName: 'Pending_Target__c', type: 'number', initialWidth: 95,
-      cellAttributes: { alignment: 'right' } },
+      cellAttributes: { alignment: 'right', class: { fieldName: 'statusCellClass' } } },
     { label: 'Active', fieldName: 'Is_Active__c', type: 'boolean', initialWidth: 65 },
     { label: 'Last Updated', fieldName: 'Last_Updated__c', type: 'date',
       typeAttributes: { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' } },
@@ -67,7 +67,7 @@ export default class SecondaryTargetManager extends LightningElement {
 
     @track rows = [];
     @track criteriaOptions = [{ label: 'All Criteria', value: '' }];
-    @track focusPackOptions = [];
+    @track _focusPacksRaw = [];
     @track channelOptions = [];
     @track selectedCriteria = '';
     @track activeOnly = false;
@@ -121,6 +121,18 @@ export default class SecondaryTargetManager extends LightningElement {
     // criteria options without the "All" entry, for the form picker
     get formCriteriaOptions() { return this.criteriaOptions.filter(o => o.value); }
 
+    // Focus Packs filtered by the form's current Sales Channel. Packs whose
+    // own channel is blank are treated as "applies to any channel" so they
+    // always appear. With no channel selected, every pack is shown.
+    get focusPackOptions() {
+        const ch = this.form && this.form.Sales_Channel__c;
+        const raw = this._focusPacksRaw || [];
+        if (!ch) return raw.map(o => ({ label: o.label, value: o.value }));
+        return raw
+            .filter(o => !o.channel || o.channel === ch)
+            .map(o => ({ label: o.label, value: o.value }));
+    }
+
     // ===== loaders =====
     loadCriteriaOptions() {
         getCriteriaOptions()
@@ -139,7 +151,11 @@ export default class SecondaryTargetManager extends LightningElement {
 
     loadPickOptions() {
         getFocusedPackOptions()
-            .then(d => { this.focusPackOptions = (d || []).map(o => ({ label: o.label, value: o.value })); })
+            .then(d => {
+                this._focusPacksRaw = (d || []).map(o => ({
+                    label: o.label, value: o.value, channel: o.channel || ''
+                }));
+            })
             .catch(() => { /* non-fatal */ });
         getChannelOptions()
             .then(d => { this.channelOptions = (d || []).map(o => ({ label: o.label, value: o.value })); })
@@ -161,7 +177,8 @@ export default class SecondaryTargetManager extends LightningElement {
                     criteriaName: (r.Target_Criteria__r && r.Target_Criteria__r.Name) || '',
                     operator: (r.Target_Criteria__r && r.Target_Criteria__r.Operator__c) || '',
                     packName: (r.Focused_Pack__r && r.Focused_Pack__r.Name) || '',
-                    pctFraction: r.Achievement_Percent__c != null ? r.Achievement_Percent__c / 100 : null
+                    pctFraction: r.Achievement_Percent__c != null ? r.Achievement_Percent__c / 100 : null,
+                    statusCellClass: this.statusClassFor(r)
                 }));
             })
             .catch(e => this.toast('Error', this.msg(e), 'error'))
@@ -225,7 +242,17 @@ export default class SecondaryTargetManager extends LightningElement {
     handleFormField(e) {
         const field = e.target.dataset.field;
         const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-        this.form = { ...this.form, [field]: val };
+        const next = { ...this.form, [field]: val };
+        // If the user changes the Sales Channel, drop any focus pack that no
+        // longer belongs to the new channel so the combobox doesn't display a
+        // stale (and invalid) value.
+        if (field === 'Sales_Channel__c' && next.Focused_Pack__c) {
+            const pack = (this._focusPacksRaw || []).find(o => o.value === next.Focused_Pack__c);
+            if (pack && pack.channel && val && pack.channel !== val) {
+                next.Focused_Pack__c = '';
+            }
+        }
+        this.form = next;
     }
 
     handleCriteriaChange(e) {
@@ -586,5 +613,16 @@ export default class SecondaryTargetManager extends LightningElement {
 
     toast(title, message, variant) {
         this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+    }
+
+    // Returns the SLDS text colour class for the Target / Achieved / % Ach /
+    // Pending columns based on how the row stands against its target. Text-only
+    // colouring — no cell background change. Returns '' when there's no
+    // comparable target so empty / zero-target rows aren't styled.
+    statusClassFor(row) {
+        const target = Number(row.Target_Value__c) || 0;
+        if (!target) return '';
+        const pct = Number(row.Achievement_Percent__c) || 0;
+        return pct >= 100 ? 'slds-text-color_success' : 'slds-text-color_error';
     }
 }

@@ -7,8 +7,4 @@
     <description>Access to the KPI Dashboard tab (Primary + Secondary KPI).</description>
     <hasActivationRequired>false</hasActivationRequired>
     <label>KPI Dashboard Access</label>
-    <tabSettings>
-        <tab>KPI_Dashboard</tab>
-        <visibility>Visible</visibility>
-    </tabSettings>
 </PermissionSet>

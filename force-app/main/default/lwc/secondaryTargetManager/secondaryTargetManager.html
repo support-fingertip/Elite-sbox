@@ -135,17 +135,17 @@
                                 options={formCriteriaOptions} onchange={handleCriteriaChange}
                                 required class="slds-m-bottom_x-small"></lightning-combobox>
 
+                            <lightning-combobox label="Sales Channel" data-field="Sales_Channel__c"
+                                value={form.Sales_Channel__c} options={channelOptions}
+                                onchange={handleFormField} class="slds-m-bottom_x-small"></lightning-combobox>
+
                             <template if:true={isFocusPackCriteria}>
                                 <lightning-combobox label="Focus Pack" data-field="Focused_Pack__c"
                                     value={form.Focused_Pack__c} options={focusPackOptions}
                                     onchange={handleFormField} required
-                                    field-level-help="Required for Focus-Pack criteria: the pack whose SKUs and minimum quantity drive this target."
+                                    field-level-help="Required for Focus-Pack criteria: the pack whose SKUs and minimum quantity drive this target. Filtered by the Sales Channel above."
                                     class="slds-m-bottom_x-small"></lightning-combobox>
                             </template>
-
-                            <lightning-combobox label="Sales Channel" data-field="Sales_Channel__c"
-                                value={form.Sales_Channel__c} options={channelOptions}
-                                onchange={handleFormField} class="slds-m-bottom_x-small"></lightning-combobox>
                         </div>
                         <div class="slds-col slds-size_1-of-2">
                             <lightning-input type="number" label="Target Value" data-field="Target_Value__c"

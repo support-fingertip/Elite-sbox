@@ -1073,6 +1073,10 @@
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>SchemeProductGroupControllerTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>SecondaryAchievementBatch</apexClass>
         <enabled>false</enabled>
     </classAccesses>
@@ -1082,6 +1086,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryAchievementScheduler</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryAchievementSchedulerTest</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
@@ -1146,6 +1154,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>SecondaryPBISScheduler</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>SecondaryPBISSchedulerTest</apexClass>
         <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
@@ -1277,12 +1289,24 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>TAM_FieldMetadata_ServiceTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>TAM_FilterEngine_Service</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>TAM_FilterEngine_ServiceTest</apexClass>
+        <enabled>false</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>TAM_TargetCriteria_Controller</apexClass>
         <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>TAM_TargetCriteria_ControllerTest</apexClass>
+        <enabled>false</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>TargetActualsBatch</apexClass>
@@ -5647,6 +5671,56 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Benefit_Amount__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Descritption__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Discount_Percent__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.FOC_Giveaway_Product__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Free_Qty__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Scheme_Slab__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Scheme_Type__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Scheme__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Secondary_Invoice_Item__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Invoice_Scheme_Applied__c.Sequence__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Invoice__c.Account_Owner_Name__c</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -7093,11 +7167,6 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Order_Item__c.Difference_Scheme_Unit_per_EA__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Order_Item__c.Discount_Amount__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -8628,6 +8697,11 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>PBIS_Target__c.S_D_Parameter_9__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>PBIS_Target__c.Total_Incentive_Amount__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -10667,6 +10741,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Discount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Secondary_Invoice_Item__c.GSTIN__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -10728,6 +10807,16 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>Secondary_Invoice_Item__c.Scheme_Claim_Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Scheme_Issue_Reason__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Secondary_Invoice_Item__c.Scheme_Issue__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -13444,6 +13533,9 @@
     </layoutAssignments>
     <layoutAssignments>
         <layout>InternalOrganizationUnit-Internal Organization Unit Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Invoice_Scheme_Applied__c-Invoice Scheme Applied Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
         <layout>Invoice__c-Invoice Layout</layout>
