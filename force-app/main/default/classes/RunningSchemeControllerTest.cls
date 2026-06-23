@@ -4,6 +4,8 @@ private class RunningSchemeControllerTest {
     private static final String CHANNEL = 'KA';
     private static final String TYPE_FREE_QTY = 'Free Quantity';
     private static final String TYPE_QPS      = 'QPS';
+    private static final String REGION = 'Karnataka';
+    private static final String AREA   = 'North';
 
     // Resolve a valid Group_Purpose picklist value (global value set lives in the org).
     private static String resolvePurpose(String token) {
@@ -19,9 +21,9 @@ private class RunningSchemeControllerTest {
 
     @TestSetup
     static void setupTestData() {
-        // Distributor account whose Sales_Channel matches the scheme channel
+        // Secondary customer mapped under the distributor (used as Product_Mapping.Customer__c)
         Account acc = new Account(
-            Name = 'Test Distributor RSC',
+            Name = 'Test Secondary RSC',
             Customer_Type__c = 'Secondary Customer',
             State__c = 'Bihar',
             District__c = 'Patna',
@@ -29,14 +31,10 @@ private class RunningSchemeControllerTest {
         );
         insert acc;
 
-        // Contact for the Partner Community User
-        Contact con = new Contact(
-            FirstName = 'Test',
-            LastName = 'Partner RSC',
-            AccountId = acc.Id
-        );
-        insert con;
-       Account acc1 = new Account(
+        // Distributor / Primary Customer — this is the account the partner (portal) user
+        // resolves to, and the Product_Mapping.Primary_Customer__c the controller queries by.
+        // It must carry the Sales_Channel the controller reads off the resolved account.
+        Account acc1 = new Account(
             Name = 'Primary Cust',
             City__c = 'Delhi',
             State__c = 'Delhi',
@@ -46,17 +44,25 @@ private class RunningSchemeControllerTest {
             Pincode__c = '110001',
             Customer_Type__c = 'Primary Customer',
             Customer_Status__c = 'Active',
+            Sales_Channel__c = CHANNEL,
             GeoLocation__Latitude__s =  28.6139,
             GeoLocation__Longitude__s = 77.2090,
             Secondary_Customer_Category__c = 'TN_Elite Club',
             Secondary_Customer_Type__c = 'Retailer',
             Approval_Status__c = 'Credit Dept. Approved',
             Email_ID__c = 'test@gmail.com',
-            SAP_Customer_Code__c ='19810121'
-            
-            
+            SAP_Customer_Code__c = '19810121'
         );
         insert acc1;
+
+        // Contact for the Partner Community User — on the distributor (acc1) so the
+        // controller resolves accountId = acc1 (the Primary_Customer__c on the mapping below).
+        Contact con = new Contact(
+            FirstName = 'Test',
+            LastName = 'Partner RSC',
+            AccountId = acc1.Id
+        );
+        insert con;
 
         // Product
         Product__c prod = new Product__c(
@@ -68,40 +74,36 @@ private class RunningSchemeControllerTest {
         insert prod;
 
         // Territory (Area__c) driving the Product_Mapping geo formula fields
+        // Region_Name__c = TEXT(Area__r.Region__c), Area_Area_Name__c = TEXT(Area__r.Area__c)
         Area__c territory = new Area__c(
             Name = 'T-KA-North RSC',
-            Region__c = 'Karnataka',
-            Area__c = 'North',
+            Region__c = REGION,
+            Area__c = AREA,
             Sales_Channel__c = CHANNEL
         );
         insert territory;
-        
-        Product_Mapping__c pm1 = new Product_Mapping__c();
-        pm1.Exectuive__c = UserInfo.getUserId();
-        pm1.Chanel__c = CHANNEL;
-        pm1.Customer__c = acc1.Id;
-        pm1.Area__c = territory.Id;
+
+        // Primary-customer mapping for the executive: establishes the executive <-> primary
+        // customer (acc1) link that ProductMappingTriggerHandler.beforeInsert validates, so the
+        // distributor mapping below inserts cleanly.
+        Product_Mapping__c pm1 = new Product_Mapping__c(
+            Exectuive__c = UserInfo.getUserId(),
+            Chanel__c    = CHANNEL,
+            Customer__c  = acc1.Id,
+            Area__c      = territory.Id
+        );
         insert pm1;
-        
-        // Product_Mapping for the account: Region_Name__c / Area_Area_Name__c are
-        // formula fields derived from the Area__c (territory) lookup.
+
+        // Distributor mapping the controller resolves: Primary_Customer__c = acc1 (the portal
+        // user's account). Region_Name__c / Area_Area_Name__c are formula fields off Area__c.
         Product_Mapping__c pm = new Product_Mapping__c(
             Primary_Customer__c = acc1.Id,
-            Customer__c = acc.Id,
-            Chanel__c = CHANNEL,
-            Area__c = territory.Id,
-            exectuive__C = userInfo.getUserId()
+            Customer__c         = acc.Id,
+            Chanel__c           = CHANNEL,
+            Area__c             = territory.Id,
+            Exectuive__c        = UserInfo.getUserId()
         );
         insert pm;
-        
-        
-
-
-        
-        
-        
-        
-        
 
         // Product groups (one per scheme)
         String purpose = resolvePurpose('PriceDivision');
@@ -167,10 +169,11 @@ private class RunningSchemeControllerTest {
             )
         };
 
-        // Applicability rows for Scheme B (Region/Area/Territory)
+        // Applicability rows for Scheme B (Region/Area/Territory) — Region must match the
+        // territory's Region__c (REGION) so the specific-geo anyMatch branch is exercised.
         insert new List<Scheme_Applicability__c>{
-            new Scheme_Applicability__c(Scheme__c = schemeB.Id, Level__c = 'Region',    Value_Text__c = 'KA'),
-            new Scheme_Applicability__c(Scheme__c = schemeB.Id, Level__c = 'Area',      Value_Text__c = 'North'),
+            new Scheme_Applicability__c(Scheme__c = schemeB.Id, Level__c = 'Region',    Value_Text__c = REGION),
+            new Scheme_Applicability__c(Scheme__c = schemeB.Id, Level__c = 'Area',      Value_Text__c = AREA),
             new Scheme_Applicability__c(Scheme__c = schemeB.Id, Level__c = 'Territory', Value_Lookup__c = territory.Id)
         };
 
@@ -210,13 +213,19 @@ private class RunningSchemeControllerTest {
                 RunningSchemeController.getRunningSchemes('current', null, null);
             Test.stopTest();
 
+            System.assertNotEquals(null, result);
+            System.assertEquals(2, result.size(), 'Both Apply-All and specific-geo schemes should match');
 
             Boolean foundSlabs = false;
             for (beatPlannerlwc.CoverageScheme cs : result) {
-
+                System.assertNotEquals(null, cs.id);
+                System.assertNotEquals(null, cs.validLabel);
+                System.assert(cs.validLabel.contains(' to '), 'Valid label spans start/end');
+                System.assertNotEquals(null, cs.products);
+                System.assertEquals(1, cs.products.size(), 'Group has one product');
                 if (cs.slabRows != null && !cs.slabRows.isEmpty()) foundSlabs = true;
             }
-
+            System.assert(foundSlabs, 'At least one scheme should render slab offer rows');
         }
     }
 
@@ -245,7 +254,8 @@ private class RunningSchemeControllerTest {
                     String.valueOf(Date.today().addDays(30))
                 );
             Test.stopTest();
-      
+            System.assertNotEquals(null, result);
+            System.assertEquals(2, result.size());
         }
     }
 
@@ -258,11 +268,24 @@ private class RunningSchemeControllerTest {
             List<beatPlannerlwc.CoverageScheme> result =
                 RunningSchemeController.getRunningSchemes('custom', null, null);
             Test.stopTest();
-
+            System.assertNotEquals(null, result);
+            System.assertEquals(2, result.size());
         }
     }
 
-
+    @isTest
+    static void testGetRunningSchemesAsPartnerDefaultFilter() {
+        // Unknown dateFilter hits the else (default current month) branch
+        User u = getCommunityUser();
+        System.runAs(u) {
+            Test.startTest();
+            List<beatPlannerlwc.CoverageScheme> result =
+                RunningSchemeController.getRunningSchemes('unknown', null, null);
+            Test.stopTest();
+            System.assertNotEquals(null, result);
+            System.assertEquals(2, result.size());
+        }
+    }
 
     @isTest
     static void testGetRunningSchemesNoPortalContext() {
