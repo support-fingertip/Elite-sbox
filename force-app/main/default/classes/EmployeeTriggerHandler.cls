@@ -447,6 +447,10 @@ public class EmployeeTriggerHandler {
                 {
                     newUser.Alternate_Sales_Channel__c = emp.Alternate_Sales_Channel__c;
                 }
+                if(emp.Gross_Salary__c != oldEmp.Gross_Salary__c)
+                {
+                    newUser.Monthly_Gross_Salary_INR__c = emp.Gross_Salary__c;
+                }
                 if(emp.PBIS_Policy__c != oldEmp.PBIS_Policy__c)
                 {
                     newUser.PBIS_Policy__c = emp.PBIS_Policy__c;

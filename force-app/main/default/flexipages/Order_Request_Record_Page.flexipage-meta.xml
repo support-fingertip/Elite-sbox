@@ -9,16 +9,10 @@
                         <valueListItems>
                             <value>Edit</value>
                             <visibilityRule>
-                                <booleanFilter>1 AND 2</booleanFilter>
                                 <criteria>
                                     <leftValue>{!Record.Push_to_Logistics__c}</leftValue>
                                     <operator>NE</operator>
                                     <rightValue>No</rightValue>
-                                </criteria>
-                                <criteria>
-                                    <leftValue>{!Record.Customer_type__c}</leftValue>
-                                    <operator>EQUAL</operator>
-                                    <rightValue>Primary Customer</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
@@ -80,6 +74,10 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>hideChatterActions</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>hideSlackAction</name>
                     <value>false</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
@@ -278,36 +276,6 @@
                 <identifier>RecordSub_Stockiest__cField</identifier>
             </fieldInstance>
         </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.ASM_Id__c</fieldItem>
-                <identifier>RecordASM_Id__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Secondary_Invoice_Quantity__c</fieldItem>
-                <identifier>RecordSecondary_Invoice_Quantity__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.Secondary_Invoice_Status__c</fieldItem>
-                <identifier>RecordSecondary_Invoice_Status__cField</identifier>
-            </fieldInstance>
-        </itemInstances>
         <name>Facet-1ee7b77a-24e9-4a93-90b8-ad58e27c14cc</name>
         <type>Facet</type>
     </flexiPageRegions>
@@ -450,6 +418,36 @@
                 </fieldInstanceProperties>
                 <fieldItem>Record.ERP_Check__c</fieldItem>
                 <identifier>RecordERP_Check_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.ASM_Id__c</fieldItem>
+                <identifier>RecordASM_Id__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Secondary_Invoice_Quantity__c</fieldItem>
+                <identifier>RecordSecondary_Invoice_Quantity__cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
+                <fieldItem>Record.Secondary_Invoice_Status__c</fieldItem>
+                <identifier>RecordSecondary_Invoice_Status__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-fe9b3fb1-e447-4569-b9db-b0fc88ab6cbb</name>
@@ -732,22 +730,10 @@
                             <value>Quantity__c</value>
                         </valueListItems>
                         <valueListItems>
-                            <value>Before_Category_Slab_Unit_Price__c</value>
+                            <value>Discount__c</value>
                         </valueListItems>
                         <valueListItems>
-                            <value>After_Category_Slab_Unit_Price__c</value>
-                        </valueListItems>
-                        <valueListItems>
-                            <value>Before_Scheme_Unit_Price__c</value>
-                        </valueListItems>
-                        <valueListItems>
-                            <value>After_Scheme_Unit_Price__c</value>
-                        </valueListItems>
-                        <valueListItems>
-                            <value>Total_Claim_Amount__c</value>
-                        </valueListItems>
-                        <valueListItems>
-                            <value>Grant_Total__c</value>
+                            <value>Total_Amount__c</value>
                         </valueListItems>
                     </valueList>
                 </componentInstanceProperties>
@@ -769,6 +755,32 @@
                 </componentInstanceProperties>
                 <componentName>lst:dynamicRelatedList</componentName>
                 <identifier>lst_dynamicRelatedList</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>parentFieldApiName</name>
+                    <value>Order__c.Id</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>Order_Item_Schemes__r</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListComponentOverride</name>
+                    <value>NONE</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>rowsToDisplay</name>
+                    <value>10</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>showActionBar</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedListSingleContainer</componentName>
+                <identifier>force_relatedListSingleContainer</identifier>
             </componentInstance>
         </itemInstances>
         <name>sidebar</name>

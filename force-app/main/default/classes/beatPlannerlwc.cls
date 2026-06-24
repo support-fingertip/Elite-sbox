@@ -1484,7 +1484,7 @@ global with sharing class beatPlannerlwc {
         data dt = new data();
 
         // Fetch the ListView record as before
-        List<ListView> listViewRecords = [SELECT Id FROM ListView WHERE SObjectType = 'Order__c' AND Name = 'TODAY' LIMIT 1];
+        List<ListView> listViewRecords = [SELECT Id FROM ListView WHERE SObjectType = 'Order__c' AND DeveloperName = 'Today' LIMIT 1];
         dt.ListViewDetails = (!listViewRecords.isEmpty()) ? listViewRecords[0] : null;
 
         // SSA/DSM users only see Secondary Customers. Resolve the flag here (initial
@@ -1586,7 +1586,7 @@ global with sharing class beatPlannerlwc {
     public static Data getSchemeWiseOrderData(String visitId, String AccountId, String orderRecordId) {
         Data responseData = new Data();
         Id currentUserId = UserInfo.getUserId();
-        List<ListView> listViewRecords = [SELECT Id FROM ListView WHERE SObjectType = 'Order__c' AND Name = 'TODAY' LIMIT 1];
+        List<ListView> listViewRecords = [SELECT Id FROM ListView WHERE SObjectType = 'Order__c' AND DeveloperName = 'Today' LIMIT 1];
         responseData.ListViewDetails = (!listViewRecords.isEmpty()) ? listViewRecords[0]: null;
         User us = [Select Id,Name,Minimum_Order_value__c,Profile.Name,Category__c From User where Id=:currentUserId];
         // Step 1: Determine Account
@@ -1601,7 +1601,7 @@ global with sharing class beatPlannerlwc {
         } 
         else if (orderRecordId != null) {
             List<Order_Item__c> items = [
-                SELECT Order__r.Account__c,Product__c,Order__r.PO_DATE__c,Order__r.PO_NUM__c,Order__r.Account__r.Customer_Type__c,Order__r.Delivery_To__c,Order__r.Expected_Delivery_Date__c,Quantity__c, Order__r.Account__r.Name,Case_Qyt__c,Each_Qyt__c FROM Order_Item__c WHERE Order__c = :orderRecordId
+                SELECT Order__r.Account__c,Product__c,Order__r.PO_DATE__c,Order__r.PO_NUM__c,Order__r.Account__r.Customer_Type__c,Order__r.Delivery_To__c,Order__r.Expected_Delivery_Date__c,Order__r.OwnerId,Order__r.Owner.Name,Quantity__c, Order__r.Account__r.Name,Case_Qyt__c,Each_Qyt__c FROM Order_Item__c WHERE Order__c = :orderRecordId
             ];
             if (!items.isEmpty()) {
                 accId = items[0].Order__r.Account__c;
@@ -1611,14 +1611,30 @@ global with sharing class beatPlannerlwc {
                 responseData.estimatedDeliveryDate = items[0].Order__r.Expected_Delivery_Date__c;
                 responseData.PoNum = items[0].Order__r.PO_NUM__c;
                 responseData.PoDate = items[0].Order__r.PO_DATE__c;
-                
+                responseData.orderOwnerId = items[0].Order__r.OwnerId;
+                responseData.orderOwnerName = items[0].Order__r.Owner.Name;
             }
             Map<Id, Order_Item__c> productIdToQty = new Map<Id, Order_Item__c>();
             for(Order_Item__c item : items){
                 productIdToQty.put(item.Product__c, item);
             }
-            
+
             responseData.existingOrderProductQuantities = productIdToQty;
+
+            // FOC giveaway free quantities recorded on this order — so edit-restore can put back
+            // only the PAID portion of a giveaway product (the engine regenerates the free units).
+            Map<Id, Decimal> focFree = new Map<Id, Decimal>();
+            for (Order_Scheme_Applied__c osa : [
+                SELECT FOC_Giveaway_Product__c, Free_Qty__c
+                FROM Order_Scheme_Applied__c
+                WHERE Order_Request__c = :orderRecordId
+                AND Scheme_Type__c = 'FOC Giveaway' AND FOC_Giveaway_Product__c != null
+            ]) {
+                Decimal q = (osa.Free_Qty__c != null) ? osa.Free_Qty__c : 0;
+                Decimal cur = focFree.containsKey(osa.FOC_Giveaway_Product__c) ? focFree.get(osa.FOC_Giveaway_Product__c) : 0;
+                focFree.put(osa.FOC_Giveaway_Product__c, cur + q);
+            }
+            responseData.existingFocFreeByProduct = focFree;
         }
         if (String.isBlank(accId)) throw new AuraHandledException('Account not found.');
         
@@ -1858,66 +1874,6 @@ global with sharing class beatPlannerlwc {
         
         String accSecCategory = acc.Secondary_Customer_Category__c;
 
-        List<Scheme__c> schemes = [
-            SELECT Id, Name, Description__c, Scheme_Start_Date__c, Scheme_End_Date__c,
-            (SELECT Id, Product__c, Min__c, Sale_Value__c,Sale_Value_Threshold__c,Discount__c,Buy_Quantity__c, Product__r.Name
-             FROM Buy_Products__r where Sales_Channel__c in:channelSet AND 
-             (Secondary_Customer_Category__c = :accSecCategory) )
-            FROM Scheme__c
-            WHERE Scheme_Start_Date__c <= :Date.today()
-            AND Scheme_End_Date__c >= :Date.today()
-        ];
-        List<schemeData> schemeList = new List<schemeData>();
-        for (Scheme__c sch : schemes) {
-            schemeData wrapper = new schemeData();
-            wrapper.id = sch.Id;
-            wrapper.name = sch.Name;
-            wrapper.isSchemeSelected = false;
-            wrapper.description = sch.Description__c;
-            system.debug('sch.Buy_Products__r '+sch.Buy_Products__r);
-            for (Buy_Product__c sli : sch.Buy_Products__r) {
-                // Only attach schemes relevant to our products
-                
-                schemeLineItemData line = new schemeLineItemData();
-                
-                line.id = sli.Id;
-                line.productId = sli.Product__c;
-                line.offerProductId = sli.Product__c;
-                line.offerProductName = sli.Product__r != null ? sli.Product__r.Name : null;
-                line.isSelected = false;
-                line.discountedPrice = 0;
-                
-                
-                
-                // 🔁 Determine scheme type
-                if (sli.Buy_Quantity__c != 0 && sli.Min__c != 0) {
-                    line.minQty = Integer.valueOf(sli.Min__c);
-                    line.freeQty = Integer.valueOf(sli.Buy_Quantity__c);
-                    line.schemeCategory = 'Free Product';
-                    line.isFreeProduct = true;
-                } else if (sli.Discount__c != 0) {
-                    line.saleValueThreshold = sli.Sale_Value_Threshold__c;
-                    line.discountPerUOM = sli.Discount__c;
-                    line.schemeCategory = 'Per UOM Discount';
-                    line.isPerUOMDiscount = true;
-                } else if (sli.Sale_Value_Threshold__c != 0 && sli.Sale_Value__c != 0) {
-                    line.saleValueThreshold = sli.Sale_Value_Threshold__c;
-                    line.discountPercentOnSale = sli.Sale_Value__c;
-                    line.schemeCategory = 'Sale Value Discount';
-                    line.isSaleValueDiscount = true;
-                }
-                
-                wrapper.lineItems.add(line);
-            }
-            
-            if (!wrapper.lineItems.isEmpty()) {
-                schemeList.add(wrapper);
-            }
-        }
-        
-        system.debug('schemeList.size() '+schemeList.size());
-        system.debug('schemeList '+schemeList);
-        
         Set<Id> allProductIds = new Set<Id>(allProducts.keySet());
 
         Map<String, List<productData>> strategyGroups = new Map<String, List<productData>>();
@@ -1988,7 +1944,6 @@ global with sharing class beatPlannerlwc {
         responseData.strategyProductMapList = schemeProList;
         responseData.allProDtas = new List<productData>(allProducts.values());
         responseData.minumumOrderValue = us.Minimum_Order_value__c;
-        responseData.schemessss = schemeList;
         return responseData;
     }
    
@@ -2028,7 +1983,7 @@ global with sharing class beatPlannerlwc {
     }
 
     // PRIMARY: Direct query on Customer__c = accountId
-    private static Set<String> getPrimaryCustomerChannels(String accountId, Id currentUserId,Set<String> salesChannelList, String alternateSalesChannel) {
+    public static Set<String> getPrimaryCustomerChannels(String accountId, Id currentUserId,Set<String> salesChannelList, String alternateSalesChannel) {
         Set<String> channelSet = new Set<String>();
         
         List<Product_Mapping__c> primaryMappings;
@@ -2418,24 +2373,56 @@ global with sharing class beatPlannerlwc {
     // Region/Area/Territory for a Secondary Customer from its own Product_Mapping rows.
     // Mirrors getSecondaryCustomerChannels: executive filter first, sales-channel fallback.
     private static AccountGeo getSecondaryCustomerGeo(Id accountId, Id currentUserId,
-                                                      Set<String> salesChannelList) {
+                                                      Set<String> salesChannelList) 
+    {
         List<Product_Mapping__c> mappings = [
-            SELECT Area__c, Area_Area_Name__c, Region_Name__c
+            SELECT Area__c, Area_Area_Name__c, Region_Name__c,Primary_Customer__c
             FROM Product_Mapping__c
             WHERE Customer__c = :accountId AND Exectuive__c = :currentUserId
         ];
         if (mappings.isEmpty()) {
             mappings = [
-                SELECT Area__c, Area_Area_Name__c, Region_Name__c
+                SELECT Area__c, Area_Area_Name__c, Region_Name__c,Primary_Customer__c
                 FROM Product_Mapping__c
                 WHERE Customer__c = :accountId
                 AND Exectuive__r.Sales_Channel__c IN :salesChannelList
             ];
         }
         if (mappings.isEmpty()) return null;   // signal: no mapping -> no schemes
-
+        
+        Set<String> primaryCustomerIds = new Set<String>();
+        for (Product_Mapping__c prodMap : mappings) {
+            if (prodMap.Primary_Customer__c != null) {
+                primaryCustomerIds.add(prodMap.Primary_Customer__c);
+            }
+        }
+        
+        if (primaryCustomerIds.isEmpty()) {
+            return null; // Nothing to resolve
+        }
+        
+        // Step 2: Query Product_Mapping__c using those Primary Customer Ids (with executive filter)
+        List<Product_Mapping__c> primaryChannelMappings = [
+            SELECT Chanel__c, Area__c, Area_Area_Name__c, Region_Name__c
+            FROM Product_Mapping__c 
+            WHERE Customer__c IN :primaryCustomerIds 
+            AND Chanel__c IN :salesChannelList 
+            AND Exectuive__c = :currentUserId
+        ];
+        
+        // Step 3: Fallback — same query without executive filter
+        if (primaryChannelMappings.isEmpty()) {
+            primaryChannelMappings = [
+                SELECT Chanel__c , Area__c, Area_Area_Name__c, Region_Name__c
+                FROM Product_Mapping__c 
+                WHERE Customer__c IN :primaryCustomerIds 
+                AND Chanel__c IN :salesChannelList
+            ];
+        }
+        
+        
         AccountGeo geo = new AccountGeo();
-        for (Product_Mapping__c pm : mappings) {
+        for (Product_Mapping__c pm : primaryChannelMappings) {
             if (String.isNotBlank(pm.Region_Name__c))    geo.regions.add(pm.Region_Name__c);
             if (String.isNotBlank(pm.Area_Area_Name__c)) geo.areas.add(pm.Area_Area_Name__c);
             if (pm.Area__c != null)                      geo.territoryIds.add(String.valueOf(pm.Area__c));
@@ -2443,7 +2430,7 @@ global with sharing class beatPlannerlwc {
         return geo;
     }
 
-    private static Boolean anyMatch(Set<String> allowed, Set<String> have) {
+    public static Boolean anyMatch(Set<String> allowed, Set<String> have) {
         if (allowed == null || have == null) return false;
         for (String v : have) { if (allowed.contains(v)) return true; }
         return false;
@@ -2485,7 +2472,7 @@ global with sharing class beatPlannerlwc {
         return rows;
     }
 
-    private static List<CoverageSlabRow> buildSlabRows(String schemeType, List<Scheme_Slab__c> slabs) {
+    public static List<CoverageSlabRow> buildSlabRows(String schemeType, List<Scheme_Slab__c> slabs) {
         List<CoverageSlabRow> rows = new List<CoverageSlabRow>();
         if (slabs == null || slabs.isEmpty()) return rows;
         Boolean multi = slabs.size() > 1;
@@ -2499,7 +2486,7 @@ global with sharing class beatPlannerlwc {
         return rows;
     }
     
-    private static String slabSentence(String schemeType, Scheme_Slab__c sl) {
+    public static String slabSentence(String schemeType, Scheme_Slab__c sl) {
         if (schemeType == 'Free Quantity') {
             String buy = buyThresholdClause(sl.Qualifying_Qty_Min__c, sl.Qualifying_Qty_Max__c);
             if (buy == null || sl.Free_Qty__c == null) return null;
@@ -2521,30 +2508,30 @@ global with sharing class beatPlannerlwc {
         return null;
     }
     
-    private static String buyThresholdClause(Decimal mn, Decimal mx) {
+    public static String buyThresholdClause(Decimal mn, Decimal mx) {
         if (mn == null) return null;
         if (mx == null || mn == mx) return 'Buy ' + decToStr(mn) + ' EA';
         return 'Buy ' + decToStr(mn) + ' to ' + decToStr(mx) + ' EA';
     }
     
-    private static String buyQtyClause(Decimal mn, Decimal mx) {
+    public static String buyQtyClause(Decimal mn, Decimal mx) {
         if (mn == null) return null;
         if (mx == null) return 'Buy ' + decToStr(mn) + ' EA';
         if (mn == mx)   return 'Buy ' + decToStr(mn) + ' EA';
         return 'Buy ' + decToStr(mn) + ' to ' + decToStr(mx) + ' EA';
     }
     
-    private static String orderValueClause(Decimal mn, Decimal mx) {
+    public static String orderValueClause(Decimal mn, Decimal mx) {
         if (mn == null) return null;
         if (mx == null) return 'Order ₹' + decToStr(mn) + ' or more';
         return 'Order ₹' + decToStr(mn) + ' to ₹' + decToStr(mx);
     }
-    private static String decToStr(Decimal d) {
+    public static String decToStr(Decimal d) {
         if (d == null) return '';
         if (d == d.setScale(0)) return String.valueOf(d.setScale(0));
         return String.valueOf(d);
     }
-    private static String formatDdMmYyyy(Date d) {
+    public static String formatDdMmYyyy(Date d) {
         if (d == null) return '';
         String dd = String.valueOf(d.day()).leftPad(2, '0');
         String mm = String.valueOf(d.month()).leftPad(2, '0');
@@ -3052,6 +3039,7 @@ global with sharing class beatPlannerlwc {
             ord.Delivery_To__c = (String)plantOrder.get('deliveryTo');
             ord.Expected_Delivery_Date__c = Date.valueOf((String)plantOrder.get('expectedDate'));
             if (plantOrder.get('orderOwnerId') != null && plantOrder.get('orderOwnerId') != '') {
+                ord.OwnerId = (Id) String.valueOf(plantOrder.get('orderOwnerId'));
                 ord.Executive__c = (String)plantOrder.get('orderOwnerId');
             }
             
@@ -3171,6 +3159,8 @@ global with sharing class beatPlannerlwc {
         
         // Scheme engine: applied-scheme audit rows (Order_Scheme_Applied__c)
         List<Order_Scheme_Applied__c> allAppliedSchemes = new List<Order_Scheme_Applied__c>();
+        // product id per OSA row (same index) so Order_Item__c can be resolved after items insert
+        List<Id> osaProductIds = new List<Id>();
 
         // Step 7: Process the products for each plant order
         for (Integer i = 0; i < plantOrders.size(); i++) {
@@ -3215,6 +3205,9 @@ global with sharing class beatPlannerlwc {
                     if (focId != null && String.isNotBlank(String.valueOf(focId))) osa.FOC_Giveaway_Product__c = (Id) String.valueOf(focId);
                     osa.Descritption__c = (String) a.get('description');
                     allAppliedSchemes.add(osa);
+                    Object pId = a.get('productId');
+                    osaProductIds.add((pId != null && String.isNotBlank(String.valueOf(pId)))
+                        ? (Id) String.valueOf(pId) : null);
                 }
             }
             
@@ -3340,9 +3333,71 @@ global with sharing class beatPlannerlwc {
         // Step 9: Insert all Order_Items
         insert allOrderItems;
 
-        // Step 9b: Insert applied-scheme audit rows
+        // Link each line-level audit row to the order item it affected (Free Quantity /
+        // QPS / FOC). Aggregate rows (Category/Order Value) carry no product -> stay blank.
         if (!allAppliedSchemes.isEmpty()) {
-            insert allAppliedSchemes;
+            Map<String, Order_Item__c> itemByOrderProduct = new Map<String, Order_Item__c>();
+            for (Order_Item__c it : allOrderItems) {
+                if (it.Product__c != null) {
+                    itemByOrderProduct.put(String.valueOf(it.Order__c) + '|' + String.valueOf(it.Product__c), it);
+                }
+            }
+            for (Integer j = 0; j < allAppliedSchemes.size(); j++) {
+                Id pid = osaProductIds[j];
+                if (pid != null) {
+                    Order_Item__c oi = itemByOrderProduct.get(
+                        String.valueOf(allAppliedSchemes[j].Order_Request__c) + '|' + String.valueOf(pid));
+                    if (oi != null) {
+                        // Order_Item__c link only; Benefit_Amount__c is the engine's
+                        // per-scheme amount (set in the OSA-build from the payload).
+                        allAppliedSchemes[j].Order_Item__c = oi.Id;
+                    }
+                }
+            }
+        }
+
+        // Step 9b: Insert applied-scheme audit rows.
+        // Drop stale lookups (a Scheme/Slab/Product deleted after coverage loaded — e.g.
+        // the scheme wizard re-creates slabs on edit) and insert with partial success so
+        // these secondary audit rows can never block the order save.
+        if (!allAppliedSchemes.isEmpty()) {
+            Set<Id> schemeRefs = new Set<Id>();
+            Set<Id> slabRefs   = new Set<Id>();
+            Set<Id> prodRefs   = new Set<Id>();
+            for (Order_Scheme_Applied__c osa : allAppliedSchemes) {
+                if (osa.Scheme__c != null)               schemeRefs.add(osa.Scheme__c);
+                if (osa.Scheme_Slab__c != null)          slabRefs.add(osa.Scheme_Slab__c);
+                if (osa.FOC_Giveaway_Product__c != null) prodRefs.add(osa.FOC_Giveaway_Product__c);
+            }
+            Set<Id> liveSchemes = schemeRefs.isEmpty() ? new Set<Id>()
+                : new Map<Id, Scheme__c>([SELECT Id FROM Scheme__c WHERE Id IN :schemeRefs]).keySet();
+            Set<Id> liveSlabs = slabRefs.isEmpty() ? new Set<Id>()
+                : new Map<Id, Scheme_Slab__c>([SELECT Id FROM Scheme_Slab__c WHERE Id IN :slabRefs]).keySet();
+            Set<Id> liveProds = prodRefs.isEmpty() ? new Set<Id>()
+                : new Map<Id, Product__c>([SELECT Id FROM Product__c WHERE Id IN :prodRefs]).keySet();
+            for (Order_Scheme_Applied__c osa : allAppliedSchemes) {
+                if (osa.Scheme__c != null && !liveSchemes.contains(osa.Scheme__c))                         osa.Scheme__c = null;
+                if (osa.Scheme_Slab__c != null && !liveSlabs.contains(osa.Scheme_Slab__c))                 osa.Scheme_Slab__c = null;
+                if (osa.FOC_Giveaway_Product__c != null && !liveProds.contains(osa.FOC_Giveaway_Product__c)) osa.FOC_Giveaway_Product__c = null;
+            }
+            // Capture row-level failures (partial-success insert swallows them) so the
+            // real org-side blocker (validation rule / required field / flow) is visible.
+            List<Database.SaveResult> osaResults = Database.insert(allAppliedSchemes, false);
+            Integer osaFailed = 0;
+            for (Database.SaveResult sr : osaResults) {
+                if (!sr.isSuccess()) {
+                    osaFailed++;
+                    for (Database.Error e : sr.getErrors()) {
+                        System.debug(LoggingLevel.ERROR,
+                            'OSA_INSERT_ERROR: ' + e.getStatusCode() + ' | ' + e.getMessage()
+                            + ' | fields=' + e.getFields());
+                    }
+                }
+            }
+            System.debug(LoggingLevel.ERROR,
+                'OSA_INSERT_SUMMARY total=' + allAppliedSchemes.size() + ' failed=' + osaFailed);
+        } else {
+            System.debug(LoggingLevel.ERROR, 'OSA_INSERT_SKIPPED: appliedSchemes payload was empty');
         }
 
         // Prepare response
@@ -4200,6 +4255,7 @@ global with sharing class beatPlannerlwc {
         @AuraEnabled public List<ReturnDataSummary> summaryReturnData { get; set; }
         @AuraEnabled public List<salesSummery> sales { get; set; }
         @AuraEnabled public Map<Id, Order_Item__c> existingOrderProductQuantities{get;set;}
+        @AuraEnabled public Map<Id, Decimal> existingFocFreeByProduct{get;set;}
         @AuraEnabled public Decimal minumumOrderValue{get;set;}
         @AuraEnabled public String deliveryTo{get;set;}
         @AuraEnabled public Date estimatedDeliveryDate{get;set;}
@@ -4208,6 +4264,8 @@ global with sharing class beatPlannerlwc {
         @AuraEnabled public Boolean isModerTrade{get;set;}
         @AuraEnabled public Boolean isShowOwner{get;set;}
         @AuraEnabled public Boolean isDSM_SSA{get;set;}
+        @AuraEnabled public Id orderOwnerId{get;set;}
+        @AuraEnabled public String orderOwnerName{get;set;}
         @AuraEnabled public Account currentAccountRec{get;set;}
         @AuraEnabled public List<SchemeStrategy> scheme { get; set; }
         @AuraEnabled public List<schemeData> schemessss{get;set;}

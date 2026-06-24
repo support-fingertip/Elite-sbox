@@ -2,6 +2,7 @@
     display: block;
     background: #f3f3f3;
     min-height: 100%;
+    border-radius: 10px;
 }
 
 .kd { width: 100%; box-sizing: border-box; }

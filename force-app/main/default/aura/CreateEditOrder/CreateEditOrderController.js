@@ -7,21 +7,18 @@
     },
     onClickAction:function(component, event, helper) {
         var msg = event.getParam("message");
-        if(msg == 'close'){
-            var urlEvent = $A.get("e.force:navigateToURL");
-            urlEvent.setParams({
-                "url": "/lightning/o/Order__c/list?filterName=TODAY"
+        if(msg == 'close' || msg == 'Done'){
+            // Navigate to the Order Today list view via force:navigateToList (loads the
+            // list fresh). A null Id falls back to the default list rather than hanging.
+            // Do NOT fire force:refreshView — racing the navigation leaves the list view
+            // stuck loading until a manual browser refresh.
+            var navList = $A.get("e.force:navigateToList");
+            navList.setParams({
+                listViewId: event.getParam("id") || null,
+                listViewName: null,
+                scope: "Order__c"
             });
-            urlEvent.fire();
-            $A.get('e.force:refreshView').fire();
-        }
-        else if(msg == 'Done'){
-            var urlEvent = $A.get("e.force:navigateToURL");
-            urlEvent.setParams({
-                "url": "/lightning/o/Order__c/list?filterName=TODAY"
-            });
-            urlEvent.fire();
-            $A.get('e.force:refreshView').fire();
+            navList.fire();
         }
     },
     onPageReferenceChange: function(component, event, helper) {

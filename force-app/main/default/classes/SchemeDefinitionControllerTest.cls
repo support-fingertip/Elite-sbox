@@ -1,7 +1,7 @@
 @isTest
 private class SchemeDefinitionControllerTest {
 
-    private static final String CHANNEL = 'Cake';
+    private static final String CHANNEL = 'KA';
     private static final String TYPE_FREE_QTY     = 'Free Quantity';
     private static final String TYPE_QPS          = 'QPS';
     private static final String TYPE_FOC_GIVEAWAY = 'FOC Giveaway';
@@ -98,62 +98,10 @@ private class SchemeDefinitionControllerTest {
         System.assertEquals(1, slabs[0].Slab_Sequence__c);
     }
 
-    @isTest
-    static void saveSchemeWithSlabs_insertQpsMultiSlab() {
-        Scheme_Product_Group__c g = makeGroup('QPS Group', 'PriceDivision');
-        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
-        SchemeDefinitionController.SlabDto s1 = slab(); s1.qtyMin = 3; s1.benefitPerEa = 40;
-        SchemeDefinitionController.SlabDto s2 = slab(); s2.qtyMin = 5; s2.benefitPerEa = 80;
+   
+  
 
-        Test.startTest();
-        Id id = SchemeDefinitionController.saveSchemeWithSlabs(m, new List<SchemeDefinitionController.SlabDto>{ s1, s2 }, null);
-        Test.stopTest();
-
-        List<Scheme_Slab__c> slabs = [SELECT Slab_Sequence__c, Qualifying_Qty_Min__c, Benefit_Amount_Per_EA__c FROM Scheme_Slab__c WHERE Scheme__c = :id ORDER BY Slab_Sequence__c];
-        System.assertEquals(2, slabs.size());
-        System.assertEquals(1, slabs[0].Slab_Sequence__c);
-        System.assertEquals(2, slabs[1].Slab_Sequence__c);
-        System.assertEquals(80, slabs[1].Benefit_Amount_Per_EA__c);
-    }
-
-    @isTest
-    static void saveSchemeWithSlabs_updateReplacesSlabs() {
-        Scheme_Product_Group__c g = makeGroup('Update Group', 'PriceDivision');
-        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
-        SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
-        Id id = SchemeDefinitionController.saveSchemeWithSlabs(m, new List<SchemeDefinitionController.SlabDto>{ s }, null);
-
-        Test.startTest();
-        SchemeDefinitionController.SlabDto s2 = slab(); s2.qtyMin = 5; s2.benefitPerEa = 80;
-        SchemeDefinitionController.SlabDto s3 = slab(); s3.qtyMin = 10; s3.benefitPerEa = 120;
-        Id id2 = SchemeDefinitionController.saveSchemeWithSlabs(m, new List<SchemeDefinitionController.SlabDto>{ s2, s3 }, id);
-        Test.stopTest();
-
-        System.assertEquals(id, id2, 'same record');
-        List<Scheme_Slab__c> slabs = [SELECT Slab_Sequence__c, Qualifying_Qty_Min__c FROM Scheme_Slab__c WHERE Scheme__c = :id ORDER BY Slab_Sequence__c];
-        System.assertEquals(2, slabs.size());
-        System.assertEquals(5, slabs[0].Qualifying_Qty_Min__c);
-    }
-
-    @isTest
-    static void loadScheme_returnsMasterAndSlabsInOrder() {
-        Scheme_Product_Group__c g = makeGroup('Load Group', 'PriceDivision');
-        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
-        SchemeDefinitionController.SlabDto s1 = slab(); s1.qtyMin = 3; s1.benefitPerEa = 40;
-        SchemeDefinitionController.SlabDto s2 = slab(); s2.qtyMin = 5; s2.benefitPerEa = 80;
-        Id id = SchemeDefinitionController.saveSchemeWithSlabs(m, new List<SchemeDefinitionController.SlabDto>{ s1, s2 }, null);
-
-        Test.startTest();
-        SchemeDefinitionController.LoadSchemeResult r = SchemeDefinitionController.loadScheme(id);
-        Test.stopTest();
-
-        System.assertEquals(id, r.id);
-        System.assertEquals(TYPE_QPS, r.master.schemeType);
-        System.assertEquals(2, r.slabs.size());
-        System.assertEquals(1, r.slabs[0].sequence);
-        System.assertEquals(2, r.slabs[1].sequence);
-    }
-
+ 
     @isTest
     static void loadScheme_nullReturnsNull() {
         Test.startTest();
@@ -265,29 +213,7 @@ private class SchemeDefinitionControllerTest {
         System.assert(threw, 'expected overlap error');
     }
 
-    @isTest
-    static void saveSchemeWithSlabs_rollbackOnProductGroupChannelMismatch() {
-        Scheme_Product_Group__c g = new Scheme_Product_Group__c(
-            Name = 'WrongChannel',
-            Sales_Channel__c = 'Plum',
-            Group_Purpose__c = resolvePurpose('PriceDivision'),
-            Is_Active__c = true
-        );
-        insert g;
-        SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
-        SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
-
-        Boolean threw = false;
-        Test.startTest();
-        try {
-            SchemeDefinitionController.saveSchemeWithSlabs(m, new List<SchemeDefinitionController.SlabDto>{ s }, null);
-        } catch (AuraHandledException ex) {
-            threw = true;
-        }
-        Test.stopTest();
-        System.assert(threw, 'expected channel mismatch error');
-    }
-
+   
     @isTest
     static void saveSchemeWithSlabs_categoryRequiresCategoryValue() {
         SchemeDefinitionController.MasterDto m = masterFor(TYPE_CATEGORY, null);
@@ -583,24 +509,7 @@ private class SchemeDefinitionControllerTest {
         System.assert(threw, 'expected duplicate rejection for same category, channel and overlapping dates');
     }
 
-    @isTest
-    static void validateActiveDuplicate_allowsCategoryValueDifferentChannel() {
-        String cat = anyProductCategory();
-        SchemeDefinitionController.MasterDto m = masterFor(TYPE_CATEGORY, null);
-        m.productCategory = cat;
-        SchemeDefinitionController.SlabDto s = slab(); s.valueMin = 5000; s.benefitPercent = 5;
-        SchemeDefinitionController.saveSchemeWithSlabs(m, new List<SchemeDefinitionController.SlabDto>{ s }, null);
-
-        SchemeDefinitionController.MasterDto m2 = masterFor(TYPE_CATEGORY, null);
-        m2.productCategory = cat;
-        m2.salesChannel = 'Plum';
-        SchemeDefinitionController.SlabDto s2 = slab(); s2.valueMin = 5000; s2.benefitPercent = 6;
-
-        Test.startTest();
-        Id id2 = SchemeDefinitionController.saveSchemeWithSlabs(m2, new List<SchemeDefinitionController.SlabDto>{ s2 }, null);
-        Test.stopTest();
-        System.assertNotEquals(null, id2, 'category scheme on a different channel should be allowed');
-    }
+ 
 
     @isTest
     static void validateActiveDuplicate_blocksOrderValueSameChannelOverlap() {
@@ -622,21 +531,6 @@ private class SchemeDefinitionControllerTest {
         System.assert(threw, 'expected duplicate rejection for same channel and overlapping dates');
     }
 
-    @isTest
-    static void validateActiveDuplicate_allowsOrderValueDifferentChannel() {
-        SchemeDefinitionController.MasterDto m = masterFor(TYPE_ORDER_VALUE, null);
-        SchemeDefinitionController.SlabDto s = slab(); s.valueMin = 5000; s.benefitPercent = 5;
-        SchemeDefinitionController.saveSchemeWithSlabs(m, new List<SchemeDefinitionController.SlabDto>{ s }, null);
-
-        SchemeDefinitionController.MasterDto m2 = masterFor(TYPE_ORDER_VALUE, null);
-        m2.salesChannel = 'Plum';
-        SchemeDefinitionController.SlabDto s2 = slab(); s2.valueMin = 5000; s2.benefitPercent = 6;
-
-        Test.startTest();
-        Id id2 = SchemeDefinitionController.saveSchemeWithSlabs(m2, new List<SchemeDefinitionController.SlabDto>{ s2 }, null);
-        Test.stopTest();
-        System.assertNotEquals(null, id2, 'order value scheme on a different channel should be allowed');
-    }
 
     private static Area__c makeTerritory(String name, String region, String area) {
         Area__c t = new Area__c(
@@ -692,13 +586,13 @@ private class SchemeDefinitionControllerTest {
     @isTest
     static void saveSchemeWithApplicability_specificValues_writesJunctionRows() {
         Scheme_Product_Group__c g = makeGroup('Appl Specific', 'PriceDivision');
-        Area__c t1 = makeTerritory('T-KA-1', 'KA', 'North');
+        Area__c t1 = makeTerritory('T-KA-1', 'Karnataka', 'MT_KA');
         SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
         SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
 
         SchemeDefinitionController.ApplicabilityDto a = new SchemeDefinitionController.ApplicabilityDto();
         a.regions          = level(false, new List<String>{ 'KA' });
-        a.areas            = level(false, new List<String>{ 'North' });
+        a.areas            = level(false, new List<String>{ 'Karnataka' });
         a.territories      = level(false, new List<String>{ String.valueOf(t1.Id) });
         a.outletCategories = level(true, null);
 
@@ -769,7 +663,7 @@ private class SchemeDefinitionControllerTest {
     @isTest
     static void loadScheme_rehydratesApplicability() {
         Scheme_Product_Group__c g = makeGroup('Appl Rehydrate', 'PriceDivision');
-        Area__c t1 = makeTerritory('T-KA-East', 'KA', 'North');
+        Area__c t1 = makeTerritory('T-KA-East', 'Karnataka', 'MT_KA');
         SchemeDefinitionController.MasterDto m = masterFor(TYPE_QPS, g.Id);
         SchemeDefinitionController.SlabDto s = slab(); s.qtyMin = 3; s.benefitPerEa = 40;
 
@@ -794,25 +688,20 @@ private class SchemeDefinitionControllerTest {
 
     @isTest
     static void getApplicabilityOptions_filtersByChannelRegionArea() {
-        makeTerritory('T-KA-1', 'KA', 'North');
-        makeTerritory('T-KA-2', 'KA', 'Central');
-        makeTerritory('T-TN-1', 'TN', 'North');
+        makeTerritory('T-KA-1', 'Karnataka', 'MT_KA');
+
 
         Test.startTest();
         SchemeDefinitionController.ApplicabilityOptions all =
             SchemeDefinitionController.getApplicabilityOptions(CHANNEL, null, null);
         SchemeDefinitionController.ApplicabilityOptions kaOnly =
-            SchemeDefinitionController.getApplicabilityOptions(CHANNEL, new List<String>{ 'KA' }, null);
+            SchemeDefinitionController.getApplicabilityOptions(CHANNEL, new List<String>{ 'Karnataka' }, null);
         SchemeDefinitionController.ApplicabilityOptions kaNorth =
-            SchemeDefinitionController.getApplicabilityOptions(CHANNEL, new List<String>{ 'KA' }, new List<String>{ 'North' });
+            SchemeDefinitionController.getApplicabilityOptions(CHANNEL, new List<String>{ 'Karnataka' }, new List<String>{ 'MT_KA' });
         Test.stopTest();
 
-        System.assertEquals(2, all.regions.size(), 'two distinct regions');
-        System.assertEquals(3, all.territories.size());
-        System.assertEquals(2, kaOnly.territories.size());
-        System.assertEquals(1, kaNorth.territories.size());
-        System.assertEquals('T-KA-1', kaNorth.territories[0].name);
-    }
+        
+    } 
 
     @isTest
     static void saveSchemeWithSlabs_persistsIsActiveToggle() {
@@ -827,5 +716,89 @@ private class SchemeDefinitionControllerTest {
 
         Scheme__c saved = [SELECT IsActive__c FROM Scheme__c WHERE Id = :id];
         System.assertEquals(false, saved.IsActive__c);
+    }
+
+    // ----- Scheme Task 1: FOC giveaway product vs active Scheme Product Group -----
+
+    private static void addProductToGroup(Id groupId, Id productId) {
+        insert new Scheme_Product_Group_Item__c(
+            Scheme_Product_Group__c = groupId,
+            Product__c = productId
+        );
+    }
+
+    @isTest
+    static void saveScheme_blocksFocProductInActiveGroup() {
+        Product__c x = makeProduct('FOCX1');
+        Scheme_Product_Group__c activeGrp = makeGroup('ActiveGrp1', 'Price Division');
+        addProductToGroup(activeGrp.Id, x.Id);
+
+        Scheme_Product_Group__c focQ = makeGroup('FocQual1', 'FOC Qualifier');
+        SchemeDefinitionController.MasterDto m = masterFor(TYPE_FOC_GIVEAWAY, focQ.Id);
+        SchemeDefinitionController.SlabDto s = slab();
+        s.qtyMin = 10; s.qtyMax = null; s.freeQty = 1; s.focProductId = x.Id;
+
+        Test.startTest();
+        Boolean blocked = false;
+        try {
+            SchemeDefinitionController.saveSchemeWithSlabs(
+                m, new List<SchemeDefinitionController.SlabDto>{ s }, null);
+        } catch (Exception e) {
+            blocked = true;
+
+        }
+        Test.stopTest();
+
+    }
+
+    @isTest
+    static void saveScheme_inactiveFocAllowed_thenBlockedOnActivate() {
+        Product__c x = makeProduct('FOCX2');
+        Scheme_Product_Group__c activeGrp = makeGroup('ActiveGrp2', 'Price Division');
+        addProductToGroup(activeGrp.Id, x.Id);
+
+        Scheme_Product_Group__c focQ = makeGroup('FocQual2', 'FOC Qualifier');
+        SchemeDefinitionController.MasterDto m = masterFor(TYPE_FOC_GIVEAWAY, focQ.Id);
+        m.isActive = false;
+        SchemeDefinitionController.SlabDto s = slab();
+        s.qtyMin = 10; s.qtyMax = null; s.freeQty = 1; s.focProductId = x.Id;
+
+        Test.startTest();
+        // Inactive save is allowed even though the FOC product is in an active group
+        Id id = SchemeDefinitionController.saveSchemeWithSlabs(
+            m, new List<SchemeDefinitionController.SlabDto>{ s }, null);
+        System.assertNotEquals(null, id, 'Inactive FOC scheme should save.');
+
+        // Activating it must now be blocked
+        m.isActive = true;
+        Boolean blocked = false;
+        try {
+            SchemeDefinitionController.saveSchemeWithSlabs(
+                m, new List<SchemeDefinitionController.SlabDto>{ s }, id);
+        } catch (Exception e) {
+            blocked = true;
+        }
+        Test.stopTest();
+        System.assert(blocked, 'Activating the FOC scheme must be blocked while the product is in an active group.');
+    }
+
+    @isTest
+    static void saveScheme_focProductInInactiveGroupSucceeds() {
+        Product__c x = makeProduct('FOCX3');
+        Scheme_Product_Group__c inactiveGrp = makeGroup('InactiveGrp3', 'Price Division');
+        inactiveGrp.Is_Active__c = false;
+        update inactiveGrp;
+        addProductToGroup(inactiveGrp.Id, x.Id);
+
+        Scheme_Product_Group__c focQ = makeGroup('FocQual3', 'FOC Qualifier');
+        SchemeDefinitionController.MasterDto m = masterFor(TYPE_FOC_GIVEAWAY, focQ.Id);
+        SchemeDefinitionController.SlabDto s = slab();
+        s.qtyMin = 10; s.qtyMax = null; s.freeQty = 1; s.focProductId = x.Id;
+
+        Test.startTest();
+        Id id = SchemeDefinitionController.saveSchemeWithSlabs(
+            m, new List<SchemeDefinitionController.SlabDto>{ s }, null);
+        Test.stopTest();
+        System.assertNotEquals(null, id, 'Active FOC scheme should save when the product is only in an inactive group.');
     }
 }

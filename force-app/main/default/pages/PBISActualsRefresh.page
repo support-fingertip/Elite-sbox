@@ -1,6 +1,6 @@
 <apex:page standardController="PBIS_Target__c" recordSetVar="targets" extensions="PBISActualsRefreshController"
            showHeader="true" sidebar="true" title="Refresh PBIS Actuals">
-    <apex:sectionHeader title="Recalculate actuals &amp; incentive"/>
+    <apex:sectionHeader title="Recalculate Actuals & Incentive"/>
     <apex:form >
         <apex:pageMessages id="msgs"/>
         <apex:actionStatus id="runStatus">

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All</fullName>
+    <columns>NAME</columns>
+    <columns>Sales_Channel__c</columns>
+    <columns>User__c</columns>
+    <columns>Incentive_Period__c</columns>
+    <columns>End_Date__c</columns>
+    <columns>Start_Date__c</columns>
+    <columns>Is_Eligible__c</columns>
+    <columns>Gross_Salary__c</columns>
+    <columns>PBIS_Policy_Name__c</columns>
+    <columns>Total_Incentive_Value__c</columns>
+    <columns>Total_Weightage__c</columns>
+    <columns>Is_Active__c</columns>
+    <columns>Profile__c</columns>
+    <columns>CREATED_DATE</columns>
+    <filterScope>Everything</filterScope>
+    <label>All</label>
+</ListView>
