@@ -61,4 +61,36 @@ private class PrimaryKpiDashboard_ControllerTest {
 
   
     }
+
+    @isTest
+    static void testCurrentUserShowsPrimary() {
+        // Always returns a non-null Boolean for the running user.
+        Test.startTest();
+        Boolean shows = PrimaryKpiDashboard_Controller.currentUserShowsPrimary();
+        Test.stopTest();
+        System.assertNotEquals(null, shows, 'currentUserShowsPrimary returns a Boolean');
+    }
+
+    @isTest
+    static void testPayrollUserSeesPrimary() {
+        // A user with Payroll__c = 'Yes' is allowed to see the Primary KPI tab.
+        Profile p = [SELECT Id FROM Profile WHERE Name = 'System Administrator' LIMIT 1];
+        User payrollUser = new User(
+            FirstName = 'Payroll', LastName = 'Kpi',
+            Email = 'payroll.kpi@example.com',
+            Username = 'payroll.kpi@example.com.pbis',
+            Alias = 'paykpi',
+            TimeZoneSidKey = 'America/Los_Angeles', LocaleSidKey = 'en_US',
+            EmailEncodingKey = 'UTF-8', ProfileId = p.Id, LanguageLocaleKey = 'en_US',
+            Payroll__c = 'Yes'
+        );
+        insert payrollUser;
+
+        Test.startTest();
+        System.runAs(payrollUser) {
+            System.assertEquals(true, PrimaryKpiDashboard_Controller.currentUserShowsPrimary(),
+                'Payroll = Yes user should see the Primary KPI tab');
+        }
+        Test.stopTest();
+    }
 }
